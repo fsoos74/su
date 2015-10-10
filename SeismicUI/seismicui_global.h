@@ -1,0 +1,12 @@
+#ifndef SEISMICUI_GLOBAL_H
+#define SEISMICUI_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(SEISMICUI_LIBRARY)
+#  define SEISMICUISHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define SEISMICUISHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // SEISMICUI_GLOBAL_H

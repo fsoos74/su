@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/First-icon-24x24.png</file>
+        <file>images/Last-icon-24x24.png</file>
+        <file>images/Next-2-2-icon-24x24.png</file>
+        <file>images/Previous-icon-24x24.png</file>
+    </qresource>
+</RCC>
