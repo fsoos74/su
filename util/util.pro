@@ -4,7 +4,11 @@
 #
 #-------------------------------------------------
 
+include(../common.pri)
+
 QT       -= gui
+
+#CONFIG += staticlib
 
 TARGET = util
 TEMPLATE = lib
@@ -14,7 +18,10 @@ DEFINES += UTIL_LIBRARY
 SOURCES += util.cpp
 
 HEADERS += util.h\
-        util_global.h
+        util_global.h \
+    array2d.h \
+    rectangle.h \
+    array3d.h
 
 unix {
     target.path = /usr/lib

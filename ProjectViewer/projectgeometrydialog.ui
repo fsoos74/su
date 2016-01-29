@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ProjectGeometryDialog</class>
+ <widget class="QDialog" name="ProjectGeometryDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>680</width>
+    <height>246</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Inline Number</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Crossline Number</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>X Coordinate</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Y Coordinate</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lbPoint1">
+       <property name="text">
+        <string>Point 1:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="leIline1"/>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="leXline1"/>
+     </item>
+     <item row="1" column="3">
+      <widget class="QLineEdit" name="leX1"/>
+     </item>
+     <item row="1" column="4">
+      <widget class="QLineEdit" name="leY1"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lbPoint2">
+       <property name="text">
+        <string>Point 2:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="leIline2"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="leXline2"/>
+     </item>
+     <item row="2" column="3">
+      <widget class="QLineEdit" name="leX2"/>
+     </item>
+     <item row="2" column="4">
+      <widget class="QLineEdit" name="leY2"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lbPoint3">
+       <property name="text">
+        <string>Point 3:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="leIline3"/>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="leXline3"/>
+     </item>
+     <item row="3" column="3">
+      <widget class="QLineEdit" name="leX3"/>
+     </item>
+     <item row="3" column="4">
+      <widget class="QLineEdit" name="leY3"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="pbExtract">
+       <property name="text">
+        <string>Extract </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ProjectGeometryDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>529</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>339</x>
+     <y>122</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ProjectGeometryDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>529</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>339</x>
+     <y>122</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

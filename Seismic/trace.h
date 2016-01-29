@@ -20,6 +20,9 @@ public:
 	Trace( time_type ft=0, time_type dt=-1, size_type nt=0 ):m_ft(ft), m_dt(dt), m_samples(nt){
 	}
 
+    Trace( time_type ft, time_type dt, size_type nt, const Header& hdr):m_ft(ft), m_dt(dt), m_samples(nt), m_header(hdr){
+    }
+
     Trace( time_type ft, time_type dt, const Samples& sam, const Header& hdr):m_ft(ft), m_dt(dt), m_samples(sam), m_header(hdr){
 	}
 
@@ -70,6 +73,8 @@ public:
 		size_type idx = static_cast<size_type>( std::trunc( (t-m_ft)/m_dt) );
 		return idx<size() ? idx : size();
 	}
+
+
 
 private:
 	void check_index(size_type i)const{

@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>686</width>
-    <height>634</height>
+    <height>486</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_7" stretch="0,1">
+  <layout class="QVBoxLayout" name="verticalLayout_7" stretch="0,0">
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
@@ -366,7 +366,7 @@
    </item>
    <item>
     <widget class="QWidget" name="wdAdvanced" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="0,0,1">
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
@@ -374,7 +374,7 @@
           <property name="title">
            <string>Coordinate Scaler (scalco)</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout">
+          <layout class="QVBoxLayout" name="verticalLayout_13">
            <item>
             <widget class="QRadioButton" name="rbScalcoHeader">
              <property name="text">
@@ -406,9 +406,39 @@
              </item>
             </layout>
            </item>
+           <item>
+            <widget class="QCheckBox" name="cbScaleOffset">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Apply to offset</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
           </layout>
          </widget>
         </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QGroupBox" name="gbScalel">
           <property name="title">
@@ -449,6 +479,19 @@
           </layout>
          </widget>
         </item>
+        <item>
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </item>
       <item>
@@ -456,7 +499,7 @@
         <item>
          <widget class="QGroupBox" name="gbFormat">
           <property name="title">
-           <string>Special</string>
+           <string>Bits and Bytes</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
@@ -514,7 +557,7 @@
         </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>20</width>
+          <width>27</width>
           <height>20</height>
          </size>
         </property>

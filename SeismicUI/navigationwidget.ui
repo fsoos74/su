@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>738</width>
-    <height>51</height>
+    <height>52</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/images/images/First-icon-24x24.png</normalon>
+       <normalon>:/icons/First-icon-24x24.png</normalon>
       </iconset>
      </property>
     </widget>
@@ -33,7 +33,7 @@
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/images/images/Previous-icon-24x24.png</normalon>
+       <normalon>:/icons/Previous-icon-24x24.png</normalon>
       </iconset>
      </property>
     </widget>
@@ -100,7 +100,7 @@
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/images/images/Next-2-2-icon-24x24.png</normalon>
+       <normalon>:/icons/Next-2-2-icon-24x24.png</normalon>
       </iconset>
      </property>
     </widget>
@@ -112,7 +112,7 @@
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/images/images/Last-icon-24x24.png</normalon>
+       <normalon>:/icons/Last-icon-24x24.png</normalon>
       </iconset>
      </property>
     </widget>

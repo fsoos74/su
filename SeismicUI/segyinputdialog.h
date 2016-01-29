@@ -8,6 +8,7 @@
 #include<utility>
 
 #include "segyreader.h"
+#include "segyinfo.h"
 
 /*
 namespace seismic{
@@ -32,7 +33,20 @@ public:
     explicit SegyInputDialog(QWidget *parent = 0 );
     ~SegyInputDialog();
 
-    seismic::SEGYReader* reader();
+
+    std::shared_ptr<seismic::SEGYReader> reader()const{
+        return m_reader;
+    }
+
+    const seismic::SEGYInfo& info()const{
+        return m_info;
+    }
+
+    QString path()const;
+
+public slots:
+
+    void setInfo(const seismic::SEGYInfo& info);
 
 protected:
 
@@ -62,6 +76,11 @@ private slots:
 
 private:
 
+    void updateControlsFromInfo();
+    void updateInfoFromControls();
+    void readInfoFile();
+    void writeInfoFile();
+
     std::vector<seismic::SEGYHeaderWordDef> getTraceHeaderDefinition();
     void openReader();
     void destroyReader();
@@ -73,13 +92,20 @@ private:
     void apply();
     void showTraceHeader(ssize_t n);
 
+    QString infoFileName();
+
     Ui::SegyInputDialog *ui;
 
     EBCDICDialog* m_EBCDICDialog=nullptr;
     HeaderDialog* m_BinaryDialog=nullptr;
     HeaderDialog* m_TraceHeaderDialog=nullptr;
 
-    seismic::SEGYReader* m_reader=nullptr;
+    seismic::SEGYInfo m_info;
+    std::shared_ptr<seismic::SEGYReader> m_reader;
+
+    bool m_updateReaderParamsEnabled=true;
+    bool m_infoDirty=false;
+
 };
 
 #endif // DIALOG_H

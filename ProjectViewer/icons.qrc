@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>First-icon-24x24.png</file>
+        <file>Last-icon-24x24.png</file>
+        <file>Next-2-2-icon-24x24.png</file>
+        <file>Open-icon.png</file>
+        <file>Previous-icon-24x24.png</file>
+        <file>SaveAs-icon.png</file>
+        <file>Zoom-Minus-icon.png</file>
+        <file>Zoom-Plus-icon.png</file>
+        <file>../images/seismic_utensils_symbol_black_fs_32_32.png</file>
+        <file>../images/seismic_utensils_symbol_fs_192_192_white.png</file>
+        <file>../images/logo_fs_64x64.png</file>
+    </qresource>
+</RCC>

@@ -3,6 +3,7 @@
 
 #include <QDialog>
 
+
 namespace Ui {
 class DisplayRangeDialog;
 }
@@ -15,42 +16,38 @@ class DisplayRangeDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit DisplayRangeDialog(std::pair<double, double> range, QWidget *parent = 0);
+    explicit DisplayRangeDialog(QWidget *parent = 0);
     ~DisplayRangeDialog();
 
-    std::pair<double,double> range()const{
-        return m_range;
-    }
+    std::pair<double, double> range();
+
+    double power();
 
 public slots:
+
     void setRange(std::pair<double,double>);
+    void setPower( double );
 
 signals:
-    void displayRangeChanged( std::pair<double, double>);
+
+    void rangeChanged( std::pair<double, double>);
+    void powerChanged(double);
+
+protected:
+    // override this to keep return pressed in line edit move up to parent
+    void keyPressEvent(QKeyEvent* event);
 
 
 private slots:
-    void on_pbMin_clicked();
 
-    void on_pbMax_clicked();
-
-    void on_pbApply_clicked();
-
-    void on_pbOk_clicked();
+    void applyRange();
+    void applyPower();
 
 private:
 
-    void updateMinControl();
-    void updateMaxControl();
-    void updateMinFromControl();
-    void updateMaxFromControl();
 
     Ui::DisplayRangeDialog *ui;
 
-    QDoubleValidator* m_validator;
-
-    std::pair<double,double > m_startRange;
-    std::pair<double, double> m_range;
 };
 
 #endif // DISPLAYRANGEDIALOG_H

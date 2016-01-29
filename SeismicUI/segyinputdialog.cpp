@@ -11,6 +11,8 @@
 #include <ebcdicdialog.h>
 #include <headerdialog.h>
 #include<segyreader.h>
+#include <xsiwriter.h>
+#include<xsireader.h>
 #include <navigationwidget.h>
 
 #include<QFileDialog>
@@ -46,7 +48,7 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     ui->cbSizeCDPX->addItems(items);
     ui->cbSizeCDPY->addItems(items);
     ui->cbSizeOffset->addItems(items);
-
+/*
     ui->lePosCDP->setText("21");
     ui->cbSizeCDP->setCurrentIndex(1);
 
@@ -64,7 +66,7 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
 
     ui->lePosOffset->setText("37");
     ui->cbSizeOffset->setCurrentIndex(1);
-
+*/
     QStringList format_items;
     format_items.append("From Header");
     format_items.append("IBM");
@@ -74,6 +76,8 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     format_items.append("1 Byte Integer");
     ui->cbFormat->addItems(format_items);
     ui->cbFormat->setCurrentIndex(0);
+
+    updateControlsFromInfo();
 
 
     // have to put those here because qtcreator doesn't allow to connect signals with argument to slots with no args even though this should be legal!
@@ -96,13 +100,184 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     connect( ui->rbScalelHeader, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
     connect( ui->rbSwapBytes, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
 
+
     updateButtons();
 }
 
 SegyInputDialog::~SegyInputDialog()
 {
     delete ui;
-    if(m_reader) delete m_reader;
+}
+
+QString SegyInputDialog::path()const
+{
+    return ui->leFilename->text();
+}
+
+void SegyInputDialog::setInfo(const seismic::SEGYInfo &info){
+
+
+    m_info=info;
+
+    updateControlsFromInfo();
+}
+
+void SegyInputDialog::updateControlsFromInfo(){
+
+
+    const std::vector<seismic::SEGYHeaderWordDef>& defs=m_info.traceHeaderDef();
+
+    m_updateReaderParamsEnabled=false;
+
+    for( auto def:defs){
+
+        //std::cout<<"!!!"<<def.name<<std::endl;
+
+        QLineEdit* lePos=nullptr;
+        QComboBox* cbSize=nullptr;
+
+
+        if(def.name=="iline"){
+            lePos=ui->lePosIline;
+            cbSize=ui->cbSizeIline;
+        }
+        else if(def.name=="xline"){
+            lePos=ui->lePosXline;
+            cbSize=ui->cbSizeXline;
+        }
+        else if(def.name=="cdp"){
+            lePos=ui->lePosCDP;
+            cbSize=ui->cbSizeCDP;
+        }
+        else if(def.name=="cdpx"){
+            lePos=ui->lePosCDPX;
+            cbSize=ui->cbSizeCDPX;
+        }
+        else if(def.name=="cdpy"){
+            lePos=ui->lePosCDPY;
+            cbSize=ui->cbSizeCDPY;
+        }
+        else if(def.name=="offset"){
+            lePos=ui->lePosOffset;
+            cbSize=ui->cbSizeOffset;
+        }
+
+
+        if( (lePos) && (cbSize) ){
+            std::cout<<"SET TO CONTROLS: "<<def.name<<" pos="<<def.pos<<std::endl;
+            lePos->setText(QString::number(def.pos));
+            switch(def.dtype){
+            case seismic::SEGYHeaderWordDataType::INT16: cbSize->setCurrentIndex(0);break;
+            case seismic::SEGYHeaderWordDataType::INT32: cbSize->setCurrentIndex(1);break;
+            default: qFatal("Unexpected headerword size!");break;
+            }
+        }
+    }
+
+    ui->rbSwapBytes->setChecked(m_info.isSwap());
+
+    int index=0;
+    if( m_info.isOverrideSampleFormat()){
+
+        switch(m_info.sampleFormat()){
+        case seismic::SEGYSampleFormat::IBM: index=1;break;
+        case seismic::SEGYSampleFormat::IEEE: index=2;break;
+        case seismic::SEGYSampleFormat::INT4: index=3;break;
+        case seismic::SEGYSampleFormat::INT2: index=4;break;
+        case seismic::SEGYSampleFormat::INT1: index=5;break;
+        default: qFatal("Illegal sampleformat!");break;
+        }
+    }
+    ui->cbFormat->setCurrentIndex(index);
+
+    ui->rbScalcoFixed->setChecked(m_info.isFixedScalco());
+    if( m_info.isFixedScalco()){
+        ui->leScalco->setText(QString::number(m_info.scalco()));
+    }
+
+    ui->rbScalelFixed->setChecked(m_info.isFixedScalel());
+    if( m_info.isFixedScalel()){
+        ui->leScalel->setText(QString::number(m_info.scalel()));
+    }
+
+    m_updateReaderParamsEnabled=true;
+
+    openReader();
+}
+
+void SegyInputDialog::updateInfoFromControls(){
+
+    std::vector<seismic::SEGYHeaderWordDef> hdefs=m_info.traceHeaderDef();
+
+    for( auto& def : hdefs){
+
+        QLineEdit* lePos=nullptr;
+        QComboBox* cbSize=nullptr;
+
+        if(def.name=="iline"){
+            lePos=ui->lePosIline;
+            cbSize=ui->cbSizeIline;
+        }
+        else if(def.name=="xline"){
+            lePos=ui->lePosXline;
+            cbSize=ui->cbSizeXline;
+        }
+        else if(def.name=="cdp"){
+            lePos=ui->lePosCDP;
+            cbSize=ui->cbSizeCDP;
+        }
+        else if(def.name=="cdpx"){
+            lePos=ui->lePosCDPX;
+            cbSize=ui->cbSizeCDPX;
+        }
+        else if(def.name=="cdpy"){
+            lePos=ui->lePosCDPY;
+            cbSize=ui->cbSizeCDPY;
+        }
+        else if(def.name=="offset"){
+            lePos=ui->lePosOffset;
+            cbSize=ui->cbSizeOffset;
+        }
+
+        if( lePos && cbSize ){
+            def.pos=lePos->text().toUInt();
+            switch(cbSize->currentIndex()){
+            case 0: def.dtype=seismic::SEGYHeaderWordDataType::INT16;break;
+            case 1: def.dtype=seismic::SEGYHeaderWordDataType::INT32;break;
+            default: qFatal("Unexpected index for headerword size!");break;
+            }
+        }
+
+    }
+
+    m_info.setTraceHeaderDef(hdefs);
+
+    int index=ui->cbFormat->currentIndex();
+    switch(index){
+    case 0: m_info.setOverrideSampleFormat(false);break;          // no format predefined
+    case 1: m_info.setSampleFormat(seismic::SEGYSampleFormat::IBM);break;
+    case 2: m_info.setSampleFormat(seismic::SEGYSampleFormat::IEEE);break;
+    case 3: m_info.setSampleFormat( seismic::SEGYSampleFormat::INT4);break;
+    case 4: m_info.setSampleFormat( seismic::SEGYSampleFormat::INT2);break;
+    case 5: m_info.setSampleFormat( seismic::SEGYSampleFormat::INT1);break;
+    default: qFatal("Illegal sampleformat!");break;
+    }
+
+    if( ui->rbScalcoFixed->isChecked()){
+        m_info.setScalco(ui->leScalco->text().toDouble());
+    }
+    else{
+        m_info.setFixedScalco(false);
+    }
+
+    if( ui->rbScalelFixed->isChecked()){
+        m_info.setScalel(ui->leScalel->text().toDouble());
+    }
+    else{
+        m_info.setFixedScalel(false);
+    }
+
+    //m_infoDirty=true;
 }
 
 void SegyInputDialog::on_btScan_clicked()
@@ -110,10 +285,10 @@ void SegyInputDialog::on_btScan_clicked()
     //std::cout<<"SCANNING..."<<std::endl;
     Q_ASSERT(m_reader);
 
+    seismic::SEGYInfo orig_info=m_reader->info();
 
-    std::vector<seismic::SEGYHeaderWordDef> orig_def=m_reader->trace_header_def();
     std::vector<seismic::SEGYHeaderWordDef> tmp_def;
-    for( auto& d : orig_def){
+    for( auto& d : orig_info.traceHeaderDef()){
         if( d.name == "iline" ||
                 d.name=="xline" ||
                 d.name=="cdp" ||
@@ -121,12 +296,15 @@ void SegyInputDialog::on_btScan_clicked()
                 d.name=="cdpy" ||
                 d.name=="offset" ||
                 d.name=="scalco" ||
-                d.name=="ns" ){
+                d.name=="ns" ||
+                d.name=="dt" ){ // need dt here, even if not used, missing would result in error in conert trace header!!!
                 tmp_def.push_back(d);
             }
         }
 
-        m_reader->set_trace_header_def(tmp_def);
+    seismic::SEGYInfo tmp_info(orig_info);
+    tmp_info.setTraceHeaderDef(tmp_def);
+        m_reader->setInfo(tmp_info);
 
     try{
 
@@ -181,13 +359,13 @@ void SegyInputDialog::on_btScan_clicked()
             else if( max_cdpx<cdpx ) max_cdpx=cdpx;
 
             if( cdpy<min_cdpy ) min_cdpy=cdpy;
-            else if( max_cdpy<max_cdpy ) max_cdpy=cdpy;
+            else if( max_cdpy<cdpy ) max_cdpy=cdpy;
 
             if( iline<min_iline ) min_iline=iline;
-            else if( max_iline<max_iline ) max_iline=iline;
+            else if( max_iline<iline ) max_iline=iline;
 
             if( xline<min_xline ) min_xline=xline;
-            else if( max_xline<max_xline ) max_xline=xline;
+            else if( max_xline<xline ) max_xline=xline;
 
             if( offset<min_offset ) min_offset=offset;
             else if( max_offset<offset ) max_offset=offset;
@@ -228,7 +406,7 @@ void SegyInputDialog::on_btScan_clicked()
         destroyReader();
     }
 
-        if( m_reader) m_reader->set_trace_header_def(orig_def);
+        if( m_reader) m_reader->setInfo(orig_info);
 
 }
 
@@ -237,6 +415,7 @@ void SegyInputDialog::on_pbBrowse_clicked()
     QString fn=QFileDialog::getOpenFileName(0, "Open SEGY file");
     if( fn.isNull()) return;        // cancelled
     ui->leFilename->setText(fn);    // filename always synchronized with lineedit
+    readInfoFile();
     openReader();                    // openReader uses filename from lineedit
 }
 
@@ -292,6 +471,11 @@ void SegyInputDialog::keyPressEvent(QKeyEvent *ev){
 }
 
 void SegyInputDialog::readerParamsChanged(){
+
+    m_infoDirty=true;
+
+    if( ! m_updateReaderParamsEnabled ) return;
+
     openReader();
 
     if( m_TraceHeaderDialog ){
@@ -302,56 +486,28 @@ void SegyInputDialog::readerParamsChanged(){
 
 void SegyInputDialog::openReader(){
 
+      if( ui->leFilename->text().isEmpty()) return;
 
       // close already open reader
       if( m_reader ){
-          delete m_reader;
-          m_reader=nullptr;
+          m_reader.reset();
       }
 
       try{
 
-          // get parameters from controls:
-          bool swap=ui->rbSwapBytes->isChecked();
+          updateInfoFromControls();
 
-          bool override_format=( ui->cbFormat->currentIndex()>0);
-
-          seismic::SEGYReader::SampleFormat format;
-          switch(int idx=ui->cbFormat->currentIndex() ){
-              case 0: break;                                                // from header, no need for change
-              case 1: format=seismic::SEGYReader::SampleFormat::IBM; break;
-              case 2: format=seismic::SEGYReader::SampleFormat::IEEE; break;
-              case 3: format=seismic::SEGYReader::SampleFormat::INT4; break;
-              case 4: format=seismic::SEGYReader::SampleFormat::INT2; break;
-              case 5: format=seismic::SEGYReader::SampleFormat::INT1; break;
-              default: qFatal(QString("Invalid index (%1) for sample format!").arg(idx).toStdString().c_str()); break;
-          }
-
-          std::vector<seismic::SEGYHeaderWordDef> thdef=getTraceHeaderDefinition();
 
           // open a reader
-          seismic::SEGYReader* reader=new seismic::SEGYReader(ui->leFilename->text().toStdString(), swap);
+          std::shared_ptr<seismic::SEGYReader> reader(new seismic::SEGYReader(ui->leFilename->text().toStdString(), m_info) );
 
-          if( override_format ){
-              reader->set_sample_format( format );  // can do this after open and reading of binary header because it only has effect for traces
-          }
-
-          reader->set_trace_header_def( thdef );    // set trace header definitions, can do this now because no trace header has been read yet
-
-          if( ui->rbScalcoFixed->isChecked()){
-              reader->set_fixed_scalco(true);
-              reader->set_scalco(ui->leScalco->text().toDouble());
-          }
-
-          if( ui->rbScalelFixed->isChecked()){
-              reader->set_fixed_scalel(true);
-              reader->set_scalel(ui->leScalel->text().toDouble());
-          }
 
           // everything ok, keep reader
           m_reader=reader;
-      }
-      catch(seismic::SEGYReader::FormatError& err){
+
+       }
+
+      catch( std::exception& err){
           QMessageBox::critical(this, "Open SEGY-file", QString("Exception occured:\n")+QString(err.what()));
            ui->leFilename->setText("");
       }
@@ -364,13 +520,12 @@ void SegyInputDialog::openReader(){
 
 
 void SegyInputDialog::destroyReader(){
-    delete m_reader;
-    m_reader=nullptr;
+    m_reader.reset();
     updateButtons();
 }
 
 void SegyInputDialog::updateButtons(){
-      bool on=m_reader;
+      bool on=(m_reader)?true:false;
       ui->btScan->setEnabled(on);
       ui->pbEBCDIC->setEnabled(on);
       ui->pbBinary->setEnabled(on);
@@ -393,7 +548,7 @@ void SegyInputDialog::updateBinaryDialog(){
 
     Q_ASSERT( m_BinaryDialog );
 
-    m_BinaryDialog->setData(m_reader->binaryHeader(), m_reader->binary_header_def());
+    m_BinaryDialog->setData(m_reader->binaryHeader(), m_reader->info().binaryHeaderDef());
 
     m_BinaryDialog->setWindowTitle( QString( "Binary Header of \"") + ui->leFilename->text() + QString("\""));
 
@@ -420,7 +575,7 @@ void SegyInputDialog::onTraceHeaderDialogFinished(){
         // repos. stream at beg of header for next read!
         m_reader->seek_trace(n);
 
-        m_TraceHeaderDialog->setData( hdr, m_reader->trace_header_def());
+        m_TraceHeaderDialog->setData( hdr, m_reader->info().traceHeaderDef());
 
         m_TraceHeaderDialog->setWindowTitle( QString( "Trace Header of \"") + ui->leFilename->text() + QString("\""));
     }
@@ -437,31 +592,31 @@ std::vector<seismic::SEGYHeaderWordDef> SegyInputDialog::getTraceHeaderDefinitio
     for( auto& d : thdef){
         if( d.name == "iline"){
             d.pos=ui->lePosIline->text().toUInt();
-            d.dtype=(ui->cbSizeIline->currentIndex()==1)?seismic::SEGY_INT32 : seismic::SEGY_INT16;
+            d.dtype=(ui->cbSizeIline->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
         }
         else if( d.name == "xline"){
             d.pos=ui->lePosXline->text().toUInt();
-            d.dtype=(ui->cbSizeXline->currentIndex()==1)?seismic::SEGY_INT32 : seismic::SEGY_INT16;
+            d.dtype=(ui->cbSizeXline->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
         }
         else if( d.name == "cdp"){
             d.pos=ui->lePosCDP->text().toUInt();
-            d.dtype=(ui->cbSizeCDP->currentIndex()==1)?seismic::SEGY_INT32 : seismic::SEGY_INT16;
+            d.dtype=(ui->cbSizeCDP->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
         }
         else if( d.name == "cdpx"){
             d.pos=ui->lePosCDPX->text().toUInt();
-            d.dtype=(ui->cbSizeCDPX->currentIndex()==1)?seismic::SEGY_INT32 : seismic::SEGY_INT16;
+            d.dtype=(ui->cbSizeCDPX->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
         }
         else if( d.name == "cdpy"){
             d.pos=ui->lePosCDPY->text().toUInt();
-            d.dtype=(ui->cbSizeCDPY->currentIndex()==1)?seismic::SEGY_INT32 : seismic::SEGY_INT16;
+            d.dtype=(ui->cbSizeCDPY->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
         }
         else if( d.name == "offset"){
             d.pos=ui->lePosOffset->text().toUInt();
-            d.dtype=(ui->cbSizeOffset->currentIndex()==1)?seismic::SEGY_INT32 : seismic::SEGY_INT16;
+            d.dtype=(ui->cbSizeOffset->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
         }
 
         // check for out of bounds header word pos
-        size_t end=d.pos+( ( d.dtype==seismic::SEGY_INT16 ) ? 2 : 4 );
+        size_t end=d.pos+( ( d.dtype==seismic::SEGYHeaderWordDataType::INT16 ) ? 2 : 4 );
         //std::cout<<d.name<<" end="<<end<<std::endl;
         if( end >240 ){   // 1 based
             QMessageBox::critical( this, "Change SEGY trace header definition", QString("Header word \"") + QString(d.name.c_str()) + QString("\" is out of trace header bounds!") );
@@ -489,5 +644,82 @@ void SegyInputDialog::on_pbOK_clicked()
 {
     // be sure to catch the most recent changes
     openReader();
+
+    writeInfoFile();
+
     if( m_reader ) accept();
 }
+
+QString SegyInputDialog::infoFileName(){
+
+    if( ui->leFilename->text().isEmpty()) return QString();
+
+    QFileInfo fi( ui->leFilename->text());
+    QString fileInfoPath = fi.canonicalPath() + QDir::separator() + fi.baseName() + ".xsi";
+
+    return fileInfoPath;
+
+}
+
+void SegyInputDialog::readInfoFile(){
+
+    QString fileInfoPath = infoFileName();
+    if( fileInfoPath.isEmpty()) return;
+
+    QFile file(fileInfoPath);
+    if( !file.exists()) return;
+
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Save Segy File Information"),
+                             tr("Cannot read file %1:\n%2.")
+                             .arg(fileInfoPath)
+                             .arg(file.errorString()));
+        return;
+    }
+
+    seismic::SEGYInfo info;
+
+    seismic::XSIReader reader(info);
+    if (!reader.read(&file)) {
+        QMessageBox::warning(this, tr("Load SEGY Info"),
+                             tr("Parse error in file %1:\n\n%2")
+                             .arg(fileInfoPath)
+                             .arg(reader.errorString()));
+
+        return;
+    }
+
+    setInfo( info );
+    m_infoDirty=false;
+}
+
+void SegyInputDialog::writeInfoFile(){
+
+    QString fileInfoPath = infoFileName();
+
+    QFile file(fileInfoPath);
+
+
+
+    if( file.exists()){
+
+        if( !m_infoDirty ) return;      // nothing to save
+
+        if( QMessageBox::warning(this, "Save SEGY File Info", QString("File \"%1\" exists. Replace it?").arg(fileInfoPath),
+                                 QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes) return;
+    }
+
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Save Segy File Information"),
+                             tr("Cannot write file %1:\n%2.")
+                             .arg(fileInfoPath)
+                             .arg(file.errorString()));
+        return;
+    }
+
+    seismic::XSIWriter writer(m_info);
+    writer.writeFile(&file);
+
+    m_infoDirty=false;
+}
+

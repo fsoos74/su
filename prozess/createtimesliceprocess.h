@@ -1,0 +1,32 @@
+#ifndef PROCESSCREATESLICE_H
+#define PROCESSCREATESLICE_H
+
+#include "projectprocess.h"
+#include <seismicdatasetreader.h>
+#include <grid2d.h>
+
+class CreateTimesliceProcess : public ProjectProcess{
+
+    Q_OBJECT
+
+public:
+
+    CreateTimesliceProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+
+    ResultCode init(const QMap<QString, QString>& parameters);
+    ResultCode run();
+
+private:
+
+    QString m_horizonName;
+    QString m_sliceName;
+
+    std::shared_ptr<SeismicDatasetReader> m_reader;
+    std::shared_ptr<Grid2D<double> > m_horizon;
+    std::shared_ptr<Grid2D<double> > m_slice;
+    qreal m_sliceTime;
+};
+
+
+
+#endif // PROCESSCREATESLICE_H

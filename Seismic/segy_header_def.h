@@ -1,20 +1,29 @@
 #ifndef SEGY_HEADER_DEF_H
 #define SEGY_HEADER_DEF_H
 
+#include<string>
+#include<QString>
+
 namespace seismic{
 
 // type of header value
-enum SEGYHeaderWordDataType{ SEGY_INT16, // 2 byte signed integer
-                             SEGY_INT32, // 4 byte signed integer
-                             SEGY_UINT16,// 2 byte unsigned integer
-                             SEGY_BUF6   // 6 byte block
+enum class SEGYHeaderWordDataType{ INT16, // 2 byte signed integer
+                                INT32, // 4 byte signed integer
+                                UINT16,// 2 byte unsigned integer
+                                BUF6   // 6 byte block
                            };
 
+QString toQString(SEGYHeaderWordDataType);
+SEGYHeaderWordDataType toDataType(const QString&);
+
 // describes how values should be processed/converted
-enum SEGYHeaderWordConvType{    SEGY_PLAIN, // use value as is
-                                SEGY_ELEV,  // elevation,  scale by scalel
-                                SEGY_COORD  // coordinate, scale by scalco
+enum class SEGYHeaderWordConvType{    PLAIN, // use value as is
+                                    ELEV,  // elevation,  scale by scalel
+                                    COORD  // coordinate, scale by scalco
                            };
+
+QString toQString(SEGYHeaderWordConvType);
+SEGYHeaderWordConvType toConvType(const QString&);
 
 
 // description of a segy header value

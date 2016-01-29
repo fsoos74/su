@@ -9,12 +9,41 @@ QT       -= gui
 TARGET = Seismic
 TEMPLATE = lib
 
+include(../common.pri)
+#CONFIG +=staticlib
+
 DEFINES += SEISMIC_LIBRARY
 
-SOURCES += seismic.cpp
+SOURCES += seismic.cpp \
+    segy_text_header.cpp \
+    segyreader.cpp \
+    segyinfo.cpp \
+    xsiwriter.cpp \
+    segysampleformat.cpp \
+    segy_header_def.cpp \
+    xsireader.cpp \
+    segywriter.cpp \
+    seis_bits.cpp
 
 HEADERS += seismic.h\
-        seismic_global.h
+        seismic_global.h \
+    trace.h \
+    seis_bits.h \
+    segy_traceheader_def.h \
+    segy_text_header.h \
+    segyreader.h \
+    segy_header_def.h \
+    segy_data.h \
+    segy_binary_header_def.h \
+    headervalue.h \
+    header.h \
+    gather.h \
+    ebcdic.h \
+    segyinfo.h \
+    segysampleformat.h \
+    xsiwriter.h \
+    xsireader.h \
+    segywriter.h
 
 unix {
     target.path = /usr/lib

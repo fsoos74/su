@@ -2,24 +2,24 @@
 #include "ui_displayrangedialog.h"
 
 #include<QDoubleValidator>
+#include <QKeyEvent>
 
-DisplayRangeDialog::DisplayRangeDialog(std::pair<double, double> range, QWidget *parent) :
+DisplayRangeDialog::DisplayRangeDialog(QWidget *parent) :
     QDialog(parent),
-    m_startRange(range),
-    m_range( range),
     ui(new Ui::DisplayRangeDialog)
 {
+
     ui->setupUi(this);
 
-    m_validator=new QDoubleValidator(this);
+    QDoubleValidator* validator=new QDoubleValidator(this);
 
-    ui->leMin->setValidator(m_validator);
-    ui->leMax->setValidator(m_validator);
+    ui->leMin->setValidator(validator);
+    ui->leMax->setValidator(validator);
+    ui->lePower->setValidator(validator);
 
-    updateMaxControl();
-    updateMinControl();
-
-
+   connect( ui->leMin, SIGNAL(returnPressed()), this, SLOT(applyRange()));
+   connect( ui->leMax, SIGNAL(returnPressed()), this, SLOT(applyRange()));
+   connect( ui->lePower, SIGNAL(returnPressed()), this, SLOT(applyPower()));
 }
 
 DisplayRangeDialog::~DisplayRangeDialog()
@@ -27,62 +27,53 @@ DisplayRangeDialog::~DisplayRangeDialog()
     delete ui;
 }
 
+std::pair<double, double> DisplayRangeDialog::range(){
+
+    double min=ui->leMin->text().toDouble();
+    double max=ui->leMax->text().toDouble();
+    return std::pair<double, double>(min, max);
+}
+
+double DisplayRangeDialog::power(){
+
+    return ui->lePower->text().toDouble();
+}
 
 void DisplayRangeDialog::setRange(std::pair<double, double> r){
 
-    if( r==m_range ) return;
+    if( r==range() ) return;
 
-    m_range=r;
+    ui->leMin->setText(QString::number(r.first));
+    ui->leMax->setText(QString::number(r.second));
 
-    updateMinControl();
-    updateMaxControl();
-
-    emit displayRangeChanged(m_range);
+    emit rangeChanged(r);
 }
 
-void DisplayRangeDialog::on_pbMin_clicked()
-{
-    m_range.first=m_startRange.first;
-    updateMinControl();
-    emit displayRangeChanged(m_range);
+void DisplayRangeDialog::setPower( double p ){
+
+    if( p==power()) return;
+
+    ui->lePower->setText(QString::number(p));
+
+    emit powerChanged(p);
 }
 
-void DisplayRangeDialog::on_pbMax_clicked()
-{
-    m_range.second=m_startRange.second;
-    updateMaxControl();
-    emit displayRangeChanged(m_range);
+void DisplayRangeDialog::applyRange(){
+
+    emit rangeChanged( range());
 }
 
+void DisplayRangeDialog::applyPower(){
 
-void DisplayRangeDialog::updateMinControl(){
-    ui->leMin->setText(QString::number(m_range.first));
+    emit powerChanged(power());
 }
 
-void DisplayRangeDialog::updateMinFromControl(){
-    m_range.first=ui->leMin->text().toDouble();
-}
+void DisplayRangeDialog::keyPressEvent(QKeyEvent *ev){
+    if( ev->key() == Qt::Key_Return){
+        ev->accept();
+    }
+    else{
+        QWidget::keyPressEvent(ev);
+    }
 
-void DisplayRangeDialog::updateMaxControl(){
-    ui->leMax->setText(QString::number(m_range.second));
-}
-
-void DisplayRangeDialog::updateMaxFromControl(){
-    m_range.second=ui->leMax->text().toDouble();
-}
-
-
-
-void DisplayRangeDialog::on_pbApply_clicked()
-{
-    updateMinFromControl();
-    updateMaxFromControl();
-    emit displayRangeChanged(m_range);
-}
-
-void DisplayRangeDialog::on_pbOk_clicked()
-{
-    updateMinFromControl();
-    updateMaxFromControl();
-    accept();
 }

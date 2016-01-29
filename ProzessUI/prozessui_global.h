@@ -1,0 +1,12 @@
+#ifndef PROZESSUI_GLOBAL_H
+#define PROZESSUI_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(PROZESSUI_LIBRARY)
+#  define PROZESSUISHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define PROZESSUISHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // PROZESSUI_GLOBAL_H

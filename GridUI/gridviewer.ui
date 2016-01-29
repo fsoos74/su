@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GridViewer</class>
+ <widget class="QMainWindow" name="GridViewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1190</width>
+    <height>531</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="GridView" name="gridView" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="ColorBarWidget" name="colorBar" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>256</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1190</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;Display</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="displayRangeAct"/>
+    <addaction name="actionSetup_Contours"/>
+    <addaction name="actionAxxis_Orientation"/>
+    <addaction name="action_Grid_Display"/>
+    <addaction name="EditColorTableAct"/>
+   </widget>
+   <widget class="QMenu" name="menu_Scale">
+    <property name="title">
+     <string>&amp;Scale</string>
+    </property>
+    <addaction name="zoomInAct"/>
+    <addaction name="zoomOutAct"/>
+    <addaction name="zoomNormalAct"/>
+   </widget>
+   <widget class="QMenu" name="menu_Bradcast">
+    <property name="title">
+     <string>&amp;Broadcast</string>
+    </property>
+    <addaction name="action_Receive_CDPs"/>
+    <addaction name="action_Dispatch_CDPs"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menu_Scale"/>
+   <addaction name="menuView"/>
+   <addaction name="menu_Bradcast"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="separator"/>
+   <addaction name="zoomInAct"/>
+   <addaction name="zoomOutAct"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <action name="openAct">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/images/Open-icon.png</normaloff>:/images/Open-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="toolTip">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="zoomInAct">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom In (25%)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="zoomOutAct">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom Out (25%)</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom Out (25%)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="zoomNormalAct">
+   <property name="text">
+    <string>Zoom Fit Window (100%)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="displayRangeAct">
+   <property name="text">
+    <string>Display &amp;Range</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="EditColorTableAct">
+   <property name="text">
+    <string>Edit &amp;Color Table</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionSetup_Contours">
+   <property name="text">
+    <string>Setup Contours</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionAxxis_Orientation">
+   <property name="text">
+    <string>Axis Orientation</string>
+   </property>
+  </action>
+  <action name="action_Grid_Display">
+   <property name="text">
+    <string>Grid Display &amp;Options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Receive_CDPs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Receive CDPs</string>
+   </property>
+  </action>
+  <action name="action_Dispatch_CDPs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Dispatch CDPs</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GridView</class>
+   <extends>QWidget</extends>
+   <header location="global">gridview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ColorBarWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">colorbarwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionExit</sender>
+   <signal>triggered()</signal>
+   <receiver>GridViewer</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>472</x>
+     <y>239</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

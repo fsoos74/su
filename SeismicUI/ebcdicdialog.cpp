@@ -42,7 +42,7 @@ void EBCDICDialog::updateText(){
 
 }
 
-void EBCDICDialog::on_rbEBCDIC_toggled(bool checked)
+void EBCDICDialog::on_rbEBCDIC_toggled(bool)
 {
     updateText();
 }

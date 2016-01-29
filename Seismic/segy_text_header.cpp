@@ -31,5 +31,35 @@ SEGYTextHeaderStr convertToString( const SEGYTextHeader& thdr, bool conv_ebcdic,
     return res;
 }
 
+SEGYTextHeader convertToRaw( const SEGYTextHeaderStr& str, bool conv_ebcdic, const size_t nrows, const size_t ncols){
+
+    SEGYTextHeader hdr;
+    if( nrows*ncols>hdr.size()) throw std::runtime_error("Access to text header with too large number of rows and cols!");
+
+    unsigned char fill=(conv_ebcdic)? ASCII_EBCDIC_TABLE[' '] : ' ';
+    for( auto& c : hdr ) c=fill;
+
+    for( size_t row=0; row<str.size(); row++){
+
+        const std::string& s=str[row];
+        size_t n=s.length();
+        if( n>ncols) n=ncols;               // silently fix too long lines
+
+        for( size_t col=0; col<n; col++){
+
+            unsigned char c=static_cast<unsigned char>(s[col]); // ebcdic has 256 chars
+            if( conv_ebcdic){
+                c=ASCII_EBCDIC_TABLE[c];
+            }
+
+            hdr[row*ncols + col]=c;
+
+        }
+    }
+
+    return hdr;
+
+}
+
 }
 

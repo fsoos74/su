@@ -73,6 +73,18 @@ public:
         }
     }
 
+    static HeaderValue makeIntValue( int_type i){
+      return HeaderValue(i);
+    }
+
+    static HeaderValue makeUIntValue( uint_type u){
+      return HeaderValue(u);
+    }
+
+    static HeaderValue makeFloatValue( float_type f){
+      return HeaderValue(f);
+    }
+
 private:
     void check( Type t )const{
         assert( t==m_type);
@@ -107,6 +119,28 @@ inline std::ostream& operator<<(std::ostream& os, const HeaderValue& hv){
 	return os;
 }
 
+inline bool operator==( const HeaderValue& a, const HeaderValue& b){
+
+    if( a.type()!=b.type()) return false;
+    switch( a.type() ){
+    case HeaderValue::INT_VALUE:
+        return a.intValue()==b.intValue();
+        break;
+    case HeaderValue::UINT_VALUE:
+        return a.uintValue()==b.uintValue();
+        break;
+    case HeaderValue::FLOAT_VALUE:
+        return a.floatValue()==b.floatValue();
+        break;
+    default:
+        assert( "invalid header value type" == nullptr );
+        break;
+    }
+}
+
+inline bool operator!=( const HeaderValue& a, const HeaderValue& b){
+    return !(a==b);
+}
 
 inline bool operator<( const HeaderValue& a, const HeaderValue& b){
     // compare as floats

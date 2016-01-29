@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GatherViewer</class>
+ <widget class="QMainWindow" name="GatherViewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>601</width>
+    <height>421</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>GatherViewer</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="GatherView" name="gatherView" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>601</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <widget class="QMenu" name="menu_Open">
+     <property name="title">
+      <string>&amp;Open</string>
+     </property>
+     <addaction name="openGridAct"/>
+     <addaction name="actionOpenVolume"/>
+    </widget>
+    <widget class="QMenu" name="menu_Close">
+     <property name="title">
+      <string>&amp;Close</string>
+     </property>
+     <addaction name="closeGridAct"/>
+     <addaction name="actionCloseVolume"/>
+    </widget>
+    <addaction name="separator"/>
+    <addaction name="menu_Open"/>
+    <addaction name="menu_Close"/>
+    <addaction name="separator"/>
+    <addaction name="exitAct"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;Scale</string>
+    </property>
+    <addaction name="zoomInAct"/>
+    <addaction name="zoomOutAct"/>
+    <addaction name="zoomFitWindowAct"/>
+   </widget>
+   <widget class="QMenu" name="menuDisplay">
+    <property name="title">
+     <string>&amp;Display</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionTrace_Scaling"/>
+    <addaction name="separator"/>
+    <addaction name="action_Trace_Options"/>
+    <addaction name="actionVolume_Options"/>
+   </widget>
+   <widget class="QMenu" name="menu_Broadcast">
+    <property name="title">
+     <string>&amp;Broadcast</string>
+    </property>
+    <addaction name="action_Receive_CDPs"/>
+    <addaction name="action_Dispatch_CDPs"/>
+   </widget>
+   <widget class="QMenu" name="menu_Window">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menuView"/>
+   <addaction name="menuDisplay"/>
+   <addaction name="menu_Window"/>
+   <addaction name="menu_Broadcast"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="separator"/>
+   <addaction name="zoomInAct"/>
+   <addaction name="zoomOutAct"/>
+   <addaction name="separator"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="exitAct">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="zoomInAct">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom In (25%)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="zoomOutAct">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom Out (25%)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="zoomFitWindowAct">
+   <property name="text">
+    <string>Zoom Fit Window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="openGridAct">
+   <property name="text">
+    <string>&amp;Horizon</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="closeGridAct">
+   <property name="text">
+    <string>Horizon</string>
+   </property>
+  </action>
+  <action name="action_Receive_CDPs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Receive CDPs</string>
+   </property>
+  </action>
+  <action name="action_Dispatch_CDPs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Dispatch CDPs</string>
+   </property>
+  </action>
+  <action name="actionOpenVolume">
+   <property name="text">
+    <string>Volume</string>
+   </property>
+  </action>
+  <action name="actionCloseVolume">
+   <property name="text">
+    <string>Volume</string>
+   </property>
+  </action>
+  <action name="actionVolume_Options">
+   <property name="text">
+    <string>&amp;Volume Display Options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="action_Trace_Options">
+   <property name="text">
+    <string>&amp;Trace Display Options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionTrace_Scaling">
+   <property name="text">
+    <string>Trace &amp;Scaling</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GatherView</class>
+   <extends>QWidget</extends>
+   <header location="global">gatherview.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>exitAct</sender>
+   <signal>triggered()</signal>
+   <receiver>GatherViewer</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>300</x>
+     <y>210</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

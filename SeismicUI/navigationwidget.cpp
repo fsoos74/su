@@ -19,7 +19,7 @@ NavigationWidget::~NavigationWidget()
     delete ui;
 }
 
-void NavigationWidget::setRange( int rmin, int rmax){
+void NavigationWidget::setRange( size_t rmin, size_t rmax){
 
     if( rmin==m_min && rmax==m_max ) return;
     m_min=rmin;
@@ -38,7 +38,7 @@ void NavigationWidget::setRange( int rmin, int rmax){
 
 }
 
-void NavigationWidget::setCurrent( int cur ){
+void NavigationWidget::setCurrent( size_t cur ){
 
     if( cur < m_min ) cur=m_min;
     if( cur > m_max ) cur=m_max;
@@ -77,7 +77,9 @@ void NavigationWidget::on_pbLast_clicked()
 
 void NavigationWidget::on_pbPrevious_clicked()
 {
-    setCurrent(m_current-1);
+    if(m_current>0){
+        setCurrent(m_current-1);
+    }
 }
 
 void NavigationWidget::on_pbNext_clicked()
@@ -87,5 +89,5 @@ void NavigationWidget::on_pbNext_clicked()
 
 void NavigationWidget::on_leCurrent_returnPressed()
 {
-    setCurrent( ui->leCurrent->text().toInt());
+    setCurrent( ui->leCurrent->text().toUInt());
 }

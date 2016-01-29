@@ -40,7 +40,7 @@ public:
         return m_y2-m_y1+1;
     }
 
-    bool inside( const T& x, const T& y)const{
+    bool isInside( const T& x, const T& y)const{
         return x>=m_x1 && x<=m_x2 && y>=m_y1 && y<=m_y2;
     }
 

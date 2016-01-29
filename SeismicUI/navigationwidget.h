@@ -16,25 +16,25 @@ public:
     explicit NavigationWidget(QWidget *parent = 0);
     ~NavigationWidget();
 
-    int min()const{
+    size_t min()const{
         return m_min;
     }
 
-    int max()const{
+    size_t max()const{
         return m_max;
     }
 
-    int current()const{
+    size_t current()const{
         return m_current;
     }
 
 signals:
-    void rangeChanged(int,int);
-    void currentChanged(int);
+    void rangeChanged(size_t, size_t);
+    void currentChanged(size_t);
 
 public slots:
-    void setRange( int, int);
-    void setCurrent( int );
+    void setRange( size_t, size_t);
+    void setCurrent( size_t );
 
 protected:
     // override this to keep return pressed in line edit move up to parent
@@ -56,9 +56,9 @@ private:
 
     QIntValidator* m_validator;
 
-    int m_min=0;
-    int m_max=0;
-    int m_current=-1;
+    size_t m_min=0;
+    size_t m_max=0;
+    size_t m_current=0;
 };
 
 #endif // NAVIGATIONWIDGET_H
