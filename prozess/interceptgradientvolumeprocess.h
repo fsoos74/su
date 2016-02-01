@@ -30,6 +30,8 @@ private:
     QString m_interceptName;
     QString m_gradientName;
     double m_maximumOffset;
+    double m_minimumAzimuth;
+    double m_maximumAzimuth;
     bool m_supergatherMode=false;
     int m_supergatherInlineSize=1;
     int m_supergatherCrosslineSize=1;

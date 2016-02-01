@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "amplitudecurvedefinition.h"
+
 namespace Ui {
 class AmplitudeCurveDataSelectionDialog;
 }
@@ -22,6 +24,8 @@ public:
     QString reductionMethod();
     int numberOfSamples();
     double maximumOffset();
+    double minimumAzimuth();
+    double maximumAzimuth();
     int inlineSize();
     int crosslineSize();
     double depth();
@@ -31,6 +35,8 @@ public slots:
     void setDatasetNames( const QStringList&);
     void setHorizonNames( const QStringList&);
     void setMaximumOffset( const double&);
+    void setMinimumAzimuth( const double);
+    void setMaximumAzimuth( const double);
     void setReductionMethods( const QStringList&);
     void setNumberOfSamples( int );
     void setInlineNumber(int);
@@ -39,9 +45,7 @@ public slots:
 
 signals:
 
-    void curveDataSelected( QString datasetName, QString HorizonName, int inlineNumber, int crosslineNumber,
-                            int inlineSize, int crosslineSize, double maximumOffset, double depth,
-                            QString reductionMethodName, int windowSize);
+    void curveDataSelected( AmplitudeCurveDefinition);
 
 private slots:
     void on_pbAdd_clicked();

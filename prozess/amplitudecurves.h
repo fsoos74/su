@@ -8,13 +8,24 @@
 #include "windowreductionfunction.h"
 
 
-QVector<QPointF> buildAmplitudeOffsetCurve( const seismic::Gather& gather, size_t sampleNumber, const double& maximumOffset);
+QVector<QPointF> buildAmplitudeOffsetCurve( const seismic::Gather& gather, size_t sampleNumber,
+                                            const double& maximumOffset,
+                                            const double& minimumAzimuth=0.,
+                                            const double& maximumAzimuth=180.);
 
 
 QVector<QPointF> buildAmplitudeOffsetCurve( const seismic::Gather& gather,
                                               const double& windowCenterTime,
                                               const double& maximumOffset,
                                               ReductionFunction* rf, int windowSize );
+
+QVector<QPointF> buildAmplitudeOffsetCurve( const seismic::Gather& gather,
+                                              const double& windowCenterTime,
+                                              const double& maximumOffset,
+                                              const double& minimumAzimuth,
+                                              const double& maximumAzimuth,
+                                              ReductionFunction* rf, int windowSize );
+
 
 
 void convertOffsetCurveToAngle( QVector<QPointF>& curve, const double& depth);

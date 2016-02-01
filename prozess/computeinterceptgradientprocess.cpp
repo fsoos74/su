@@ -25,7 +25,8 @@
 
 
 // necessary to speed up slow segy input
-const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns" };
+const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns",
+                                       "sx", "sy", "gx", "gy"};
 
 ComputeInterceptGradientProcess::ComputeInterceptGradientProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
     ProjectProcess( QString("Compute Intercept and Gradient"), project, parent){
@@ -70,6 +71,18 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::init( const QMap<QSt
         return ResultCode::Error;
     }
     m_maximumOffset=parameters.value(QString("maximum-offset")).toDouble();
+
+    if(!parameters.contains("minimum-azimuth")){
+        setErrorString("Parameters contain no minimum-azimuth");
+        return ResultCode::Error;
+    }
+    m_minimumAzimuth=parameters.value("minimum-azimuth").toDouble();
+
+    if(!parameters.contains("maximum-azimuth")){
+        setErrorString("Parameters contain no maximum-azimuth");
+        return ResultCode::Error;
+    }
+    m_maximumAzimuth=parameters.value("maximum-azimuth").toDouble();
 
     if( parameters.contains(QString("sg-inline-size")) && parameters.contains(QString("sg-crossline-size"))){
         m_supergatherMode=true;
@@ -147,6 +160,8 @@ struct Job{
     Grid2D<double>*         horizon;
     GatherBuffer*           buffer;
     double                  maximumOffset;
+    double                  minimumAzimuth;
+    double                  maximumAzimuth;
     int                     supergatherInlineSize;
     int                     supergatherCrosslineSize;
     int                     windowSize;
@@ -189,7 +204,9 @@ private:
                 if( v == m_job.horizon->NULL_VALUE ) continue;
                 double t=0.001 * v;    // horizon in millis
 
-                QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather, t, m_job.maximumOffset, m_job.reductionFunction, m_job.windowSize);
+                QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather, t, m_job.maximumOffset,
+                                                                 m_job.minimumAzimuth, m_job.maximumAzimuth,
+                                                                 m_job.reductionFunction, m_job.windowSize);
 
                 // compute amplitude vs sin^2(theta) where theta is reflection angle
                 if( m_job.ava){
@@ -248,6 +265,8 @@ bool ComputeInterceptGradientProcess::processBuffer_n( GatherBuffer* buffer, int
         job.supergatherInlineSize=m_supergatherInlineSize;
         job.supergatherCrosslineSize=m_supergatherCrosslineSize;
         job.maximumOffset=m_maximumOffset;
+        job.minimumAzimuth=m_minimumAzimuth;
+        job.maximumAzimuth=m_maximumAzimuth;
         job.reductionFunction=m_reductionFunction.get();
         job.windowSize=m_windowSize;
 

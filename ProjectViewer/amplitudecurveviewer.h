@@ -6,6 +6,7 @@
 #include<QVector>
 #include<QPointF>
 #include<avoproject.h>
+#include "amplitudecurvedefinition.h"
 #include "amplitudecurvedataselectiondialog.h"
 #include "windowreductionfunction.h"
 #include "curveviewerdisplayoptionsdialog.h"
@@ -32,6 +33,8 @@ static const QMap<PlotType, QString> PlotTypesAndXAxxisLabels{
 PlotType string2PlotType( const QString& );
 QString plotType2String( PlotType );
 
+
+
 namespace Ui {
 class AmplitudeCurveViewer;
 }
@@ -42,19 +45,6 @@ class AmplitudeCurveViewer : public BaseViewer
 
 public:
 
-    struct CurveInfo{
-
-        QString dataset;
-        QString horizon;
-        int inlineNumber;
-        int crosslineNumber;
-        int inlineSize;
-        int crosslineSize;
-        double maximumOffset;
-        double depth;
-        QString reductionMethod;
-        int windowSize;
-    };
 
     explicit AmplitudeCurveViewer(QWidget *parent = 0);
     ~AmplitudeCurveViewer();
@@ -76,10 +66,7 @@ protected:
 public slots:
 
     void setProject( std::shared_ptr<AVOProject>);
-    void addCurve( QString datasetName, QString horizonName, int inlineNumber, int crosslineNumber,
-                   int inlineSize, int crosslineSize, double maximumOffset,
-                   double depth,
-                   QString reductionMethod, int windowSamples);
+    void addCurve( AmplitudeCurveDefinition );
 
     void setShowRegressionLines(bool);
     void setDatapointSize(int);
@@ -115,16 +102,15 @@ private:
     void updateRegressions();
     void updateScene();
     void updateTable();
-    QVector<QPointF> buildCurve( const QString& datasetName, const QString& horizonName, int inlineNumber, int crosslineNumber,
-                                 int inlineSize, int crosslineSize, double maximumOffset,
-                                 ReductionMethod reductionMethod, int windowSamples);
+    QVector<QPointF> buildCurve( AmplitudeCurveDefinition );
+
     void loadSettings();
     void saveSettings();
 
     Ui::AmplitudeCurveViewer *ui;
 
     QMap<int, QVector<QPointF> > m_curves;
-    QMap<int, CurveInfo> m_curveInfos;
+    QMap<int, AmplitudeCurveDefinition> m_curveInfos;
     QMap<int, QColor> m_curveColors;
     QMap<int, QPointF> m_curveRegressions;
     QVector<int> m_tableRowCurveIndexMap;

@@ -137,7 +137,7 @@ void AmplitudeCurveViewer::onMouseOver(QPointF scenePos){
         DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
         if(datapointItem ){
             int curveIndex=datapointItem->data(CURVE_INDEX_KEY).toInt();
-            const CurveInfo& info=m_curveInfos.value(curveIndex);
+            const AmplitudeCurveDefinition& info=m_curveInfos.value(curveIndex);
             message.append(QString(", Inline=%1, Crossline=%2, Dataset=%3, Horizon=%4").arg(info.inlineNumber)
                            .arg(info.crosslineNumber).arg(info.dataset).arg(info.horizon));
         }
@@ -147,44 +147,47 @@ void AmplitudeCurveViewer::onMouseOver(QPointF scenePos){
     statusBar()->showMessage(message);
 }
 
-QVector<QPointF> AmplitudeCurveViewer::buildCurve( const QString& datasetName, const QString& horizonName,
-                                                         int inlineNumber, int crosslineNumber,
-                                                         int inlineSize, int crosslineSize, double maximumOffset,
-                                                         ReductionMethod reductionMethod, int windowSize){
+QVector<QPointF> AmplitudeCurveViewer::buildCurve( AmplitudeCurveDefinition def){
 
+    ReductionMethod reductionMethod=string2ReductionMethod(def.reductionMethod);
     QVector<QPointF> curve;
 
-    std::shared_ptr<SeismicDatasetReader> reader=m_project->openSeismicDataset(datasetName);
+    std::shared_ptr<SeismicDatasetReader> reader=m_project->openSeismicDataset(def.dataset);
     if( !reader){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Open dataset %1 failed!").arg(datasetName) );
+        QMessageBox::critical(this, "Add Amplitude vs Offset Curve",
+                              QString("Open dataset %1 failed!").arg(def.dataset) );
         return curve;
     }
 
 
-    std::shared_ptr<seismic::Gather> gather=reader->readGather("iline",QString::number(inlineNumber),QString::number(inlineNumber+inlineSize-1),
-                                "xline",QString::number(crosslineNumber),QString::number(crosslineNumber+crosslineSize-1) );
+    std::shared_ptr<seismic::Gather> gather=reader->readGather(
+                                "iline",QString::number(def.inlineNumber),
+                                        QString::number(def.inlineNumber+def.inlineSize-1),
+                                "xline",QString::number(def.crosslineNumber),
+                                        QString::number(def.crosslineNumber+def.crosslineSize-1) );
 
     if( gather->empty() ){
         QMessageBox::critical(this, "Add Amplitude vs Offset Curve", "No data for this cdp!");
         return curve;
     }
 
-    std::shared_ptr<Grid2D<double> > horizon=m_project->loadGrid( GridType::Horizon, horizonName);
+    std::shared_ptr<Grid2D<double> > horizon=m_project->loadGrid( GridType::Horizon, def.horizon);
     if( !horizon ){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Loading horizon %1 failed!").arg(horizonName) );
+        QMessageBox::critical(this, "Add Amplitude vs Offset Curve",
+                              QString("Loading horizon %1 failed!").arg(def.horizon) );
         return curve;
     }
 
-    if( !horizon->bounds().isInside(inlineNumber, crosslineNumber)){
+    if( !horizon->bounds().isInside(def.inlineNumber, def.crosslineNumber)){
         QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Horizon %1 does not contain inline %2 crossline %3!").
-                              arg(horizonName).arg(inlineNumber).arg(crosslineNumber) );
+                              arg(def.horizon).arg(def.inlineNumber).arg(def.crosslineNumber) );
         return curve;
     }
 
-    Grid2D<double>::value_type v=(*horizon)(inlineNumber, crosslineNumber);
+    Grid2D<double>::value_type v=(*horizon)(def.inlineNumber, def.crosslineNumber);
     if( v == horizon->NULL_VALUE ){
         QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Horizon %1 has NULL value at inline %2 crossline %3!").
-                              arg(horizonName).arg(inlineNumber).arg(crosslineNumber) );
+                              arg(def.horizon).arg(def.inlineNumber).arg(def.crosslineNumber) );
         return curve;
     }
 
@@ -192,20 +195,18 @@ QVector<QPointF> AmplitudeCurveViewer::buildCurve( const QString& datasetName, c
 
     std::unique_ptr<ReductionFunction> rf=reductionFunctionFactory(reductionMethod);
 
-    curve=buildAmplitudeOffsetCurve( *gather, t, maximumOffset, rf.get(), windowSize );
+    curve=buildAmplitudeOffsetCurve( *gather, t, def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth, rf.get(), def.windowSize );
 
     return curve;
 }
 
-void AmplitudeCurveViewer::addCurve( QString datasetName, QString horizonName, int inlineNumber, int crosslineNumber,
-                                            int inlineSize, int crosslineSize, double maximumOffset, double depth,
-                                     QString reductionMethodName, int windowSize){
+void AmplitudeCurveViewer::addCurve( AmplitudeCurveDefinition def){
 
-    static const QVector<QColor> CurveColors{Qt::black, Qt::red, Qt::green, Qt::blue, Qt::yellow, Qt::magenta, Qt::cyan, Qt::gray};
+    static const QVector<QColor> CurveColors{Qt::black, Qt::red, Qt::green, Qt::blue,
+                Qt::yellow, Qt::magenta, Qt::cyan,
+                Qt::gray};
 
-    ReductionMethod reductionMethod=string2ReductionMethod(reductionMethodName);
-    QVector<QPointF> curve=buildCurve( datasetName, horizonName, inlineNumber, crosslineNumber,
-                                       inlineSize, crosslineSize, maximumOffset, reductionMethod, windowSize);
+    QVector<QPointF> curve=buildCurve( def);
     if( curve.isEmpty()) return;
 
     m_curves.insert(m_curveCounter, curve);
@@ -213,20 +214,9 @@ void AmplitudeCurveViewer::addCurve( QString datasetName, QString horizonName, i
     QColor curveColor=CurveColors[m_curveCounter%CurveColors.size()];
     m_curveColors.insert( m_curveCounter, curveColor);
 
-    CurveInfo info;
-    info.dataset=datasetName;
-    info.horizon=horizonName;
-    info.inlineNumber=inlineNumber;
-    info.crosslineNumber=crosslineNumber;
-    info.inlineSize=inlineSize;
-    info.crosslineSize=crosslineSize;
-    info.maximumOffset=maximumOffset;
-    info.depth=depth;
-    info.reductionMethod=reductionMethodName;
-    info.windowSize=windowSize;
-    m_curveInfos.insert(m_curveCounter, info);
 
-    adaptCurveToPlottype(curve, depth);
+    m_curveInfos.insert(m_curveCounter, def);
+    adaptCurveToPlottype(curve, def.depth);
     m_curveRegressions.insert( m_curveCounter, linearRegression(curve) );
 
     m_curveCounter++;
@@ -435,11 +425,11 @@ void AmplitudeCurveViewer::updateScene(){
 
 void AmplitudeCurveViewer::updateTable(){
 
-    QStandardItemModel* model=new QStandardItemModel(m_curves.size(), 12, this);
+    QStandardItemModel* model=new QStandardItemModel(m_curves.size(), 14, this);
 
     QStringList labels;
     labels<<"Color"<<"Inline"<<"Crossline"<<"Dataset"<<"Horizon"<<"Method"<<"Window Length"<<"Inlines"
-         <<"Crosslines"<<"Max Offset"<<"Average Depth"<<"Intercept"<<"Gradient";
+         <<"Crosslines"<<"Max Offset"<<"Min Azimuth"<<"Max Azimuth"<<"Average Depth"<<"Intercept"<<"Gradient";
     model->setHorizontalHeaderLabels(labels);
 
     m_tableRowCurveIndexMap.clear();
@@ -449,7 +439,7 @@ void AmplitudeCurveViewer::updateTable(){
 
         int column=0;
 
-        const CurveInfo& info=m_curveInfos.value(index);
+        const AmplitudeCurveDefinition& info=m_curveInfos.value(index);
 
         QColor curveColor=m_curveColors.value(index);
         QStandardItem* colorItem=new QStandardItem("");
@@ -465,6 +455,8 @@ void AmplitudeCurveViewer::updateTable(){
         model->setItem(row, column++, new QStandardItem(QString::number(info.inlineSize)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.crosslineSize)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.maximumOffset)));
+        model->setItem(row, column++, new QStandardItem(QString::number(info.minimumAzimuth)));
+        model->setItem(row, column++, new QStandardItem(QString::number(info.maximumAzimuth)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.depth)));
 
         QPointF interceptAndGradient=m_curveRegressions.value(index);
@@ -503,9 +495,8 @@ void AmplitudeCurveViewer::showSelector(){
         }
         selector->setReductionMethods(methods);
 
-        // NEED TO MAKE A STRUCT FOR THIS !!!XXX
-        connect(selector, SIGNAL(curveDataSelected(QString,QString,int,int,int,int,double, double, QString,int)),
-                this, SLOT(addCurve(QString,QString,int,int,int,int,double, double, QString,int)) );
+        connect(selector, SIGNAL(curveDataSelected(AmplitudeCurveDefinition)),
+                this, SLOT(addCurve(AmplitudeCurveDefinition)) );
     }
 
     selector->show();

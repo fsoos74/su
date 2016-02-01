@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>390</width>
-    <height>535</height>
+    <width>345</width>
+    <height>763</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Intercept and Gradient</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../ProjectViewer/icons.qrc">
+    <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -19,7 +23,7 @@
      <property name="title">
       <string>Parameters</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
+     <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -57,7 +61,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1" colspan="2">
+      <item row="3" column="1" colspan="3">
        <widget class="QSpinBox" name="sbSamples">
         <property name="minimum">
          <number>1</number>
@@ -87,7 +91,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="5" column="1" colspan="2">
        <widget class="QSpinBox" name="sbInlines">
         <property name="enabled">
          <bool>false</bool>
@@ -110,7 +114,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="6" column="1" colspan="2">
        <widget class="QSpinBox" name="sbCrosslines">
         <property name="enabled">
          <bool>false</bool>
@@ -153,21 +157,62 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="0" colspan="4">
-       <widget class="QCheckBox" name="cbAVA">
+      <item row="9" column="0">
+       <widget class="QCheckBox" name="cbRestrictAzimuth">
         <property name="text">
-         <string>Amplitude versus Angle (Amplitude vs sin^2(theta))</string>
+         <string>Restrict Azimuths</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="0" colspan="2">
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_23">
+        <property name="text">
+         <string>Minimum Azimuth:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2" colspan="2">
+       <widget class="QLineEdit" name="leMinAzimuth">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_24">
+        <property name="text">
+         <string>Maximum Azimuth:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="2" colspan="2">
+       <widget class="QLineEdit" name="leMaxAzimuth">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>180</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" colspan="4">
+       <widget class="QCheckBox" name="cbAVA">
+        <property name="text">
+         <string>Amplitude vs sin^2(theta)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0" colspan="2">
        <widget class="QLabel" name="label_10">
         <property name="text">
          <string>Average Reflector Depth:</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="2" colspan="2">
+      <item row="13" column="2" colspan="2">
        <widget class="QLineEdit" name="leDepth">
         <property name="enabled">
          <bool>false</bool>
@@ -182,7 +227,14 @@
      <property name="title">
       <string>Output</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Intercept:</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="leIntercept"/>
       </item>
@@ -195,13 +247,6 @@
       </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="leGradient"/>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Intercept:</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -238,7 +283,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
@@ -321,18 +368,50 @@
    </hints>
   </connection>
   <connection>
+   <sender>cbRestrictAzimuth</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMinAzimuth</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>172</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>258</x>
+     <y>353</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbRestrictAzimuth</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMaxAzimuth</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>172</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>258</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>cbAVA</sender>
    <signal>toggled(bool)</signal>
    <receiver>leDepth</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>176</x>
-     <y>298</y>
+     <x>72</x>
+     <y>399</y>
     </hint>
     <hint type="destinationlabel">
-     <x>273</x>
-     <y>325</y>
+     <x>263</x>
+     <y>430</y>
     </hint>
    </hints>
   </connection>

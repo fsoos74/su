@@ -6,193 +6,292 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>303</width>
-    <height>466</height>
+    <width>633</width>
+    <height>533</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Dataset:</string>
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="0" colspan="2">
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="title">
+        <string>Input Data</string>
        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Dataset:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="cbDataset">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Horizon:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="cbHorizon">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </widget>
-     </item>
-     <item row="0" column="2" colspan="2">
-      <widget class="QComboBox" name="cbDataset"/>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Horizon:</string>
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="title">
+        <string>Gather</string>
        </property>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Inline:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1" colspan="2">
+         <widget class="QLineEdit" name="leInline"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Crossline:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" colspan="2">
+         <widget class="QLineEdit" name="leCrossline"/>
+        </item>
+        <item row="2" column="0" colspan="3">
+         <widget class="QCheckBox" name="cbSuperGather">
+          <property name="text">
+           <string>Use Supergathers</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Inlines to Combine:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QSpinBox" name="sbInlines">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>9</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="2">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Crosslines to Combine:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QSpinBox" name="sbCrosslines">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>9</number>
+          </property>
+          <property name="value">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
-     <item row="1" column="2" colspan="2">
-      <widget class="QComboBox" name="cbHorizon"/>
+     <item row="1" column="1">
+      <widget class="QGroupBox" name="groupBox_4">
+       <property name="title">
+        <string>Traces</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0" colspan="2">
+         <widget class="QCheckBox" name="cbRestrictOffset">
+          <property name="text">
+           <string>Restrict Offsets</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>Maximum Absolute Offset:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="leMaxOffset">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>1000</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <widget class="QCheckBox" name="cbRestrictAzimuth">
+          <property name="text">
+           <string>Restrict Azimuths</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_11">
+          <property name="text">
+           <string>Minimum Azimuth:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="leMinAzimuth">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_12">
+          <property name="text">
+           <string>Minimum Azimuth:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="leMaxAzimuth">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>360</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Inline:</string>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Trace Window Parameters</string>
        </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Reduction Method:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="cbMethod"/>
+        </item>
+        <item row="1" column="1" rowspan="2">
+         <widget class="QSpinBox" name="sbSamples">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>99</number>
+          </property>
+          <property name="singleStep">
+           <number>2</number>
+          </property>
+          <property name="value">
+           <number>7</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Number of Samples:</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
-     <item row="2" column="2" colspan="2">
-      <widget class="QLineEdit" name="leInline"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Crossline;</string>
+     <item row="2" column="1">
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="title">
+        <string>AVA Parameters</string>
        </property>
-      </widget>
-     </item>
-     <item row="3" column="2" colspan="2">
-      <widget class="QLineEdit" name="leCrossline"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QCheckBox" name="cbSuperGather">
-       <property name="text">
-        <string>Use Supergathers</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Inlines to Combine:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="2" colspan="2">
-      <widget class="QSpinBox" name="sbInlines">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>9</number>
-       </property>
-       <property name="value">
-        <number>2</number>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0" colspan="2">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Crosslines to Combine:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="2" colspan="2">
-      <widget class="QSpinBox" name="sbCrosslines">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>9</number>
-       </property>
-       <property name="value">
-        <number>2</number>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QCheckBox" name="cbRestrictOffset">
-       <property name="text">
-        <string>Restrict Offsets</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="0" colspan="3">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>Maximum Absolute Offset:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="3">
-      <widget class="QLineEdit" name="leMaxOffset">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>1000</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Average Reflector Depth:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="1" colspan="3">
-      <widget class="QLineEdit" name="leDepth">
-       <property name="text">
-        <string>1000</string>
-       </property>
+       <layout class="QGridLayout" name="gridLayout_6">
+        <item row="0" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Average Reflector Depth:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="leDepth">
+          <property name="text">
+           <string>1000</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox">
-     <property name="title">
-      <string>Trace Window Parameters</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Reduction Method:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cbMethod"/>
-      </item>
-      <item row="1" column="1" rowspan="2">
-       <widget class="QSpinBox" name="sbSamples">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>99</number>
-        </property>
-        <property name="singleStep">
-         <number>2</number>
-        </property>
-        <property name="value">
-         <number>7</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Number of Samples:</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -210,6 +309,19 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QPushButton" name="pbAdd">
        <property name="text">
         <string>&amp;Add</string>
@@ -223,11 +335,26 @@
        </property>
       </widget>
      </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>pbClose</sender>
@@ -290,6 +417,38 @@
     <hint type="destinationlabel">
      <x>221</x>
      <y>188</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbRestrictAzimuth</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMinAzimuth</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>449</x>
+     <y>226</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>540</x>
+     <y>262</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbRestrictAzimuth</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMaxAzimuth</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>449</x>
+     <y>226</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>540</x>
+     <y>301</y>
     </hint>
    </hints>
   </connection>

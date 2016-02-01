@@ -16,6 +16,8 @@ ComputeInterceptGradientDialog::ComputeInterceptGradientDialog(QWidget *parent) 
     doubleValidator->setBottom(0);
     ui->leMaxOffset->setValidator(doubleValidator);
     ui->leDepth->setValidator(doubleValidator);
+    ui->leMinAzimuth->setValidator(doubleValidator);
+    ui->leMaxAzimuth->setValidator(doubleValidator);
 
     connect( ui->leIntercept, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leGradient, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -74,6 +76,9 @@ QMap<QString,QString> ComputeInterceptGradientDialog::params(){
         maxOffset=ui->leMaxOffset->text().toDouble();
     }
     p.insert( QString("maximum-offset"), QString::number(maxOffset));
+
+    p.insert( "minimum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMinAzimuth->text() : QString::number(0.));
+    p.insert( "maximum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMaxAzimuth->text() : QString::number(180.));
 
 
     if( ui->cbSuperGather->isChecked()){
@@ -150,6 +155,18 @@ void ComputeInterceptGradientDialog::updateOkButton(){
             ok=false;
         }
     }
+
+    if( ui->cbRestrictAzimuth->isChecked()){
+
+        QPalette azimuthPalette;
+        if( ui->leMinAzimuth->text().toDouble()>ui->leMaxAzimuth->text().toDouble()){
+            ok=false;
+            azimuthPalette.setColor(QPalette::Text, Qt::red);
+        }
+        ui->leMinAzimuth->setPalette(azimuthPalette);
+        ui->leMaxAzimuth->setPalette(azimuthPalette);
+    }
+
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(ok);
 }

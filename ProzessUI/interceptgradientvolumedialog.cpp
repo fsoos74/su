@@ -19,6 +19,8 @@ InterceptGradientVolumeDialog::InterceptGradientVolumeDialog(QWidget *parent) :
     QDoubleValidator* doubleValidator=new QDoubleValidator(this);
     doubleValidator->setBottom(0);
     ui->leMaxOffset->setValidator(doubleValidator);
+    ui->leMinAzimuth->setValidator(doubleValidator);
+    ui->leMaxAzimuth->setValidator(doubleValidator);
 
     connect( ui->leGradient, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leIntercept, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -65,6 +67,9 @@ QMap<QString,QString> InterceptGradientVolumeDialog::params(){
         maxOffset=ui->leMaxOffset->text().toDouble();
     }
     p.insert( QString("maximum-offset"), QString::number(maxOffset));
+
+    p.insert( "minimum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMinAzimuth->text() : QString::number(0.));
+    p.insert( "maximum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMaxAzimuth->text() : QString::number(180.));
 
 
     if( ui->cbSuperGather->isChecked()){

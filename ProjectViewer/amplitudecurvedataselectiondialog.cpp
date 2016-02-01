@@ -17,6 +17,8 @@ AmplitudeCurveDataSelectionDialog::AmplitudeCurveDataSelectionDialog(QWidget *pa
     QDoubleValidator* doubleValidator=new QDoubleValidator(this);
     doubleValidator->setBottom(0);
     ui->leMaxOffset->setValidator(doubleValidator);
+    ui->leMinAzimuth->setValidator(doubleValidator);
+    ui->leMaxAzimuth->setValidator(doubleValidator);
     ui->leDepth->setValidator(doubleValidator);
 }
 
@@ -57,6 +59,26 @@ double AmplitudeCurveDataSelectionDialog::maximumOffset(){
     }
     else{
         return std::numeric_limits<double>::max();
+    }
+}
+
+double AmplitudeCurveDataSelectionDialog::maximumAzimuth(){
+
+    if( ui->cbRestrictAzimuth->isChecked()){
+        return ui->leMaxAzimuth->text().toDouble();
+    }
+    else{
+        return 360.;
+    }
+}
+
+double AmplitudeCurveDataSelectionDialog::minimumAzimuth(){
+
+    if( ui->cbRestrictAzimuth->isChecked()){
+        return ui->leMinAzimuth->text().toDouble();
+    }
+    else{
+        return 0.;
     }
 }
 
@@ -121,6 +143,16 @@ void AmplitudeCurveDataSelectionDialog::setMaximumOffset(const double & maxOffse
     ui->leMaxOffset->setText(QString::number(maxOffset));
 }
 
+void AmplitudeCurveDataSelectionDialog::setMaximumAzimuth(const double az){
+
+    ui->leMaxAzimuth->setText(QString::number(az));
+}
+
+void AmplitudeCurveDataSelectionDialog::setMinimumAzimuth(const double az){
+
+    ui->leMinAzimuth->setText(QString::number(az));
+}
+
 void AmplitudeCurveDataSelectionDialog::setDepth(double d){
 
     ui->leDepth->setText( QString::number(d));
@@ -128,7 +160,21 @@ void AmplitudeCurveDataSelectionDialog::setDepth(double d){
 
 void AmplitudeCurveDataSelectionDialog::on_pbAdd_clicked()
 {
-    emit curveDataSelected( datasetName(), horizonName(), inlineNumber(), crosslineNumber(),
-                            inlineSize(), crosslineSize(), maximumOffset(), depth(),
-                            reductionMethod(), numberOfSamples() );
+
+    AmplitudeCurveDefinition def;
+    def.dataset=datasetName();
+    def.horizon=horizonName();
+    def.inlineNumber=inlineNumber();
+    def.crosslineNumber=crosslineNumber();
+    def.inlineSize=inlineSize();
+    def.crosslineSize=crosslineSize();
+    def.maximumOffset=maximumOffset();
+    def.minimumAzimuth=minimumAzimuth();
+    def.maximumAzimuth=maximumAzimuth();
+    def.depth=depth();
+    def.reductionMethod=reductionMethod();
+    def.windowSize=numberOfSamples();
+
+
+    emit curveDataSelected(def );
 }

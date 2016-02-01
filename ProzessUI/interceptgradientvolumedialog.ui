@@ -6,12 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>426</height>
+    <width>387</width>
+    <height>633</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Intercept and Gradient Volumes</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="../ProjectViewer/icons.qrc">
+    <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -20,17 +24,28 @@
       <string>Parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Dataset:</string>
-        </property>
-       </widget>
+      <item row="0" column="0" colspan="3">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Dataset:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cbDataset">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="3" colspan="2">
-       <widget class="QComboBox" name="cbDataset"/>
-      </item>
-      <item row="1" column="0" colspan="2">
+      <item row="1" column="0">
        <widget class="QCheckBox" name="cbSuperGather">
         <property name="text">
          <string>Use Supergathers</string>
@@ -44,7 +59,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2" colspan="2">
+      <item row="2" column="2">
        <widget class="QSpinBox" name="sbInlines">
         <property name="enabled">
          <bool>false</bool>
@@ -60,14 +75,14 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="3" column="0">
        <widget class="QLabel" name="label_9">
         <property name="text">
          <string>Crosslines to Combine:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="2" colspan="2">
+      <item row="3" column="2">
        <widget class="QSpinBox" name="sbCrosslines">
         <property name="enabled">
          <bool>false</bool>
@@ -93,14 +108,14 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="3">
+      <item row="5" column="0">
        <widget class="QLabel" name="label_8">
         <property name="text">
          <string>Maximum Absolute Offset:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="4">
+      <item row="5" column="2">
        <widget class="QLineEdit" name="leMaxOffset">
         <property name="enabled">
          <bool>false</bool>
@@ -111,34 +126,75 @@
        </widget>
       </item>
       <item row="6" column="0">
+       <widget class="QCheckBox" name="cbRestrictAzimuth">
+        <property name="text">
+         <string>Restrict Azimuths</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_23">
+        <property name="text">
+         <string>Minimum Azimuth:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1" colspan="2">
+       <widget class="QLineEdit" name="leMinAzimuth">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_24">
+        <property name="text">
+         <string>Maximum Azimuth:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1" colspan="2">
+       <widget class="QLineEdit" name="leMaxAzimuth">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>180</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
        <widget class="QCheckBox" name="cbTimeWindow">
         <property name="text">
          <string>Use a Time Window</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="10" column="0" colspan="2">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Window Start [Milliseconds]:</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="1" colspan="4">
+      <item row="10" column="2">
        <widget class="QLineEdit" name="leWindowStart">
         <property name="enabled">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
+      <item row="11" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Window End [Milliseconds]:</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1" colspan="4">
+      <item row="11" column="2">
        <widget class="QLineEdit" name="leWindowEnd">
         <property name="enabled">
          <bool>false</bool>
@@ -164,15 +220,15 @@
       <item row="0" column="1">
        <widget class="QLineEdit" name="leIntercept"/>
       </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="leGradient"/>
+      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Gradient:</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="leGradient"/>
       </item>
      </layout>
     </widget>
@@ -188,8 +244,14 @@
     </widget>
    </item>
   </layout>
+  <zorder>groupBox_2</zorder>
+  <zorder>groupBox</zorder>
+  <zorder>buttonBox</zorder>
+  <zorder>label_4</zorder>
  </widget>
- <resources/>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
@@ -300,6 +362,38 @@
     <hint type="destinationlabel">
      <x>281</x>
      <y>268</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbRestrictAzimuth</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMinAzimuth</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>203</x>
+     <y>258</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>294</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbRestrictAzimuth</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMaxAzimuth</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>203</x>
+     <y>258</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>299</x>
+     <y>333</y>
     </hint>
    </hints>
   </connection>

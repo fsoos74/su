@@ -33,6 +33,8 @@ private:
     QString m_gradientName;
     size_t m_windowSize;
     double m_maximumOffset;
+    double m_minimumAzimuth;
+    double m_maximumAzimuth;
     ReductionMethod m_reductionMethod;
     bool m_supergatherMode=false;
     int m_supergatherInlineSize=1;
