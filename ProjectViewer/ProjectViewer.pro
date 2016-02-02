@@ -43,7 +43,8 @@ HEADERS  += projectviewer.h \
     crossplotviewerdisplayoptionsdialog.h \
     amplitudecurveviewer.h \
     projectgeometrydialog.h \
-    aboutdialog.h
+    aboutdialog.h \
+    amplitudecurvedefinition.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \

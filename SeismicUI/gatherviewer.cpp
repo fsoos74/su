@@ -352,6 +352,10 @@ void GatherViewer::on_actionVolume_Options_triggered()
 
 void GatherViewer::on_openGridAct_triggered()
 {
+    static const QVector<QColor> HorizonColors{Qt::darkRed, Qt::darkGreen, Qt::darkBlue,
+                Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow,
+                Qt::red, Qt::green, Qt::blue,
+                Qt::cyan, Qt::magenta, Qt::yellow};
 
     if( !m_project ) return;
 
@@ -359,11 +363,13 @@ void GatherViewer::on_openGridAct_triggered()
     QString gridName=QInputDialog::getItem(this, "Open Horizon", "Please select a horizon:",
                                            m_project->gridList(GridType::Horizon), 0, false, &ok);
 
+    QColor color=HorizonColors[gatherView->horizonList().size() % HorizonColors.size()];
+
     if( !gridName.isEmpty() && ok ){
 
-        std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid(GridType::Horizon, gridName);
+        std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid(GridType::Horizon, gridName );
 
-        gatherView->addHorizon( gridName, grid );
+        gatherView->addHorizon( gridName, grid, color );
     }
 
 }

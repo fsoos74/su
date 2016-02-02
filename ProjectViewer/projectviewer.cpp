@@ -137,6 +137,8 @@ void ProjectViewer::checkLicense(){
 void ProjectViewer::closeEvent(QCloseEvent *)
 {
     saveSettings();
+
+    qApp->closeAllWindows(); // close all open windows because closing this quits the program
 }
 
 void ProjectViewer::on_actionNewProject_triggered()
@@ -704,6 +706,7 @@ void ProjectViewer::on_actionAmplitude_vs_Offset_Plot_triggered()
 void ProjectViewer::on_action_About_triggered()
 {
     AboutDialog dlg(0);
+    dlg.setWindowTitle(QString("About %1").arg(QString(PROGRAM) ) );
     dlg.exec();
 }
 

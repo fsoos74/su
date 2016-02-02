@@ -13,6 +13,7 @@
 #include<segy_header_def.h>
 
 #include "amplitudecurves.h"
+#include "gatherfilter.h"
 #include "linearregression.h"
 #include "gatherbuffer.h"
 
@@ -137,9 +138,6 @@ struct Job{
     int                     inlineIncrement;
 
     GatherBuffer*           buffer;
-    double                  maximumOffset;
-    double                  minimumAzimuth;
-    double                  maximumAzimuth;
     int                     supergatherInlineSize;
     int                     supergatherCrosslineSize;
     int                     startTraceSample;
@@ -184,8 +182,7 @@ private:
                 for( size_t sampleno=0; sampleno<bounds.sampleCount(); sampleno++){
 
                     QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather,
-                                                 m_job.startTraceSample + sampleno,
-                                                 m_job.maximumOffset, m_job.minimumAzimuth, m_job.maximumAzimuth);
+                                                 m_job.startTraceSample + sampleno);
                     QPointF interceptAndGradient=linearRegression(curve);
 
                     // linear regression returns nan if all input values are zero
@@ -232,9 +229,6 @@ bool InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int 
 
         job.supergatherInlineSize=m_supergatherInlineSize;
         job.supergatherCrosslineSize=m_supergatherCrosslineSize;
-        job.maximumOffset=m_maximumOffset;
-        job.minimumAzimuth=m_minimumAzimuth;
-        job.maximumAzimuth=m_maximumAzimuth;
         job.startTraceSample=m_startTraceSample;
 
         job.intercept=m_intercept.get();
@@ -288,6 +282,7 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
     reader->seek_trace(0);
     GatherBuffer buffer( m_reader->minInline(), m_reader->minCrossline(), BufferInlineSize, m_reader->maxCrossline()-m_reader->minCrossline()+1);
     int lastFullDataIline=buffer.lastIline()-m_supergatherInlineSize+1;
+    GatherFilter filter(m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
 
     while( reader->current_trace()<reader->trace_count() ){
 
@@ -296,6 +291,8 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
         std::shared_ptr<seismic::Gather> gather=reader->read_gather("cdp");
         if( !gather ) break;
+
+        gather=filter.filter(gather);
 
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();

@@ -95,9 +95,14 @@ std::shared_ptr<Grid2D<double> > GatherView::horizon(QString name)const{
     return m_horizons[name];
 }
 
-void GatherView::addHorizon( QString name, std::shared_ptr<Grid2D<double> > g){
+QColor GatherView::horizonColor(QString name){
+    return m_horizonColors.value(name);
+}
+
+void GatherView::addHorizon( QString name, std::shared_ptr<Grid2D<double> > g, QColor color){
 
     m_horizons[name]=g;
+    m_horizonColors[name]=color;
     m_gatherLabel->update();
 }
 

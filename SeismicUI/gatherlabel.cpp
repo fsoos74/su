@@ -197,14 +197,14 @@ void GatherLabel::paintEvent(QPaintEvent *event){
 
 void GatherLabel::drawHorizons( QPainter& painter ){
 
-    static const QVector<QColor> HorizonColors{Qt::red, Qt::green, Qt::blue, Qt::yellow, Qt::magenta, Qt::cyan};
+    //static const QVector<QColor> HorizonColors{Qt::red, Qt::green, Qt::blue, Qt::yellow, Qt::magenta, Qt::cyan};
 
     painter.save();
 
    for( int i=0; i<m_view->horizonList().size(); i++){
 
        QString name=m_view->horizonList()[i];
-       QColor color=HorizonColors[ i % HorizonColors.size() ];
+       QColor color=m_view->horizonColor(name); //HorizonColors[ i % HorizonColors.size() ];
        std::shared_ptr<Grid2D<double>> horizon=m_view->horizon(name);
        if( !horizon ) continue;
 

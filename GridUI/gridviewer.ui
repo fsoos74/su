@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../ProjectViewer/icons.qrc">
+    <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
@@ -49,7 +53,7 @@
      <x>0</x>
      <y>0</y>
      <width>1190</width>
-     <height>19</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -137,7 +141,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -149,7 +153,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -246,6 +250,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../SeismicUI/icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

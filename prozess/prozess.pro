@@ -27,7 +27,8 @@ SOURCES += prozess.cpp \
     interceptgradientvolumeprocess.cpp \
     fluidfactorprocess.cpp \
     fluidfactorvolumeprocess.cpp \
-    amplitudecurves.cpp
+    amplitudecurves.cpp \
+    gatherfilter.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -44,7 +45,8 @@ HEADERS += prozess.h\
     interceptgradientvolumeprocess.h \
     fluidfactorprocess.h \
     fluidfactorvolumeprocess.h \
-    amplitudecurves.h
+    amplitudecurves.h \
+    gatherfilter.h
 
 unix {
     target.path = /usr/lib

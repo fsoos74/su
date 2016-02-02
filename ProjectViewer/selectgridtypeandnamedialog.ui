@@ -7,11 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>203</width>
-    <height>124</height>
+    <height>157</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Grid Type and Name</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -57,7 +61,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

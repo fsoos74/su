@@ -244,10 +244,6 @@
     </widget>
    </item>
   </layout>
-  <zorder>groupBox_2</zorder>
-  <zorder>groupBox</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>label_4</zorder>
  </widget>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>

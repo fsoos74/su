@@ -2,6 +2,7 @@
 #include "ui_amplitudecurveviewer.h"
 #include <linearregression.h>
 #include <amplitudecurves.h>
+#include <gatherfilter.h>
 
 #include<gather.h>
 #include<trace.h>
@@ -195,7 +196,19 @@ QVector<QPointF> AmplitudeCurveViewer::buildCurve( AmplitudeCurveDefinition def)
 
     std::unique_ptr<ReductionFunction> rf=reductionFunctionFactory(reductionMethod);
 
-    curve=buildAmplitudeOffsetCurve( *gather, t, def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth, rf.get(), def.windowSize );
+    //curve=buildAmplitudeOffsetCurve( *gather, t, def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth, rf.get(), def.windowSize );
+
+    // do trace selection
+    GatherFilter filter(def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth );
+    gather=filter.filter(gather);
+    if( gather->empty() ){
+        QMessageBox::critical(this, "Add Amplitude vs Offset Curve", "No traces in offset and azimuth range!");
+        return curve;
+    }
+
+
+    curve=buildAmplitudeOffsetCurve( *gather, t, rf.get(), def.windowSize );
+
 
     return curve;
 }

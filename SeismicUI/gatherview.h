@@ -42,6 +42,7 @@ public:
 
     QStringList horizonList();
 
+    QColor horizonColor(QString);
 
     std::shared_ptr< Grid3D<float> > volume()const;
 
@@ -105,7 +106,8 @@ signals:
 public slots:
 
     void setGather( std::shared_ptr<seismic::Gather>);
-    void addHorizon( QString name, std::shared_ptr<Grid2D<double> > g);
+    void addHorizon( QString name, std::shared_ptr<Grid2D<double> > g, QColor);
+    //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
     void setVolume( std::shared_ptr<Grid3D<float>>);    // set null for closing
     void setAnnotationKeys( const std::vector<std::string>&);
@@ -131,6 +133,7 @@ private:
     std::shared_ptr<seismic::Gather> m_gather;
 
     QMap<QString, std::shared_ptr<Grid2D<double> > > m_horizons;
+    QMap<QString, QColor> m_horizonColors;
 
     std::shared_ptr<Grid3D<float>> m_volume;
 

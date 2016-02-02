@@ -15,6 +15,7 @@
 #include<segy_header_def.h>
 
 #include "amplitudecurves.h"
+#include "gatherfilter.h"
 #include "linearregression.h"
 #include "gatherbuffer.h"
 
@@ -159,9 +160,6 @@ struct Job{
     Grid2D<double>*         gradient;
     Grid2D<double>*         horizon;
     GatherBuffer*           buffer;
-    double                  maximumOffset;
-    double                  minimumAzimuth;
-    double                  maximumAzimuth;
     int                     supergatherInlineSize;
     int                     supergatherCrosslineSize;
     int                     windowSize;
@@ -204,8 +202,7 @@ private:
                 if( v == m_job.horizon->NULL_VALUE ) continue;
                 double t=0.001 * v;    // horizon in millis
 
-                QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather, t, m_job.maximumOffset,
-                                                                 m_job.minimumAzimuth, m_job.maximumAzimuth,
+                QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather, t,
                                                                  m_job.reductionFunction, m_job.windowSize);
 
                 // compute amplitude vs sin^2(theta) where theta is reflection angle
@@ -264,9 +261,7 @@ bool ComputeInterceptGradientProcess::processBuffer_n( GatherBuffer* buffer, int
 
         job.supergatherInlineSize=m_supergatherInlineSize;
         job.supergatherCrosslineSize=m_supergatherCrosslineSize;
-        job.maximumOffset=m_maximumOffset;
-        job.minimumAzimuth=m_minimumAzimuth;
-        job.maximumAzimuth=m_maximumAzimuth;
+
         job.reductionFunction=m_reductionFunction.get();
         job.windowSize=m_windowSize;
 
@@ -306,6 +301,8 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
     // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
     setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
 
+    GatherFilter filter(m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
+
     int firstInline=m_reader->minInline();
     int lastInline=m_reader->maxInline();
     int firstCrossline=m_reader->minCrossline();
@@ -329,6 +326,8 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
 
         std::shared_ptr<seismic::Gather> gather=reader->read_gather("cdp");
         if( !gather ) break;
+
+        gather=filter.filter(gather);
 
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();
