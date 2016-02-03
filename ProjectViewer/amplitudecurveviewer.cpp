@@ -351,14 +351,9 @@ void AmplitudeCurveViewer::updateScene(){
 
     const qreal ACTIVE_SIZE_FACTOR=2;           // datapoints grow by this factor when entered
 
-    QGraphicsScene* scene=new QGraphicsScene(this);
-
     QRect datapointRect=QRect( -m_datapointSize/2, -m_datapointSize/2, m_datapointSize, m_datapointSize);
 
-    qreal minX=std::numeric_limits<qreal>::max();
-    qreal maxX=std::numeric_limits<qreal>::lowest();
-    qreal minY=std::numeric_limits<qreal>::max();
-    qreal maxY=std::numeric_limits<qreal>::lowest();
+     QGraphicsScene* scene=new QGraphicsScene(this);
 
     for( int curveIndex : m_curves.keys()){
 
@@ -386,21 +381,33 @@ void AmplitudeCurveViewer::updateScene(){
 
             scene->addItem(item);
 
-            if(pt.x()<minX) minX=pt.x();
-            if(pt.x()>maxX) maxX=pt.x();
-            if(pt.y()<minY) minY=pt.y();
-            if(pt.y()>maxY) maxY=pt.y();
         }
     }
 
+    QRectF bounds;
+    // IMPORTANT: scene should never have an invalid scenerect, otherwise WEIRD problems with graphicsview!!!!!!
+    if( scene->items().empty()){
+        bounds=QRectF(0,0,1000,1000);
+        scene->setSceneRect(bounds);
+    }
+    else{
+        bounds=scene->itemsBoundingRect();
+        if(m_plotType==PlotType::AmplitudeAngle){
+            bounds.setLeft(0);
+            bounds.setRight(90);
+        }
+        else if(m_plotType==PlotType::AmplitudeSin2Angle){
+            bounds.setLeft(0);
+            bounds.setRight(1);
+        }
 
-    if( minX>maxX) std::swap(minX,maxX);
-    if( minY>maxY) std::swap(minY,maxY);
+    }
+
 
     if( m_showRegressionLines){
 
-        minX=0; // regression lines should run to 0 to allow intercept readout
-
+        qreal minX=0; // regression lines should run to 0 to allow intercept readout
+        qreal maxX=bounds.right();
         for( int curveIndex : m_curves.keys()){
 
             const QVector<QPointF>& curve=m_curves.value(curveIndex);
@@ -414,25 +421,26 @@ void AmplitudeCurveViewer::updateScene(){
             QGraphicsLineItem* lineItem=new QGraphicsLineItem(minX, yleft, maxX, yright);
             lineItem->setPen(QPen(curveColor, 0));
             scene->addItem(lineItem);
-
         }
-
     }
 
 
 
     connect( scene, SIGNAL(selectionChanged()), this, SLOT(sceneSelectionChanged()) );
 
-    ui->graphicsView->setScene(scene);
-    QRectF rect(minX,minY,maxX-minX,maxY-minY);//=scene->itemsBoundingRect();
-    qreal xMargin=rect.width()*X_PADDING_FACTOR;
-    qreal yMargin=rect.height()*Y_PADDING_FACTOR;
-    QRectF sceneRect=rect.marginsAdded(QMarginsF(xMargin, yMargin, xMargin, yMargin));
+    qreal xMargin=bounds.width()*X_PADDING_FACTOR;
+    qreal yMargin=bounds.height()*Y_PADDING_FACTOR;
+    QRectF sceneRect=bounds.marginsAdded(QMarginsF(xMargin, yMargin, xMargin, yMargin));
 
     scene->setSceneRect(sceneRect);
+    ui->graphicsView->setScene(scene);
     ui->graphicsView->fitInView(sceneRect);
 
+    std::cout<<"graphicsview scenerect: ";dumpRect(ui->graphicsView->sceneRect());
+
     //ui->graphicsView->zoomFitWindow();
+
+    std::cout<<"viewport geometry: ";dumpRect(ui->graphicsView->viewport()->geometry());
 
 }
 

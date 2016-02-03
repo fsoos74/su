@@ -103,12 +103,22 @@ void RulerGraphicsView::setSelectionMode(SelectionMode  mode){
 }
 
 void RulerGraphicsView::resizeEvent(QResizeEvent *){
-
+/*
     QRect mappedSceneRect=mapFromScene(sceneRect()).boundingRect();
 
     if( viewport()->rect().width()>mappedSceneRect.width() ||
             viewport()->rect().height()>mappedSceneRect.height() ){
         fitInView(sceneRect());
+    }
+  */
+
+
+    if( scene() ){
+        QRectF bounds = sceneRect();//scene()->itemsBoundingRect();
+        //bounds.setWidth(bounds.width()*0.9);         // to tighten-up margins
+        //bounds.setHeight(bounds.height()*0.9);       // same as above
+        fitInView(bounds);
+        centerOn(bounds.center());
     }
 
     m_topRuler->update();

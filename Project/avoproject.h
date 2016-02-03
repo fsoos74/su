@@ -52,6 +52,7 @@ public:
     QString SeismicDatasetSuffix="xdi";
     QString VolumeSuffix="vol";
 
+
     class PathException : public std::runtime_error{
     public:
         PathException(const QString& msg ):std::runtime_error(msg.toStdString()){

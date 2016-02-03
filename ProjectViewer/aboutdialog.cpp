@@ -7,8 +7,14 @@ AboutDialog::AboutDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QString text=QString("<html><big><b>%1<\b><\big><br>Version %2<br>built %3 %4<br><i>(C)%5<\i><\html>").arg(
-                PROGRAM, VERSION, __DATE__, __TIME__, COMPANY );
+    QString text=QString( "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">AVO-Detect</span></p>"
+                          "<p><span style=\" font-size:12pt;\">Version %1</span></p>"
+            "<p><span style=\" font-size:12pt;\">Built %2 %3</span></p>"
+            "<p><span style=\" font-size:12pt;\">support@seismicutensils.com</span></p>"
+            "<p><span style=\" font-style:italic;\">(C) Seismic Utensils, LLC</span></p>"
+            "<p><br/></p></body></html>").arg(VERSION, __DATE__, __TIME__);
+
+
     ui->label->setText(text);
 }
 

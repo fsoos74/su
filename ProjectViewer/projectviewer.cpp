@@ -641,14 +641,12 @@ void ProjectViewer::on_action_Crossplot_triggered()
 
     TwoCombosDialog dlg;
     dlg.setWindowTitle("Select Grids for Crossplot");
-    dlg.setLabelText1("Grid #1:");
-    dlg.setLabelText2("Grid #2:");
+    dlg.setLabelText1("Grid #1 (x-axis):");
+    dlg.setLabelText2("Grid #2 (y-axis):");
     dlg.setItems1(m_project->gridList(GridType::Attribute));
     dlg.setItems2(m_project->gridList(GridType::Attribute));
 
     if( dlg.exec()!=QDialog::Accepted) return;
-
-    std::cout<<"selected "<<dlg.selection1().toStdString()<<" "<<dlg.selection2().toStdString()<<std::endl;
 
     std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( GridType::Attribute, dlg.selection1());
     if( !grid1 ) return;
@@ -660,8 +658,6 @@ void ProjectViewer::on_action_Crossplot_triggered()
                        std::min( grid1->bounds().j1(), grid2->bounds().j1()),
                        std::max( grid1->bounds().i2(), grid2->bounds().i2()),
                        std::max( grid1->bounds().j2(), grid2->bounds().j2()) );
-
-    //std::ofstream fout("/home/fsoos/intercept_vs_gradient.txt");
 
     std::shared_ptr< Grid2D< QPointF > > data( new Grid2D< QPointF >(bounds ));
 

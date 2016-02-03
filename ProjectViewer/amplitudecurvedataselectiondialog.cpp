@@ -17,9 +17,12 @@ AmplitudeCurveDataSelectionDialog::AmplitudeCurveDataSelectionDialog(QWidget *pa
     QDoubleValidator* doubleValidator=new QDoubleValidator(this);
     doubleValidator->setBottom(0);
     ui->leMaxOffset->setValidator(doubleValidator);
-    ui->leMinAzimuth->setValidator(doubleValidator);
-    ui->leMaxAzimuth->setValidator(doubleValidator);
     ui->leDepth->setValidator(doubleValidator);
+
+    QDoubleValidator* azimuthValidator=new QDoubleValidator(this);
+    azimuthValidator->setRange(0,180);
+    ui->leMinAzimuth->setValidator(azimuthValidator);
+    ui->leMaxAzimuth->setValidator(azimuthValidator);
 }
 
 AmplitudeCurveDataSelectionDialog::~AmplitudeCurveDataSelectionDialog()
