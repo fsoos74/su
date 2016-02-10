@@ -8,7 +8,9 @@ QT       -= gui
 
 include(../common.pri)
 
-#CONFIG +=staticlib
+win32{
+    CONFIG +=staticlib
+}
 
 QT += sql
 QT += widgets

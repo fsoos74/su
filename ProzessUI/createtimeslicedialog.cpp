@@ -16,6 +16,7 @@ CreateTimesliceDialog::CreateTimesliceDialog(QWidget *parent) :
 
     connect( ui->leSliceName, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leTime, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->cbUseHorizon, SIGNAL(toggled(bool)), this, SLOT(updateOkButton()) );
 
     updateOkButton();
 }

@@ -10,7 +10,10 @@ QT       += widgets
 
 include(../common.pri)
 
-#CONFIG += staticlib
+
+win32{
+    CONFIG += staticlib
+}
 
 TARGET = ColorUI
 TEMPLATE = lib

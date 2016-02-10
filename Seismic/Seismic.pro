@@ -10,7 +10,11 @@ TARGET = Seismic
 TEMPLATE = lib
 
 include(../common.pri)
-#CONFIG +=staticlib
+
+win32{
+    CONFIG +=staticlib
+}
+
 
 DEFINES += SEISMIC_LIBRARY
 

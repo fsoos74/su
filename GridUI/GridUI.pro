@@ -12,8 +12,10 @@ TARGET = GridUI
 TEMPLATE = lib
 
 include(../common.pri)
-#CONFIG +=staticlib
 
+win32{
+    CONFIG +=staticlib
+}
 
 DEFINES += GRIDUI_LIBRARY
 

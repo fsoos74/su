@@ -8,7 +8,9 @@ include(../common.pri)
 
 QT       -= gui
 
-#CONFIG += staticlib
+win32{
+    CONFIG += staticlib
+}
 
 TARGET = util
 TEMPLATE = lib

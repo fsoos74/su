@@ -11,8 +11,9 @@ QT       -= gui
 
 CONFIG += c++11
 
-#CONFIG+=staticlib
-
+win32{
+    CONFIG+=staticlib
+}
 
 include(../common.pri)
 

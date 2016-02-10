@@ -9,7 +9,9 @@ QT  += sql
 
 include(../common.pri)
 
-#CONFIG += staticlib
+win32{
+    CONFIG += staticlib
+}
 
 TARGET = Database
 TEMPLATE = lib

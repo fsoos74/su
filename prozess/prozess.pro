@@ -5,7 +5,11 @@
 #-------------------------------------------------
 
 QT       -= gui
-#CONFIG+=staticlib
+
+win32{
+    CONFIG+=staticlib
+}
+
 include(../common.pri)
 
 TARGET = prozess

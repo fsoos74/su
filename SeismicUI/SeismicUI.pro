@@ -12,7 +12,9 @@ TARGET = SeismicUI
 TEMPLATE = lib
 
 include(../common.pri)
-#CONFIG +=staticlib
+win32{
+    CONFIG +=staticlib
+}
 
 DEFINES += SEISMICUI_LIBRARY
 
@@ -73,6 +75,22 @@ RESOURCES += \
 
 
 
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
+else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
+
+INCLUDEPATH += $$PWD/../ColorUI
+DEPENDPATH += $$PWD/../ColorUI
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Grid/release/ -lGrid
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Grid/debug/ -lGrid
+else:unix: LIBS += -L$$OUT_PWD/../Grid/ -lGrid
+
+INCLUDEPATH += $$PWD/../Grid
+DEPENDPATH += $$PWD/../Grid
+
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Seismic/release/ -lSeismic
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Seismic/debug/ -lSeismic
 else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
@@ -80,12 +98,6 @@ else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
 INCLUDEPATH += $$PWD/../Seismic
 DEPENDPATH += $$PWD/../Seismic
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
-else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
-
-INCLUDEPATH += $$PWD/../ColorUI
-DEPENDPATH += $$PWD/../ColorUI
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Project/debug/ -lProject
@@ -100,13 +112,6 @@ else:unix: LIBS += -L$$OUT_PWD/../Database/ -lDatabase
 
 INCLUDEPATH += $$PWD/../Database
 DEPENDPATH += $$PWD/../Database
-
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Grid/release/ -lGrid
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Grid/debug/ -lGrid
-else:unix: LIBS += -L$$OUT_PWD/../Grid/ -lGrid
-
-INCLUDEPATH += $$PWD/../Grid
-DEPENDPATH += $$PWD/../Grid
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil

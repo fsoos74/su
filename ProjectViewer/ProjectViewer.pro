@@ -4,6 +4,11 @@
 #
 #-------------------------------------------------
 
+
+win32{
+    DEFINES += USE_KEYLOCK_LICENSE
+}
+
 QT       += core gui
 QT += widgets   # needed for QTransform in projectgeometry
 
@@ -156,3 +161,19 @@ else:unix: LIBS += -L$$OUT_PWD/../utilUI/ -lutilUI
 
 INCLUDEPATH += $$PWD/../utilUI
 DEPENDPATH += $$PWD/../utilUI
+
+
+# additional libraries for use of dongle:
+win32{
+  LIBS += -lwsock32
+  LIBS += -liphlpapi
+  LIBS += -lnetapi32
+  LIBS += -luser32
+  LIBS += -ladvapi32
+  LIBS += -lshell32
+  LIBS += -L$$PWD/../../../Keylok/API/Windows/VS2013/ -lkfunc64MD
+  LIBS += -L$$PWD/../../build-dongle-Desktop_Qt_5_5_1_MSVC2013_64bit-Release/release/ -ldongle
+
+  INCLUDEPATH += $$PWD/../../dongle
+  DEPENDPATH += $$PWD/../../dongle
+}

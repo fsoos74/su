@@ -11,7 +11,9 @@ include(../common.pri)
 QT  += sql
 QT       += widgets
 
-#CONFIG += staticlib
+win32{
+    CONFIG += staticlib
+}
 
 DEFINES += DATABASEUI_LIBRARY
 

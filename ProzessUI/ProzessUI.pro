@@ -13,6 +13,10 @@ include(../common.pri)
 TARGET = ProzessUI
 TEMPLATE = lib
 
+win32{
+    CONFIG += staticlib
+}
+
 DEFINES += PROZESSUI_LIBRARY
 
 SOURCES += prozessui.cpp \
