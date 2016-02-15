@@ -111,8 +111,12 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
 #ifdef USE_KEYLOCK_LICENSE
     const int LICENSE_CHECK_MILLIS=30000;
     QTimer* licenseTimer=new QTimer(this);
-    connect( licenseTimer, SIGNAL(timeout()), this, SLOT(checkLicense()) );
+    connect( licenseTimer, SIGNAL(timeout()), this, SLOT(on_licenseTimer()) );
     licenseTimer->start(LICENSE_CHECK_MILLIS);
+
+    QAction* checkLicenseAct=new QAction(tr("Check &License"), this);
+    connect(checkLicenseAct,SIGNAL(triggered()), this, SLOT(on_checkLicense()));
+    ui->menu_Help->addAction(checkLicenseAct);
 #endif
 }
 
@@ -124,13 +128,69 @@ ProjectViewer::~ProjectViewer()
 
 
 #ifdef USE_KEYLOCK_LICENSE
-void ProjectViewer::checkLicense(){
+
+void ProjectViewer::on_licenseTimer(){
+    checkLicense();
+}
+
+void ProjectViewer::on_checkLicense(){
+
+    LicenseInfo info=checkLicense();
+
+    QMessageBox::information(this, "License Information",
+        QString("Dongle Serial number: %1\nLicense Number: %2\nExpiration date: %3/%4/%5")
+            .arg(info.dongleSerialNumber).arg(info.licenseNumber).
+                             arg(info.expirationMonth).arg(info.expirationDay).arg(info.expirationYear));
+
+}
+
+LicenseInfo ProjectViewer::checkLicense(){
+
+    LicenseInfo info;
+
     std::unique_ptr<CKeylok>  myCKeylok(new CKeylok);
     if (myCKeylok->CheckForKeyLok() == false)
     {
-        QMessageBox::critical(0, "AVO Utensil", "No Keylok dongle found!\nTerminating...");
+        QMessageBox::critical(0, "AVO-Detect", "No Keylok dongle found!\nTerminating...");
         qApp->closeAllWindows();
     }
+
+    myCKeylok->ReadAuthorization();
+
+    info.dongleSerialNumber=myCKeylok->GetSerialNumber();
+    info.licenseNumber=myCKeylok->ReadMemory(0);
+    myCKeylok->CheckExpiration();
+    switch (myCKeylok->ReturnValue2)
+    {
+    case LEASEEXPIRED:
+        QMessageBox::critical(0, "AVO-Detect", "Lease has expired!\nTerminating...");
+        qApp->closeAllWindows();
+        break;
+    case SYSDATESETBACK:
+        QMessageBox::critical(0, "AVO-Detect", "System clock set back!\nTerminating...");
+        qApp->closeAllWindows();
+        break;
+    case NOLEASEDATE:
+        QMessageBox::critical(0, "AVO-Detect", "No lease date set!\nTerminating...");
+        qApp->closeAllWindows();
+        break;
+    case LEASEDATEBAD:
+        QMessageBox::critical(0, "AVO-Detect", "Bad lease date. Requires reset!\nTerminating...");
+        qApp->closeAllWindows();
+        break;
+    case LASTSYSDATECORRUPT:
+        QMessageBox::critical(0, "AVO-Detect", "Problem with system clock!\nTerminating...");
+        qApp->closeAllWindows();
+        break;
+    default:
+        unsigned DateRead = myCKeylok->GetExpiration();
+        info.expirationMonth=myCKeylok->GetExpMonth(DateRead);
+        info.expirationDay=myCKeylok->GetExpDay(DateRead);
+        info.expirationYear=myCKeylok->GetExpYear(DateRead);
+        break;
+    }
+
+    return info;
 }
 #endif
 

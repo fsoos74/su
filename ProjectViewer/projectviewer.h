@@ -13,6 +13,7 @@
 #ifdef USE_KEYLOCK_LICENSE
 #include "keylokclass.h"
 #include "keylok.h"
+#include "licenseinfo.h"
 #endif
 
 namespace Ui {
@@ -106,7 +107,8 @@ private slots:
     void on_action_About_triggered();
 
 #ifdef USE_KEYLOCK_LICENSE
-    void checkLicense();
+    void on_licenseTimer();
+    void on_checkLicense();
 #endif
 
 protected:
@@ -115,6 +117,9 @@ protected:
 
 private:
 
+#ifdef USE_KEYLOCK_LICENSE
+    LicenseInfo checkLicense();
+#endif
     void setProjectFileName( const QString& fileName);
     bool saveProject( const QString& fileName);
 

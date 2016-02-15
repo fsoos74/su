@@ -49,7 +49,8 @@ HEADERS  += projectviewer.h \
     amplitudecurveviewer.h \
     projectgeometrydialog.h \
     aboutdialog.h \
-    amplitudecurvedefinition.h
+    amplitudecurvedefinition.h \
+    licenseinfo.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
