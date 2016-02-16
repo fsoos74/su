@@ -118,7 +118,7 @@ protected:
 private:
 
 #ifdef USE_KEYLOCK_LICENSE
-    LicenseInfo checkLicense();
+    license::LicenseInfo checkLicense();
 #endif
     void setProjectFileName( const QString& fileName);
     bool saveProject( const QString& fileName);

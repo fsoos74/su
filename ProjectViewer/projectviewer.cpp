@@ -135,52 +135,67 @@ void ProjectViewer::on_licenseTimer(){
 
 void ProjectViewer::on_checkLicense(){
 
-    LicenseInfo info=checkLicense();
+    license::LicenseInfo info=checkLicense();
 
     QMessageBox::information(this, "License Information",
-        QString("Dongle Serial number: %1\nLicense Number: %2\nExpiration date: %3/%4/%5")
-            .arg(info.dongleSerialNumber).arg(info.licenseNumber).
-                             arg(info.expirationMonth).arg(info.expirationDay).arg(info.expirationYear));
+        QString("Dongle Serial number: %1\nLicense Number: %2-%3\nLicensed Version: %4.%5\nExpiration date: %6/%7/%8")
+            .arg(info.dongleSerialNumber)
+            .arg(info.majorNumber).arg(info.minorNumber)
+            .arg(info.productVersion/10).arg(info.productVersion%10)
+            .arg(info.expirationMonth).arg(info.expirationDay).arg(info.expirationYear));
 
 }
 
-LicenseInfo ProjectViewer::checkLicense(){
+license::LicenseInfo ProjectViewer::checkLicense(){
 
-    LicenseInfo info;
+    license::LicenseInfo info;
 
     std::unique_ptr<CKeylok>  myCKeylok(new CKeylok);
     if (myCKeylok->CheckForKeyLok() == false)
     {
         QMessageBox::critical(0, "AVO-Detect", "No Keylok dongle found!\nTerminating...");
         qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
     }
 
     myCKeylok->ReadAuthorization();
 
     info.dongleSerialNumber=myCKeylok->GetSerialNumber();
-    info.licenseNumber=myCKeylok->ReadMemory(0);
+    info.majorNumber=myCKeylok->ReadMemory(license::MajorNumberAddress);
+    info.minorNumber=myCKeylok->ReadMemory(license::MinorNumberAddress);
+    info.productVersion=myCKeylok->ReadMemory(license::ProductVersionAddress);
+    if( info.productVersion<1 ){
+        QMessageBox::critical(0, "AVO-Detect", "This product is not licensed!\nTerminating...");
+        qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
+    }
     myCKeylok->CheckExpiration();
     switch (myCKeylok->ReturnValue2)
     {
     case LEASEEXPIRED:
         QMessageBox::critical(0, "AVO-Detect", "Lease has expired!\nTerminating...");
         qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
         break;
     case SYSDATESETBACK:
         QMessageBox::critical(0, "AVO-Detect", "System clock set back!\nTerminating...");
         qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
         break;
     case NOLEASEDATE:
         QMessageBox::critical(0, "AVO-Detect", "No lease date set!\nTerminating...");
         qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
         break;
     case LEASEDATEBAD:
         QMessageBox::critical(0, "AVO-Detect", "Bad lease date. Requires reset!\nTerminating...");
         qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
         break;
     case LASTSYSDATECORRUPT:
         QMessageBox::critical(0, "AVO-Detect", "Problem with system clock!\nTerminating...");
         qApp->closeAllWindows();
+        throw std::runtime_error("NO VALID LICENSE!");
         break;
     default:
         unsigned DateRead = myCKeylok->GetExpiration();
