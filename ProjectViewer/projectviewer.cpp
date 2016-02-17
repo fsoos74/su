@@ -138,11 +138,17 @@ void ProjectViewer::on_checkLicense(){
     license::LicenseInfo info=checkLicense();
 
     QMessageBox::information(this, "License Information",
-        QString("Dongle Serial number: %1\nLicense Number: %2-%3\nLicensed Version: %4.%5\nExpiration date: %6/%7/%8")
-            .arg(info.dongleSerialNumber)
-            .arg(info.majorNumber).arg(info.minorNumber)
-            .arg(info.productVersion/10).arg(info.productVersion%10)
-            .arg(info.expirationMonth).arg(info.expirationDay).arg(info.expirationYear));
+        QString().sprintf(
+                "<tt>"
+                "Dongle Number......%05d<br>"
+                "License Number.....%05d-%02d<br>"
+                "First Leased.......%02d/%02d<br>"
+                "Expiration Date....%02d/%02d/%d<br>"
+                "</tt>",
+                info.dongleSerialNumber,
+                info.majorNumber,info.minorNumber,
+                info.productVersion/100,info.productVersion%100,
+                info.expirationMonth, info.expirationDay, info.expirationYear) );
 
 }
 
