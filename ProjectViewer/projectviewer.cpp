@@ -34,6 +34,9 @@
 #include<gatherruler.h>
 #include<axxislabelwidget.h>
 #include<seismicdatasetreader.h>
+#include<histogram.h>
+#include<histogramdialog.h>
+
 #include<iostream>
 #include<chrono>
 
@@ -537,7 +540,7 @@ void ProjectViewer::on_actionImportVolume_triggered()
         seismic::Trace trace=reader.read_trace();
         int iline=trace.header()["iline"].intValue();
         int xline=trace.header()["xline"].intValue();
-        for( int i=0; i<nt; i++){
+        for( size_t i=0; i<nt; i++){
             (*volume)(iline, xline, i)=trace.samples()[i];
         }
         if( (i%onePercent)==0){
@@ -798,6 +801,7 @@ void ProjectViewer::runGridContextMenu( GridType gridType, QListView* view, cons
 
     QMenu menu;
     menu.addAction("display");
+    menu.addAction("histogram");
     menu.addSeparator();
     menu.addAction("export");
     menu.addSeparator();
@@ -809,6 +813,9 @@ void ProjectViewer::runGridContextMenu( GridType gridType, QListView* view, cons
 
     if( selectedAction->text()=="display" ){
         displayGrid( gridType, gridName);
+    }
+    else if( selectedAction->text()=="histogram" ){
+        displayGridHistogram(gridType,gridName);
     }
     else if( selectedAction->text()=="export" ){
         exportGrid( gridType,gridName);
@@ -921,6 +928,50 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
     }
 
 }
+
+
+void ProjectViewer::displayGridHistogram( GridType t, const QString& name){
+
+    const int N_BINS=20;
+
+    if( m_project->gridList(t).contains(name)){
+
+        std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid( t, name);
+        if( !grid ) return;
+
+        // XXX better have external process for histogram generation with process events
+        double min=std::numeric_limits<double>::max();
+        double max=std::numeric_limits<double>::lowest();
+        for( auto it=grid->values().cbegin(); it!=grid->values().cend(); ++it){
+            if( *it==grid->NULL_VALUE) continue;
+            if(*it<min)min=*it;
+            if(*it>max)max=*it;
+        }
+
+        // estimate optimum bin width
+        double w=(max-min)/N_BINS;
+        double q=std::pow(10, std::ceil(std::log10(w)));
+        if(q/5>w) w=q/5;
+        else if(q/2>w) w=q/2;
+        else w=q;
+        min=w*std::floor(min/w);
+
+        // generate histogram
+        Histogram hist(min, w, N_BINS);
+        for( auto it=grid->values().cbegin(); it!=grid->values().cend(); ++it){
+            if( *it==grid->NULL_VALUE) continue;
+            hist.addValue(*it);
+        }
+
+        HistogramDialog* viewer=new HistogramDialog; //don't make this parent because projectviewer should be able to be displayed over gridviewer
+        QString typeName=gridType2String(t);
+        viewer->setWindowTitle(QString("Histogram of Grid %1 - %2").arg(typeName, name) );  
+        viewer->setHistogram(hist);
+        viewer->show();
+
+    }
+}
+
 
 void ProjectViewer::renameGrid( GridType t, const QString& name){
 

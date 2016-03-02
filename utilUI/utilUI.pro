@@ -29,7 +29,9 @@ SOURCES += utilui.cpp \
     datapointitem.cpp \
     baseviewer.cpp \
     pointdispatcher.cpp \
-    twocombosdialog.cpp
+    twocombosdialog.cpp \
+    alignedtextgraphicsitem.cpp \
+    activetextgraphicsitem.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -38,7 +40,9 @@ HEADERS += utilui.h\
     datapointitem.h \
     baseviewer.h \
     pointdispatcher.h \
-    twocombosdialog.h
+    twocombosdialog.h \
+    alignedtextgraphicsitem.h \
+    activetextgraphicsitem.h
 
 unix {
     target.path = /usr/lib

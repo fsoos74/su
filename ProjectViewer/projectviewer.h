@@ -130,6 +130,7 @@ private:
     void removeSeismicDataset(const QString&);
 
     void displayGrid( GridType t, const QString&);
+    void displayGridHistogram( GridType t, const QString&);
     void renameGrid( GridType t, const QString&);
     void removeGrid( GridType t, const QString&);
     void importGrid(GridType);

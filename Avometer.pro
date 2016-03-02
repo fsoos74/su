@@ -16,5 +16,5 @@ SUBDIRS += \
     prozess \
     ProzessUI \
     utilUI \ 
-    VolumeTester \
-    SegyTester
+    SegyTester \ 
+    Statistics
