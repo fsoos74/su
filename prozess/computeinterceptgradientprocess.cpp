@@ -54,6 +54,10 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::init( const QMap<QSt
     }
     m_gradientName=parameters.value(QString("gradient"));
 
+    if( parameters.contains(QString("quality")) ){
+        m_qualityName=parameters.value(QString("quality"));
+    }
+
     if( !parameters.contains(QString("reduction-method"))){
         setErrorString("Parameters contain no window reduction method!");
         return ResultCode::Error;
@@ -142,6 +146,12 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::init( const QMap<QSt
         return ResultCode::Error;
     }
 
+    m_quality=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(bounds));
+    if( !m_quality ){
+        setErrorString("Allocating quality grid failed!");
+        return ResultCode::Error;
+    }
+
     return ResultCode::Ok;
 }
 
@@ -158,6 +168,7 @@ struct Job{
 
     Grid2D<double>*         intercept;
     Grid2D<double>*         gradient;
+    Grid2D<double>*         quality;
     Grid2D<double>*         horizon;
     GatherBuffer*           buffer;
     int                     supergatherInlineSize;
@@ -213,18 +224,20 @@ private:
                     }
                 }
 
-                QPointF interceptAndGradient=linearRegression(curve);
+                double q;
+                QPointF interceptAndGradient=linearRegression(curve, &q);
 
                 // linear regression returns nan if all input values are zero
                 if( isnan(interceptAndGradient.x()) || isnan(interceptAndGradient.y())){
                     (*m_job.intercept)(iline, xline)=m_job.intercept->NULL_VALUE;
                     (*m_job.gradient)(iline, xline)=m_job.gradient->NULL_VALUE;
+                    (*m_job.quality)(iline, xline)=0;
                     continue;
                 }
 
                 (*m_job.intercept)(iline, xline)=interceptAndGradient.x();
                 (*m_job.gradient)(iline, xline)=interceptAndGradient.y();
-
+                (*m_job.quality)(iline, xline)=q;
 
             }
 
@@ -258,6 +271,7 @@ bool ComputeInterceptGradientProcess::processBuffer_n( GatherBuffer* buffer, int
         job.horizon=m_horizon.get();
         job.intercept=m_intercept.get();
         job.gradient=m_gradient.get();
+        job.quality=m_quality.get();
 
         job.supergatherInlineSize=m_supergatherInlineSize;
         job.supergatherCrosslineSize=m_supergatherCrosslineSize;
@@ -376,6 +390,16 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gradientName) );
         return ResultCode::Error;
     }
+
+
+    if( !m_qualityName.isEmpty()){
+        std::pair<GridType, QString> qualityTypeAndName=splitFullGridName(m_qualityName);
+        if( !project()->addGrid( qualityTypeAndName.first, qualityTypeAndName.second, m_quality)){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_qualityName) );
+            return ResultCode::Error;
+        }
+    }
+
 
 
     emit finished();

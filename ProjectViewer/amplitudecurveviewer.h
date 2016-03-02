@@ -112,7 +112,7 @@ private:
     QMap<int, QVector<QPointF> > m_curves;
     QMap<int, AmplitudeCurveDefinition> m_curveInfos;
     QMap<int, QColor> m_curveColors;
-    QMap<int, QPointF> m_curveRegressions;
+    QMap<int, std::pair<QPointF,double> > m_curveRegressions; // QPointF x=intercept, y=gradient, double=quality
     QVector<int> m_tableRowCurveIndexMap;
 
     std::shared_ptr<AVOProject> m_project;

@@ -230,7 +230,9 @@ void AmplitudeCurveViewer::addCurve( AmplitudeCurveDefinition def){
 
     m_curveInfos.insert(m_curveCounter, def);
     adaptCurveToPlottype(curve, def.depth);
-    m_curveRegressions.insert( m_curveCounter, linearRegression(curve) );
+    double quality;
+    QPointF interceptAndGradient=linearRegression(curve, &quality);
+    m_curveRegressions.insert( m_curveCounter, std::pair<QPointF,double>(interceptAndGradient, quality) );
 
     m_curveCounter++;
 
@@ -334,7 +336,10 @@ void AmplitudeCurveViewer::updateRegressions(){
 
         adaptCurveToPlottype(curve, m_curveInfos.value(curveIndex).depth);
 
-        m_curveRegressions.insert( curveIndex, linearRegression(curve) );
+        double quality;
+        QPointF interceptAndGradient=linearRegression(curve, &quality);
+        m_curveRegressions.insert( curveIndex,
+            std::pair<QPointF,double>(interceptAndGradient, quality)  );
 
     }
 
@@ -413,7 +418,7 @@ void AmplitudeCurveViewer::updateScene(){
             const QVector<QPointF>& curve=m_curves.value(curveIndex);
             QColor curveColor=m_curveColors.value( curveIndex);
 
-            QPointF interceptAndGradient=m_curveRegressions.value(curveIndex);
+            QPointF interceptAndGradient=m_curveRegressions.value(curveIndex).first;
             double b=interceptAndGradient.x();
             double m=interceptAndGradient.y();
             qreal yleft=m*minX + b;
@@ -446,11 +451,12 @@ void AmplitudeCurveViewer::updateScene(){
 
 void AmplitudeCurveViewer::updateTable(){
 
-    QStandardItemModel* model=new QStandardItemModel(m_curves.size(), 14, this);
+    QStandardItemModel* model=new QStandardItemModel(m_curves.size(), 15, this);
 
     QStringList labels;
     labels<<"Color"<<"Inline"<<"Crossline"<<"Dataset"<<"Horizon"<<"Method"<<"Window Length"<<"Inlines"
-         <<"Crosslines"<<"Max Offset"<<"Min Azimuth"<<"Max Azimuth"<<"Average Depth"<<"Intercept"<<"Gradient";
+         <<"Crosslines"<<"Max Offset"<<"Min Azimuth"<<"Max Azimuth"<<"Average Depth"
+        <<"Intercept"<<"Gradient"<<"Quality";
     model->setHorizontalHeaderLabels(labels);
 
     m_tableRowCurveIndexMap.clear();
@@ -480,9 +486,11 @@ void AmplitudeCurveViewer::updateTable(){
         model->setItem(row, column++, new QStandardItem(QString::number(info.maximumAzimuth)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.depth)));
 
-        QPointF interceptAndGradient=m_curveRegressions.value(index);
+        QPointF interceptAndGradient=m_curveRegressions.value(index).first;
+        double quality=m_curveRegressions.value(index).second;
         model->setItem(row, column++, new QStandardItem(QString::number(interceptAndGradient.x())));
         model->setItem(row, column++, new QStandardItem(QString::number(interceptAndGradient.y())));
+        model->setItem(row, column++, new QStandardItem(QString::number(quality)));
 
         m_tableRowCurveIndexMap.push_back(index);
 

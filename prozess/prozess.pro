@@ -24,7 +24,6 @@ SOURCES += prozess.cpp \
     computeinterceptgradientprocess.cpp \
     horizonamplitudesprocess.cpp \
     windowreductionfunction.cpp \
-    linearregression.cpp \
     utilities.cpp \
     rotatinggatherbuffer.cpp \
     gatherbuffer.cpp \
@@ -42,7 +41,6 @@ HEADERS += prozess.h\
     computeinterceptgradientprocess.h \
     horizonamplitudesprocess.h \
     windowreductionfunction.h \
-    linearregression.h \
     utilities.h \
     rotatinggatherbuffer.h \
     gatherbuffer.h \
@@ -91,3 +89,10 @@ else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
 
 INCLUDEPATH += $$PWD/../util
 DEPENDPATH += $$PWD/../util
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Statistics/release/ -lStatistics
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Statistics/debug/ -lStatistics
+else:unix: LIBS += -L$$OUT_PWD/../Statistics/ -lStatistics
+
+INCLUDEPATH += $$PWD/../Statistics
+DEPENDPATH += $$PWD/../Statistics

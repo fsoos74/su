@@ -31,6 +31,7 @@ private:
     QString m_horizonName;
     QString m_interceptName;
     QString m_gradientName;
+    QString m_qualityName;
     size_t m_windowSize;
     double m_maximumOffset;
     double m_minimumAzimuth;
@@ -47,7 +48,7 @@ private:
     std::unique_ptr<ReductionFunction> m_reductionFunction;
     std::shared_ptr<Grid2D<double> > m_intercept;
     std::shared_ptr<Grid2D<double> > m_gradient;
-
+    std::shared_ptr<Grid2D<double> > m_quality;
 };
 
 #endif // COMPUTEINTERCEPTGRADIENTPROCESS_H

@@ -21,6 +21,7 @@ ComputeInterceptGradientDialog::ComputeInterceptGradientDialog(QWidget *parent) 
 
     connect( ui->leIntercept, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leGradient, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leQuality, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leDepth, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leMaxOffset, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbRestrictOffset, SIGNAL( toggled(bool)), this, SLOT(updateOkButton()) );
@@ -62,6 +63,11 @@ QMap<QString,QString> ComputeInterceptGradientDialog::params(){
     p.insert( QString("intercept"), fullInterceptName );
 
     p.insert( QString("gradient"), fullGradientName );
+
+    if( !ui->leQuality->text().isEmpty()){
+        QString fullQualityName=createFullGridName( GridType::Attribute, ui->leQuality->text() );
+        p.insert( QString("quality"), fullQualityName );
+    }
 
     p.insert( QString("dataset"), ui->cbDataset->currentText());
 
@@ -143,6 +149,21 @@ void ComputeInterceptGradientDialog::updateOkButton(){
         gradientPalette.setColor(QPalette::Text, Qt::red);
     }
     ui->leGradient->setPalette(gradientPalette);
+
+    QPalette qualityPalette;
+    if( reservedGrids().contains(ui->leQuality->text())){
+        ok=false;
+        qualityPalette.setColor(QPalette::Text, Qt::red);
+    }
+    if( ui->leIntercept->text() == ui->leQuality->text()){
+        ok=false;
+        qualityPalette.setColor(QPalette::Text, Qt::red);
+    }
+    if( ui->leGradient->text() == ui->leQuality->text()){
+        ok=false;
+        qualityPalette.setColor(QPalette::Text, Qt::red);
+    }
+    ui->leQuality->setPalette(qualityPalette);
 
     if(ui->cbAVA->isChecked() ){
         if( ui->leDepth->text().isEmpty()){

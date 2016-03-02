@@ -6,7 +6,7 @@
 
 
 // resuld x=intercept, y=gradient
-QPointF linearRegression( const QVector<QPointF>&);
+QPointF linearRegression( const QVector<QPointF>&, double* quality=nullptr);
 
 #endif // LINEARREGRESSION_H
 
