@@ -135,18 +135,35 @@ void SEGYReader::convert_binary_header(){
     m_nt=m_binary_header["ns"].uintValue();
 }
 
+double scalerToFactor( std::int16_t scaler){
+
+    double factor;
+
+    if( scaler < 0 ){
+       factor=1./static_cast<double>(-scaler);
+    }
+    else if( scaler > 0 ){
+        factor=static_cast<double>(scaler);
+    }
+    else{           // scaler no set interpreted as no scaling which is multiply by one
+        factor=1.;
+    }
+
+    return factor;
+}
+
 void SEGYReader::convert_trace_header(){
 
     if( !m_info.isFixedScalel() ){
         std::int16_t iscalel;
         get_from_raw( &iscalel, &m_raw_trace_header_buf[0] + m_info.scalelDef().pos - 1, m_info.isSwap() ); // pos is 1-based
-        m_info.setScalel( (iscalel<0 ) ? 1./static_cast<double>(-iscalel) : iscalel);
+        m_info.setScalel( scalerToFactor(iscalel) );
     }
 
     if( !m_info.isFixedScalco() ){
         std::int16_t iscalco;
         get_from_raw( &iscalco, &m_raw_trace_header_buf[0] + m_info.scalcoDef().pos - 1, m_info.isSwap() ); // pos is 1-based
-        m_info.setScalco( ( iscalco<0 ) ? 1./static_cast<double>(-iscalco) : iscalco );
+        m_info.setScalco( scalerToFactor(iscalco) );
     }
 
     m_trace_header=convert_raw_header(m_raw_trace_header_buf, m_info.traceHeaderDef());
