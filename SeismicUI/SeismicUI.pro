@@ -33,7 +33,8 @@ SOURCES += seismicui.cpp \
     headerui.cpp \
     volumedisplayoptionsdialog.cpp \
     tracedisplayoptionsdialog.cpp \
-    tracescalingdialog.cpp
+    tracescalingdialog.cpp \
+    headerscandialog.cpp
 
 HEADERS += seismicui.h\
         seismicui_global.h \
@@ -51,7 +52,8 @@ HEADERS += seismicui.h\
     headerui.h \
     volumedisplayoptionsdialog.h \
     tracedisplayoptionsdialog.h \
-    tracescalingdialog.h
+    tracescalingdialog.h \
+    headerscandialog.h
 
 unix {
     target.path = /usr/lib
@@ -66,7 +68,8 @@ FORMS += \
     gatherviewer.ui \
     volumedisplayoptionsdialog.ui \
     tracedisplayoptionsdialog.ui \
-    tracescalingdialog.ui
+    tracescalingdialog.ui \
+    headerscandialog.ui
 
 
 

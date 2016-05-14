@@ -7,7 +7,8 @@
 #include<chrono>
 
 #include<cmath>  // fabs
-
+#include<cstring> //memcpy
+#include<headerscandialog.h>
 #include <ebcdicdialog.h>
 #include <headerdialog.h>
 #include<segyreader.h>
@@ -529,6 +530,7 @@ void SegyInputDialog::updateButtons(){
       ui->btScan->setEnabled(on);
       ui->pbEBCDIC->setEnabled(on);
       ui->pbBinary->setEnabled(on);
+      ui->pbScanTraceHeaders->setEnabled(on);
       ui->pbTraceHeader->setEnabled(on);
       ui->pbOK->setEnabled(on);
 }
@@ -723,3 +725,83 @@ void SegyInputDialog::writeInfoFile(){
     m_infoDirty=false;
 }
 
+
+void SegyInputDialog::on_pbScanTraceHeaders_clicked()
+{
+    //std::cout<<"SCANNING..."<<std::endl;
+    Q_ASSERT(m_reader);
+
+    seismic::SEGYInfo orig_info=m_reader->info();
+    size_t headerSize=m_reader->rawTraceHeader().size();
+
+    std::vector<int16_t> min16(headerSize, std::numeric_limits<int16_t>::max());
+    std::vector<int16_t> max16(headerSize, std::numeric_limits<int16_t>::min());
+    std::vector<int32_t> min32(headerSize, std::numeric_limits<int32_t>::max());
+    std::vector<int32_t> max32(headerSize, std::numeric_limits<int32_t>::min());
+
+    try{
+
+        QProgressDialog* pdlg=new QProgressDialog("Scanning Trace Headers", "Cancel", 0, m_reader->trace_count(), this);
+
+        auto start = std::chrono::steady_clock::now();
+
+        for( int i=0; i<m_reader->trace_count(); i++){
+
+            m_reader->seek_trace(i);
+
+            m_reader->read_trace_header();
+
+            std::vector<char> rawHeader=m_reader->rawTraceHeader();
+
+            for(size_t j=0; j+sizeof(int16_t)<headerSize; j++){
+                int16_t x;
+                std::memcpy(&x, &rawHeader[j], sizeof(x));
+
+                if( x<min16[j]) min16[j]=x;
+                if( x>max16[j]) max16[j]=x;
+            }
+
+            for(size_t j=0; j+sizeof(int32_t)<headerSize; j++){
+                int32_t x;
+                std::memcpy(&x, &rawHeader[j], sizeof(x));
+
+                if( x<min32[j]) min32[j]=x;
+                if( x>max32[j]) max32[j]=x;
+            }
+
+
+            pdlg->setValue(i+1);
+            qApp->processEvents();
+            if( pdlg->wasCanceled()){
+                pdlg->setValue(m_reader->trace_count());
+                return; // do not update min/max values
+            }
+        }
+
+        auto end = std::chrono::steady_clock::now();
+        auto diff = end - start;
+        std::cout<<"Scanning took "<< std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
+        QStringList data;
+
+        data.append(QString("Pos.      16bit min/max           32bit min/max"));
+        data.append(QString("-------------------------------------------------------"));
+        for( size_t i=0; i + 1<headerSize; i++){
+
+            QString s=QString::asprintf("%4d:   %6d - %6d   %11d - %11d",
+                       i, min16[i], max16[i], min32[i], max32[i] );
+            data.append(s);
+        }
+
+        if( !m_HeaderScanDialog ){
+            m_HeaderScanDialog=new HeaderScanDialog(this);
+        }
+
+        m_HeaderScanDialog->setData(data);
+        m_HeaderScanDialog->show();
+    }
+    catch(seismic::SEGYReader::FormatError& err){
+        QMessageBox::critical(this, "Scanning SEGY-file", QString("Exception occured:\n")+QString(err.what()));
+        destroyReader();
+    }
+}

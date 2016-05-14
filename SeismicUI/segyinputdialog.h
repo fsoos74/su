@@ -19,7 +19,7 @@ namespace seismic{
 
 class EBCDICDialog;
 class HeaderDialog;
-
+class HeaderScanDialog;
 
 namespace Ui {
 class SegyInputDialog;
@@ -74,6 +74,8 @@ private slots:
 
     void navigateToTraceHeader( int );
 
+    void on_pbScanTraceHeaders_clicked();
+
 private:
 
     void updateControlsFromInfo();
@@ -99,6 +101,7 @@ private:
     EBCDICDialog* m_EBCDICDialog=nullptr;
     HeaderDialog* m_BinaryDialog=nullptr;
     HeaderDialog* m_TraceHeaderDialog=nullptr;
+    HeaderScanDialog* m_HeaderScanDialog=nullptr;
 
     seismic::SEGYInfo m_info;
     std::shared_ptr<seismic::SEGYReader> m_reader;

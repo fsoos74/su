@@ -78,7 +78,9 @@ private slots:
 
     void on_actionHorizon_Amplitudes_triggered();
 
-    void on_action_Crossplot_triggered();
+    void on_actionCrossplot_Grids_triggered();
+
+    void on_actionCrossplot_Volumes_triggered();
 
     void runDatasetContextMenu(const QPoint& pos);
 
@@ -110,6 +112,8 @@ private slots:
     void on_licenseTimer();
     void on_checkLicense();
 #endif
+
+
 
 protected:
 

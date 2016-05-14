@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-
+#XXX ADD FOR RELEASE
 win32{
     DEFINES += USE_KEYLOCK_LICENSE
 }

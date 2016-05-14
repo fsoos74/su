@@ -72,7 +72,7 @@
 #include<headervalue.h>
 #include<segy_text_header.h>
 #include<fstream>
-
+#include<set>
 #ifdef USE_KEYLOCK_LICENSE
 #include<QApplication>
 #include<QTimer>
@@ -713,7 +713,7 @@ void ProjectViewer::on_actionFluid_Factor_Volume_triggered()
     runProcess( new FluidFactorVolumeProcess( m_project, this ), params );
 }
 
-void ProjectViewer::on_action_Crossplot_triggered()
+void ProjectViewer::on_actionCrossplot_Grids_triggered()
 {
 
     Q_ASSERT( m_project );
@@ -738,22 +738,139 @@ void ProjectViewer::on_action_Crossplot_triggered()
     std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( GridType::Attribute, dlg.selection2());
     if( !grid2 ) return;
 
+    QVector<CrossplotViewer::DataPoint> data;
+
+
+
     Grid2DBounds bounds( std::min( grid1->bounds().i1(), grid2->bounds().i1()),
                        std::min( grid1->bounds().j1(), grid2->bounds().j1()),
                        std::max( grid1->bounds().i2(), grid2->bounds().i2()),
                        std::max( grid1->bounds().j2(), grid2->bounds().j2()) );
 
-    std::shared_ptr< Grid2D< QPointF > > data( new Grid2D< QPointF >(bounds ));
+    //std::shared_ptr< Grid2D< QPointF > > data( new Grid2D< QPointF >(bounds ));
 
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             double v1=(*grid1)(i,j);
+            if( v1==grid1->NULL_VALUE) continue;
+
             double v2=(*grid2)(i,j);
+            if( v2==grid2->NULL_VALUE) continue;
 
-            (*data)(i, j)=QPointF( v1, v2);
+            data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j) );
 
+        }
+    }
+
+    CrossplotViewer* viewer=new CrossplotViewer();
+    viewer->setAttribute( Qt::WA_DeleteOnClose);
+
+
+    viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.selection1(), dlg.selection2() ) );
+    viewer->show();
+    viewer->setData(data); // add data after visible!!!!
+    viewer->setAxisLabels(dlg.selection1(), dlg.selection2());
+
+    viewer->setDispatcher(m_dispatcher);
+
+    std::cout<<"Crossplot grids running"<<std::endl<<std::flush;
+}
+
+void ProjectViewer::on_actionCrossplot_Volumes_triggered()
+{
+    Q_ASSERT( m_project );
+
+    if( m_project->volumeList().empty() ){
+        QMessageBox::warning(this, "Crossplot", "Project contains no volumes!");
+        return;
+    }
+
+    TwoCombosDialog dlg;
+    dlg.setWindowTitle("Select Volumes for Crossplot");
+    dlg.setLabelText1("Volume #1 (x-axis):");
+    dlg.setLabelText2("Volune #2 (y-axis):");
+    dlg.setItems1(m_project->volumeList());
+    dlg.setItems2(m_project->volumeList());
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    std::shared_ptr<Grid3D<float> > volume1=m_project->loadVolume(dlg.selection1());
+    if( !volume1 ) return;
+
+    std::shared_ptr<Grid3D<float> > volume2=m_project->loadVolume( dlg.selection2());
+    if( !volume2 ) return;
+
+    if( volume1->bounds()!=volume2->bounds()){
+        QMessageBox::critical(this, "Crossplot Volumes", "Currently only volumes with the same geometry are accepted!");
+        return;
+    }
+
+    Grid2DBounds bounds(volume1->bounds().inline1(), volume1->bounds().crossline1(),
+                        volume1->bounds().inline2(), volume1->bounds().crossline2());
+    int nt=volume1->bounds().sampleCount();
+
+    QVector<CrossplotViewer::DataPoint> data;
+
+    const int MAX_POINTS=100000;    // maximum number of points to plot
+    int numInputPoints=bounds.width()*bounds.height()*nt;
+    bool plotAllPoints=true;
+
+    if( numInputPoints>MAX_POINTS){
+        int ret=QMessageBox::question(this, "Crossplot Volumes",
+            QString("Number of datapoints is %1. This will significantly slow down operation.\n"
+                    "Statistically reduce the number of plotted points?").arg(numInputPoints),
+                    QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel, QMessageBox::Yes );
+
+        if( ret==QMessageBox::Cancel ) return;
+
+        if( ret==QMessageBox::Yes ){
+            plotAllPoints=false;
+        }
+    }
+
+    if( plotAllPoints ){  // PLOT ALL POINTS
+
+        for( int i=bounds.i1(); i<=bounds.i2(); i++){
+
+            for( int j=bounds.j1(); j<=bounds.j2(); j++){
+
+                for( int k=0; k<=nt; k++){
+                    double v1=(*volume1)(i,j,k);
+                    double v2=(*volume2)(i,j,k);
+                    if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
+                    data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j) );
+                }
+
+            }
+
+        }
+    }
+    else{   // SELECT RANDOM POINTS FOR PLOT
+        // create random list of volume indices with NO DUPLICATES
+        //std::cout<<"Populating crossplot with random points"<<std::endl<<std::flush;
+        std::vector<int> indices(numInputPoints);
+        std::iota( indices.begin(), indices.end(), 0);
+        std::mt19937 eng{std::random_device{}()};
+        std::shuffle(indices.begin(), indices.end(), eng);
+
+        // add crossplot data points for the first MAX_POINTS indices
+
+        for( int n=0; n<MAX_POINTS; n++){
+            // convert index to inline, crossline and sample
+            int idx=indices[n];
+            int k=idx%nt;
+            idx/=nt;
+            int j=bounds.j1() + idx%bounds.width();
+            idx/=bounds.width();
+            int i=bounds.i1() + idx;
+
+            //std::cout<<"n="<<n<<" il="<<i<<" xl="<<j<<" sam="<<k<<std::endl<<std::flush;
+            double v1=(*volume1)(i,j,k);
+            double v2=(*volume2)(i,j,k);
+            if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
+            data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j) );
         }
     }
 
@@ -932,13 +1049,17 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
 
 void ProjectViewer::displayGridHistogram( GridType t, const QString& name){
 
-    const int N_BINS=20;
-
     if( m_project->gridList(t).contains(name)){
 
         std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid( t, name);
         if( !grid ) return;
 
+        QVector<double> data;
+        for( auto it=grid->values().cbegin(); it!=grid->values().cend(); ++it){
+            if( *it==grid->NULL_VALUE) continue;
+            data.push_back(*it);
+         }
+/*
         // XXX better have external process for histogram generation with process events
         double min=std::numeric_limits<double>::max();
         double max=std::numeric_limits<double>::lowest();
@@ -962,11 +1083,12 @@ void ProjectViewer::displayGridHistogram( GridType t, const QString& name){
             if( *it==grid->NULL_VALUE) continue;
             hist.addValue(*it);
         }
-
+*/
         HistogramDialog* viewer=new HistogramDialog; //don't make this parent because projectviewer should be able to be displayed over gridviewer
+        viewer->setData( data );
         QString typeName=gridType2String(t);
         viewer->setWindowTitle(QString("Histogram of Grid %1 - %2").arg(typeName, name) );  
-        viewer->setHistogram(hist);
+        //viewer->setHistogram(hist);
         viewer->show();
 
     }
@@ -1667,7 +1789,9 @@ void ProjectViewer::updateMenu(){
     ui->actionFluid_Factor_Grid->setEnabled(isProject);
     ui->actionFluid_Factor_Volume->setEnabled(isProject);
 
-    ui->action_Crossplot->setEnabled(isProject);
+    ui->actionCrossplot_Grids->setEnabled(isProject);
+    ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
 

@@ -9,7 +9,8 @@ DatapointItem::DatapointItem(int regularSize, qreal activeSizeFactor, const QCol
     m_selectedColor(selectedColor),
     m_size(regularSize)
 {
-    setAcceptHoverEvents(true);
+    // removed this to enhance speed when using alot of datapoints
+   // XXX setAcceptHoverEvents(true);
 }
 
 void DatapointItem::setRegularSize(int size){

@@ -598,9 +598,7 @@ void GatherLabel::updateDensityPlot(){
 
 void GatherLabel::updateVolumePixmap(){
 
-    Q_ASSERT( m_view );
-
-    if(!m_view->volume()) return;
+    if(!m_view || !m_view->volume()) return;
 
     if( !m_view->gather() || m_view->gather()->size()<1) return;
 
@@ -614,20 +612,28 @@ void GatherLabel::updateVolumePixmap(){
         int opacity=volumeOpacity();
         a=255*opacity/100;
     }
-
+//std::cout<<"processing traces...count="<<gather.size()<<std::endl<<std::flush;
+//std::cout<<"bounds: il="<<volume.bounds().inline1()<<"-"<<volume.bounds().inline2()<<" xl="<<volume.bounds().crossline1()<<"-"<<volume.bounds().crossline2()<<std::endl<<std::flush;
     for( size_t j=0; j<gather.size(); j++){
 
         const seismic::Trace& trace=gather[j];
         const seismic::Trace::Samples& samples=trace.samples();
         int iline=trace.header().at("iline").intValue();
         int xline=trace.header().at("xline").intValue();
-
+//std::cout<<"trace="<<j<<" iline="<<iline<<" xline="<<xline<<std::endl<<std::flush;
+        if( !volume.bounds().isInside(iline, xline)){
+            //std::cout<<"OUT OF VOLUME : il="<<iline<<" xl="<<xline<<std::endl<<std::flush;
+            continue;
+        }
         for( size_t i=0; i<volume.bounds().sampleCount(); i++ ){
 
-            float value=volume(iline, xline, i);
-            ColorTable::color_type color=colorTable->map(value);
 
-            image.setPixel( j, i, color);//qRgba(qRed(color), qGreen(color), qBlue(color), a) );
+            float value=volume(iline, xline, i);
+
+            /// XXX !!!
+            ColorTable::color_type color=colorTable->map(value);
+             image.setPixel( j, i, color);//qRgba(qRed(color), qGreen(color), qBlue(color), a) );
+
         }
 
     }

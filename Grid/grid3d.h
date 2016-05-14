@@ -184,6 +184,8 @@ public:
 
     value_type value( int iline, int xline, double t)const{
 
+        if( !m_bounds.isInside(iline, xline ) ) return NULL_VALUE;
+
         int i=m_bounds.timeToSample(t);
         if( i<0 ) return NULL_VALUE;
         if( i>=m_bounds.sampleCount()) return NULL_VALUE;

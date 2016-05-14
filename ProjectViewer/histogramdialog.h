@@ -2,8 +2,12 @@
 #define HISTOGRAMDIALOG_H
 
 #include <QDialog>
-
+#include <algorithm>
 #include<histogram.h>
+
+#include<QVector>
+
+
 
 namespace Ui {
 class HistogramDialog;
@@ -19,12 +23,33 @@ public:
 
     void setHistogram(const Histogram&);
 
+public slots:
+
+    void setData( QVector<double> );
+    void setMinimumFromData();
+    void setMaximumFromData();
+
+private slots:
+
+    void updateHistogram();
+    void updateDataMinMax();
+
+protected:
+
+    void keyPressEvent(QKeyEvent* event);
+
 private:
 
     void updateMaximumCount();
     void updateScene();
 
+
     Ui::HistogramDialog *ui;
+
+    QVector<double> m_data;
+    double m_dataMin=0;
+    double m_dataMax=1;
+
     Histogram m_histogram;
     size_t m_maximumCount;
 };

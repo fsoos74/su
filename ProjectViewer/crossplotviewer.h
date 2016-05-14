@@ -26,6 +26,14 @@ class CrossplotViewer : public BaseViewer
 
 public:
 
+    struct DataPoint{
+        DataPoint():x(0),y(0),iline(0),xline(0){}
+        DataPoint( float ix, float iy, int iiline, int ixline):x(ix), y(iy), iline(iiline), xline(ixline){}
+        float x=0;
+        float y=0;
+        int iline=0;
+        int xline=0;
+    };
 
     explicit CrossplotViewer(QWidget *parent = 0);
     ~CrossplotViewer();
@@ -37,7 +45,7 @@ protected:
 
 public slots:
 
-    void setData( std::shared_ptr<Grid2D<QPointF> >);
+    void setData( QVector<DataPoint>);
     void setAxisLabels( const QString& xAxisAnnotation, const QString& yAxisAnnotation );
     void setGeometryBounds( Grid2DBounds);
     void setFlattenTrend(bool);
@@ -84,7 +92,8 @@ private:
     Ui::CrossplotViewer *ui;
 
     QGraphicsScene* m_scene=nullptr;
-    std::shared_ptr< Grid2D<QPointF> > m_data;
+    //std::shared_ptr< Grid2D<QPointF> > m_data;
+    QVector<DataPoint> m_data;
     Grid2DBounds m_geometryBounds;
     int m_datapointSize=11;
     qreal m_zoomFactor=1;

@@ -39,7 +39,7 @@ public:
     // bounds of bin [min,max), throws error for out of bounds i
     std::pair<double,double> binInterval(const size_t i)const;
 
-    // throws fro out of bounds index
+    // throws for out of bounds index
     size_t binValue(const size_t)const;
 
     void addValue( const double& v);

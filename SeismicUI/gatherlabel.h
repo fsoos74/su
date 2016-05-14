@@ -125,7 +125,7 @@ private:
     void updateVolumePixmap();
 
 
-    GatherView* m_view;
+    GatherView* m_view=nullptr;
 
     bool m_density=false;
     bool m_wiggles=true;

@@ -13,7 +13,7 @@ ColorTable::ColorTable( QObject* parent, const QVector<color_type>& cols, const 
 }
 
 
-ColorTable::color_type ColorTable::map( const double& val)const{
+ColorTable::color_type ColorTable::map( const double val)const{
 
     Q_ASSERT( !m_colors.empty());
 
@@ -26,8 +26,14 @@ ColorTable::color_type ColorTable::map( const double& val)const{
     x=std::pow(x, m_power);
     //translate to index
     int idx=std::round(x*m_colors.size());//m_colors.size()*(val-m_range.first)/(m_range.second-m_range.first));
+
+
+
     if(idx<0) idx=0;
     if(idx>=m_colors.size()) idx=m_colors.size()-1;
+
+    //if( m_colors.size()<1) return qRgb(0,0,255);
+
     return m_colors[idx];
 }
 

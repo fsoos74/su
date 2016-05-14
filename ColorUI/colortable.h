@@ -35,7 +35,7 @@ public:
          return m_power;
      }
 
-     color_type map( const double& val )const;
+     color_type map( const double val )const;
 
      static QVector<color_type> defaultColors();
      static QVector<color_type> grayscale();

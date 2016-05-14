@@ -5,14 +5,28 @@
 #include<QGraphicsRectItem>
 #include<QGraphicsLineItem>
 #include<alignedtextgraphicsitem.h>
-
+#include<QDoubleValidator>
+#include<QKeyEvent>
+#include<limits>
 #include<iostream>
+
 
 HistogramDialog::HistogramDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::HistogramDialog)
 {
     ui->setupUi(this);
+
+    QDoubleValidator* validator=new QDoubleValidator(this);
+    ui->leMin->setValidator(validator);
+    ui->leMax->setValidator(validator);
+
+    connect( ui->leMin, SIGNAL( returnPressed()), this, SLOT(updateHistogram()));
+    connect( ui->leMax, SIGNAL( returnPressed()), this, SLOT(updateHistogram()));
+    connect( ui->sbBinCount, SIGNAL(valueChanged(int)), this, SLOT(updateHistogram()));
+
+    connect( ui->pbMinFromData, SIGNAL(clicked()), this, SLOT(setMinimumFromData()));
+    connect( ui->pbMaxFromData, SIGNAL(clicked()), this, SLOT(setMaximumFromData()));
 }
 
 HistogramDialog::~HistogramDialog()
@@ -25,6 +39,85 @@ void HistogramDialog::setHistogram(const Histogram& h){
     m_histogram=h;
     updateMaximumCount();
     updateScene();
+}
+
+void HistogramDialog::setData(QVector<double> data){
+    m_data=data;
+    updateDataMinMax();
+    //updateHistogram();  // called byupdate min max
+}
+
+void HistogramDialog::setMinimumFromData(){
+    ui->leMin->setText(QString::number(m_dataMin));
+    updateHistogram();
+}
+
+void HistogramDialog::setMaximumFromData(){
+    ui->leMax->setText(QString::number(m_dataMax));
+    updateHistogram();
+}
+
+
+void HistogramDialog::updateHistogram(){
+/*
+    double min=std::numeric_limits<double>::max();
+    double max=std::numeric_limits<double>::lowest();
+    for( auto x : m_data){
+        if(x<min)min=x;
+        if(x>max)max=x;
+    }
+*/
+    double min=ui->leMin->text().toDouble();
+    double max=ui->leMax->text().toDouble();
+    int binCount=ui->sbBinCount->value();
+/*
+    // estimate optimum bin width
+    double w=(max-min)/binCount;  // cannot be zero be cause of ui def
+    double q=std::pow(10, std::ceil(std::log10(w)));
+    if(q/5>w) w=q/5;
+    else if(q/2>w) w=q/2;
+    else w=q;
+
+    double delta=binCount*w - (max-min);    // center actual data range on plot
+    min=w*std::floor(min/w) - w*std::floor(delta/w/2);
+*/
+    double w=(max-min)/binCount;
+    // generate histogram
+    Histogram hist(min, w, binCount);
+    for( auto x : m_data){
+        hist.addValue(x);
+    }
+
+    setHistogram(hist);
+}
+
+void HistogramDialog::updateDataMinMax(){
+    double min=std::numeric_limits<double>::max();
+    double max=std::numeric_limits<double>::lowest();
+    for( auto x : m_data){
+        if(x<min)min=x;
+        if(x>max)max=x;
+    }
+
+    m_dataMin=min;
+    m_dataMax=max;
+
+    int binCount=ui->sbBinCount->value();
+    // estimate optimum bin width
+    double w=(max-min)/binCount;  // cannot be zero be cause of ui def
+    double q=std::pow(10, std::ceil(std::log10(w)));
+    if(q/5>w) w=q/5;
+    else if(q/2>w) w=q/2;
+    else w=q;
+
+    double delta=binCount*w - (max-min);    // center actual data range on plot
+    min=w*std::floor(min/w) - w*std::floor(delta/w/2);
+    max=min + binCount*w;
+
+    ui->leMin->setText(QString::number(min));
+    ui->leMax->setText(QString::number(max));
+
+    updateHistogram();
 }
 
 void HistogramDialog::updateMaximumCount(){
@@ -44,6 +137,7 @@ const qreal MARGIN_X=50;
 const qreal MARGIN_Y=50;
 const qreal BAR_WIDTH=25;
 const qreal BAR_MAX_HEIGHT=250;
+
 
 void HistogramDialog::updateScene(){
 
@@ -115,3 +209,16 @@ void HistogramDialog::updateScene(){
 
     ui->graphicsView->setMinimumSize(scene->sceneRect().width(), scene->sceneRect().height());
 }
+
+
+void HistogramDialog::keyPressEvent(QKeyEvent *ev){
+
+    if( ev->key() == Qt::Key_Return){
+        ev->accept(); // ate it
+    }
+    else{
+        QWidget::keyPressEvent(ev);
+    }
+
+}
+

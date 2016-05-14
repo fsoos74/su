@@ -186,7 +186,9 @@
     <property name="title">
      <string>&amp;Analyze</string>
     </property>
-    <addaction name="action_Crossplot"/>
+    <addaction name="actionCrossplot_Grids"/>
+    <addaction name="actionCrossplot_Volumes"/>
+    <addaction name="separator"/>
     <addaction name="actionAmplitude_vs_Offset_Plot"/>
    </widget>
    <widget class="QMenu" name="menuPro_ject">
@@ -257,7 +259,7 @@
   </action>
   <action name="actionOpenProject">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Open-icon.png</normaloff>:/icons/Open-icon.png</iconset>
    </property>
    <property name="text">
@@ -300,9 +302,9 @@
     <string>Horizon Amplitudes</string>
    </property>
   </action>
-  <action name="action_Crossplot">
+  <action name="actionCrossplot_Grids">
    <property name="text">
-    <string>&amp;Crossplot</string>
+    <string>Crossplot &amp;Grids</string>
    </property>
   </action>
   <action name="actionAmplitude_vs_Offset_Plot">
@@ -375,9 +377,15 @@
     <string>&amp;About</string>
    </property>
   </action>
+  <action name="actionCrossplot_Volumes">
+   <property name="text">
+    <string>Crossplot &amp;Volumes</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
+  <include location="../SeismicUI/icons.qrc"/>
   <include location="icons.qrc"/>
  </resources>
  <connections>

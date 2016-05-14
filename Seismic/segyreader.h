@@ -91,8 +91,10 @@ public:
     Trace read_trace();
     std::shared_ptr<Gather> read_gather( const std::string& key, const size_t max_traces=1000);
 
-
-
+    // this was added for header byte scans
+    const std::vector<char>& rawTraceHeader()const{
+        return m_raw_trace_header_buf;
+    }
 
 private:
 

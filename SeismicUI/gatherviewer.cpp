@@ -398,9 +398,12 @@ void GatherViewer::on_actionOpenVolume_triggered()
 
         std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume(volumeName);
 
+        if( !volume ) return;
+
         auto frange=volume->valueRange();   // XXX maybe put this into gatherview::setVolume
 
         gatherView->setVolume( volume );
+
 
         gatherView->gatherLabel()->volumeColorTable()->setRange(frange.first, frange.second);
 
