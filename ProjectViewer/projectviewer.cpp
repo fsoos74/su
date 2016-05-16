@@ -39,6 +39,7 @@
 
 #include<iostream>
 #include<chrono>
+#include<random>
 
 #include<projectgeometrydialog.h>
 
