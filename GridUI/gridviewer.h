@@ -22,6 +22,7 @@
 #include <projectgeometry.h>
 
 #include<baseviewer.h>
+#include<selectionpoint.h>
 
 namespace Ui {
 class GridViewer;
@@ -42,8 +43,8 @@ public slots:
 
 protected:
 
-    void receivePoint( QPoint );
-    void receivePoints( QVector<QPoint>, int code);
+    void receivePoint( SelectionPoint );
+    void receivePoints( QVector<SelectionPoint>, int code);
 
     void closeEvent(QCloseEvent*);
 

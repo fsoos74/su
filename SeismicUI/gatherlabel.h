@@ -7,10 +7,13 @@
 #include<QPainterPath>
 #include<memory>
 #include<QPixmap>
+#include<QMap>
 
 #include<QPoint>
 #include "gather.h"
 #include <grid2d.h>
+
+#include<selectionpoint.h>
 
 class GatherView;
 class ColorTable;
@@ -55,6 +58,14 @@ public:
         return m_horizonColor;
     }
 
+    int highlightedPointSize()const{
+        return m_highlightedPointSize;
+    }
+
+    const QColor& highlightedPointColor()const{
+        return m_highlightedPointColor;
+    }
+
     ColorTable* colorTable()const{
         return m_colorTable;
     }
@@ -86,6 +97,8 @@ public slots:
     void setDensityOpacity(int);
     void setVolumeOpacity(int);
     void setHorizonColor(QColor);
+    void setHighlightedPointSize(int);
+    void setHighlightedPointColor(QColor);
     void setDisplayDensity(bool);
     void setDisplayWiggles(bool);
     void setDisplayVariableArea(bool);
@@ -117,6 +130,9 @@ private:
     void drawHorizons( QPainter& painter );
     void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<double>> g, QPen thePen);
     void drawHorizontalLines(QPainter& painter, const QRect& rect);
+    void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
+
+
     void updateTimeRange();
     void updatePixmap();
     //void computePixelPerUnits();
@@ -124,6 +140,8 @@ private:
     void updateDensityPlot();
     void updateVolumePixmap();
 
+    void buildTraceLookup();
+    int lookupTrace( int iline, int xline );
 
     GatherView* m_view=nullptr;
 
@@ -140,11 +158,14 @@ private:
     int m_densityOpacity=100;
     int m_volumeOpacity=50;
 
+    int m_highlightedPointSize=4;
+    QColor m_highlightedPointColor=Qt::red;
+
     QColor m_horizonColor=Qt::red;
     bool m_highlightTrace=false;
     size_t m_highlightedTrace=0;
 
-
+    QMap<int,int> traceLookup;
     QVector<qreal> traceScaleFactors;
     QVector<QPainterPath> m_traceWigglePaths;
     QVector<QPainterPath> m_traceVariableAreaPaths;

@@ -12,10 +12,12 @@
 #include<string>
 #include<vector>
 #include<headerdialog.h>
+#include<QMap>
 
 #include"tracescalingdialog.h"
 #include"tracedisplayoptionsdialog.h"
 #include "volumedisplayoptionsdialog.h"
+#include "pointdisplayoptionsdialog.h"
 #include <baseviewer.h>
 #include <QDockWidget>
 #include<colorbarwidget.h>
@@ -59,8 +61,8 @@ public:
 
 protected:
 
-    void receivePoint(QPoint);
-    void receivePoints(QVector<QPoint>, int code);
+    void receivePoint(SelectionPoint);
+    void receivePoints(QVector<SelectionPoint>, int code);
 
 public slots:
     void setProject( std::shared_ptr<AVOProject>);
@@ -111,6 +113,8 @@ private slots:
 
     void on_actionTrace_Scaling_triggered();
 
+    void on_action_Point_Display_Options_triggered();
+
 private:
 
     void saveSettings();
@@ -135,6 +139,8 @@ private:
     TraceScalingDialog* m_traceScalingDialog=nullptr;
     TraceDisplayOptionsDialog* m_traceDisplayOptionsDialog=nullptr;
     VolumeDisplayOptionsDialog* m_volumeDisplayOptionsDialog=nullptr;
+    PointDisplayOptionsDialog* m_pointDisplayOptionsDialog=nullptr;
+
     ColorBarWidget* m_densityColorBarWidget=nullptr;
     ColorBarWidget* m_attributeColorBarWidget=nullptr;
     QDockWidget* m_densityColorBarDock=nullptr;

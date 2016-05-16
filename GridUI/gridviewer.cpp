@@ -18,6 +18,7 @@
 #include"griddisplayoptionsdialog.h"
 
 
+
 GridViewer::GridViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::GridViewer)
@@ -94,16 +95,17 @@ bool GridViewer::orientate(const ProjectGeometry& geom){
     return true;
 }
 
-void GridViewer::receivePoint( QPoint point ){
+void GridViewer::receivePoint( SelectionPoint point ){
 
-    QVector<QPoint> v{point};
+    QVector<SelectionPoint> v{point};
 
-    gridView->setHighlightedCDPs(v);void onViewPolylineSelected( QVector<QPoint>);
+    gridView->setHighlightedCDPs(v);//void onViewPolylineSelected( QVector<QPoint>);
 }
 
-void GridViewer::receivePoints( QVector<QPoint> points, int code){
+void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
     if( code==CODE_SINGLE_POINTS){
+
         gridView->setHighlightedCDPs(points);
     }
 }
@@ -293,12 +295,17 @@ void GridViewer::on_action_Grid_Display_triggered()
 // need this to forward point from view to dispatcher
 void GridViewer::onViewPointSelected( QPoint point){
 
-    sendPoint(point);
+    sendPoint(SelectionPoint( point.x(), point.y() ));
 }
 
 void GridViewer::onViewPolylineSelected( QVector<QPoint> polyline){
 
-    sendPoints(polyline, CODE_POLYLINE);
+    QVector<SelectionPoint> sline;
+    sline.reserve(polyline.size());
+    for( QPoint p:polyline ){
+        sline.append(SelectionPoint(p.y(), p.x() ));
+    }
+    sendPoints( sline, CODE_POLYLINE);
 }
 
 void GridViewer::closeEvent(QCloseEvent *)

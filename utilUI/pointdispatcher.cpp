@@ -8,7 +8,7 @@ PointDispatcher::PointDispatcher()
 }
 
 
-void PointDispatcher::sendPoint( QPoint point, BaseViewer* sender ){
+void PointDispatcher::sendPoint( SelectionPoint point, BaseViewer* sender ){
 
     for( BaseViewer* viewer : m_viewers){
 
@@ -25,7 +25,7 @@ void PointDispatcher::sendPoint( QPoint point, BaseViewer* sender ){
 
 
 
-void PointDispatcher::sendPoints( QVector<QPoint> points, int code, BaseViewer* sender){
+void PointDispatcher::sendPoints( QVector<SelectionPoint> points, int code, BaseViewer* sender){
 
     for( BaseViewer* viewer : m_viewers){
 

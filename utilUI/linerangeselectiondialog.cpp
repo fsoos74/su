@@ -74,5 +74,6 @@ void LineRangeSelectionDialog::setMaxCrossline(int line){
 
 void LineRangeSelectionDialog::checkOk(){
 
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(minInline()<maxInline() && minCrossline()<maxCrossline());
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(
+                minInline()<=maxInline() && minCrossline()<=maxCrossline());
 }

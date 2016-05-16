@@ -14,7 +14,7 @@
 #include<QMap>
 
 #include<baseviewer.h>
-
+#include<selectionpoint.h>
 
 enum class PlotType{ AmplitudeOffset, AmplitudeAngle, AmplitudeSin2Angle };
 
@@ -59,8 +59,8 @@ public:
 
 protected:
 
-    void receivePoint( QPoint );
-    void receivePoints( QVector<QPoint>, int code);
+    void receivePoint( SelectionPoint );
+    void receivePoints( QVector<SelectionPoint>, int code);
     void closeEvent(QCloseEvent*);
 
 public slots:

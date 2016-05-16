@@ -759,7 +759,7 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
             double v2=(*grid2)(i,j);
             if( v2==grid2->NULL_VALUE) continue;
 
-            data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j) );
+            data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j, 0) );
 
         }
     }
@@ -840,7 +840,8 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
                     double v1=(*volume1)(i,j,k);
                     double v2=(*volume2)(i,j,k);
                     if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
-                    data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j) );
+                    data.push_back(CrossplotViewer::DataPoint(
+                                   v1, v2, i, j, volume1->bounds().sampleToTime(k)) );
                 }
 
             }
@@ -870,7 +871,8 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
             double v1=(*volume1)(i,j,k);
             double v2=(*volume2)(i,j,k);
             if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
-            data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j) );
+            data.push_back(CrossplotViewer::DataPoint(
+                               v1, v2, i, j, volume1->bounds().sampleToTime(k)) );
         }
     }
 

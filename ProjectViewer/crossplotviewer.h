@@ -8,7 +8,7 @@
 //#include <projectdispatcher.h>
 #include <QPointF>
 #include <baseviewer.h>
-
+#include <selectionpoint.h>
 
 #include "crossplotviewerdisplayoptionsdialog.h"
 
@@ -27,12 +27,16 @@ class CrossplotViewer : public BaseViewer
 public:
 
     struct DataPoint{
-        DataPoint():x(0),y(0),iline(0),xline(0){}
-        DataPoint( float ix, float iy, int iiline, int ixline):x(ix), y(iy), iline(iiline), xline(ixline){}
+        DataPoint():x(0),y(0), iline(0),xline(0), time(0){}
+        DataPoint( float ix, float iy, int iiline, int ixline, float(itime)):
+            x(ix), y(iy), iline(iiline), xline(ixline), time(itime){}
+
         float x=0;
         float y=0;
+
         int iline=0;
         int xline=0;
+        float time=0;
     };
 
     explicit CrossplotViewer(QWidget *parent = 0);
@@ -40,8 +44,8 @@ public:
 
 
 protected:
-    void receivePoint( QPoint );
-    void receivePoints( QVector<QPoint>, int code);
+    void receivePoint( SelectionPoint );
+    void receivePoints( QVector<SelectionPoint>, int code);
 
 public slots:
 

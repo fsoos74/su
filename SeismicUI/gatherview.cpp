@@ -85,6 +85,11 @@ void GatherView::setGather( std::shared_ptr<seismic::Gather> g){
 
 }
 
+void GatherView::setHighlightedPoints(QVector<SelectionPoint> points){
+    m_highlightedPoints=points;
+    m_gatherLabel->update();
+}
+
 std::shared_ptr<Grid2D<double> > GatherView::horizon(QString name)const{
 
     // return null pointer if not exists
@@ -132,7 +137,6 @@ void GatherView::setVolume( std::shared_ptr<Grid3D<float>> volume){    // set nu
     m_gatherLabel->updateBuffers();
   //  m_gatherLabel->update();
 }
-
 
 QStringList GatherView::traceAnnotation( size_t traceNumber )const{
 

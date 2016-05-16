@@ -99,6 +99,7 @@ void GatherLabel::setHighlightedTrace( size_t t){
 */
 }
 
+
 void GatherLabel::setHorizonColor(QColor color){
 
     if( color==m_horizonColor) return;
@@ -108,6 +109,24 @@ void GatherLabel::setHorizonColor(QColor color){
     update();
 
     emit horizonColorChanged(color);
+}
+
+void GatherLabel::setHighlightedPointSize(int s){
+
+    if( s==m_highlightedPointSize) return;
+
+    m_highlightedPointSize=s;
+
+    update();
+}
+
+void GatherLabel::setHighlightedPointColor(QColor c){
+
+    if( c==m_highlightedPointColor ) return;
+
+    m_highlightedPointColor=c;
+
+    update();
 }
 
 void GatherLabel::setTraceColor(QColor rgb){
@@ -144,6 +163,8 @@ void GatherLabel::setVolumeOpacity(int o){
 
 
 void GatherLabel::onViewGatherChanged(std::shared_ptr<seismic::Gather>){
+
+    buildTraceLookup();
 
     updateTraceScaleFactors();  // this will call updatePixmap and update
 
@@ -190,6 +211,8 @@ void GatherLabel::paintEvent(QPaintEvent *event){
     }
 
    drawHorizons( painter );
+
+   drawHighlightedPoints( painter, m_view->highlightedPoints() );
 
    m_dirty=false;
  }
@@ -261,6 +284,78 @@ void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<double>>
    }
 
    painter.strokePath(path, thePen);
+}
+
+// currently virtual cdps numbers are used. PROBLEMS WHEN INLINE NUMBERS >999999!!!!! XXX
+int ilxlToCDP( int iline, int xline){
+    const int IL_FACTOR=1000000;
+    return IL_FACTOR*iline + xline;
+}
+
+// create a lookup table to map cdps to traces
+void GatherLabel::buildTraceLookup(){
+
+    traceLookup.clear();
+    if(!m_view->gather()) return;
+
+    const seismic::Gather& gather=*(m_view->gather() );
+
+    for( size_t i=0; i<gather.size(); i++){  // XXX
+
+        const seismic::Trace& trace=gather[i];
+        const seismic::Header& header=trace.header();
+        int iline=header.at("iline").intValue();
+        int xline=header.at("xline").intValue();
+        int cdp=ilxlToCDP(iline, xline);
+        traceLookup.insert(cdp,i);
+    }
+}
+
+// returns trace number (in gather) of first trace with iline, xline
+// return value -1 if no such trace
+int GatherLabel::lookupTrace(int iline, int xline){
+
+    int cdp=ilxlToCDP(iline, xline);
+
+    if( traceLookup.contains(cdp)){
+
+        return traceLookup.value(cdp);
+    }
+
+    return -1;
+}
+
+
+void GatherLabel::drawHighlightedPoints( QPainter& painter,
+                                         const QVector<SelectionPoint>& points){
+
+    if(!m_view->gather()) return;
+
+
+    painter.save();
+
+    painter.setPen( m_highlightedPointColor );
+    painter.setBrush(QBrush(m_highlightedPointColor));
+    qreal pixelPerTrace=m_view->pixelPerTrace();
+    qreal pixelPerSecond=m_view->pixelPerSecond();
+    qreal ft=m_view->ft();
+
+
+    for( SelectionPoint p : points){
+
+        int trc=lookupTrace( p.iline, p.xline );
+        if( trc < 0 ) continue;           // no trace in gather with that cdp
+
+        qreal x= trc * pixelPerTrace;
+        qreal y= ( p.time - ft )*pixelPerSecond;
+        painter.drawEllipse( QPointF(x,y) ,m_highlightedPointSize, m_highlightedPointSize);
+
+        //std::cout<<"P il="<<p.iline<<" xl="<<p.xline<<" t="<<p.time;
+        //std::cout<<" cdp="<<cdp<<" trc="<<trc<<" "<<"x="<<x<<" y="<<y<<std::endl;
+    }
+
+    painter.restore();
+
 }
 
 void GatherLabel::drawHorizontalLines(QPainter& painter, const QRect& rect){

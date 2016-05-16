@@ -81,6 +81,7 @@
     <addaction name="separator"/>
     <addaction name="action_Trace_Options"/>
     <addaction name="actionVolume_Options"/>
+    <addaction name="action_Point_Display_Options"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -123,7 +124,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -135,7 +136,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -222,6 +223,14 @@
     <string>Ctrl+S</string>
    </property>
   </action>
+  <action name="action_Point_Display_Options">
+   <property name="text">
+    <string>&amp;Point Display Options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -233,7 +242,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

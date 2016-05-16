@@ -2,7 +2,7 @@
 #define POINTDISPATCHER_H
 
 
-#include<QPoint>
+#include"selectionpoint.h"
 #include<QVector>
 #include<QSet>
 
@@ -23,8 +23,8 @@ public:
         return m_viewers.size();
     }
 
-    void sendPoint( QPoint point, BaseViewer* sender=nullptr);
-    void sendPoints( QVector<QPoint> points, int code, BaseViewer* sender=nullptr);
+    void sendPoint( SelectionPoint point, BaseViewer* sender=nullptr);
+    void sendPoints( QVector<SelectionPoint> points, int code, BaseViewer* sender=nullptr);
 
 protected:
 

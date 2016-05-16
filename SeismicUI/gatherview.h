@@ -17,6 +17,7 @@ class GatherLabel;
 class GatherRuler;
 class AxxisLabelWidget;
 
+#include<selectionpoint.h>
 
 #include<grid2d.h>
 
@@ -33,6 +34,10 @@ public:
     typedef std::function< QStringList( const seismic::Header&) > TraceAnnotationFunction;
 
     GatherView( QWidget* parent=nullptr);
+
+    const QVector<SelectionPoint>& highlightedPoints()const{
+        return m_highlightedPoints;
+    }
 
     std::shared_ptr<seismic::Gather> gather()const{
         return m_gather;
@@ -92,7 +97,6 @@ public:
 
     QStringList traceAnnotation( size_t traceNumber )const;
 
-
 signals:
 
     void gatherChanged( std::shared_ptr<seismic::Gather>);
@@ -106,6 +110,7 @@ signals:
 public slots:
 
     void setGather( std::shared_ptr<seismic::Gather>);
+    void setHighlightedPoints(QVector<SelectionPoint>);
     void addHorizon( QString name, std::shared_ptr<Grid2D<double> > g, QColor);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
@@ -130,12 +135,17 @@ private:
     void updateTimeRange();
     void adjustScrollBar(QScrollBar *scrollBar, qreal factor);
 
+    void buildGatherIndex();
+
     std::shared_ptr<seismic::Gather> m_gather;
 
     QMap<QString, std::shared_ptr<Grid2D<double> > > m_horizons;
     QMap<QString, QColor> m_horizonColors;
 
+
     std::shared_ptr<Grid3D<float>> m_volume;
+
+    QVector<SelectionPoint> m_highlightedPoints;
 
     GatherLabel* m_gatherLabel=nullptr;
     GatherRuler* m_leftRuler;

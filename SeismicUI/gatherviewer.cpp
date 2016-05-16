@@ -19,6 +19,7 @@
 #include<grid3d.h>
 #include<QInputDialog>
 #include <QSettings>
+#include <pointdisplayoptionsdialog.h>
 
 GatherViewer::GatherViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -63,18 +64,28 @@ QToolBar* GatherViewer::mainToolBar()const{
     return ui->mainToolBar;
 }
 
-void GatherViewer::receivePoint(QPoint point){
+void GatherViewer::receivePoint(SelectionPoint point){
 
-    int iline=point.x();
-    int xline=point.y();
+    int iline=point.iline;
+    int xline=point.xline;
     emit requestPoint(iline, xline);
 }
 
-void GatherViewer::receivePoints(QVector<QPoint> points, int code){
+void GatherViewer::receivePoints(QVector<SelectionPoint> points, int code){
 
-    if( code==CODE_POLYLINE ){
-        emit requestPoints( points );
+    QVector<QPoint> rpoints;
+    rpoints.reserve(points.size());
+    for( SelectionPoint p : points){
+        rpoints.push_back(QPoint(p.iline, p.xline));
     }
+    if( code==CODE_POLYLINE ){
+        emit requestPoints( rpoints );
+        return;
+    }
+    if( code==CODE_SINGLE_POINTS){
+        view()->setHighlightedPoints(points);
+    }
+
 }
 
 void GatherViewer::zoomFitWindow(){
@@ -193,7 +204,7 @@ void GatherViewer::onTraceSelected(size_t i){
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
-        sendPoint(QPoint(iline, xline));
+        sendPoint(SelectionPoint(iline, xline));
     }
 }
 
@@ -483,3 +494,24 @@ void GatherViewer::createDockWidgets(){
     m_densityColorBarDock->close();
 }
 
+
+void GatherViewer::on_action_Point_Display_Options_triggered()
+{
+    if( !m_pointDisplayOptionsDialog){
+
+        m_pointDisplayOptionsDialog=new PointDisplayOptionsDialog(this);
+        m_pointDisplayOptionsDialog->setWindowTitle("Configure Point Display");
+
+        GatherLabel* gatherLabel=gatherView->gatherLabel();
+
+        m_pointDisplayOptionsDialog->setPointSize( gatherLabel->highlightedPointSize());
+        m_pointDisplayOptionsDialog->setPointColor( gatherLabel->highlightedPointColor());
+
+        connect( m_pointDisplayOptionsDialog, SIGNAL( pointSizeChanged(int)),
+                 gatherLabel, SLOT(setHighlightedPointSize(int)) );
+        connect( m_pointDisplayOptionsDialog, SIGNAL(pointColorChanged(QColor)),
+                 gatherLabel, SLOT(setHighlightedPointColor(QColor)) );
+    }
+
+    m_pointDisplayOptionsDialog->show();
+}

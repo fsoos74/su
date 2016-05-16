@@ -19,7 +19,7 @@
 
 const int INLINE_DATA_KEY=1;
 const int CROSSLINE_DATA_KEY=2;
-
+const int TIME_DATA_KEY=3;
 
 
 CrossplotViewer::CrossplotViewer(QWidget *parent) :
@@ -53,7 +53,7 @@ CrossplotViewer::~CrossplotViewer()
     delete ui;
 }
 
-void CrossplotViewer::receivePoint( QPoint pt ){
+void CrossplotViewer::receivePoint( SelectionPoint pt ){
 
     for( QGraphicsItem* item : m_scene->items()){
 
@@ -61,7 +61,9 @@ void CrossplotViewer::receivePoint( QPoint pt ){
         if( datapointItem){
             int iline=datapointItem->data( INLINE_DATA_KEY).toInt();
             int xline=datapointItem->data( CROSSLINE_DATA_KEY).toInt();
-            if( iline==pt.x() && xline==pt.y() ){
+            float time=datapointItem->data( TIME_DATA_KEY).toFloat();
+
+            if( iline==pt.iline && xline==pt.xline ){
 
                 item->setZValue(1);
                 item->setSelected(true);
@@ -79,7 +81,7 @@ void CrossplotViewer::receivePoint( QPoint pt ){
     ui->graphicsView->setSelectionPolygon(QPolygonF());
 }
 
-void CrossplotViewer::receivePoints( QVector<QPoint> points, int code){
+void CrossplotViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
     if( code != CODE_SINGLE_POINTS) return;
 
@@ -108,6 +110,8 @@ void CrossplotViewer::setData( std::shared_ptr<Grid2D<QPointF> > data){
 
 void CrossplotViewer::setData( QVector<DataPoint> data){
 
+    const int ASK_SELECT_LINES_LIMIT=200000;
+
     m_data=data;
 
     int minil=std::numeric_limits<int>::max();
@@ -123,6 +127,19 @@ void CrossplotViewer::setData( QVector<DataPoint> data){
 
     //m_geometryBounds=m_data->bounds();
     m_geometryBounds=Grid2DBounds(minil, minxl, maxil, maxxl);
+
+    if( m_data.size() > ASK_SELECT_LINES_LIMIT ){
+        int ret=QMessageBox::question(this, "Crossplot Attributes",
+            QString("Number of datapoints is %1. This will significantly slow down operation.\n"
+                    "Select inline/crossline ranges to reduce the number of plotted points?").arg(m_data.size()),
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes );
+
+        if( ret==QMessageBox::Yes ){
+           ui->actionSelect_Data_by_Geometry->trigger();
+        }
+
+    }
+
     computeTrend();
 
     emit dataChanged();
@@ -300,6 +317,9 @@ void CrossplotViewer::updateScene(){
 
         DataPoint p = m_data[i];
 
+        // check if point is within the inline/crossline selection for display
+        if( !m_geometryBounds.isInside(p.iline,p.xline)) continue;
+
         // NULL values are filtered before the data is set
         QPointF pt(p.x, p.y);
 
@@ -319,7 +339,7 @@ void CrossplotViewer::updateScene(){
         // add user data inline and crossline
         item->setData( INLINE_DATA_KEY, p.iline);
         item->setData( CROSSLINE_DATA_KEY, p.xline);
-
+        item->setData( TIME_DATA_KEY, p.time);
         scene->addItem(item);
 
         //std::cout<<item->x()<<","<<item->y()<<std::endl;
@@ -386,14 +406,16 @@ void CrossplotViewer::computeTrend(){
 
 void CrossplotViewer::sceneSelectionChanged(){
 
-    QVector<QPoint> points;
+    QVector<SelectionPoint> points;
     points.reserve( m_scene->selectedItems().size() );
 
     for( QGraphicsItem* item : m_scene->selectedItems() ){
 
         int iline=item->data( INLINE_DATA_KEY).toInt();
         int xline=item->data( CROSSLINE_DATA_KEY).toInt();
-        points.push_back(QPoint(iline, xline));
+        float time=item->data( TIME_DATA_KEY).toFloat();
+
+        points.push_back(SelectionPoint(iline, xline, time));
     }
 
     // this is for single selected point via double click
@@ -431,6 +453,8 @@ void CrossplotViewer::on_actionZoom_Fit_Window_triggered()
 void CrossplotViewer::on_actionSelect_Data_by_Geometry_triggered()
 {
     LineRangeSelectionDialog dlg(this);
+
+    dlg.setWindowTitle( "Select Line Ranges");
 
     dlg.setMinInline(m_geometryBounds.i1());
     dlg.setMaxInline(m_geometryBounds.i2());

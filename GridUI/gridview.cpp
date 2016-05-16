@@ -75,7 +75,7 @@ void GridView::setGrid( std::shared_ptr<Grid2D<double> > g){
     setGridToImageTransform( computeGridToImageTransform());
 }
 
-void GridView::setHighlightedCDPs( QVector<QPoint> inlinesAndCrosslines){
+void GridView::setHighlightedCDPs( QVector<SelectionPoint> inlinesAndCrosslines){
 
     //std::cout<<"GridView::setHighlightedCDPS n="<<inlinesAndCrosslines.size()<<std::endl;
     if( m_highlightedCDPs==inlinesAndCrosslines) return;
@@ -891,9 +891,9 @@ void ViewLabel::drawHighlightedCDPs( QPainter& painter){
     QTransform trans=m_view->gridToImageTransform();
 
     QPainterPath path;
-    for( auto inlineAndCrossline : m_view->highlightedCDPs() ){
+    for( SelectionPoint spoint : m_view->highlightedCDPs() ){
 
-        QPointF point=trans.map( QPointF(inlineAndCrossline.y(), inlineAndCrossline.x() ) ); // IMPORTANT: internally inline on y-axis!!!!
+        QPointF point=trans.map( QPointF(spoint.xline, spoint.iline ) ); // IMPORTANT: internally inline on y-axis!!!!
         painter.drawEllipse(point, 0.5*m_highlightCDPSize, 0.5*m_highlightCDPSize);
     }
 

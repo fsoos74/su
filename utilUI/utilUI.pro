@@ -31,7 +31,9 @@ SOURCES += utilui.cpp \
     pointdispatcher.cpp \
     twocombosdialog.cpp \
     alignedtextgraphicsitem.cpp \
-    activetextgraphicsitem.cpp
+    activetextgraphicsitem.cpp \
+    selectionpoint.cpp \
+    pointdisplayoptionsdialog.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -42,7 +44,9 @@ HEADERS += utilui.h\
     pointdispatcher.h \
     twocombosdialog.h \
     alignedtextgraphicsitem.h \
-    activetextgraphicsitem.h
+    activetextgraphicsitem.h \
+    selectionpoint.h \
+    pointdisplayoptionsdialog.h
 
 unix {
     target.path = /usr/lib
@@ -51,4 +55,12 @@ unix {
 
 FORMS += \
     linerangeselectiondialog.ui \
-    twocombosdialog.ui
+    twocombosdialog.ui \
+    pointdisplayoptionsdialog.ui
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
+else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
+
+INCLUDEPATH += $$PWD/../ColorUI
+DEPENDPATH += $$PWD/../ColorUI

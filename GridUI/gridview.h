@@ -17,6 +17,8 @@
 
 //#include<projectdispatcher.h>
 
+#include <selectionpoint.h>
+
 class  GridView;
 class GridViewer;
 
@@ -211,7 +213,7 @@ public:
         return m_grid;                   //!!!!
     }
 
-    const QVector<QPoint>& highlightedCDPs()const{
+    const QVector<SelectionPoint>& highlightedCDPs()const{
         return m_highlightedCDPs;
     }
 
@@ -289,7 +291,7 @@ signals:
 public slots:
 
     void setGrid( std::shared_ptr<Grid2D<double> > );
-    void setHighlightedCDPs( QVector<QPoint>);
+    void setHighlightedCDPs( QVector<SelectionPoint>);
     void setColorMapping( const std::pair<double,double>& m);
     void setColors( const QVector<QRgb>&);
     void setNullColor( QColor );
@@ -352,7 +354,7 @@ private:
     QString m_inlineAxxisLabel="Inline Number";
     QString m_crosslineAxxisLabel="Crossline Number";
 
-    QVector<QPoint> m_highlightedCDPs;
+    QVector<SelectionPoint> m_highlightedCDPs;
     QVector<QPoint> m_polyline;
 
     QRubberBand*        rubberBand=nullptr;

@@ -48,7 +48,7 @@ void BaseViewer::setBroadcastEnabled(bool on){
     emit broadcastEnabledChanged(on);
 }
 
-void BaseViewer::sendPoint(QPoint point){
+void BaseViewer::sendPoint(SelectionPoint point){
 
     if( !m_broadcastEnabled) return;
 
@@ -57,7 +57,7 @@ void BaseViewer::sendPoint(QPoint point){
     }
 }
 
-void BaseViewer::sendPoints(QVector<QPoint> points, int code){
+void BaseViewer::sendPoints(QVector<SelectionPoint> points, int code){
 
     if( !m_broadcastEnabled) return;
 
