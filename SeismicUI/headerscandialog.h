@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QVector>
+#include <QStandardItemModel>
 
 namespace Ui {
 class HeaderScanDialog;
@@ -16,7 +17,7 @@ public:
     explicit HeaderScanDialog(QWidget *parent = 0);
     ~HeaderScanDialog();
 
-    void setData( QStringList);
+    void setModel( QStandardItemModel* model);
 
 private:
     Ui::HeaderScanDialog *ui;

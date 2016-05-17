@@ -7,9 +7,6 @@ HeaderScanDialog::HeaderScanDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QFontMetrics fm(ui->textEdit->font());
-    int w=fm.width(QString("123456789012345678901234567890123456789012345678901234567890")); // 60 chars per line
-    ui->textEdit->setMinimumWidth(w);
 }
 
 HeaderScanDialog::~HeaderScanDialog()
@@ -17,11 +14,12 @@ HeaderScanDialog::~HeaderScanDialog()
     delete ui;
 }
 
-void HeaderScanDialog::setData( QStringList data){
+void HeaderScanDialog::setModel(QStandardItemModel* model){
 
-    ui->textEdit->clear();
-    for( auto s : data ){
-        ui->textEdit->append(s);
-    }
+    ui->tableView->setModel(model);
+
+    ui->tableView->verticalHeader()->setVisible(false);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->tableView->resizeColumnsToContents();
 
 }

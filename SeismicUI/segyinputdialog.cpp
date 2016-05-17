@@ -12,6 +12,7 @@
 #include <ebcdicdialog.h>
 #include <headerdialog.h>
 #include<segyreader.h>
+#include<seis_bits.h>
 #include <xsiwriter.h>
 #include<xsireader.h>
 #include <navigationwidget.h>
@@ -741,11 +742,11 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
 
     try{
 
+        bool swap=ui->rbSwapBytes->isChecked();
+
         QProgressDialog* pdlg=new QProgressDialog("Scanning Trace Headers", "Cancel", 0, m_reader->trace_count(), this);
 
-        auto start = std::chrono::steady_clock::now();
-
-        for( int i=0; i<m_reader->trace_count(); i++){
+        for( int i=0; i<m_reader->trace_count(); i++){   // XXX TEST
 
             m_reader->seek_trace(i);
 
@@ -757,6 +758,10 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
                 int16_t x;
                 std::memcpy(&x, &rawHeader[j], sizeof(x));
 
+                if( swap ){
+                   seismic::swap_bytes(&x);
+                }
+
                 if( x<min16[j]) min16[j]=x;
                 if( x>max16[j]) max16[j]=x;
             }
@@ -764,6 +769,10 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
             for(size_t j=0; j+sizeof(int32_t)<headerSize; j++){
                 int32_t x;
                 std::memcpy(&x, &rawHeader[j], sizeof(x));
+
+                if( swap ){
+                    seismic::swap_bytes(&x);
+                }
 
                 if( x<min32[j]) min32[j]=x;
                 if( x>max32[j]) max32[j]=x;
@@ -778,26 +787,29 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
             }
         }
 
-        auto end = std::chrono::steady_clock::now();
-        auto diff = end - start;
-        std::cout<<"Scanning took "<< std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+        // build model
+        QStandardItemModel* model=new QStandardItemModel(headerSize, 5, this);
 
-        QStringList data;
+        QStringList labels;
+        labels<<"start pos"<<"min int16"<<"max int16"<<"min int32"<<"max int32";
+        model->setHorizontalHeaderLabels(labels);
 
-        data.append(QString("Pos.      16bit min/max           32bit min/max"));
-        data.append(QString("-------------------------------------------------------"));
-        for( size_t i=0; i + 1<headerSize; i++){
+        for( int i = 0; i< headerSize; i++){
 
-            QString s=QString::asprintf("%4d:   %6d - %6d   %11d - %11d",
-                       i, min16[i], max16[i], min32[i], max32[i] );
-            data.append(s);
+            int column=0;
+
+            model->setItem(i, column++, new QStandardItem(QString::number(i+1))); // positions are 1-based for user
+            model->setItem(i, column++, new QStandardItem(QString::number(min16[i])));
+            model->setItem(i, column++, new QStandardItem(QString::number(max16[i])));
+            model->setItem(i, column++, new QStandardItem(QString::number(min32[i])));
+            model->setItem(i, column++, new QStandardItem(QString::number(max32[i])));
         }
 
         if( !m_HeaderScanDialog ){
             m_HeaderScanDialog=new HeaderScanDialog(this);
+            m_HeaderScanDialog->setWindowTitle("Trace Header Byte Ranges");
         }
-
-        m_HeaderScanDialog->setData(data);
+        m_HeaderScanDialog->setModel(model);
         m_HeaderScanDialog->show();
     }
     catch(seismic::SEGYReader::FormatError& err){
