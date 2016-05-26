@@ -193,6 +193,18 @@ public:
         return (*this)(iline, xline, i);
     }
 
+    size_t size()const{
+        return m_values.size();
+    }
+
+    const value_type& operator[](size_t idx)const{
+        return m_values[idx];
+    }
+
+    value_type& operator[](size_t idx){
+        return m_values[idx];
+    }
+
 
 private:
 

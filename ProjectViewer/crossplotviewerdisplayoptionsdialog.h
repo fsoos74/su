@@ -16,15 +16,12 @@ public:
     ~CrossplotViewerDisplayOptionsDialog();
 
     int datapointSize();
-    bool flattenTrend();
 
 public slots:
     void setDatapointSize(int);
-    void setFlattenTrend(bool);
 
 signals:
     void datapointSizeChanged(int);
-    void flattenTrendChanged(bool);
 
 private:
 

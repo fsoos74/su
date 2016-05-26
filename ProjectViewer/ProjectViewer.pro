@@ -36,7 +36,9 @@ SOURCES += main.cpp\
     amplitudecurveviewer.cpp \
     projectgeometrydialog.cpp \
     aboutdialog.cpp \
-    histogramdialog.cpp
+    histogramdialog.cpp \
+    crossplot.cpp \
+    volumedataselectiondialog.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -52,7 +54,9 @@ HEADERS  += projectviewer.h \
     aboutdialog.h \
     amplitudecurvedefinition.h \
     histogramdialog.h \
-    licenseinfo.h
+    licenseinfo.h \
+    crossplot.h \
+    volumedataselectiondialog.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -66,7 +70,8 @@ FORMS    += projectviewer.ui \
     amplitudecurveviewer.ui \
     projectgeometrydialog.ui \
     aboutdialog.ui \
-    histogramdialog.ui
+    histogramdialog.ui \
+    volumedataselectiondialog.ui
 
 RESOURCES += \
     icons.qrc

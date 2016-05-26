@@ -539,7 +539,6 @@ void AmplitudeCurveViewer::on_actionConfigure_Items_triggered()
         displayOptionsDialog=new CurveViewerDisplayOptionsDialog(this);
         displayOptionsDialog->setWindowTitle("Display Options");
         displayOptionsDialog->setDatapointSize(m_datapointSize);
-        displayOptionsDialog->setShowRegressionLines(m_showRegressionLines);
 
         connect( displayOptionsDialog, SIGNAL(datapointSizeChanged(int)), this, SLOT(setDatapointSize(int)) );
         connect( displayOptionsDialog, SIGNAL(showRegressionLinesChanged(bool)), this, SLOT(setShowRegressionLines(bool)) );

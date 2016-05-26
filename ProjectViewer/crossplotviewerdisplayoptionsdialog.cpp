@@ -8,7 +8,6 @@ CrossplotViewerDisplayOptionsDialog::CrossplotViewerDisplayOptionsDialog(QWidget
     ui->setupUi(this);
 
     connect( ui->sbDatapointSize, SIGNAL(valueChanged(int)), this, SLOT(setDatapointSize(int)) );
-    connect( ui->cbFlattenTrend, SIGNAL(toggled(bool)), this, SLOT(setFlattenTrend(bool)) );
 }
 
 CrossplotViewerDisplayOptionsDialog::~CrossplotViewerDisplayOptionsDialog()
@@ -20,11 +19,6 @@ int CrossplotViewerDisplayOptionsDialog::datapointSize(){
     return ui->sbDatapointSize->value();
 }
 
-bool CrossplotViewerDisplayOptionsDialog::flattenTrend(){
-
-    return ui->cbFlattenTrend->isChecked();
-}
-
 
 void CrossplotViewerDisplayOptionsDialog::setDatapointSize(int size){
 
@@ -32,13 +26,5 @@ void CrossplotViewerDisplayOptionsDialog::setDatapointSize(int size){
     ui->sbDatapointSize->setValue(size);
 
     emit datapointSizeChanged(size);
-}
-
-void CrossplotViewerDisplayOptionsDialog::setFlattenTrend(bool on){
-
-    // do not compare new and old value, checkbox does this anyway and we need signal to be eimitted if this is triggered by checkbox
-    ui->cbFlattenTrend->setChecked(on);
-
-    emit flattenTrendChanged(on);
 }
 

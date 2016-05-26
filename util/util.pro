@@ -23,7 +23,8 @@ HEADERS += util.h\
         util_global.h \
     array2d.h \
     rectangle.h \
-    array3d.h
+    array3d.h \
+    range.h
 
 unix {
     target.path = /usr/lib

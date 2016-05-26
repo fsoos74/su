@@ -51,9 +51,10 @@
     <property name="title">
      <string>&amp;Display</string>
     </property>
-    <addaction name="actionSelect_Data_by_Geometry"/>
     <addaction name="separator"/>
     <addaction name="actionDisplay_Options"/>
+    <addaction name="separator"/>
+    <addaction name="actionDisplay_Trend_Line"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -62,8 +63,33 @@
     <addaction name="action_Receive_CDPs"/>
     <addaction name="action_Dispatch_CDPs"/>
    </widget>
+   <widget class="QMenu" name="menuTrenss">
+    <property name="title">
+     <string>&amp;Trend</string>
+    </property>
+    <widget class="QMenu" name="menu_Compute_Trend">
+     <property name="title">
+      <string>&amp;Compute Trend</string>
+     </property>
+     <addaction name="actionCompute_Trend_From_Loaded_Data"/>
+     <addaction name="actionCompute_Trend_From_Displayed_Data"/>
+     <addaction name="actionCompute_Trend_From_Selected_Data"/>
+    </widget>
+    <addaction name="menu_Compute_Trend"/>
+    <addaction name="action_Pick_Trend"/>
+    <addaction name="separator"/>
+    <addaction name="action_Flatten_Trend"/>
+   </widget>
+   <widget class="QMenu" name="menu_Data">
+    <property name="title">
+     <string>&amp;Data</string>
+    </property>
+    <addaction name="actionSelect_By_Inline_Crossline_Ranges"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_View"/>
+   <addaction name="menu_Data"/>
+   <addaction name="menuTrenss"/>
    <addaction name="menu_Display"/>
    <addaction name="menu_Broadcast"/>
   </widget>
@@ -91,7 +117,7 @@
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -103,7 +129,7 @@
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -156,6 +182,47 @@
     <string>&amp;Dispatch CDPs</string>
    </property>
   </action>
+  <action name="action_Pick_Trend">
+   <property name="text">
+    <string>&amp;Pick Trend</string>
+   </property>
+  </action>
+  <action name="action_Flatten_Trend">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Flatten Trend</string>
+   </property>
+  </action>
+  <action name="actionSelect_By_Inline_Crossline_Ranges">
+   <property name="text">
+    <string>Inline/Crossline Ranges</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Trend_Line">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Display Trend Line</string>
+   </property>
+  </action>
+  <action name="actionCompute_Trend_From_Loaded_Data">
+   <property name="text">
+    <string>From Loaded Data</string>
+   </property>
+  </action>
+  <action name="actionCompute_Trend_From_Displayed_Data">
+   <property name="text">
+    <string>From Displayed Data</string>
+   </property>
+  </action>
+  <action name="actionCompute_Trend_From_Selected_Data">
+   <property name="text">
+    <string>From Selected Data</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -165,7 +232,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../SeismicUI/icons.qrc"/>
   <include location="icons.qrc"/>
  </resources>
  <connections>

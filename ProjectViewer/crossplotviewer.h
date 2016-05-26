@@ -9,6 +9,8 @@
 #include <QPointF>
 #include <baseviewer.h>
 #include <selectionpoint.h>
+#include <memory>
+#include <avoproject.h>
 
 #include "crossplotviewerdisplayoptionsdialog.h"
 
@@ -19,6 +21,8 @@ class CrossplotViewer;
 
 #include<memory>
 #include<grid2d.h>
+#include<range.h>
+#include <crossplot.h>
 
 class CrossplotViewer : public BaseViewer
 {
@@ -26,22 +30,11 @@ class CrossplotViewer : public BaseViewer
 
 public:
 
-    struct DataPoint{
-        DataPoint():x(0),y(0), iline(0),xline(0), time(0){}
-        DataPoint( float ix, float iy, int iiline, int ixline, float(itime)):
-            x(ix), y(iy), iline(iiline), xline(ixline), time(itime){}
-
-        float x=0;
-        float y=0;
-
-        int iline=0;
-        int xline=0;
-        float time=0;
-    };
-
     explicit CrossplotViewer(QWidget *parent = 0);
     ~CrossplotViewer();
 
+    bool isFlattenTrend();
+    bool isDisplayTrendLine();
 
 protected:
     void receivePoint( SelectionPoint );
@@ -49,10 +42,12 @@ protected:
 
 public slots:
 
-    void setData( QVector<DataPoint>);
+    void setData( crossplot::Data);
+    void setTrend( QPointF ); // p(intercept, gradient)
     void setAxisLabels( const QString& xAxisAnnotation, const QString& yAxisAnnotation );
-    void setGeometryBounds( Grid2DBounds);
+    void setRegion( Grid2DBounds, Range<float>);
     void setFlattenTrend(bool);
+    void setDisplayTrendLine(bool);
     void setDatapointSize( int );
 
 
@@ -76,14 +71,20 @@ private slots:
 
     void on_actionZoom_Fit_Window_triggered();
 
-    void on_actionSelect_Data_by_Geometry_triggered();
-
     void on_actionDisplay_Options_triggered();
+
+    void updateScene();
+
+
+    void on_actionCompute_Trend_From_Loaded_Data_triggered();
+    void on_actionCompute_Trend_From_Displayed_Data_triggered();
+    void on_actionCompute_Trend_From_Selected_Data_triggered();
+    void on_action_Flatten_Trend_toggled(bool arg1);
+    void on_actionSelect_By_Inline_Crossline_Ranges_triggered();
 
 private:
 
-    void computeTrend();
-    void updateScene();
+    void scanBounds();
 
     void saveSettings();
     void loadSettings();
@@ -96,12 +97,16 @@ private:
     Ui::CrossplotViewer *ui;
 
     QGraphicsScene* m_scene=nullptr;
+
+    std::shared_ptr<AVOProject> m_project;
+
     //std::shared_ptr< Grid2D<QPointF> > m_data;
-    QVector<DataPoint> m_data;
+    crossplot::Data m_data;
     Grid2DBounds m_geometryBounds;
+    Range<float> m_timeRange;
+
     int m_datapointSize=11;
     qreal m_zoomFactor=1;
-    bool m_flattenTrend=false;
     QPointF m_trend;
 
     CrossplotViewerDisplayOptionsDialog* displayOptionsDialog=nullptr;

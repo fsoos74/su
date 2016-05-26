@@ -93,7 +93,7 @@ public:
 
     enum class GridMode{ None, Background, Foreground };
 
-    enum class SelectionMode{ None, SinglePoint, Polygon };
+    enum class SelectionMode{ None, SinglePoint, Line, Polygon };
 
     const int MINIMUM_ZOOM_PIXEL=6;
 

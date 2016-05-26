@@ -65,6 +65,7 @@
 #include "selectgridtypeandnamedialog.h"
 #include "crossplotviewer.h"
 #include "amplitudecurveviewer.h"
+#include <crossplot.h>
 
 #include<segywriter.h>
 #include<segyreader.h>
@@ -739,6 +740,9 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
     std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( GridType::Attribute, dlg.selection2());
     if( !grid2 ) return;
 
+    crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get());
+
+/*
     QVector<CrossplotViewer::DataPoint> data;
 
 
@@ -764,6 +768,7 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
 
         }
     }
+*/
 
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);
@@ -771,7 +776,7 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
 
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.selection1(), dlg.selection2() ) );
     viewer->show();
-    viewer->setData(data); // add data after visible!!!!
+    viewer->setData(data); // add data after visible!!!! /// XXX QVECTOR!!!
     viewer->setAxisLabels(dlg.selection1(), dlg.selection2());
 
     viewer->setDispatcher(m_dispatcher);
@@ -808,11 +813,14 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
         return;
     }
 
+
     Grid2DBounds bounds(volume1->bounds().inline1(), volume1->bounds().crossline1(),
                         volume1->bounds().inline2(), volume1->bounds().crossline2());
     int nt=volume1->bounds().sampleCount();
+    float t1=volume1->bounds().ft();
+    float t2=volume2->bounds().lt();
 
-    QVector<CrossplotViewer::DataPoint> data;
+    crossplot::Data data;
 
     const int MAX_POINTS=100000;    // maximum number of points to plot
     int numInputPoints=bounds.width()*bounds.height()*nt;
@@ -831,50 +839,11 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
         }
     }
 
-    if( plotAllPoints ){  // PLOT ALL POINTS
-
-        for( int i=bounds.i1(); i<=bounds.i2(); i++){
-
-            for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-                for( int k=0; k<=nt; k++){
-                    double v1=(*volume1)(i,j,k);
-                    double v2=(*volume2)(i,j,k);
-                    if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
-                    data.push_back(CrossplotViewer::DataPoint(
-                                   v1, v2, i, j, volume1->bounds().sampleToTime(k)) );
-                }
-
-            }
-
-        }
+    if(plotAllPoints){
+        data=crossplot::createFromVolumes(volume1.get(), volume2.get() );
     }
-    else{   // SELECT RANDOM POINTS FOR PLOT
-        // create random list of volume indices with NO DUPLICATES
-        //std::cout<<"Populating crossplot with random points"<<std::endl<<std::flush;
-        std::vector<int> indices(numInputPoints);
-        std::iota( indices.begin(), indices.end(), 0);
-        std::mt19937 eng{std::random_device{}()};
-        std::shuffle(indices.begin(), indices.end(), eng);
-
-        // add crossplot data points for the first MAX_POINTS indices
-
-        for( int n=0; n<MAX_POINTS; n++){
-            // convert index to inline, crossline and sample
-            int idx=indices[n];
-            int k=idx%nt;
-            idx/=nt;
-            int j=bounds.j1() + idx%bounds.width();
-            idx/=bounds.width();
-            int i=bounds.i1() + idx;
-
-            //std::cout<<"n="<<n<<" il="<<i<<" xl="<<j<<" sam="<<k<<std::endl<<std::flush;
-            double v1=(*volume1)(i,j,k);
-            double v2=(*volume2)(i,j,k);
-            if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
-            data.push_back(CrossplotViewer::DataPoint(
-                               v1, v2, i, j, volume1->bounds().sampleToTime(k)) );
-        }
+    else{
+        data=crossplot::createFromVolumesReduced(volume1.get(), volume2.get(), MAX_POINTS);
     }
 
     CrossplotViewer* viewer=new CrossplotViewer();

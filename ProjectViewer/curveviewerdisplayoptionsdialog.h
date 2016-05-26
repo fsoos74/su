@@ -15,15 +15,12 @@ public:
     explicit CurveViewerDisplayOptionsDialog(QWidget *parent = 0);
     ~CurveViewerDisplayOptionsDialog();
     int datapointSize();
-    bool showRegressionLines();
 
 public slots:
     void setDatapointSize(int);
-    void setShowRegressionLines(bool);
 
 signals:
     void datapointSizeChanged(int);
-    void showRegressionLinesChanged(bool);
 
 private:
     Ui::CurveViewerDisplayOptionsDialog *ui;
