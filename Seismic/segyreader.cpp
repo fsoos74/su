@@ -71,18 +71,18 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
         case SEGYHeaderWordDataType::BUF6:
              // ignore for now!!!!
             break;
-        /*
-        case SEGY_FLOAT:{
+
+        case SEGYHeaderWordDataType::IEEE:{
             float f;
-            get_from_raw( &f, &rhdr[def.pos], m_info.isSwap() );
-            if( def.ctype==SEGY_PLAIN ){
+            get_from_raw( &f, &rhdr[def.pos], false );//m_info.isSwap() );
+            if( def.ctype==SEGYHeaderWordConvType::PLAIN ){
                 th[def.name]=HeaderValue(HeaderValue::float_type( f ) );
             }
             else{
                 throw FormatError("SEGY_FLOAT values can only be type plain!");
             }
             break;
-        }*/
+        }
         default:
             throw FormatError("Unsupported type in convert_raw_header!");
             break;

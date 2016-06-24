@@ -115,6 +115,8 @@ private slots:
 
 
 
+    void on_actionRun_Grid_User_Script_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);
@@ -146,6 +148,7 @@ private:
     void removeVolume( const QString&);
     void selectAndExportVolume();
     void exportVolume(QString);
+    void exportVolumeSeisware(QString);
 
     void runProcess( ProjectProcess* process, QMap<QString, QString> params);
 

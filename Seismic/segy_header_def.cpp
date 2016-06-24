@@ -9,6 +9,8 @@ const QString strINT16="INT16";
 const QString strINT32="INT32";
 const QString strUINT16="UINT16";
 const QString strBUF6="BUF66";
+const QString strUINT8="UINT8";
+const QString strIEEE="IEEE";
 
 const QString strPLAIN="PLAIN";
 const QString strCOORD="COORD";
@@ -26,6 +28,10 @@ QString toQString(SEGYHeaderWordDataType t){
     case SEGYHeaderWordDataType::UINT16: return strUINT16; break;
 
     case SEGYHeaderWordDataType::BUF6: return strBUF6; break;
+
+    case SEGYHeaderWordDataType::UINT8: return strUINT8; break;
+
+    case SEGYHeaderWordDataType::IEEE: return strIEEE; break;
 
     default: throw std::runtime_error("ILLEGAL data type in toQString(SEGYHeaderWordDataType)");
     }
@@ -45,6 +51,12 @@ SEGYHeaderWordDataType toDataType(const QString& s){
     }
     else if( s==strBUF6){
         return SEGYHeaderWordDataType::BUF6;
+    }
+    else if( s==strUINT8){
+        return SEGYHeaderWordDataType::UINT8;
+    }
+    else if( s==strIEEE){
+        return SEGYHeaderWordDataType::IEEE;
     }
 
     throw std::runtime_error("ILLEGAL type in toDataType(QString)");

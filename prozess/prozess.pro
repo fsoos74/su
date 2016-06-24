@@ -10,6 +10,7 @@ win32{
     CONFIG+=staticlib
 }
 
+
 include(../common.pri)
 
 TARGET = prozess
@@ -31,7 +32,8 @@ SOURCES += prozess.cpp \
     fluidfactorprocess.cpp \
     fluidfactorvolumeprocess.cpp \
     amplitudecurves.cpp \
-    gatherfilter.cpp
+    gatherfilter.cpp \
+    rungridscriptprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -48,11 +50,22 @@ HEADERS += prozess.h\
     fluidfactorprocess.h \
     fluidfactorvolumeprocess.h \
     amplitudecurves.h \
-    gatherfilter.h
+    gatherfilter.h \
+    rungridscriptprocess.h
 
 unix {
     target.path = /usr/lib
     INSTALLS += target
+}
+
+#embed python
+unix {
+    INCLUDEPATH +=/usr/include/python2.7
+    #LIBS += -lpython2.7 -lpthread -ldl -lutil -lm -Xlinker -export-dynamic
+    #QMAKE_CFLAGS += `/usr/bin/python2.7-config --cflags`;
+}
+win32{
+    INCLUDEPATH += C:\Python27\include
 }
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

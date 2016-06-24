@@ -1,5 +1,9 @@
 #include "crossplot.h"
 
+#include<algorithm>
+#include<random>
+#include<numeric>
+
 namespace crossplot{
 
 

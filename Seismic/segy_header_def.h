@@ -10,7 +10,9 @@ namespace seismic{
 enum class SEGYHeaderWordDataType{ INT16, // 2 byte signed integer
                                 INT32, // 4 byte signed integer
                                 UINT16,// 2 byte unsigned integer
-                                BUF6   // 6 byte block
+                                BUF6,   // 6 byte block
+                                IEEE,    // 32bit ieee float
+                                UINT8       // unsigned byte, added for seisware segy
                            };
 
 QString toQString(SEGYHeaderWordDataType);

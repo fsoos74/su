@@ -4,9 +4,25 @@
 #
 #-------------------------------------------------
 
-#XXX ADD FOR RELEASE
+
+
+#XXX ADD FOR RELEASE, LICENSE
 win32{
     DEFINES += USE_KEYLOCK_LICENSE
+}
+
+#embed python
+unix {
+    QMAKE_CFLAGS += `/usr/bin/python2.7-config --cflags`;
+    #!!!! IMPORTANT: ADD path to libutil to avoid conflict with my libutil!!!!
+    QMAKE_LFLAGS += -L/usr/lib64 `/usr/bin/python2.7-config --ldflags`
+   # INCLUDEPATH +=/usr/include/python2.7
+    #LIBS += -L/usr/lib64 -libutil.so
+    #LIBS += -lpthread -ldl -lutil -lm -Xlinker -export-dynamic
+}
+win32{
+    LIBS += -L"C:\Python27\libs" -lpython27
+
 }
 
 QT       += core gui

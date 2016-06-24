@@ -40,6 +40,8 @@
 #include<iostream>
 #include<chrono>
 #include<random>
+#include<limits>
+#include<memory>
 
 #include<projectgeometrydialog.h>
 
@@ -57,6 +59,8 @@
 #include <fluidfactordialog.h>
 #include <fluidfactorvolumeprocess.h>
 #include <fluidfactorvolumedialog.h>
+#include <gridrunuserscriptdialog.h>
+#include <rungridscriptprocess.h>
 #include <windowreductionfunction.h>
 
 #include<axxisorientation.h>
@@ -68,7 +72,9 @@
 #include <crossplot.h>
 
 #include<segywriter.h>
+#include<swsegywriter.h>
 #include<segyreader.h>
+#include<seisware_header_def.h>
 #include<trace.h>
 #include<header.h>
 #include<headervalue.h>
@@ -80,6 +86,12 @@
 #include<QTimer>
 #include "keylokclass.h"
 #include "keylok.h"
+#endif
+
+#ifdef __linux
+#include <arpa/inet.h> // htonl
+#elif WIN32
+#include <Winsock2.h> // htonl
 #endif
 
 ProjectViewer::ProjectViewer(QWidget *parent) :
@@ -496,14 +508,16 @@ void ProjectViewer::on_actionImportVolume_triggered()
     double ft=0;
     double dt=0.000001*reader.binaryHeader().at("dt").uintValue();
     size_t nt=reader.binaryHeader().at("ns").uintValue();
-    int minil=std::numeric_limits<int>::max();
-    int maxil=std::numeric_limits<int>::min();
-    int minxl=std::numeric_limits<int>::max();
-    int maxxl=std::numeric_limits<int>::min();
+    int minil=-1;//std::numeric_limits<int>::max();
+    int maxil=-1;//std::numeric_limits<int>::min();
+    int minxl=-1;//std::numeric_limits<int>::max();
+    int maxxl=-1;//std::numeric_limits<int>::min();
     for( int i=0; i<reader.trace_count(); i++){
         reader.seek_trace(i);
         seismic::Header hdr=reader.read_trace_header();
         double tft=0.001*hdr["delrt"].intValue();
+        int iline=hdr["iline"].intValue();
+        int xline=hdr["xline"].intValue();
         if( i>0 ){
             // start time must be same for whole volume
             if( tft!=ft){
@@ -511,15 +525,19 @@ void ProjectViewer::on_actionImportVolume_triggered()
                                       QString("Start time of trace %1 is different from first trace").arg(i+1));
                 return;
             }
-        }else{
+
+            if( iline<minil ) minil=iline;
+            if( iline>maxil ) maxil=iline;
+            if( xline<minxl ) minxl=xline;
+            if( xline>maxxl ) maxxl=xline;
+
+        }else{ // i==0
             ft=tft;
+            minil=maxil=iline;
+            minxl=maxxl=xline;
         }
-        int iline=hdr["iline"].intValue();
-        int xline=hdr["xline"].intValue();
-        if( iline<minil ) minil=iline;
-        if( iline>maxil ) maxil=iline;
-        if( xline<minxl ) minxl=xline;
-        if( xline>maxxl ) maxxl=xline;
+
+
         if( (i%onePercent)==0){
             progress.setValue(i/onePercent);
             qApp->processEvents();
@@ -714,6 +732,22 @@ void ProjectViewer::on_actionFluid_Factor_Volume_triggered()
 
     runProcess( new FluidFactorVolumeProcess( m_project, this ), params );
 }
+
+
+void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
+{
+     Q_ASSERT( m_project );
+
+     GridRunUserScriptDialog dlg;
+     dlg.setWindowTitle(tr("Run User Script"));
+     dlg.setInputGrids( m_project->gridList(GridType::Attribute));
+     if( dlg.exec()!=QDialog::Accepted) return;
+     QMap<QString,QString> params=dlg.params();
+
+     runProcess( new RunGridScriptProcess( m_project, this ), params );
+}
+
+
 
 void ProjectViewer::on_actionCrossplot_Grids_triggered()
 {
@@ -945,6 +979,7 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
 
     QMenu menu;
     menu.addAction("export");
+    menu.addAction("export seisware");
     menu.addSeparator();
     menu.addAction("rename");
     menu.addAction("remove");
@@ -954,6 +989,9 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
 
     if( selectedAction->text()=="export" ){
         exportVolume( volumeName);
+    }
+    else if( selectedAction->text()=="export seisware" ){
+        exportVolumeSeisware( volumeName);
     }
     else if( selectedAction->text()=="rename" ){
         renameVolume( volumeName);
@@ -1258,7 +1296,11 @@ void ProjectViewer::exportVolume( QString volumeName){
     info.setScalco(-1./SCALCO);
     info.setSwap(true);     // XXX for little endian machines , NEED to automatically use endianess of machine a compile time
     info.setSampleFormat(seismic::SEGYSampleFormat::IEEE);
-    seismic::SEGYWriter writer( fileName.toStdString(), info, textHeader, bhdr );
+    //seismic::SEGYWriter writer( fileName.toStdString(), info, textHeader, bhdr );
+    std::unique_ptr<seismic::SEGYWriter> writer( new seismic::SEGYWriter(
+                fileName.toStdString(), info, textHeader, bhdr ) );
+    writer->write_leading_headers();
+
 
     seismic::Trace trace(bounds.ft(), bounds.dt(), bounds.sampleCount() );
     seismic::Header& thdr=trace.header();
@@ -1307,7 +1349,7 @@ void ProjectViewer::exportVolume( QString volumeName){
             }
 
             //std::cout<<"n="<<n<<" cdp="<<cdp<<" iline="<<iline<<" xline="<<xline<<std::endl;
-            writer.write_trace(trace);
+            writer->write_trace(trace);
         }
 
         progress.setValue(iline-bounds.inline1());
@@ -1317,6 +1359,213 @@ void ProjectViewer::exportVolume( QString volumeName){
             QFile(fileName).remove();
             return;
         }
+    }
+}
+
+
+// XXX make this a process later
+void ProjectViewer::exportVolumeSeisware( QString volumeName){
+
+    const int SCALCO=-10;
+
+    QTransform IlXlToXY;
+    QTransform XYToIlXl;
+    if( !computeTransforms(m_project->geometry(), XYToIlXl, IlXlToXY)){
+        QMessageBox::critical(this, "Export Volume", "Invalid geometry, failed to compute transformations!");
+        return;
+    }
+
+    std::shared_ptr<Grid3D<float>> volume=m_project->loadVolume(volumeName);
+    if(!volume){
+        QMessageBox::critical(this, "Export Volume", QString("Loading volume %1 failed!").arg(volumeName));
+        return;
+    }
+
+    QString fileName=QFileDialog::getSaveFileName(this,
+        "Choose exported volume Seisware SEGY file", QDir::homePath(), "*.sgy");
+    if( fileName.isNull()) return;
+
+    QFileInfo fi(fileName);
+    QString lname=fi.fileName().split(".").at(0);
+    std::cout<<"linename: "<<lname.toStdString()<<std::endl<<std::flush;
+
+    Grid3DBounds bounds=volume->bounds();
+
+    // gather volume statistics
+    float peak=std::numeric_limits<float>::lowest();
+    double sum=0;
+    double sum2=0;
+    size_t n=0;
+    for( size_t i=0; i<volume->size(); i++){
+        const float& x=(*volume)[i];
+        if( x==volume->NULL_VALUE) continue;
+        if(x>peak) peak=x;
+        sum+=std::fabs(x);
+        sum2+=x*x;
+        n++;
+    }
+    float average=(n>0)?sum/n : 0 ;
+    float rms=(n>0) ? std::sqrt(sum2)/n : 0;
+
+// TEST
+//peak=average=rms=-1;
+
+    double ft=bounds.ft();
+    size_t ns=bounds.sampleCount();
+    size_t dt=1000000*bounds.dt();   // make microseconds
+
+    seismic::SEGYTextHeaderStr textHeaderStr;
+    textHeaderStr.push_back("Seisware SEGY created with AVOUtensil");
+    textHeaderStr.push_back(QString("Content:     Volume %1").arg(volumeName).toStdString());
+    textHeaderStr.push_back(QString("Inlines:     %1 - %2").arg(bounds.inline1()).arg(bounds.inline2()).toStdString());
+    textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(bounds.crossline1()).arg(bounds.crossline2()).toStdString());
+    seismic::SEGYTextHeader textHeader=seismic::convertToRaw(textHeaderStr);
+
+    seismic::Header bhdr;
+    bhdr["format"]=seismic::HeaderValue::makeIntValue( toInt( seismic::SEGYSampleFormat::IEEE) );
+    bhdr["ns"]=seismic::HeaderValue::makeUIntValue(ns);
+    bhdr["dt"]=seismic::HeaderValue::makeUIntValue(dt);
+    bhdr["sswnd"]=seismic::HeaderValue::makeFloatValue(1000000*bounds.ft()); //microsecs
+    bhdr["eswnd"]=seismic::HeaderValue::makeFloatValue(1000000*bounds.lt()); //us
+    bhdr["speak"]=seismic::HeaderValue::makeFloatValue(peak);
+    bhdr["savg"]=seismic::HeaderValue::makeFloatValue(average);
+    bhdr["srms"]=seismic::HeaderValue::makeFloatValue(rms);
+    bhdr["startx"]=seismic::HeaderValue::makeIntValue(bounds.crossline1());
+    bhdr["starty"]=seismic::HeaderValue::makeIntValue(bounds.inline1());
+    bhdr["startz"]=seismic::HeaderValue::makeIntValue(1000000*bounds.ft());
+    bhdr["endx"]=seismic::HeaderValue::makeIntValue(bounds.crossline2());
+    bhdr["endy"]=seismic::HeaderValue::makeIntValue(bounds.inline2());
+    bhdr["endz"]=seismic::HeaderValue::makeIntValue(1000000*bounds.lt());
+    bhdr["totphase"]=seismic::HeaderValue::makeFloatValue(0);
+    bhdr["totgain"]=seismic::HeaderValue::makeFloatValue(1);
+    bhdr["gainexp"]=seismic::HeaderValue::makeFloatValue(1);
+    bhdr["corner1"]=seismic::HeaderValue::makeIntValue(0);
+    bhdr["corner2"]=seismic::HeaderValue::makeIntValue(bounds.crosslineCount()-1);
+    bhdr["corner3"]=seismic::HeaderValue::makeIntValue(bounds.inlineCount()*bounds.crosslineCount()-1);
+    bhdr["geometry"]=seismic::HeaderValue::makeIntValue(3);
+    bhdr["swflag"]=seismic::HeaderValue::makeUIntValue(91);
+
+    // added the following keys as compatability test
+    bhdr["dum1"]=seismic::HeaderValue::makeIntValue(1);
+    bhdr["dum2"]=seismic::HeaderValue::makeIntValue(2);
+    bhdr["dum3"]=seismic::HeaderValue::makeIntValue(3);
+    bhdr["dum4"]=seismic::HeaderValue::makeIntValue(4);
+    bhdr["dum5"]=seismic::HeaderValue::makeIntValue(32040);
+
+    seismic::SEGYInfo info;
+    info.setBinaryHeaderDef( seismic::SEISWARE_BINARY_HEADER_DEF );
+    info.setTraceHeaderDef( seismic::SEISWARE_TRACE_HEADER_DEF );
+    info.setScalco(-1./SCALCO);
+    info.setSwap(false);//true);     // XXX for little endian machines , NEED to automatically use endianess of machine a compile time
+    info.setSampleFormat(seismic::SEGYSampleFormat::IEEE);
+    //seismic::SWSEGYWriter writer( fileName.toStdString(), info, textHeader, bhdr );
+    std::unique_ptr<seismic::SEGYWriter> writer( new seismic::SWSEGYWriter(
+                fileName.toStdString(), info, textHeader, bhdr, lname.toStdString() ) );
+    writer->write_leading_headers();
+
+    seismic::Trace trace(bounds.ft(), bounds.dt(), bounds.sampleCount() );
+    seismic::Header& thdr=trace.header();
+    seismic::Trace::Samples& samples=trace.samples();
+
+
+    QProgressDialog progress(this);
+    progress.setWindowTitle("Export Volume");
+    progress.setLabelText("Writing Seisware SEGY");
+    progress.setRange(0, bounds.inlineCount());
+    progress.show();
+
+    int tn=0;
+    for( int iline=bounds.inline1(); iline<=bounds.inline2(); iline++){
+
+        for( int xline=bounds.crossline1(); xline<=bounds.crossline2(); xline++){
+
+            tn++;
+
+            // gather trace sample statistics and fill trace
+            float peak=std::numeric_limits<float>::lowest();
+            double sum=0;
+            double sum2=0;
+            size_t n=0;
+            for( int i=0; i<bounds.sampleCount(); i++){
+
+                float s=(*volume)(iline,xline,i);
+
+                // write zero for NULL values, maybe make this selectable?
+                if( s==volume->NULL_VALUE ){
+                    s=0;
+                }
+                else{
+                    if(s>peak) peak=s;
+                    sum+=std::fabs(s);
+                    sum2+=s*s;
+                    n++;
+                }
+
+                samples[i]=s;
+            }
+            float average=(n>0)?sum/n : 0;
+            float rms=(n>0)? std::sqrt(sum2)/n : 0;
+
+            int cdp=1 + (iline-bounds.inline1())*bounds.crosslineCount() + xline - bounds.crossline1();
+
+            QPointF p=IlXlToXY.map( QPoint(iline, xline));
+            qreal x=p.x();
+            qreal y=p.y();
+
+            thdr["tracl"]=seismic::HeaderValue::makeIntValue(tn); // added additional to spec
+            thdr["ns"]=seismic::HeaderValue::makeUIntValue(ns);
+            thdr["dt"]=seismic::HeaderValue::makeUIntValue(dt);
+            thdr["iline"]=seismic::HeaderValue::makeIntValue(iline);
+            thdr["xline"]=seismic::HeaderValue::makeIntValue(xline);
+            thdr["cdp"]=seismic::HeaderValue::makeIntValue(cdp);
+            thdr["x"]=seismic::HeaderValue::makeFloatValue(x);
+            thdr["y"]=seismic::HeaderValue::makeFloatValue(y);
+            bhdr["speak"]=seismic::HeaderValue::makeFloatValue(peak);
+            bhdr["savg"]=seismic::HeaderValue::makeFloatValue(average);
+            bhdr["srms"]=seismic::HeaderValue::makeFloatValue(rms);
+
+            std::cout<<"n="<<tn<<" cdp="<<cdp<<" iline="<<iline<<" xline="<<xline<<std::endl;
+            writer->write_trace(trace);
+        }
+
+        progress.setValue(iline-bounds.inline1());
+        qApp->processEvents();
+        if( progress.wasCanceled()){
+            // delete partial file
+            QFile(fileName).remove();
+            return;
+        }     
+    }
+
+
+    // build index file
+    QFileInfo finfo(fileName);
+    QString indexName = QDir(finfo.path()).filePath(
+                finfo.completeBaseName() + ".indx");
+
+    std::cout<<"index file: "<<indexName.toStdString().c_str()<<std::endl;
+
+    std::ofstream os(indexName.toStdString().c_str(),
+                     std::ios::out | std::ios::binary);
+    for( int iline=bounds.inline1(); iline<=bounds.inline2(); iline++){
+
+        int32_t offset=static_cast<int32_t>((iline-bounds.inline1())*bounds.crosslineCount());
+        int32_t line=static_cast<int32_t>(iline);
+        int32_t trace=static_cast<int32_t>(bounds.crossline1());
+        int32_t numTraces=static_cast<int32_t>(bounds.crosslineCount());
+
+        uint32_t u=htonl(static_cast<uint32_t>(offset));
+        os.write((char*)&u, sizeof(u));
+
+        u=htonl(static_cast<uint32_t>(line));
+        os.write((char*)&u, sizeof(u));
+
+        u=htonl(static_cast<uint32_t>(trace));
+        os.write((char*)&u, sizeof(u));
+
+        u=htonl(static_cast<uint32_t>(numTraces));
+        os.write((char*)&u, sizeof(u));
+
     }
 }
 
@@ -1765,5 +2014,6 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
 
 

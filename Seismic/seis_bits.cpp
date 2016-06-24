@@ -43,6 +43,9 @@ void swap_bytes(uint64_t* pv ){
     std::swap( *(p+3), *(p+4) );
 }
 
+void get_from_raw( char* dst, char* praw, size_t size){
+    std::memcpy( dst, praw, size);
+}
 
 void get_from_raw( int16_t* dst, char* praw, bool swap){
     std::memcpy( reinterpret_cast<char*>(dst), praw, sizeof(int16_t) );
@@ -59,6 +62,11 @@ void get_from_raw( int64_t* dst, char* praw, bool swap){
     if( swap ) swap_bytes( dst );
 }
 
+void get_from_raw( uint8_t* dst, char* praw){
+    std::memcpy( reinterpret_cast<char*>(dst), praw, sizeof(uint8_t) );
+}
+
+
 void get_from_raw( uint16_t* dst, char* praw, bool swap){
     std::memcpy( reinterpret_cast<char*>(dst), praw, sizeof(uint16_t) );
     if( swap ) swap_bytes( dst );
@@ -72,6 +80,11 @@ void get_from_raw( uint32_t* dst, char* praw, bool swap){
 void get_from_raw( uint64_t* dst, char* praw, bool swap){
     std::memcpy( reinterpret_cast<char*>(dst), praw, sizeof(uint64_t) );
     if( swap ) swap_bytes( dst );
+}
+
+void get_from_raw( float* dst, char* praw, bool swap){
+    std::memcpy( reinterpret_cast<char*>(dst), praw, sizeof(float) );
+    if( swap ) swap_bytes( reinterpret_cast<int32_t*>(dst) );
 }
 
 
@@ -90,6 +103,10 @@ void put_to_raw( int64_t* src, char* praw, bool swap){
     if( swap ) swap_bytes( reinterpret_cast<int64_t*>(praw) );
 }
 
+void put_to_raw( uint8_t* src, char* praw){
+    std::memcpy( praw, reinterpret_cast<char*>(src), sizeof(uint8_t) );
+}
+
 void put_to_raw( uint16_t* src, char* praw, bool swap){
     std::memcpy( praw, reinterpret_cast<char*>(src), sizeof(uint16_t) );
     if( swap ) swap_bytes( reinterpret_cast<uint16_t*>(praw) );
@@ -105,7 +122,14 @@ void put_to_raw( uint64_t* src, char* praw, bool swap){
     if( swap ) swap_bytes( reinterpret_cast<uint64_t*>(praw) );
 }
 
+void put_to_raw( float* src, char* praw, bool swap){
+    std::memcpy( praw, reinterpret_cast<char*>(src), sizeof(float) );
+    if( swap ) swap_bytes( reinterpret_cast<int32_t*>(praw) );
+}
 
+void put_to_raw( const char* src, size_t size, char* praw){
+    std::memcpy( praw, src, size);
+}
 
 }
 

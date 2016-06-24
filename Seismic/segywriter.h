@@ -20,6 +20,8 @@
 #include<segyinfo.h>
 #include<segysampleformat.h>
 
+#include<functional>
+
 // msvc has no ssize_t!
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
@@ -49,9 +51,12 @@ public:
                 const SEGYInfo& info,
                 const SEGYTextHeader& textHeader,   //only support 1 ebcdic/textual header block for now
                 const Header& binaryHeader,
-              size_t raw_binary_header_size=400,
+                size_t raw_binary_header_size=400,
               size_t raw_trace_header_size=240,
               size_t max_samples_per_trace=65535);
+
+    ~SEGYWriter();
+
 
     const SEGYTextHeader& textHeader()const{
         return m_text_header;
@@ -76,10 +81,12 @@ public:
 
     void setInfo( const SEGYInfo&);
 
-
+    void write_leading_headers();
     void write_trace(const Trace&);
     void write_gather(const Gather&);
 
+protected:
+    virtual void process_raw_binary_header( std::vector<char>&);
 
 private:
 
@@ -91,10 +98,11 @@ private:
     void convert_trace_header();
     void convert_samples(const Trace& source);
 
-    void write_leading_headers();
+
 
     FILE*                               m_ofile;
     SEGYInfo                            m_info;
+
 
     std::vector<char>                   m_raw_binary_header_buf;
     std::vector<char>                   m_raw_trace_header_buf;
@@ -116,4 +124,4 @@ private:
 }
 
 
-#endif // SEGYREADER_H
+#endif // SEGYWRITER_H

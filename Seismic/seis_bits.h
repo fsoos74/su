@@ -2,6 +2,7 @@
 #define SEIS_BITS_H
 
 #include<cstdint>
+#include<cstddef> // size_t
 
 namespace seismic{
 
@@ -15,18 +16,22 @@ void swap_bytes(uint64_t* pv );
 void get_from_raw( int16_t* dst, char* praw, bool swap=false);
 void get_from_raw( int32_t* dst, char* praw, bool swap=false);
 void get_from_raw( int64_t* dst, char* praw, bool swap=false);
+void get_from_raw( uint8_t* dst, char* praw);
 void get_from_raw( uint16_t* dst, char* praw, bool swap=false);
 void get_from_raw( uint32_t* dst, char* praw, bool swap=false);
 void get_from_raw( uint64_t* dst, char* praw, bool swap=false);
+void get_from_raw( float* dst, char* praw, bool swap=false);
+void get_from_raw( char* dst, char* praw, size_t size);
 
 void put_to_raw( int16_t* src, char* praw, bool swap=false);
 void put_to_raw( int32_t* src, char* praw, bool swap=false);
 void put_to_raw( int64_t* src, char* praw, bool swap=false);
+void put_to_raw( uint8_t* src, char* praw);
 void put_to_raw( uint16_t* src, char* praw, bool swap=false);
 void put_to_raw( uint32_t* src, char* praw, bool swap=false);
 void put_to_raw( uint64_t* src, char* praw, bool swap=false);
-
-
+void put_to_raw( float* src, char* praw, bool swap=false);
+void put_to_raw( const char* src, size_t size, char* praw);
 
 
 /*

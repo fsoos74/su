@@ -66,6 +66,19 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
             put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
             break;
         }
+        case SEGYHeaderWordDataType::UINT8:{
+            std::uint8_t u;
+
+            if( def.ctype==SEGYHeaderWordConvType::PLAIN ){
+                u=static_cast<std::uint8_t>(value.uintValue());
+            }
+            else{
+                throw FormatError("SEGY_UINT8 values can only be type plain!");
+            }
+
+            put_to_raw( &u, &rhdr[0] + def.pos -1 );
+            break;
+        }
         case SEGYHeaderWordDataType::UINT16:{
             std::uint16_t u;
 
@@ -73,7 +86,7 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
                 u=static_cast<std::uint16_t>(value.uintValue());
             }
             else{
-                throw FormatError("SEGY_UINT32 values can only be type plain!");
+                throw FormatError("SEGY_UINT16 values can only be type plain!");
             }
 
             put_to_raw( &u, &rhdr[0] + def.pos -1, m_info.isSwap() );
@@ -82,7 +95,19 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
         case SEGYHeaderWordDataType::BUF6:
              // ignore for now!!!!
             break;
+        case SEGYHeaderWordDataType::IEEE:{
+            float f;
 
+            if( def.ctype==SEGYHeaderWordConvType::PLAIN ){
+                f=static_cast<float>(value.floatValue());
+            }
+            else{
+                throw FormatError("SEGY_IEEE values can only be type plain!");
+            }
+
+            put_to_raw( &f, &rhdr[0] + def.pos -1, m_info.isSwap() );
+            break;
+        }
         default:
             throw FormatError("Unsupported type in convert_header!");
             break;
@@ -110,13 +135,20 @@ SEGYWriter::SEGYWriter( const std::string& name,
         m_raw_trace_header_buf(raw_trace_header_size),
         m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t))
 {
+    std::cout<<"SEGYWriter::SEGYWriter"<<std::endl<<std::flush;
+
     if( !m_ofile) throw( FormatError("Open file failed!"));
 
     m_bytes_per_sample=bytesPerSample(m_info.sampleFormat());
     m_binary_header["format"]=HeaderValue::makeIntValue( toInt(m_info.sampleFormat()) );
 
-    write_leading_headers();
+    // write_leading_headers(); // dont call from here because virtual functions
 
+}
+
+SEGYWriter::~SEGYWriter(){
+    std::fflush(m_ofile);
+    fclose(m_ofile);
 }
 
 
@@ -135,6 +167,11 @@ void SEGYWriter::convert_trace_header(){
    convert_header(m_raw_trace_header_buf, m_trace_header, m_info.traceHeaderDef());
 }
 
+//just a dummy for standard segy
+void SEGYWriter::process_raw_binary_header(std::vector<char> &){
+    std::cout<<"SEGYWriter::process_raw_binary_header(std::vector<char> &)"<<std::endl<<std::flush;
+}
+
 void SEGYWriter::write_leading_headers(){
 
     if(fwrite(&m_text_header, m_text_header.size(), 1, m_ofile)!=1){
@@ -144,6 +181,7 @@ void SEGYWriter::write_leading_headers(){
     // convert and write binary header
 
     convert_binary_header();
+    process_raw_binary_header( m_raw_binary_header_buf ); // make additional modifications required by non standar segy
 
     if(fwrite(&m_raw_binary_header_buf[0], m_raw_binary_header_buf.size(), 1, m_ofile)!=1){
         throw(FormatError("Writing binary header failed!"));
