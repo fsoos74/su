@@ -33,7 +33,8 @@ SOURCES += prozess.cpp \
     fluidfactorvolumeprocess.cpp \
     amplitudecurves.cpp \
     gatherfilter.cpp \
-    rungridscriptprocess.cpp
+    rungridscriptprocess.cpp \
+    runvolumescriptprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -51,7 +52,8 @@ HEADERS += prozess.h\
     fluidfactorvolumeprocess.h \
     amplitudecurves.h \
     gatherfilter.h \
-    rungridscriptprocess.h
+    rungridscriptprocess.h \
+    runvolumescriptprocess.h
 
 unix {
     target.path = /usr/lib

@@ -13,6 +13,13 @@ GridRunUserScriptDialog::GridRunUserScriptDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // set monospace font for code editing
+    QFont font("Monospace");
+    font.setStyleHint(QFont::TypeWriter);
+    font.setPixelSize(14);
+    ui->teScript->setFont(font);
+
+
     inputCB.resize(ui->sbInputGrids->maximum()); // fills with nullptr
 
     connect( ui->sbInputGrids, SIGNAL(valueChanged(int)),

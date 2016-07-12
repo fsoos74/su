@@ -97,11 +97,12 @@ ProjectProcess::ResultCode RunGridScriptProcess::init( const QMap<QString, QStri
     return ResultCode::Ok;
 }
 
+
 ProjectProcess::ResultCode RunGridScriptProcess::run(){
 
 
     // need this on windows
-#ifdef defined(Q_OS_WIN)
+#ifdef _WIN32
     char PythonHome[]="Python27";
     Py_SetPythonHome(PythonHome);
 #endif
@@ -140,6 +141,30 @@ ProjectProcess::ResultCode RunGridScriptProcess::run(){
 
    try{
 
+   Grid2DBounds bounds=m_grid->bounds();
+
+   // add common variables for execution envronment
+   // define environment before running the script - vars can be accessed on startup
+   PyObject* iline1=PyInt_FromLong(bounds.i1());
+   if( iline1==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE1", iline1) ){
+           throw std::runtime_error("Adding execution environment variable failed!");
+   }
+
+   PyObject* iline2=PyInt_FromLong(bounds.i2());
+   if( iline2==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE2", iline2) ){
+           throw std::runtime_error("Adding execution environment variable failed!");
+   }
+
+   PyObject* xline1=PyInt_FromLong(bounds.j1());
+   if( xline1==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE1", xline1) ){
+           throw std::runtime_error("Adding execution environment variable failed!");
+   }
+
+   PyObject* xline2=PyInt_FromLong(bounds.j2());
+   if( xline2==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE2", xline2) ){
+           throw std::runtime_error("Adding execution environment variable failed!");
+   }
+
 
 
    PyRun_SimpleString(m_script.toStdString().c_str());
@@ -149,8 +174,6 @@ ProjectProcess::ResultCode RunGridScriptProcess::run(){
      throw std::runtime_error("retrieving transform func failed!");
    }
 
-    // iterate over all cdps
-    Grid2DBounds bounds=m_grid->bounds();
 
     emit currentTask("Iterating cdps");
     emit started(bounds.height());
@@ -158,14 +181,24 @@ ProjectProcess::ResultCode RunGridScriptProcess::run(){
 
 
 
-
     // finally run script / iterate
-
-
 
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
+        // add inline as variable for script execution
+        PyObject* iline=PyInt_FromLong(i);
+        if( iline==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE", iline) ){
+                throw std::runtime_error("Adding execution environment variable failed!");
+        }
+
+
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
+
+            // add crossline as variable for script execution
+            PyObject* xline=PyInt_FromLong(j);
+            if( xline==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE", xline) ){
+                    throw std::runtime_error("Adding execution environment variable failed!");
+            }
 
             // build argument tuple
             PyObject* argsTuple=PyTuple_New( m_inputGrid.size());
@@ -214,7 +247,11 @@ ProjectProcess::ResultCode RunGridScriptProcess::run(){
             // assign function resultto result grid
             (*m_grid)(i,j)=resultDouble;
 
+            Py_DECREF( xline );
+
         }
+
+        Py_DECREF(iline);
 
         emit progress(i-bounds.i1());
         qApp->processEvents();

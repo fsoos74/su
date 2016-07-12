@@ -28,7 +28,8 @@ SOURCES += prozessui.cpp \
     fluidfactordialog.cpp \
     fluidfactorvolumedialog.cpp \
     processparametersdialog.cpp \
-    gridrunuserscriptdialog.cpp
+    gridrunuserscriptdialog.cpp \
+    runvolumescriptdialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -40,7 +41,8 @@ HEADERS += prozessui.h\
     fluidfactordialog.h \
     fluidfactorvolumedialog.h \
     processparametersdialog.h \
-    gridrunuserscriptdialog.h
+    gridrunuserscriptdialog.h \
+    runvolumescriptdialog.h
 
 unix {
     target.path = /usr/lib
@@ -55,7 +57,8 @@ FORMS += \
     interceptgradientvolumedialog.ui \
     fluidfactordialog.ui \
     fluidfactorvolumedialog.ui \
-    gridrunuserscriptdialog.ui
+    gridrunuserscriptdialog.ui \
+    runvolumescriptdialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

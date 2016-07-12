@@ -61,6 +61,8 @@
 #include <fluidfactorvolumedialog.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
+#include <runvolumescriptdialog.h>
+#include <runvolumescriptprocess.h>
 #include <windowreductionfunction.h>
 
 #include<axxisorientation.h>
@@ -270,7 +272,7 @@ void ProjectViewer::on_actionOpenProject_triggered()
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Load Color Table"),
+        QMessageBox::warning(this, tr("Open Project"),
                              tr("Cannot read file %1:\n%2.")
                              .arg(fileName)
                              .arg(file.errorString()));
@@ -288,6 +290,16 @@ void ProjectViewer::on_actionOpenProject_triggered()
 
     }
 
+    // check if project already in use, create lockfile if not
+    // no need to remove stale lockfiles. This is handled by QLockfile
+    std::shared_ptr<QLockFile> lf(new QLockFile(tmp->lockfileName()));
+    if( !lf->tryLock()){
+        QMessageBox::critical(this, tr("Open Project"),
+                              tr("Project already used by another program"));
+        return;
+    }
+
+    m_lockfile=lf;  // will be unlocked when deleted
     m_project=tmp;
 
     setProjectFileName(fileName);
@@ -748,6 +760,19 @@ void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
 }
 
 
+void ProjectViewer::on_actionRun_Volume_Script_triggered()
+{
+    Q_ASSERT( m_project );
+
+    RunVolumeScriptDialog dlg;
+    dlg.setWindowTitle(tr("Run Volume Script"));
+    dlg.setInputVolumes( m_project->volumeList());
+    dlg.setInputGrids( m_project->gridList(GridType::Attribute));
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new RunVolumeScriptProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionCrossplot_Grids_triggered()
 {
@@ -2014,6 +2039,7 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
 
 
 

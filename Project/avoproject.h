@@ -6,9 +6,13 @@
 #include<QVector>
 #include<QStringList>
 #include<QMap>
-
+#include<QDir>
+#include<QFile>
+#include<QFileInfo>
+#include<QLockFile>
 #include<stdexcept>
 #include<memory>
+#include<iostream>
 
 #include "projectgeometry.h"
 #include<grid2d.h>
@@ -62,6 +66,9 @@ public:
 
     AVOProject();
 
+    QString lockfileName()const{
+        return QDir(m_projectDirectory).absoluteFilePath("lock.lock");
+    }
 
     const ProjectGeometry& geometry()const{
         return m_geometry;
@@ -168,6 +175,7 @@ private:
     void syncGridList(GridType);
     void syncVolumeList();
     void syncSeismicDatasetList();
+
 
     ProjectGeometry m_geometry;
 

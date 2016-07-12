@@ -7,7 +7,7 @@
 #include<memory>
 #include<QVector>
 #include<QPoint>
-
+#include<QLockFile>
 #include<pointdispatcher.h>
 
 #ifdef USE_KEYLOCK_LICENSE
@@ -117,6 +117,8 @@ private slots:
 
     void on_actionRun_Grid_User_Script_triggered();
 
+    void on_actionRun_Volume_Script_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);
@@ -162,6 +164,7 @@ private:
 
     std::shared_ptr<AVOProject> m_project;
     QString m_projectFileName;
+    std::shared_ptr<QLockFile> m_lockfile;
 
     std::shared_ptr<PointDispatcher> m_dispatcher;
 
