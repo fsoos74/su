@@ -407,6 +407,23 @@ void CrossplotViewer::on_actionCompute_Trend_From_Selected_Data_triggered()
     setTrend( linearRegression(points) );
 }
 
+void CrossplotViewer::on_action_Pick_Trend_triggered()
+{
+    QPolygonF poly=ui->graphicsView->selectionPolygon();
+
+    if( poly.size()<2 ) return;
+
+    ui->graphicsView->setSelectionPolygon(QPolygonF());
+    QVector<QPointF > points;
+    for( QPointF p : poly ){
+         points.push_back(p);
+    }
+
+    setTrend( linearRegression(points) );
+
+}
+
+
 void CrossplotViewer::on_action_Flatten_Trend_toggled(bool arg1)
 {
     // remove selection polygon because it refers to other transform
@@ -540,5 +557,6 @@ void CrossplotViewer::loadSettings(){
 
     settings.endGroup();
 }
+
 
 

@@ -79,6 +79,7 @@ private slots:
     void on_actionCompute_Trend_From_Loaded_Data_triggered();
     void on_actionCompute_Trend_From_Displayed_Data_triggered();
     void on_actionCompute_Trend_From_Selected_Data_triggered();
+    void on_action_Pick_Trend_triggered();
     void on_action_Flatten_Trend_toggled(bool arg1);
     void on_actionSelect_By_Inline_Crossline_Ranges_triggered();
 
