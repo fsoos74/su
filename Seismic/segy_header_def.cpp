@@ -13,6 +13,7 @@ const QString strUINT8="UINT8";
 const QString strIEEE="IEEE";
 
 const QString strPLAIN="PLAIN";
+const QString strFLOAT="FLOAT";
 const QString strCOORD="COORD";
 const QString strELEV="ELEV";
 
@@ -69,6 +70,8 @@ QString toQString(SEGYHeaderWordConvType t){
 
     case SEGYHeaderWordConvType::PLAIN: return strPLAIN; break;
 
+    case SEGYHeaderWordConvType::FLOAT: return strFLOAT; break;
+
     case SEGYHeaderWordConvType::COORD: return strCOORD; break;
 
     case SEGYHeaderWordConvType::ELEV: return strELEV; break;
@@ -81,6 +84,9 @@ SEGYHeaderWordConvType toConvType(const QString& s){
 
     if( s == strPLAIN){
         return SEGYHeaderWordConvType::PLAIN;
+    }
+    else if( s == strFLOAT){
+        return SEGYHeaderWordConvType::FLOAT;
     }
     else if( s == strCOORD){
         return SEGYHeaderWordConvType::COORD;

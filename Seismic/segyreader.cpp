@@ -38,6 +38,9 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
             else if( def.ctype==SEGYHeaderWordConvType::COORD ){
                 th[def.name]=HeaderValue(HeaderValue::float_type( i*m_info.scalco() ) );
             }
+            else if( def.ctype==SEGYHeaderWordConvType::FLOAT ){
+                th[def.name]=HeaderValue(HeaderValue::float_type( i ) );
+            }
             else{
                 th[def.name]=HeaderValue(HeaderValue::int_type( i ) );
             }
@@ -51,6 +54,9 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
             }
             else if( def.ctype==SEGYHeaderWordConvType::COORD ){
                 th[def.name]=HeaderValue(HeaderValue::float_type( i*m_info.scalco() ) );
+            }
+            else if( def.ctype==SEGYHeaderWordConvType::FLOAT ){
+                th[def.name]=HeaderValue(HeaderValue::float_type( i ) );
             }
             else{
                 th[def.name]=HeaderValue(HeaderValue::int_type( i ) );

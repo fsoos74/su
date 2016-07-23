@@ -19,7 +19,8 @@ QString toQString(SEGYHeaderWordDataType);
 SEGYHeaderWordDataType toDataType(const QString&);
 
 // describes how values should be processed/converted
-enum class SEGYHeaderWordConvType{    PLAIN, // use value as is
+enum class SEGYHeaderWordConvType{    PLAIN, // use value as is (integer)
+                                      FLOAT, // use value as float (cast int to float)
                                     ELEV,  // elevation,  scale by scalel
                                     COORD  // coordinate, scale by scalco
                            };

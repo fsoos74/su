@@ -13,6 +13,7 @@
 #include <headerdialog.h>
 #include<segyreader.h>
 #include<seis_bits.h>
+#include<segy_header_def.h>
 #include <xsiwriter.h>
 #include<xsireader.h>
 #include <navigationwidget.h>
@@ -22,7 +23,7 @@
 #include<QMessageBox>
 
 using seismic::HeaderValue;
-
+using seismic::SEGYHeaderWordConvType;
 
 SegyInputDialog::SegyInputDialog(QWidget *parent) :
     QDialog(parent),
@@ -99,6 +100,7 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     connect( ui->cbSizeOffset, SIGNAL(currentIndexChanged(int)), this, SLOT(readerParamsChanged()));
     connect( ui->cbFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(readerParamsChanged()));
     connect( ui->rbScalcoHeader, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
+    connect( ui->cbScaleOffset, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()) );
     connect( ui->rbScalelHeader, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
     connect( ui->rbSwapBytes, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
 
@@ -162,6 +164,7 @@ void SegyInputDialog::updateControlsFromInfo(){
         else if(def.name=="offset"){
             lePos=ui->lePosOffset;
             cbSize=ui->cbSizeOffset;
+            ui->cbScaleOffset->setChecked( def.ctype==SEGYHeaderWordConvType::COORD );
         }
 
 
@@ -239,6 +242,8 @@ void SegyInputDialog::updateInfoFromControls(){
         else if(def.name=="offset"){
             lePos=ui->lePosOffset;
             cbSize=ui->cbSizeOffset;
+            def.ctype=(ui->cbScaleOffset->isChecked())?
+                        SEGYHeaderWordConvType::COORD : SEGYHeaderWordConvType::FLOAT;
         }
 
         if( lePos && cbSize ){
