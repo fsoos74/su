@@ -104,8 +104,8 @@ QMap<QString,QString> RunVolumeScriptDialog::params(){
 
 void RunVolumeScriptDialog::updateInputVolumeControls(){
 
-    if( ui->wdInputGrids->layout()){
-        delete ui->wdInputGrids->layout();
+    if( ui->wdInputVolumes->layout()){
+        delete ui->wdInputVolumes->layout();
     }
 
     QGridLayout* layout=new QGridLayout(ui->wdInputVolumes);

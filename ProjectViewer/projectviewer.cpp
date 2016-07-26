@@ -2034,6 +2034,8 @@ void ProjectViewer::updateMenu(){
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
     ui->actionFluid_Factor_Grid->setEnabled(isProject);
     ui->actionFluid_Factor_Volume->setEnabled(isProject);
+    ui->actionRun_Grid_User_Script->setEnabled(isProject);
+    ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
