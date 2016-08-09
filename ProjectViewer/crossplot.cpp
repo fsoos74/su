@@ -22,7 +22,6 @@ Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2, Grid2D<doubl
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
-            std::cout<<"i="<<i<<" j="<<j<<std::endl<<std::flush;
             double v1=(*grid1)(i,j);
             if( v1==grid1->NULL_VALUE) continue;
 
@@ -31,7 +30,7 @@ Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2, Grid2D<doubl
 
             double a=0;
             if( grida ){
-                std::cout<<"grida="<<grida<<std::endl<<std::flush;
+
                 a=(*grida)(i,j);
                 std::cout<<"a="<<a<<std::endl<<std::flush;
             }

@@ -15,6 +15,10 @@ public:
     explicit VolumeDataSelectionDialog(QWidget *parent = 0);
     ~VolumeDataSelectionDialog();
 
+    bool isAreaMode(){
+        return m_areaMode;
+    }
+
     int minInline()const;
     int maxInline()const;
     int minCrossline()const;
@@ -24,6 +28,8 @@ public:
 
 public slots:
 
+    void setAreaMode( bool );
+
     void setMinInline(int);
     void setMaxInline(int);
     void setMinCrossline(int);
@@ -31,12 +37,17 @@ public slots:
     void setMinTime(double);
     void setMaxTime(double);
 
+signals:
+    void areaModeChanged(bool);
+
 private slots:
 
     void checkOk();
 
 private:
     Ui::VolumeDataSelectionDialog *ui;
+
+    bool m_areaMode=false;
 };
 
 #endif // VOLUMEDATASELECTIONDIALOG_H

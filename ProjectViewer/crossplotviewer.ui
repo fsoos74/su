@@ -197,7 +197,7 @@
   </action>
   <action name="actionSelect_By_Inline_Crossline_Ranges">
    <property name="text">
-    <string>Inline/Crossline Ranges</string>
+    <string>Data Range</string>
    </property>
   </action>
   <action name="actionDisplay_Trend_Line">

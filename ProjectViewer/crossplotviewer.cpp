@@ -54,6 +54,8 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
 
     m_colorTable->setColors(ColorTable::defaultColors());
 
+    createDockWidgets();
+
     loadSettings();
 }
 
@@ -135,6 +137,22 @@ void CrossplotViewer::scanBounds(){
     m_timeRange=Range<float>(mint, maxt);
 }
 
+void CrossplotViewer::scanAttribute(){
+
+    if(m_data.empty()) return;
+
+    float mina=m_data[0].attribute;
+    float maxa=mina;
+
+    for( int i=1; i<m_data.size(); i++ ){
+            float &a=m_data[i].attribute;
+            if(a<mina) mina=a;
+            if(a>maxa) maxa=a;
+    }
+
+    m_attributeRange=Range<float>(mina, maxa);
+}
+
 void CrossplotViewer::setData( crossplot::Data data){
 
     const int ASK_SELECT_LINES_LIMIT=200000;
@@ -142,6 +160,8 @@ void CrossplotViewer::setData( crossplot::Data data){
     m_data=data;
 
     scanBounds();
+
+    scanAttribute();
 
     if( m_data.size() > ASK_SELECT_LINES_LIMIT ){
         int ret=QMessageBox::question(this, "Crossplot Attributes",
@@ -155,20 +175,10 @@ void CrossplotViewer::setData( crossplot::Data data){
 
     }
 
-    float mina;
-    float maxa;
-    if( m_data.size()>0){
-        mina=maxa=m_data[0].attribute;
-        for( int i=1; i<m_data.size(); i++ ){
-            float &a=m_data[i].attribute;
-            if(a<mina) mina=a;
-            if(a>maxa) maxa=a;
-        }
 
-    }
-std::cout<<"Attribute: "<<mina<<" - "<<maxa<<std::endl;
 
-    m_colorTable->setRange(mina, maxa);  // this triggers updateScene by emitting rangeChanged
+
+    m_colorTable->setRange(m_attributeRange.minimum, m_attributeRange.maximum);  // this triggers updateScene by emitting rangeChanged
 
     emit dataChanged();
 
@@ -235,6 +245,28 @@ void CrossplotViewer::setDatapointSize(int size){
     updateScene();
 }
 
+void CrossplotViewer::setFixedColor(bool fixed){
+
+    if( fixed==m_fixedColor) return;
+
+    m_fixedColor=fixed;
+
+    emit fixedColorChanged(m_fixedColor);
+
+    updateScene();
+}
+
+void CrossplotViewer::setPointColor(QColor color){
+
+    if( color==m_pointColor) return;
+
+    m_pointColor=color;
+
+    emit pointColorChanged(m_pointColor);
+
+    updateScene();
+}
+
 void CrossplotViewer::setColorMapping( const std::pair<double,double>& m){
     Q_ASSERT( m_colorTable);
     m_colorTable->setRange(m);
@@ -246,6 +278,16 @@ void CrossplotViewer::setColors(const QVector<QRgb>& c){
     m_colorTable->setColors(c);
 }
 
+void CrossplotViewer::setTrendlineColor(QColor color){
+
+    if( color==m_trendlineColor) return;
+
+    m_trendlineColor=color;
+
+    emit trendlineColorChanged(m_trendlineColor);
+
+    updateScene();
+}
 
 void CrossplotViewer::onMouseOver(QPointF scenePos){
 
@@ -333,8 +375,13 @@ void CrossplotViewer::updateScene(){
 
         item->setPos( pt );
 
-        QRgb rgb=m_colorTable->map(p.attribute);
-        item->setRegularColor(rgb);
+        if(m_fixedColor){
+            item->setRegularColor(m_pointColor);
+        }
+        else{
+            QRgb rgb=m_colorTable->map(p.attribute);
+            item->setRegularColor(rgb);
+        }
 
         // add user data inline and crossline
         //item->setData( INLINE_DATA_KEY, p.iline);
@@ -391,7 +438,7 @@ void CrossplotViewer::updateScene(){
             y1=y1 - ( m_trend.x() + x1 *m_trend.y() );
             y2=y2 - ( m_trend.x() + x2 *m_trend.y() );
         }
-        m_scene->addLine(x1,y1,x2,y2,QPen(Qt::red, 0));
+        m_scene->addLine(x1,y1,x2,y2,QPen(m_trendlineColor, 0));
     }
 }
 
@@ -551,11 +598,39 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
 
         displayOptionsDialog=new CrossplotViewerDisplayOptionsDialog(this);
         displayOptionsDialog->setDatapointSize(m_datapointSize);
+        displayOptionsDialog->setFixedColor(m_fixedColor);
+        displayOptionsDialog->setPointColor(m_pointColor);
+        displayOptionsDialog->setTrendlineColor(m_trendlineColor);
+
         displayOptionsDialog->setWindowTitle("Crossplot Display Options");
-        connect( displayOptionsDialog, SIGNAL(datapointSizeChanged(int)), this, SLOT(setDatapointSize(int)) );
+
+        connect( displayOptionsDialog, SIGNAL(datapointSizeChanged(int)),
+                 this, SLOT(setDatapointSize(int)) );
+        connect( displayOptionsDialog, SIGNAL(fixedColorChanged(bool)),
+                 this, SLOT(setFixedColor(bool)) );
+        connect( displayOptionsDialog, SIGNAL( pointColorChanged(QColor)),
+                 this, SLOT( setPointColor(QColor)) );
+        connect( displayOptionsDialog, SIGNAL(trendlineColorChanged(QColor)),
+                this, SLOT(setTrendlineColor(QColor)) );
     }
 
     displayOptionsDialog->show();
+}
+
+void CrossplotViewer::createDockWidgets(){
+
+    m_attributeColorBarDock = new QDockWidget(tr("Attribute Colorbar"), this);
+    m_attributeColorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_attributeColorBarWidget=new ColorBarWidget(m_attributeColorBarDock);
+    m_attributeColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
+    m_attributeColorBarDock->setContentsMargins(10, 5, 10, 5);
+    m_attributeColorBarDock->setWidget(m_attributeColorBarWidget);
+    addDockWidget(Qt::RightDockWidgetArea, m_attributeColorBarDock);
+    m_attributeColorBarWidget->setColorTable( m_colorTable );
+
+    ui->menu_Display->addAction(m_attributeColorBarDock->toggleViewAction());
+
+    m_attributeColorBarDock->close();
 }
 
 void CrossplotViewer::closeEvent(QCloseEvent *)

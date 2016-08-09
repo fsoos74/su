@@ -28,14 +28,14 @@ VolumeDataSelectionDialog::VolumeDataSelectionDialog(QWidget *parent) :
     connect( ui->leMinTime, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
     connect( ui->leMaxTime, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
 
+    connect( this, SIGNAL(areaModeChanged(bool)), ui->leMinTime, SLOT(setEnabled(bool)) );
+    connect( this, SIGNAL(areaModeChanged(bool)), ui->leMaxTime, SLOT(setEnabled(bool)) );
 }
 
 VolumeDataSelectionDialog::~VolumeDataSelectionDialog()
 {
     delete ui;
 }
-
-
 
 int VolumeDataSelectionDialog::minInline()const{
 
@@ -95,6 +95,15 @@ void VolumeDataSelectionDialog::setMinTime(double time){
 void VolumeDataSelectionDialog::setMaxTime(double time){
 
     ui->leMaxTime->setText(QString::number(time));
+}
+
+void VolumeDataSelectionDialog::setAreaMode(bool on){
+
+    if( on == m_areaMode ) return;
+
+    m_areaMode = on;
+
+    emit areaModeChanged(m_areaMode);
 }
 
 void VolumeDataSelectionDialog::checkOk(){

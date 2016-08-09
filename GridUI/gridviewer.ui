@@ -141,7 +141,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -153,7 +153,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -250,7 +250,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../SeismicUI/icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

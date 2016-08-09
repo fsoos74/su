@@ -16,12 +16,26 @@ public:
     ~CrossplotViewerDisplayOptionsDialog();
 
     int datapointSize();
+    bool isFixedColor();
+    QColor pointColor();
+    QColor trendlineColor();
 
 public slots:
     void setDatapointSize(int);
+    void setFixedColor(bool);
+    void setPointColor(QColor);
+    void setTrendlineColor(QColor);
 
 signals:
     void datapointSizeChanged(int);
+    void fixedColorChanged(bool);
+    void pointColorChanged(QColor);
+    void trendlineColorChanged(QColor);
+
+private slots:
+    void on_cbFixColor_clicked();
+
+    void on_cbTrendlineColor_clicked();
 
 private:
 

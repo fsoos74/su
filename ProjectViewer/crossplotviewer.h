@@ -12,6 +12,8 @@
 #include <memory>
 #include <avoproject.h>
 #include <colortable.h>
+#include <QDockWidget>
+#include<colorbarwidget.h>
 
 #include "crossplotviewerdisplayoptionsdialog.h"
 
@@ -37,8 +39,20 @@ public:
     bool isFlattenTrend();
     bool isDisplayTrendLine();
 
+    bool isFixedColor()const{
+        return m_fixedColor;
+    }
+
+    QColor pointColor()const{
+        return m_pointColor;
+    }
+
     ColorTable* colorTable()const{
         return m_colorTable;
+    }
+
+    QColor trendlineColor()const{
+        return m_trendlineColor;
     }
 
 protected:
@@ -54,13 +68,19 @@ public slots:
     void setFlattenTrend(bool);
     void setDisplayTrendLine(bool);
     void setDatapointSize( int );
+    void setFixedColor(bool);
+    void setPointColor(QColor);
     void setColorMapping( const std::pair<double,double>& m);
     void setColors( const QVector<QRgb>&);
+    void setTrendlineColor(QColor);
 
 signals:
 
     void dataChanged();
+    void fixedColorChanged(bool);
+    void pointColorChanged(QColor);
     void colorTableChanged( ColorTable*);
+    void trendlineColorChanged(QColor);
 
 protected:
 
@@ -93,6 +113,9 @@ private slots:
 private:
 
     void scanBounds();
+    void scanAttribute();
+
+    void createDockWidgets();
 
     void saveSettings();
     void loadSettings();
@@ -106,20 +129,27 @@ private:
 
     QGraphicsScene* m_scene=nullptr;
 
-    std::shared_ptr<AVOProject> m_project;
+    CrossplotViewerDisplayOptionsDialog* displayOptionsDialog=nullptr;
 
-    //std::shared_ptr< Grid2D<QPointF> > m_data;
+    ColorBarWidget* m_attributeColorBarWidget=nullptr;
+    QDockWidget* m_attributeColorBarDock=nullptr;
+
     crossplot::Data m_data;
+
     Grid2DBounds m_geometryBounds;
     Range<float> m_timeRange;
 
-    ColorTable* m_colorTable;           // holds colors and display range
+    Range<float> m_attributeRange;
 
+    bool        m_fixedColor=true;      // points drawn with point color or colortable based on attribute
+    QColor      m_pointColor=Qt::blue;  // datapoints are drawn with this color if fixed
+    ColorTable* m_colorTable;           // holds colors and display range
     int m_datapointSize=11;
     qreal m_zoomFactor=1;
-    QPointF m_trend;
 
-    CrossplotViewerDisplayOptionsDialog* displayOptionsDialog=nullptr;
+    QColor m_trendlineColor=Qt::red;
+
+    QPointF m_trend;
 };
 
 #endif // CROSSPLOTVIEWER_H
