@@ -22,7 +22,8 @@ const int DATA_INDEX_KEY=1;
 
 CrossplotViewer::CrossplotViewer(QWidget *parent) :
     BaseViewer(parent),
-    ui(new Ui::CrossplotViewer)
+    ui(new Ui::CrossplotViewer),
+    m_colorTable(new ColorTable(this))
 {
     ui->setupUi(this);
 
@@ -45,6 +46,14 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
 
     //connect( ui->action_Flatten_Trend, SIGNAL(toggled(bool)), this, SLOT(updateScene()) );
     connect( ui->actionDisplay_Trend_Line, SIGNAL(toggled(bool)), this, SLOT(updateScene()) );
+
+    connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(updateScene()) );
+    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
+             this, SLOT(updateScene()) );
+
+
+    m_colorTable->setColors(ColorTable::defaultColors());
+
     loadSettings();
 }
 
@@ -146,10 +155,26 @@ void CrossplotViewer::setData( crossplot::Data data){
 
     }
 
+    float mina;
+    float maxa;
+    if( m_data.size()>0){
+        mina=maxa=m_data[0].attribute;
+        for( int i=1; i<m_data.size(); i++ ){
+            float &a=m_data[i].attribute;
+            if(a<mina) mina=a;
+            if(a>maxa) maxa=a;
+        }
+
+    }
+std::cout<<"Attribute: "<<mina<<" - "<<maxa<<std::endl;
+
+    m_colorTable->setRange(mina, maxa);  // this triggers updateScene by emitting rangeChanged
+
     emit dataChanged();
 
-    updateScene();
+    //updateScene();
 }
+
 
 void CrossplotViewer::setTrend(QPointF t){
 
@@ -210,6 +235,18 @@ void CrossplotViewer::setDatapointSize(int size){
     updateScene();
 }
 
+void CrossplotViewer::setColorMapping( const std::pair<double,double>& m){
+    Q_ASSERT( m_colorTable);
+    m_colorTable->setRange(m);
+}
+
+void CrossplotViewer::setColors(const QVector<QRgb>& c){
+
+    Q_ASSERT( m_colorTable);
+    m_colorTable->setColors(c);
+}
+
+
 void CrossplotViewer::onMouseOver(QPointF scenePos){
 
     QString message=QString("x=%1, y=%2").arg(scenePos.x()).arg(scenePos.y());
@@ -268,6 +305,8 @@ void CrossplotViewer::updateScene(){
 
     bool flattenTrend=isFlattenTrend();
 
+
+
     for( int i=0; i<m_data.size(); i++){
 
         crossplot::DataPoint p = m_data[i];
@@ -294,6 +333,8 @@ void CrossplotViewer::updateScene(){
 
         item->setPos( pt );
 
+        QRgb rgb=m_colorTable->map(p.attribute);
+        item->setRegularColor(rgb);
 
         // add user data inline and crossline
         //item->setData( INLINE_DATA_KEY, p.iline);

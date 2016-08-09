@@ -69,6 +69,7 @@
 #include<projectgeometry.h>
 
 #include "selectgridtypeandnamedialog.h"
+#include "crossplotgridsinputdialog.h"
 #include "crossplotviewer.h"
 #include "amplitudecurveviewer.h"
 #include <crossplot.h>
@@ -783,23 +784,39 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
         QMessageBox::warning(this, "Crossplot", "Project contains no grids of type Attribute!");
         return;
     }
-
+/*
     TwoCombosDialog dlg;
     dlg.setWindowTitle("Select Grids for Crossplot");
     dlg.setLabelText1("Grid #1 (x-axis):");
     dlg.setLabelText2("Grid #2 (y-axis):");
     dlg.setItems1(m_project->gridList(GridType::Attribute));
     dlg.setItems2(m_project->gridList(GridType::Attribute));
+*/
+
+    CrossplotGridsInputDialog dlg;
+    dlg.setWindowTitle("Select Grids for Crossplot");
+    dlg.setAttributeGrids(m_project->gridList(GridType::Attribute));
+    dlg.setHorizons(m_project->gridList(GridType::Horizon));
+    dlg.setOtherGrids(m_project->gridList(GridType::Other));
 
     if( dlg.exec()!=QDialog::Accepted) return;
 
-    std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( GridType::Attribute, dlg.selection1());
+    std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( dlg.xType(), dlg.xName());
+    //std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( GridType::Attribute, dlg.selection1());
     if( !grid1 ) return;
 
-    std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( GridType::Attribute, dlg.selection2());
+    std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( dlg.yType(), dlg.yName());
+    //std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( GridType::Attribute, dlg.selection2());
     if( !grid2 ) return;
 
-    crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get());
+    std::shared_ptr<Grid2D<double> > grida;
+
+    if( dlg.useAttribute()){
+         grida=
+                 m_project->loadGrid( dlg.attributeType(), dlg.attributeName());
+     }
+
+    crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get(), grida.get());
 
 /*
     QVector<CrossplotViewer::DataPoint> data;
@@ -833,10 +850,12 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
     viewer->setAttribute( Qt::WA_DeleteOnClose);
 
 
-    viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.selection1(), dlg.selection2() ) );
+    //viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.selection1(), dlg.selection2() ) );
+    viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
     viewer->setData(data); // add data after visible!!!! /// XXX QVECTOR!!!
-    viewer->setAxisLabels(dlg.selection1(), dlg.selection2());
+    //viewer->setAxisLabels(dlg.selection1(), dlg.selection2());
+    viewer->setAxisLabels(dlg.xName(), dlg.yName());
 
     viewer->setDispatcher(m_dispatcher);
 
@@ -851,6 +870,7 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
         QMessageBox::warning(this, "Crossplot", "Project contains no volumes!");
         return;
     }
+
 
     TwoCombosDialog dlg;
     dlg.setWindowTitle("Select Volumes for Crossplot");

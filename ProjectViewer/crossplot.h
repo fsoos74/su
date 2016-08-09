@@ -11,9 +11,9 @@ namespace crossplot{
 
 
 struct DataPoint{
-    DataPoint():x(0),y(0), iline(0),xline(0), time(0){}
-    DataPoint( float ix, float iy, int iiline, int ixline, float(itime)):
-        x(ix), y(iy), iline(iiline), xline(ixline), time(itime){}
+    DataPoint():x(0),y(0), iline(0),xline(0), time(0), attribute(0){}
+    DataPoint( float ix, float iy, int iiline, int ixline, float(itime), float iattribute=0):
+        x(ix), y(iy), iline(iiline), xline(ixline), time(itime), attribute(iattribute){}
 
     float x=0;
     float y=0;
@@ -21,12 +21,13 @@ struct DataPoint{
     int iline=0;
     int xline=0;
     float time=0;
+    float attribute=0;
 };
 
 
 typedef std::vector<DataPoint> Data;
 
-Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2 );
+Data createFromGrids( Grid2D<double>* grid_x, Grid2D<double>* grid_y, Grid2D<double>* grid_attr=nullptr );
 
 Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2 );
 

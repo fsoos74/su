@@ -3,12 +3,13 @@
 #include<algorithm>
 #include<random>
 #include<numeric>
+#include<iostream>
 
 namespace crossplot{
 
 
 
-Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2 ){
+Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2, Grid2D<double>* grida ){
 
     Data data;
 
@@ -21,16 +22,25 @@ Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2 ){
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
+            std::cout<<"i="<<i<<" j="<<j<<std::endl<<std::flush;
             double v1=(*grid1)(i,j);
             if( v1==grid1->NULL_VALUE) continue;
 
             double v2=(*grid2)(i,j);
             if( v2==grid2->NULL_VALUE) continue;
 
-            data.push_back(DataPoint( v1, v2, i, j, 0) );
+            double a=0;
+            if( grida ){
+                std::cout<<"grida="<<grida<<std::endl<<std::flush;
+                a=(*grida)(i,j);
+                std::cout<<"a="<<a<<std::endl<<std::flush;
+            }
+
+            data.push_back(DataPoint( v1, v2, i, j, 0, a) );
 
         }
     }
+
 
     return data;
 }

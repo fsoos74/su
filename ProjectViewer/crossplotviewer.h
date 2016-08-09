@@ -11,6 +11,7 @@
 #include <selectionpoint.h>
 #include <memory>
 #include <avoproject.h>
+#include <colortable.h>
 
 #include "crossplotviewerdisplayoptionsdialog.h"
 
@@ -36,6 +37,10 @@ public:
     bool isFlattenTrend();
     bool isDisplayTrendLine();
 
+    ColorTable* colorTable()const{
+        return m_colorTable;
+    }
+
 protected:
     void receivePoint( SelectionPoint );
     void receivePoints( QVector<SelectionPoint>, int code);
@@ -49,11 +54,13 @@ public slots:
     void setFlattenTrend(bool);
     void setDisplayTrendLine(bool);
     void setDatapointSize( int );
-
+    void setColorMapping( const std::pair<double,double>& m);
+    void setColors( const QVector<QRgb>&);
 
 signals:
 
     void dataChanged();
+    void colorTableChanged( ColorTable*);
 
 protected:
 
@@ -105,6 +112,8 @@ private:
     crossplot::Data m_data;
     Grid2DBounds m_geometryBounds;
     Range<float> m_timeRange;
+
+    ColorTable* m_colorTable;           // holds colors and display range
 
     int m_datapointSize=11;
     qreal m_zoomFactor=1;
