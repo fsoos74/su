@@ -784,14 +784,6 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
         QMessageBox::warning(this, "Crossplot", "Project contains no grids of type Attribute!");
         return;
     }
-/*
-    TwoCombosDialog dlg;
-    dlg.setWindowTitle("Select Grids for Crossplot");
-    dlg.setLabelText1("Grid #1 (x-axis):");
-    dlg.setLabelText2("Grid #2 (y-axis):");
-    dlg.setItems1(m_project->gridList(GridType::Attribute));
-    dlg.setItems2(m_project->gridList(GridType::Attribute));
-*/
 
     CrossplotGridsInputDialog dlg;
     dlg.setWindowTitle("Select Grids for Crossplot");
@@ -802,11 +794,9 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
 
     std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( dlg.xType(), dlg.xName());
-    //std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( GridType::Attribute, dlg.selection1());
     if( !grid1 ) return;
 
     std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( dlg.yType(), dlg.yName());
-    //std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( GridType::Attribute, dlg.selection2());
     if( !grid2 ) return;
 
     std::shared_ptr<Grid2D<double> > grida;
@@ -818,48 +808,16 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
 
     crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get(), grida.get());
 
-/*
-    QVector<CrossplotViewer::DataPoint> data;
-
-
-
-    Grid2DBounds bounds( std::min( grid1->bounds().i1(), grid2->bounds().i1()),
-                       std::min( grid1->bounds().j1(), grid2->bounds().j1()),
-                       std::max( grid1->bounds().i2(), grid2->bounds().i2()),
-                       std::max( grid1->bounds().j2(), grid2->bounds().j2()) );
-
-    //std::shared_ptr< Grid2D< QPointF > > data( new Grid2D< QPointF >(bounds ));
-
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
-
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            double v1=(*grid1)(i,j);
-            if( v1==grid1->NULL_VALUE) continue;
-
-            double v2=(*grid2)(i,j);
-            if( v2==grid2->NULL_VALUE) continue;
-
-            data.push_back(CrossplotViewer::DataPoint( v1, v2, i, j, 0) );
-
-        }
-    }
-*/
-
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);
 
-
-    //viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.selection1(), dlg.selection2() ) );
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
+    viewer->setFixedColor(!grida);  // if attribute is used use variable color points
     viewer->setData(data); // add data after visible!!!! /// XXX QVECTOR!!!
-    //viewer->setAxisLabels(dlg.selection1(), dlg.selection2());
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
 
     viewer->setDispatcher(m_dispatcher);
-
-    std::cout<<"Crossplot grids running"<<std::endl<<std::flush;
 }
 
 void ProjectViewer::on_actionCrossplot_Volumes_triggered()

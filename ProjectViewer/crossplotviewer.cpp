@@ -17,6 +17,7 @@
 #include<datapointitem.h>
 
 #include <volumedataselectiondialog.h>
+#include <colortabledialog.h>
 
 const int DATA_INDEX_KEY=1;
 
@@ -174,7 +175,6 @@ void CrossplotViewer::setData( crossplot::Data data){
         }
 
     }
-
 
 
 
@@ -617,6 +617,44 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
     displayOptionsDialog->show();
 }
 
+void CrossplotViewer::on_actionAttribute_Colortable_triggered()
+{
+    QVector<QRgb> oldColors=m_colorTable->colors();
+
+    ColorTableDialog* colorTableDialog=new ColorTableDialog( oldColors);
+
+    Q_ASSERT(colorTableDialog);
+
+    connect( colorTableDialog, SIGNAL(colorsChanged(QVector<QRgb>)),
+             m_colorTable, SLOT(setColors(QVector<QRgb>)));
+
+    if( colorTableDialog->exec()==QDialog::Accepted ){
+        m_colorTable->setColors( colorTableDialog->colors());
+    }else{
+        m_colorTable->setColors( oldColors );
+    }
+
+    delete colorTableDialog;
+}
+
+void CrossplotViewer::on_actionAttribute_Range_triggered()
+{
+    if(!displayRangeDialog){
+
+        displayRangeDialog=new DisplayRangeDialog(this);
+
+        displayRangeDialog->setPower(m_colorTable->power());
+        displayRangeDialog->setRange(m_colorTable->range());
+        connect( displayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
+                 m_colorTable, SLOT(setRange(std::pair<double,double>)) );
+        connect( displayRangeDialog, SIGNAL(powerChanged(double)),
+                 m_colorTable, SLOT( setPower(double)) );
+    }
+
+    displayRangeDialog->show();
+}
+
+
 void CrossplotViewer::createDockWidgets(){
 
     m_attributeColorBarDock = new QDockWidget(tr("Attribute Colorbar"), this);
@@ -673,6 +711,7 @@ void CrossplotViewer::loadSettings(){
 
     settings.endGroup();
 }
+
 
 
 

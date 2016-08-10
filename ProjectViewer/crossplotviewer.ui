@@ -53,6 +53,8 @@
     </property>
     <addaction name="separator"/>
     <addaction name="actionDisplay_Options"/>
+    <addaction name="actionAttribute_Colortable"/>
+    <addaction name="actionAttribute_Range"/>
     <addaction name="separator"/>
     <addaction name="actionDisplay_Trend_Line"/>
    </widget>
@@ -205,7 +207,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Display Trend Line</string>
+    <string>Display &amp;Trend Line</string>
    </property>
   </action>
   <action name="actionCompute_Trend_From_Loaded_Data">
@@ -221,6 +223,16 @@
   <action name="actionCompute_Trend_From_Selected_Data">
    <property name="text">
     <string>From Selected Data</string>
+   </property>
+  </action>
+  <action name="actionAttribute_Colortable">
+   <property name="text">
+    <string>Edit  &amp;Colortable</string>
+   </property>
+  </action>
+  <action name="actionAttribute_Range">
+   <property name="text">
+    <string>Attribute &amp;Range</string>
    </property>
   </action>
  </widget>

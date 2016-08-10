@@ -211,8 +211,6 @@ void GridViewer::on_EditColorTableAct_triggered()
     }
 
     delete colorTableDialog;
-
-
 }
 
 

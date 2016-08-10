@@ -14,6 +14,7 @@
 #include <colortable.h>
 #include <QDockWidget>
 #include<colorbarwidget.h>
+#include<displayrangedialog.h>
 
 #include "crossplotviewerdisplayoptionsdialog.h"
 
@@ -110,6 +111,10 @@ private slots:
     void on_action_Flatten_Trend_toggled(bool arg1);
     void on_actionSelect_By_Inline_Crossline_Ranges_triggered();
 
+    void on_actionAttribute_Colortable_triggered();
+
+    void on_actionAttribute_Range_triggered();
+
 private:
 
     void scanBounds();
@@ -130,7 +135,7 @@ private:
     QGraphicsScene* m_scene=nullptr;
 
     CrossplotViewerDisplayOptionsDialog* displayOptionsDialog=nullptr;
-
+    DisplayRangeDialog* displayRangeDialog=nullptr;
     ColorBarWidget* m_attributeColorBarWidget=nullptr;
     QDockWidget* m_attributeColorBarDock=nullptr;
 
