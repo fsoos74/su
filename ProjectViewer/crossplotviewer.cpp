@@ -8,6 +8,7 @@
 #include<QGraphicsSceneHoverEvent>
 #include<QProgressDialog>
 #include<QSettings>
+#include<QInputDialog>
 #include<iostream>
 
 #include<linearregression.h>
@@ -486,8 +487,6 @@ void CrossplotViewer::on_actionCompute_Trend_From_Selected_Data_triggered()
     for( QGraphicsItem* item : m_scene->selectedItems() ){
         int idx=item->data( DATA_INDEX_KEY ).toInt();
         const crossplot::DataPoint& d=m_data.at(idx);
-        //int iline=d.iline;
-        //int xline=d.xline;
 
         points.push_back(QPointF(d.x, d.y));
     }
@@ -509,6 +508,18 @@ void CrossplotViewer::on_action_Pick_Trend_triggered()
 
     setTrend( linearRegression(points) );
 
+}
+
+void CrossplotViewer::on_actionSet_Angle_triggered()
+{
+    double phi=180.*std::atan( m_trend.y())/M_PI;  // in degrees
+    bool ok=false;
+    double d=QInputDialog::getDouble(this, "Crossplot Angle", "angle [degrees]", phi, -360, 360, 4, &ok );
+
+    if( ok && d!=phi ){
+        double y=std::tan(M_PI*d/180.);
+        setTrend(QPointF(m_trend.x(), y));
+    }
 }
 
 
@@ -711,6 +722,8 @@ void CrossplotViewer::loadSettings(){
 
     settings.endGroup();
 }
+
+
 
 
 

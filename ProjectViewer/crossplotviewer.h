@@ -115,6 +115,8 @@ private slots:
 
     void on_actionAttribute_Range_triggered();
 
+    void on_actionSet_Angle_triggered();
+
 private:
 
     void scanBounds();

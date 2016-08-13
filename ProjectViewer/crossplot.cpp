@@ -32,7 +32,6 @@ Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2, Grid2D<doubl
             if( grida ){
 
                 a=(*grida)(i,j);
-                std::cout<<"a="<<a<<std::endl<<std::flush;
             }
 
             data.push_back(DataPoint( v1, v2, i, j, 0, a) );
@@ -45,7 +44,8 @@ Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2, Grid2D<doubl
 }
 
 
-Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2 ){
+Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2,
+                        Grid3D<float>* volumea){
 
     Data data;
 
@@ -61,8 +61,11 @@ Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2 ){
                 double v1=(*volume1)(i,j,k);
                 double v2=(*volume2)(i,j,k);
                 if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
+
+                double a=(volumea) ? (*volumea)(i,j,k) : 0;
+
                 data.push_back(DataPoint(
-                               v1, v2, i, j, volume1->bounds().sampleToTime(k)) );
+                               v1, v2, i, j, volume1->bounds().sampleToTime(k), a) );
             }
 
         }
@@ -73,7 +76,7 @@ Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2 ){
 }
 
 Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
-                               size_t usedPoints ){
+                               size_t usedPoints, Grid3D<float>* volumea ){
 
     Data data;
 
@@ -100,14 +103,17 @@ Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
         double v2=(*volume2)[idx];
         if( v1==volume1->NULL_VALUE || v2==volume2->NULL_VALUE) continue;
 
+        double a=(volumea) ? (*volumea)[idx] : 0;
+
         int k=idx%nt;
         idx/=nt;
         int j=bounds.j1() + idx%bounds.width();
         idx/=bounds.width();
         int i=bounds.i1() + idx;
 
+
         data.push_back(DataPoint(
-                           v1, v2, i, j, volume1->bounds().sampleToTime(k)) );
+                           v1, v2, i, j, volume1->bounds().sampleToTime(k), a) );
     }
 
     return data;

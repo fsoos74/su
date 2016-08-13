@@ -25,6 +25,14 @@ ProjectProcess::ResultCode FluidFactorProcess::init( const QMap<QString, QString
     m_gridName=parameters.value(QString("grid"));
 
 
+    if( parameters.contains("angle") ){
+        m_computeAngle=false;
+        m_angle=parameters.value(QString("angle")).toDouble(); // in degrees
+        m_angle*=M_PI/180.0;    // convert to radian
+    }
+    else{
+        m_computeAngle=true;
+    }
 
     if( !parameters.contains(QString("intercept"))){
 
@@ -75,11 +83,14 @@ ProjectProcess::ResultCode FluidFactorProcess::init( const QMap<QString, QString
 ProjectProcess::ResultCode FluidFactorProcess::run(){
 
 
-    // first step compute crossplot angle
+
     Grid2DBounds bounds=m_intercept->bounds();      // intercept and gradient have same bounds, checked on init
+    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
     QVector<QPointF> all;
 
-    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
+    if( m_computeAngle){
+
+    // first step compute crossplot angle
     emit currentTask("Computing crossplot angle");
     emit started(100);
     qApp->processEvents();
@@ -104,7 +115,14 @@ ProjectProcess::ResultCode FluidFactorProcess::run(){
     }
 
     QPointF trendInterceptAndGradient=linearRegression(all);
-    double phi=std::atan2( -trendInterceptAndGradient.y(), trendInterceptAndGradient.x());
+    std::cout<<"ff compute angle: trend: x="<<trendInterceptAndGradient.x();
+    std::cout<<" y="<<trendInterceptAndGradient.y()<<std::endl;
+    m_angle=std::atan(trendInterceptAndGradient.y() );// std::atan2( -trendInterceptAndGradient.y(), trendInterceptAndGradient.x());
+    }
+
+    double phi=m_angle;
+
+    std::cout<<"PHI="<<phi<<std::endl;
     double sinPhi=std::sin(phi);
     double cosPhi=std::cos(phi);
 

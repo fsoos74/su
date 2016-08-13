@@ -27,12 +27,15 @@ struct DataPoint{
 
 typedef std::vector<DataPoint> Data;
 
-Data createFromGrids( Grid2D<double>* grid_x, Grid2D<double>* grid_y, Grid2D<double>* grid_attr=nullptr );
+Data createFromGrids( Grid2D<double>* grid_x, Grid2D<double>* grid_y,
+                      Grid2D<double>* grid_attr=nullptr );
 
-Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2 );
+Data createFromVolumes( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
+                        Grid3D<float>* volume_attr=nullptr );
 
 // used only n random selected points (inline,xline,sample number)
-Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2, size_t n );
+Data createFromVolumesReduced( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
+                               size_t n, Grid3D<float>* volume_attr=nullptr );
 
 
 }

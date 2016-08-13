@@ -70,6 +70,7 @@
 
 #include "selectgridtypeandnamedialog.h"
 #include "crossplotgridsinputdialog.h"
+#include "crossplotvolumesinputdialog.h"
 #include "crossplotviewer.h"
 #include "amplitudecurveviewer.h"
 #include <crossplot.h>
@@ -829,26 +830,41 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
         return;
     }
 
+    CrossplotVolumesInputDialog dlg;
+    dlg.setWindowTitle("Select Volumes for Crossplot");
+    dlg.setVolumes(m_project->volumeList());
 
+    /*
     TwoCombosDialog dlg;
     dlg.setWindowTitle("Select Volumes for Crossplot");
     dlg.setLabelText1("Volume #1 (x-axis):");
     dlg.setLabelText2("Volune #2 (y-axis):");
     dlg.setItems1(m_project->volumeList());
     dlg.setItems2(m_project->volumeList());
-
+*/
     if( dlg.exec()!=QDialog::Accepted) return;
 
-    std::shared_ptr<Grid3D<float> > volume1=m_project->loadVolume(dlg.selection1());
+    std::shared_ptr<Grid3D<float> > volume1=m_project->loadVolume(dlg.xName());
     if( !volume1 ) return;
 
-    std::shared_ptr<Grid3D<float> > volume2=m_project->loadVolume( dlg.selection2());
+    std::shared_ptr<Grid3D<float> > volume2=m_project->loadVolume( dlg.yName());
     if( !volume2 ) return;
 
     if( volume1->bounds()!=volume2->bounds()){
         QMessageBox::critical(this, "Crossplot Volumes", "Currently only volumes with the same geometry are accepted!");
         return;
     }
+
+    std::shared_ptr<Grid3D<float> > volumea;
+    if( dlg.useAttribute()){
+         volumea=
+                 m_project->loadVolume( dlg.attributeName());
+         if( volumea->bounds()!=volume1->bounds()){
+             QMessageBox::critical(this, "Crossplot Volumes",
+                "Currently only volumes with the same geometry are accepted!");
+             return;
+         }
+     }
 
 
     Grid2DBounds bounds(volume1->bounds().inline1(), volume1->bounds().crossline1(),
@@ -877,20 +893,22 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
     }
 
     if(plotAllPoints){
-        data=crossplot::createFromVolumes(volume1.get(), volume2.get() );
+        data=crossplot::createFromVolumes(volume1.get(), volume2.get(),
+                                          volumea.get() );
     }
     else{
-        data=crossplot::createFromVolumesReduced(volume1.get(), volume2.get(), MAX_POINTS);
+        data=crossplot::createFromVolumesReduced(volume1.get(), volume2.get(),
+                                                 MAX_POINTS, volumea.get());
     }
 
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);
 
 
-    viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.selection1(), dlg.selection2() ) );
+    viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
     viewer->setData(data); // add data after visible!!!!
-    viewer->setAxisLabels(dlg.selection1(), dlg.selection2());
+    viewer->setAxisLabels(dlg.xName(), dlg.yName());
 
     viewer->setDispatcher(m_dispatcher);
 

@@ -28,6 +28,8 @@ private:
     std::shared_ptr<Grid2D<double> > m_intercept;
     std::shared_ptr<Grid2D<double> > m_gradient;
     std::shared_ptr<Grid2D<double> > m_grid;
+    bool m_computeAngle=true;
+    double m_angle=0;             // radians
 };
 
 #endif // FLUIDFACTORPROCESS_H

@@ -79,6 +79,7 @@
     </widget>
     <addaction name="menu_Compute_Trend"/>
     <addaction name="action_Pick_Trend"/>
+    <addaction name="actionSet_Angle"/>
     <addaction name="separator"/>
     <addaction name="action_Flatten_Trend"/>
    </widget>
@@ -233,6 +234,11 @@
   <action name="actionAttribute_Range">
    <property name="text">
     <string>Attribute &amp;Range</string>
+   </property>
+  </action>
+  <action name="actionSet_Angle">
+   <property name="text">
+    <string>Edit &amp; Angle</string>
    </property>
   </action>
  </widget>
