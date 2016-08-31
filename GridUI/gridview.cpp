@@ -9,7 +9,7 @@
 #include<gridviewer.h>
 
 #include<iostream>
-
+#include<cmath>
 
 
 

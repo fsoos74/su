@@ -20,6 +20,8 @@
 #include <volumedataselectiondialog.h>
 #include <colortabledialog.h>
 
+#include<cmath>
+
 const int DATA_INDEX_KEY=1;
 
 CrossplotViewer::CrossplotViewer(QWidget *parent) :
@@ -512,12 +514,12 @@ void CrossplotViewer::on_action_Pick_Trend_triggered()
 
 void CrossplotViewer::on_actionSet_Angle_triggered()
 {
-    double phi=180.*std::atan( m_trend.y())/M_PI;  // in degrees
+    double phi=std::fabs(180.*std::atan( m_trend.y())/M_PI);  // in degrees, must be positive
     bool ok=false;
-    double d=QInputDialog::getDouble(this, "Crossplot Angle", "angle [degrees]", phi, -360, 360, 4, &ok );
+    double d=QInputDialog::getDouble(this, "Crossplot Angle", "angle [degrees]", phi, 0, 90, 4, &ok );
 
     if( ok && d!=phi ){
-        double y=std::tan(M_PI*d/180.);
+        double y=-std::tan(M_PI*d/180.);    // negative, angle is clockwise x-axxis to trend
         setTrend(QPointF(m_trend.x(), y));
     }
 }

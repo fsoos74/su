@@ -10,6 +10,8 @@
 #include<limits>
 #include<iostream>
 
+#include<cmath>
+
 
 HistogramDialog::HistogramDialog(QWidget *parent) :
     QDialog(parent),

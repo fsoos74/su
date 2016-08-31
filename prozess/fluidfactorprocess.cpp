@@ -117,7 +117,8 @@ ProjectProcess::ResultCode FluidFactorProcess::run(){
     QPointF trendInterceptAndGradient=linearRegression(all);
     std::cout<<"ff compute angle: trend: x="<<trendInterceptAndGradient.x();
     std::cout<<" y="<<trendInterceptAndGradient.y()<<std::endl;
-    m_angle=std::atan(trendInterceptAndGradient.y() );// std::atan2( -trendInterceptAndGradient.y(), trendInterceptAndGradient.x());
+    m_angle=std::fabs(std::atan(trendInterceptAndGradient.y() ) );
+    std::cout<<"angle="<<m_angle<<std::endl;
     }
 
     double phi=m_angle;

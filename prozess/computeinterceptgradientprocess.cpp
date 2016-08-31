@@ -2,6 +2,7 @@
 
 #include<chrono>
 #include<iostream>
+#include<cmath>
 #include <grid2d.h>
 #include<QThread>
 #include<QQueue>
@@ -228,7 +229,7 @@ private:
                 QPointF interceptAndGradient=linearRegression(curve, &q);
 
                 // linear regression returns nan if all input values are zero
-                if( isnan(interceptAndGradient.x()) || isnan(interceptAndGradient.y())){
+                if( std::isnan(interceptAndGradient.x()) || std::isnan(interceptAndGradient.y())){
                     (*m_job.intercept)(iline, xline)=m_job.intercept->NULL_VALUE;
                     (*m_job.gradient)(iline, xline)=m_job.gradient->NULL_VALUE;
                     (*m_job.quality)(iline, xline)=0;

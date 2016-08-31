@@ -8,6 +8,7 @@
 #include<QLineF>
 #include<QDebug>
 
+#include<cmath>
 
 RulerGraphicsView::RulerGraphicsView(QWidget *parent) : QGraphicsView(parent){
 

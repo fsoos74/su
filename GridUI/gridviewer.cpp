@@ -7,6 +7,7 @@
 #include<QDir>
 #include<QColorDialog>
 #include<iostream>
+#include<cmath>
 
 #include<gridimportdialog.h>
 #include<colortabledialog.h>
