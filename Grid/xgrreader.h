@@ -9,7 +9,7 @@ class XGRReader
 {
 public:
 
-    XGRReader(Grid2D<double>& grid);
+    XGRReader(Grid2D<float>& grid);
 
     bool read(QIODevice *device);
 
@@ -22,7 +22,7 @@ private:
     void readPoint();
 
     QXmlStreamReader xml;
-    Grid2D<double>& m_grid;
+    Grid2D<float>& m_grid;
 };
 
 

@@ -3,7 +3,7 @@
 
 #include<iostream>
 
-XGRWriter::XGRWriter( const Grid2D<double>& grid ) : m_grid( grid)
+XGRWriter::XGRWriter( const Grid2D<float>& grid ) : m_grid( grid)
 {
     xml.setAutoFormatting(true);
 }

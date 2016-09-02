@@ -26,7 +26,7 @@ public:
     explicit GridImportDialog(QWidget *parent = 0);
     ~GridImportDialog();
 
-    std::shared_ptr<Grid2D<double> > horizon(){
+    std::shared_ptr<Grid2D<float> > horizon(){
         return m_horizon;
     }
 
@@ -96,7 +96,7 @@ public slots:
 
     void setValidBounds( bool );
 
-    void setHorizon( std::shared_ptr<Grid2D<double> > );
+    void setHorizon( std::shared_ptr<Grid2D<float> > );
 
 signals:
 
@@ -120,7 +120,7 @@ signals:
 
     void validBoundsChanged( bool );
 
-    void horizonChanged( std::shared_ptr<Grid2D<double> > );
+    void horizonChanged( std::shared_ptr<Grid2D<float> > );
 
 private slots:
 
@@ -158,7 +158,7 @@ private:
 
     bool m_validBounds=false;
 
-    std::shared_ptr<Grid2D<double> > m_horizon;
+    std::shared_ptr<Grid2D<float> > m_horizon;
 };
 
 #endif // GridImportDialog_H

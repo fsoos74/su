@@ -39,7 +39,7 @@ public:
     bool orientate(const ProjectGeometry&);
 
 public slots:
-    void setGrid( std::shared_ptr<Grid2D<double> >);
+    void setGrid( std::shared_ptr<Grid2D<float> >);
 
 protected:
 
@@ -86,7 +86,7 @@ private:
     GridView* gridView;
     ColorBarWidget* colorBar;
 
-    std::shared_ptr<Grid2D<double> > m_grid;
+    std::shared_ptr<Grid2D<float> > m_grid;
 
     OrientationDialog* orientationDialog=nullptr;
     DisplayRangeDialog* displayRangeDialog=nullptr;

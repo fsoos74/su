@@ -79,7 +79,7 @@ ProjectProcess::ResultCode HorizonSemblanceProcess::init( const QMap<QString, QS
     //std::cout<<"iline range: "<< m_reader->minInline()<<" - "<< m_reader->maxInline()<<std::endl;
     //std::cout<<"xline range: "<< m_reader->minCrossline()<<" - "<< m_reader->maxCrossline()<<std::endl;
 
-    m_slice=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(m_horizon->bounds()));
+    m_slice=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(m_horizon->bounds()));
     if( !m_slice ){
         setErrorString("Allocating slice failed!");
         return ResultCode::Error;
@@ -90,9 +90,9 @@ ProjectProcess::ResultCode HorizonSemblanceProcess::init( const QMap<QString, QS
 
 struct Job{
 
-    Grid2D<double>*                 grid;               // this is the result
+    Grid2D<float>*                 grid;               // this is the result
     const Grid2D<seismic::Trace*>*  traceBuffer;
-    const Grid2D<double>*           horizon;
+    const Grid2D<float>*           horizon;
 
     int                             halfIlines;
     int                             halfXlines;

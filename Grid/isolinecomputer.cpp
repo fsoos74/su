@@ -12,11 +12,11 @@ const std::array<int,4> DELTA_J{ 0, 1, 1, 0 };
 
 
 
-IsoLineComputer::IsoLineComputer( const Grid2D<double>& g, const double& thres ): grid(g), threshold(thres){
+IsoLineComputer::IsoLineComputer( const Grid2D<float>& g, const double& thres ): grid(g), threshold(thres){
 }
 
 
-QVector<QLineF> IsoLineComputer::compute( const Grid2D<double>& grid, const double threshold){
+QVector<QLineF> IsoLineComputer::compute( const Grid2D<float>& grid, const double threshold){
 
     IsoLineComputer ilc( grid, threshold);
     ilc.compute();

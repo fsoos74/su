@@ -128,7 +128,7 @@ private slots:
 private:
 
     void drawHorizons( QPainter& painter );
-    void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<double>> g, QPen thePen);
+    void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen);
     void drawHorizontalLines(QPainter& painter, const QRect& rect);
     void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
 

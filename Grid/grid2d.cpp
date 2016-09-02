@@ -9,7 +9,7 @@ namespace seismic {
 }
 
 template<>
-const Grid2D<double>::value_type Grid2D<double>::NULL_VALUE = std::numeric_limits<Grid2D::value_type>::max();
+const Grid2D<float>::value_type Grid2D<float>::NULL_VALUE = std::numeric_limits<Grid2D::value_type>::max();
 
 
 template<>
@@ -24,12 +24,12 @@ const Grid2D<QPointF>::value_type Grid2D<QPointF>::NULL_VALUE =
 template<>
 const Grid2D<seismic::Trace*>::value_type Grid2D<seismic::Trace*>::NULL_VALUE=nullptr;
 
-std::pair<double, double> valueRange( const Grid2D<double>& grid){
+std::pair<float, float> valueRange( const Grid2D<float>& grid){
 
-    double min=std::numeric_limits<double>::max();
-    double max=std::numeric_limits<double>::lowest();
+    float min=std::numeric_limits<float>::max();
+    float max=std::numeric_limits<float>::lowest();
 
-    for( Grid2D<double>::values_type::const_iterator it=grid.values().cbegin(); it!=grid.values().cend(); ++it){
+    for( Grid2D<float>::values_type::const_iterator it=grid.values().cbegin(); it!=grid.values().cend(); ++it){
 
         if(*it==grid.NULL_VALUE) continue;
 
@@ -41,6 +41,6 @@ std::pair<double, double> valueRange( const Grid2D<double>& grid){
         }
     }
 
-    return std::pair<double, double>(min,max);
+    return std::pair<float, float>(min,max);
 }
 

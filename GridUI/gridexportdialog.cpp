@@ -8,7 +8,7 @@
 
 #include<iostream>
 
-GridExportDialog::GridExportDialog(std::shared_ptr<Grid2D<double>> grid, QWidget *parent) :
+GridExportDialog::GridExportDialog(std::shared_ptr<Grid2D<float>> grid, QWidget *parent) :
     QDialog(parent),
     m_grid(grid),
     ui(new Ui::GridExportDialog)

@@ -101,7 +101,7 @@ public:
         return m_values;
     }
     /*
-    std::pair< value_type, value_type> valueRange()const{
+    std::pair< value_type, value_type> Grid2D<float>ange()const{
         return std::pair<value_type, value_type>(value_type(), value_type());
     }
     */
@@ -113,6 +113,6 @@ private:
 };
 
 
-std::pair<double, double> valueRange( const Grid2D<double>&);
+std::pair<float, float> valueRange( const Grid2D<float>&);
 
 #endif // GRID2D_H

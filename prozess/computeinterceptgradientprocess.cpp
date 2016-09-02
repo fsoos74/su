@@ -135,19 +135,19 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::init( const QMap<QSt
     Grid2DBounds bounds( m_reader->minInline(), m_reader->minCrossline(),
                            m_reader->maxInline(), m_reader->maxCrossline() );
 
-    m_intercept=std::shared_ptr<Grid2D<double> >( new Grid2D<double> (bounds));
+    m_intercept=std::shared_ptr<Grid2D<float> >( new Grid2D<float> (bounds));
     if( !m_intercept ){
         setErrorString("Allocating intercept grid failed!");
         return ResultCode::Error;
     }
 
-    m_gradient=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(bounds));
+    m_gradient=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
     if( !m_gradient ){
         setErrorString("Allocating gradient grid failed!");
         return ResultCode::Error;
     }
 
-    m_quality=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(bounds));
+    m_quality=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
     if( !m_quality ){
         setErrorString("Allocating quality grid failed!");
         return ResultCode::Error;
@@ -167,10 +167,10 @@ struct Job{
     int                     lastInline;
     int                     inlineIncrement;
 
-    Grid2D<double>*         intercept;
-    Grid2D<double>*         gradient;
-    Grid2D<double>*         quality;
-    Grid2D<double>*         horizon;
+    Grid2D<float>*         intercept;
+    Grid2D<float>*         gradient;
+    Grid2D<float>*         quality;
+    Grid2D<float>*         horizon;
     GatherBuffer*           buffer;
     int                     supergatherInlineSize;
     int                     supergatherCrosslineSize;

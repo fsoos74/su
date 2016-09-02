@@ -61,12 +61,12 @@ ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QSt
     //std::cout<<"xline range: "<< m_reader->minCrossline()<<" - "<< m_reader->maxCrossline()<<std::endl;
 
     if( m_horizon){
-         m_slice=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(m_horizon->bounds()));
+         m_slice=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(m_horizon->bounds()));
     }
     else{
         Grid2DBounds bounds( m_reader->minInline(), m_reader->minCrossline(),
                            m_reader->maxInline(), m_reader->maxCrossline() );
-        m_slice=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(bounds));
+        m_slice=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
     }
 
     if( !m_slice ){
@@ -104,7 +104,7 @@ ProjectProcess::ResultCode CreateTimesliceProcess::run(){
         if( m_horizon){ // we are using a horizon and not constant time
 
             if( !m_horizon->bounds().isInside(iline, xline)) continue;
-            Grid2D<double>::value_type v=(*m_horizon)(iline, xline);
+            Grid2D<float>::value_type v=(*m_horizon)(iline, xline);
             if( v == m_horizon->NULL_VALUE ) continue;
 
             t=0.001 * v;    // horizon in millis

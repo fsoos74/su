@@ -27,8 +27,8 @@ struct DataPoint{
 
 typedef std::vector<DataPoint> Data;
 
-Data createFromGrids( Grid2D<double>* grid_x, Grid2D<double>* grid_y,
-                      Grid2D<double>* grid_attr=nullptr );
+Data createFromGrids( Grid2D<float>* grid_x, Grid2D<float>* grid_y,
+                      Grid2D<float>* grid_attr=nullptr );
 
 Data createFromVolumes( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
                         Grid3D<float>* volume_attr=nullptr );

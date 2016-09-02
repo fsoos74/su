@@ -11,7 +11,7 @@ class XGRWriter
 {
 public:
 
-    XGRWriter( const Grid2D<double>&);
+    XGRWriter( const Grid2D<float>&);
 
     bool writeFile(QIODevice *device);
 
@@ -19,7 +19,7 @@ private:
 
 
 
-    const Grid2D<double>& m_grid;
+    const Grid2D<float>& m_grid;
     QXmlStreamWriter xml;
 };
 

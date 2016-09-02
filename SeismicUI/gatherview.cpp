@@ -90,11 +90,11 @@ void GatherView::setHighlightedPoints(QVector<SelectionPoint> points){
     m_gatherLabel->update();
 }
 
-std::shared_ptr<Grid2D<double> > GatherView::horizon(QString name)const{
+std::shared_ptr<Grid2D<float> > GatherView::horizon(QString name)const{
 
     // return null pointer if not exists
     if( !m_horizons.contains(name)){
-        return std::shared_ptr< Grid2D<double> >();
+        return std::shared_ptr< Grid2D<float> >();
     }
 
     return m_horizons[name];
@@ -104,7 +104,7 @@ QColor GatherView::horizonColor(QString name){
     return m_horizonColors.value(name);
 }
 
-void GatherView::addHorizon( QString name, std::shared_ptr<Grid2D<double> > g, QColor color){
+void GatherView::addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor color){
 
     m_horizons[name]=g;
     m_horizonColors[name]=color;

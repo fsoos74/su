@@ -172,7 +172,7 @@ QVector<QPointF> AmplitudeCurveViewer::buildCurve( AmplitudeCurveDefinition def)
         return curve;
     }
 
-    std::shared_ptr<Grid2D<double> > horizon=m_project->loadGrid( GridType::Horizon, def.horizon);
+    std::shared_ptr<Grid2D<float> > horizon=m_project->loadGrid( GridType::Horizon, def.horizon);
     if( !horizon ){
         QMessageBox::critical(this, "Add Amplitude vs Offset Curve",
                               QString("Loading horizon %1 failed!").arg(def.horizon) );
@@ -185,7 +185,7 @@ QVector<QPointF> AmplitudeCurveViewer::buildCurve( AmplitudeCurveDefinition def)
         return curve;
     }
 
-    Grid2D<double>::value_type v=(*horizon)(def.inlineNumber, def.crosslineNumber);
+    Grid2D<float>::value_type v=(*horizon)(def.inlineNumber, def.crosslineNumber);
     if( v == horizon->NULL_VALUE ){
         QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Horizon %1 has NULL value at inline %2 crossline %3!").
                               arg(def.horizon).arg(def.inlineNumber).arg(def.crosslineNumber) );

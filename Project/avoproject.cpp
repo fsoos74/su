@@ -120,7 +120,7 @@ bool AVOProject::existsGrid( GridType t, const QString& name ){
     return ! m_gridLists.value(t).contains( name);
 }
 
-bool AVOProject::addGrid( GridType t, const QString& name, std::shared_ptr<Grid2D<double>> grid){
+bool AVOProject::addGrid( GridType t, const QString& name, std::shared_ptr<Grid2D<float>> grid){
 
 
     if( m_gridLists.value(t).contains( name)) return false;
@@ -170,11 +170,11 @@ bool AVOProject::renameGrid( GridType t, const QString& name, const QString& new
 }
 
 
- std::shared_ptr<Grid2D<double> > AVOProject::loadGrid(GridType t, const QString& name){
+ std::shared_ptr<Grid2D<float> > AVOProject::loadGrid(GridType t, const QString& name){
 
      QString gridFileName=getGridPath(t, name);
 
-     std::shared_ptr<Grid2D<double> > ptr( new Grid2D<double>);
+     std::shared_ptr<Grid2D<float> > ptr( new Grid2D<float>);
 
      QFile file(gridFileName);
      if (!file.open(QFile::ReadOnly | QFile::Text)) {

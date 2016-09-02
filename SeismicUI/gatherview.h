@@ -43,7 +43,7 @@ public:
         return m_gather;
     }
 
-    std::shared_ptr<Grid2D<double> > horizon(QString name)const;
+    std::shared_ptr<Grid2D<float> > horizon(QString name)const;
 
     QStringList horizonList();
 
@@ -111,7 +111,7 @@ public slots:
 
     void setGather( std::shared_ptr<seismic::Gather>);
     void setHighlightedPoints(QVector<SelectionPoint>);
-    void addHorizon( QString name, std::shared_ptr<Grid2D<double> > g, QColor);
+    void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
     void setVolume( std::shared_ptr<Grid3D<float>>);    // set null for closing
@@ -139,7 +139,7 @@ private:
 
     std::shared_ptr<seismic::Gather> m_gather;
 
-    QMap<QString, std::shared_ptr<Grid2D<double> > > m_horizons;
+    QMap<QString, std::shared_ptr<Grid2D<float> > > m_horizons;
     QMap<QString, QColor> m_horizonColors;
 
 

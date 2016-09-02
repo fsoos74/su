@@ -12,9 +12,9 @@ class IsoLineComputer
 {
 public:
 
-    IsoLineComputer( const Grid2D<double>& g, const double& thres);
+    IsoLineComputer( const Grid2D<float>& g, const double& thres);
 
-    static QVector<QLineF> compute( const Grid2D<double>& grid, const double threshold);
+    static QVector<QLineF> compute( const Grid2D<float>& grid, const double threshold);
 
 private:
 
@@ -29,7 +29,7 @@ private:
 
     void compute_2_a( int i, int j );
 
-    const Grid2D<double>& grid;
+    const Grid2D<float>& grid;
     double threshold;
     QVector< QLineF > segments;
 };

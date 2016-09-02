@@ -103,11 +103,11 @@ public:
 
     QString getGridPath(GridType, const QString& gridName);
 
-    std::shared_ptr<Grid2D<double>> loadGrid(GridType, const QString& name);
+    std::shared_ptr<Grid2D<float>> loadGrid(GridType, const QString& name);
 
     bool existsGrid( GridType, const QString& name );
 
-    bool addGrid( GridType, const QString& name, std::shared_ptr<Grid2D<double>> grid);
+    bool addGrid( GridType, const QString& name, std::shared_ptr<Grid2D<float>> grid);
 
     bool removeGrid( GridType, const QString& name);
 

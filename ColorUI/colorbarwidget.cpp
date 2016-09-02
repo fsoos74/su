@@ -4,6 +4,7 @@
 #include<QPaintEvent>
 #include<QImage>
 #include<iostream>
+#include<cmath>
 
 ColorBarWidget::ColorBarWidget(QWidget *parent) : QWidget(parent)
 {

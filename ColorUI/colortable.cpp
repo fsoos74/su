@@ -1,6 +1,7 @@
 #include "colortable.h"
 
 #include<iostream>
+#include<cmath>
 #include<QColor>
 
 const int COLORTABLE_SIZE=256;

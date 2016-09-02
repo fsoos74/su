@@ -66,7 +66,7 @@ ProjectProcess::ResultCode HorizonAmplitudesProcess::init( const QMap<QString, Q
 
     Grid2DBounds bounds( m_reader->minInline(), m_reader->minCrossline(),
                        m_reader->maxInline(), m_reader->maxCrossline() );
-    m_grid=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(bounds));
+    m_grid=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
 
 
     if( !m_grid){
@@ -105,7 +105,7 @@ ProjectProcess::ResultCode HorizonAmplitudesProcess::run(){
         int xline=header.at("xline").intValue();
 
         if( !m_horizon->bounds().isInside(iline, xline)) continue;
-        Grid2D<double>::value_type v=(*m_horizon)(iline, xline);
+        Grid2D<float>::value_type v=(*m_horizon)(iline, xline);
         if( v != m_horizon->NULL_VALUE ){
 
             qreal t=0.001 * v;      // horizon is in millis

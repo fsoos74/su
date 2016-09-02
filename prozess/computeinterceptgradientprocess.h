@@ -44,11 +44,11 @@ private:
     double m_depth=0;
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
-    std::shared_ptr<Grid2D<double> > m_horizon;
+    std::shared_ptr<Grid2D<float> > m_horizon;
     std::unique_ptr<ReductionFunction> m_reductionFunction;
-    std::shared_ptr<Grid2D<double> > m_intercept;
-    std::shared_ptr<Grid2D<double> > m_gradient;
-    std::shared_ptr<Grid2D<double> > m_quality;
+    std::shared_ptr<Grid2D<float> > m_intercept;
+    std::shared_ptr<Grid2D<float> > m_gradient;
+    std::shared_ptr<Grid2D<float> > m_quality;
 };
 
 #endif // COMPUTEINTERCEPTGRADIENTPROCESS_H

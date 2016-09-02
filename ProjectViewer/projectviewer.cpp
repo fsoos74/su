@@ -366,7 +366,7 @@ void ProjectViewer::importGrid(GridType gridType){
 
     if( dlg.exec()==QDialog::Accepted){
 
-        std::shared_ptr<Grid2D<double> > grid=dlg.horizon();
+        std::shared_ptr<Grid2D<float> > grid=dlg.horizon();
 
         if( !m_project->addGrid( gridType, gridName, grid)){
             QMessageBox::critical(this, "Import Grid", "Adding grid to project failed!");
@@ -456,7 +456,7 @@ void ProjectViewer::exportGrid( GridType gridType, QString gridName){
 
     QString gridTypeString=gridType2String(gridType);
 
-    std::shared_ptr<Grid2D<double>> grid=m_project->loadGrid(gridType, gridName);
+    std::shared_ptr<Grid2D<float>> grid=m_project->loadGrid(gridType, gridName);
 
     if( !grid ){
         QMessageBox::critical(this, "Export Grid", QString("Loading grid \"%1\" failed!").arg(gridName) );
@@ -794,13 +794,13 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
 
     if( dlg.exec()!=QDialog::Accepted) return;
 
-    std::shared_ptr<Grid2D<double> > grid1=m_project->loadGrid( dlg.xType(), dlg.xName());
+    std::shared_ptr<Grid2D<float> > grid1=m_project->loadGrid( dlg.xType(), dlg.xName());
     if( !grid1 ) return;
 
-    std::shared_ptr<Grid2D<double> > grid2=m_project->loadGrid( dlg.yType(), dlg.yName());
+    std::shared_ptr<Grid2D<float> > grid2=m_project->loadGrid( dlg.yType(), dlg.yName());
     if( !grid2 ) return;
 
-    std::shared_ptr<Grid2D<double> > grida;
+    std::shared_ptr<Grid2D<float> > grida;
 
     if( dlg.useAttribute()){
          grida=
@@ -1058,7 +1058,7 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
 
     if( m_project->gridList(t).contains(name)){
 
-        std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid( t, name);
+        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid( t, name);
         if( !grid ) return;
 
 
@@ -1082,7 +1082,7 @@ void ProjectViewer::displayGridHistogram( GridType t, const QString& name){
 
     if( m_project->gridList(t).contains(name)){
 
-        std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid( t, name);
+        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid( t, name);
         if( !grid ) return;
 
         QVector<double> data;

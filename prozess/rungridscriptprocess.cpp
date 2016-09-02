@@ -78,7 +78,7 @@ ProjectProcess::ResultCode RunGridScriptProcess::init( const QMap<QString, QStri
     }
 
 
-    m_grid=std::shared_ptr<Grid2D<double> >( new Grid2D<double>(bounds));
+    m_grid=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
 
 
     if( !m_grid){

@@ -32,7 +32,7 @@ private:
     QVector< std::shared_ptr<Grid3D<float> > > m_inputVolume;
 
     QVector<QString> m_inputGridName;
-    QVector< std::shared_ptr<Grid2D<double> > > m_inputGrid;
+    QVector< std::shared_ptr<Grid2D<float> > > m_inputGrid;
 
     QString m_script;
 

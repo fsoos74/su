@@ -31,11 +31,11 @@ GridView::GridView(QWidget* parent):QScrollArea(parent),
 
     m_leftRuler=new Ruler( this, Ruler::VERTICAL_RULER);
     connect( verticalScrollBar(), SIGNAL(valueChanged(int)), m_leftRuler, SLOT( update()) );
-    connect( this, SIGNAL(gridChanged(std::shared_ptr<Grid2D>)), m_leftRuler, SLOT(update()));
+    //connect( this, SIGNAL(gridChanged(std::shared_ptr<Grid2D>)), m_leftRuler, SLOT(update()));
 
     m_topRuler=new Ruler( this, Ruler::HORIZONTAL_RULER);
     connect( horizontalScrollBar(), SIGNAL(valueChanged(int)), m_topRuler, SLOT( update()) );
-    connect( this, SIGNAL(gridChanged(std::shared_ptr<Grid2D>)), m_topRuler, SLOT(update()));
+    //connect( this, SIGNAL(gridChanged(std::shared_ptr<Grid2D>)), m_topRuler, SLOT(update()));
 
     m_label->setMouseTracking(true);
     setMouseTracking(true);
@@ -63,7 +63,7 @@ GridView::GridView(QWidget* parent):QScrollArea(parent),
 GridView::~GridView(){
 }
 
-void GridView::setGrid( std::shared_ptr<Grid2D<double> > g){
+void GridView::setGrid( std::shared_ptr<Grid2D<float> > g){
     //if( g==m_grid) return;
     m_grid=g;
     emit(gridChanged(g));
@@ -477,16 +477,16 @@ QImage GridView::grid2image(){
 
 
         int yimg=y0img;
-        for( Grid2D<double>::index_type i=m_grid->bounds().i1(); i<=m_grid->bounds().i2(); i++, yimg+=dyimg){
+        for( Grid2D<float>::index_type i=m_grid->bounds().i1(); i<=m_grid->bounds().i2(); i++, yimg+=dyimg){
 
             int ximg=x0img;
             for(
-                Grid2D<double>::index_type j=m_grid->bounds().j1(); j<=m_grid->bounds().j2(); j++, ximg+=dximg){
+                Grid2D<float>::index_type j=m_grid->bounds().j1(); j<=m_grid->bounds().j2(); j++, ximg+=dximg){
 
-                Grid2D<double>::value_type v=(*m_grid)( i, j);
+                Grid2D<float>::value_type v=(*m_grid)( i, j);
                 QRgb col;
 
-                if( v==Grid2D<double>::NULL_VALUE){
+                if( v==Grid2D<float>::NULL_VALUE){
                     col=m_nullColor.rgb();
                 }
                 else{
@@ -518,15 +518,15 @@ QImage GridView::grid2image(){
 
 
         int ximg=x0img;
-        for( Grid2D<double>::index_type i=m_grid->bounds().i1(); i<=m_grid->bounds().i2(); i++, ximg+=dximg){
+        for( Grid2D<float>::index_type i=m_grid->bounds().i1(); i<=m_grid->bounds().i2(); i++, ximg+=dximg){
 
             int yimg=y0img;
-            for( Grid2D<double>::index_type j=m_grid->bounds().j1(); j<=m_grid->bounds().j2(); j++, yimg+=dyimg){
+            for( Grid2D<float>::index_type j=m_grid->bounds().j1(); j<=m_grid->bounds().j2(); j++, yimg+=dyimg){
 
-                Grid2D<double>::value_type v=(*m_grid)( i, j);
+                Grid2D<float>::value_type v=(*m_grid)( i, j);
                 QRgb col;
 
-                if( v==Grid2D<double>::NULL_VALUE){
+                if( v==Grid2D<float>::NULL_VALUE){
                     col=m_nullColor.rgb();
                 }
                 else{
@@ -569,7 +569,7 @@ QTransform GridView::computeGrid2ImageTransform_IlHorizontal()const{
     bool il_ascending = ( inlineDirection()==AxxisDirection::Ascending);
     bool xl_ascending = ( crosslineDirection()==AxxisDirection::Ascending);
 
-    Grid2D<double>::bounds_type bounds=m_grid->bounds();
+    Grid2D<float>::bounds_type bounds=m_grid->bounds();
     int il1=bounds.i1();
     int il2=bounds.i2();
     int xl1=bounds.j1();
@@ -618,7 +618,7 @@ QTransform GridView::computeGrid2ImageTransform_IlVertical()const{
     bool il_ascending = ( inlineDirection()==AxxisDirection::Ascending);
     bool xl_ascending = ( crosslineDirection()==AxxisDirection::Ascending);
 
-    Grid2D<double>::bounds_type bounds=m_grid->bounds();
+    Grid2D<float>::bounds_type bounds=m_grid->bounds();
     int il1=bounds.i1();
     int il2=bounds.i2();
     int xl1=bounds.j1();
@@ -977,7 +977,7 @@ int Ruler::tickIncrement()const{
 
     if( !m_view || !m_view->m_grid) return -1;
 
-    Grid2D<double>::bounds_type bounds=m_view->grid()->bounds();
+    Grid2D<float>::bounds_type bounds=m_view->grid()->bounds();
     int size_pix;
     int size_grid;
     int min_distance;

@@ -9,7 +9,7 @@ namespace crossplot{
 
 
 
-Data createFromGrids( Grid2D<double>* grid1, Grid2D<double>* grid2, Grid2D<double>* grida ){
+Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>* grida ){
 
     Data data;
 

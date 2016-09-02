@@ -209,7 +209,7 @@ public:
         return m_label;
     }
 
-    std::shared_ptr<Grid2D<double>> grid()const{
+    std::shared_ptr<Grid2D<float>> grid()const{
         return m_grid;                   //!!!!
     }
 
@@ -275,7 +275,7 @@ public:
 
 signals:
 
-    void gridChanged( std::shared_ptr<Grid2D<double> >);
+    void gridChanged( std::shared_ptr<Grid2D<float> >);
     void colorTableChanged( ColorTable*);
     void nullColorChanged( QColor );
     void scaleChanged(double);
@@ -290,7 +290,7 @@ signals:
 
 public slots:
 
-    void setGrid( std::shared_ptr<Grid2D<double> > );
+    void setGrid( std::shared_ptr<Grid2D<float> > );
     void setHighlightedCDPs( QVector<SelectionPoint>);
     void setColorMapping( const std::pair<double,double>& m);
     void setColors( const QVector<QRgb>&);
@@ -342,7 +342,7 @@ private:
     ViewLabel* m_label=nullptr;
     Ruler* m_leftRuler=nullptr;
     Ruler* m_topRuler=nullptr;
-    std::shared_ptr<Grid2D<double> > m_grid;
+    std::shared_ptr<Grid2D<float> > m_grid;
     ColorTable* m_colorTable;           // holds colors and display range
     QColor m_nullColor;
     QTransform m_gridToImageTransform;

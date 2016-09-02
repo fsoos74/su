@@ -228,7 +228,7 @@ void GatherLabel::drawHorizons( QPainter& painter ){
 
        QString name=m_view->horizonList()[i];
        QColor color=m_view->horizonColor(name); //HorizonColors[ i % HorizonColors.size() ];
-       std::shared_ptr<Grid2D<double>> horizon=m_view->horizon(name);
+       std::shared_ptr<Grid2D<float>> horizon=m_view->horizon(name);
        if( !horizon ) continue;
 
         QPen thePen( color, 2);
@@ -241,13 +241,13 @@ void GatherLabel::drawHorizons( QPainter& painter ){
 }
 
 
-void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<double>> g, QPen thePen){
+void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen){
 
      if(!m_view->gather()) return;
     const seismic::Gather& gather=*(m_view->gather() );
 
     if( !g ) return;
-    const Grid2D<double>& horizon=*g;
+    const Grid2D<float>& horizon=*g;
 
     qreal pixelPerTrace=m_view->pixelPerTrace();
     qreal pixelPerSecond=m_view->pixelPerSecond();

@@ -29,8 +29,8 @@ private:
     ReductionMethod m_method;
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
-    std::shared_ptr<Grid2D<double> > m_horizon;
-    std::shared_ptr<Grid2D<double> > m_grid;
+    std::shared_ptr<Grid2D<float> > m_horizon;
+    std::shared_ptr<Grid2D<float> > m_grid;
 
     std::unique_ptr<ReductionFunction> m_reductionFunction;
 };

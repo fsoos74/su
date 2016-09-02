@@ -111,7 +111,7 @@ void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
     }
 }
 
-void GridViewer::setGrid( std::shared_ptr<Grid2D<double> > grid){
+void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     m_grid=grid;
     gridView->setGrid(grid);
     gridView->setColorMapping( valueRange(*m_grid));
@@ -153,7 +153,7 @@ void GridViewer::onGridViewMouseOver(int i, int j){
 
     double val=(*m_grid)( i, j);
 
-    if( val!=Grid2D<double>::NULL_VALUE){
+    if( val!=Grid2D<float>::NULL_VALUE){
         statusBar()->showMessage(QString::asprintf("inline=%d  crossline=%d   value=%.2lf", i, j, val));
     }
     else{

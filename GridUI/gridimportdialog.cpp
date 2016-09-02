@@ -185,7 +185,7 @@ void GridImportDialog::setValidBounds(bool b){
     emit validBoundsChanged(b);
 }
 
-void GridImportDialog::setHorizon(std::shared_ptr<Grid2D<double> > h){
+void GridImportDialog::setHorizon(std::shared_ptr<Grid2D<float> > h){
 
     if( h==m_horizon) return;
 
@@ -326,7 +326,7 @@ void GridImportDialog::loadHorizon(){
         scan();
     }
 
-    std::shared_ptr<Grid2D<double> > g(new Grid2D<double>(Grid2DBounds(m_minInline, m_minCrossline, m_maxInline, m_maxCrossline) ) );
+    std::shared_ptr<Grid2D<float> > g(new Grid2D<float>(Grid2DBounds(m_minInline, m_minCrossline, m_maxInline, m_maxCrossline) ) );
 
 
     QFile file( m_filename);

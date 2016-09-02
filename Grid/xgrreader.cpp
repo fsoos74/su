@@ -2,7 +2,7 @@
 
 #include<iostream>
 
-XGRReader::XGRReader( Grid2D<double>& grid) : m_grid(grid)
+XGRReader::XGRReader( Grid2D<float>& grid) : m_grid(grid)
 {
 }
 
@@ -45,7 +45,7 @@ void XGRReader::readXGR(){
     int i2=xml.attributes().value("i2").toInt();
     int j1=xml.attributes().value("j1").toInt();
     int j2=xml.attributes().value("j2").toInt();
-    m_grid=Grid2D<double>( Grid2DBounds( i1, j1, i2, j2), Grid2D<double>::NULL_VALUE );
+    m_grid=Grid2D<float>( Grid2DBounds( i1, j1, i2, j2), Grid2D<float>::NULL_VALUE );
     xml.skipCurrentElement();
 
     xml.readNextStartElement();

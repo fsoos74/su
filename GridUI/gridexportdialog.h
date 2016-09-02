@@ -16,7 +16,7 @@ class GridExportDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit GridExportDialog(std::shared_ptr<Grid2D<double>>, QWidget *parent = 0);
+    explicit GridExportDialog(std::shared_ptr<Grid2D<float>>, QWidget *parent = 0);
     ~GridExportDialog();
 
 private slots:
@@ -32,7 +32,7 @@ private:
 
     Ui::GridExportDialog *ui;
 
-    std::shared_ptr<Grid2D<double>> m_grid;
+    std::shared_ptr<Grid2D<float>> m_grid;
 };
 
 #endif // GRIDEXPORTDIALOG_H

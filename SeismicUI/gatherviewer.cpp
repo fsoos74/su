@@ -378,7 +378,7 @@ void GatherViewer::on_openGridAct_triggered()
 
     if( !gridName.isEmpty() && ok ){
 
-        std::shared_ptr<Grid2D<double> > grid=m_project->loadGrid(GridType::Horizon, gridName );
+        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Horizon, gridName );
 
         gatherView->addHorizon( gridName, grid, color );
     }

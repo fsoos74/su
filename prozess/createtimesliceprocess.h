@@ -22,8 +22,8 @@ private:
     QString m_sliceName;
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
-    std::shared_ptr<Grid2D<double> > m_horizon;
-    std::shared_ptr<Grid2D<double> > m_slice;
+    std::shared_ptr<Grid2D<float> > m_horizon;
+    std::shared_ptr<Grid2D<float> > m_slice;
     qreal m_sliceTime;
 };
 
