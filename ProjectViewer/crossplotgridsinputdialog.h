@@ -25,6 +25,9 @@ public:
     GridType yType();
     QString yName();
 
+    bool useHorizon();
+    QString horizonName();
+
     bool useAttribute();
     GridType attributeType();
     QString attributeName();
@@ -38,6 +41,7 @@ private slots:
     void updateCombos();
     void updateXCombo();
     void updateYCombo();
+    void updateHorizonCombo();
     void updateAttributeCombo();
 
 private:

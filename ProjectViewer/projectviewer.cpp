@@ -800,14 +800,20 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
     std::shared_ptr<Grid2D<float> > grid2=m_project->loadGrid( dlg.yType(), dlg.yName());
     if( !grid2 ) return;
 
-    std::shared_ptr<Grid2D<float> > grida;
+    std::shared_ptr<Grid2D<float> > horizon;
+    if( dlg.useHorizon()){
+         horizon=
+                 m_project->loadGrid( GridType::Horizon, dlg.horizonName());
+     }
 
+    std::shared_ptr<Grid2D<float> > grida;
     if( dlg.useAttribute()){
          grida=
                  m_project->loadGrid( dlg.attributeType(), dlg.attributeName());
      }
 
-    crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get(), grida.get());
+
+    crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get(), horizon.get(), grida.get());
 
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);

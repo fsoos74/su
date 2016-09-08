@@ -1,3 +1,6 @@
+
+#define _USE_MATH_DEFINES // need this for M_PI with mcvc !!!! must be before includes !!!
+
 #include "crossplotviewer.h"
 #include "ui_crossplotviewer.h"
 

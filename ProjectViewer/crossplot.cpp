@@ -9,7 +9,7 @@ namespace crossplot{
 
 
 
-Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>* grida ){
+Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>* horizon, Grid2D<float>* grida ){
 
     Data data;
 
@@ -17,6 +17,8 @@ Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>*
                        std::min( grid1->bounds().j1(), grid2->bounds().j1()),
                        std::max( grid1->bounds().i2(), grid2->bounds().i2()),
                        std::max( grid1->bounds().j2(), grid2->bounds().j2()) );
+
+    // add check for matching grid extents
 
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
@@ -28,14 +30,20 @@ Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>*
             double v2=(*grid2)(i,j);
             if( v2==grid2->NULL_VALUE) continue;
 
+            double t=0;
+            if( horizon ){
+
+                t=(*horizon)(i,j); // do not handle null values
+                t*=0.001;           // convert time from millis to seconds
+            }
+
             double a=0;
             if( grida ){
 
                 a=(*grida)(i,j);
             }
 
-            data.push_back(DataPoint( v1, v2, i, j, 0, a) );
-
+            data.push_back(DataPoint( v1, v2, i, j, t, a) );
         }
     }
 

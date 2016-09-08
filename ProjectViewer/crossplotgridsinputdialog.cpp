@@ -62,10 +62,21 @@ bool CrossplotGridsInputDialog::useAttribute(){
     return ui->cbDisplayAttribute->isChecked();
 }
 
+QString CrossplotGridsInputDialog::horizonName(){
+
+    return ui->cbHorizonName->currentText();
+}
+
+bool CrossplotGridsInputDialog::useHorizon(){
+
+    return ui->cbUseHorizon->isChecked();
+}
+
 
 void CrossplotGridsInputDialog::setHorizons(QStringList l){
 
     horizons=l;
+    updateHorizonCombo();
     updateCombos();
 }
 
@@ -107,6 +118,13 @@ void CrossplotGridsInputDialog::updateYCombo(){
 
     setComboNames(string2GridType(ui->cbYType->currentText()), ui->cbYName );
 }
+
+void CrossplotGridsInputDialog::updateHorizonCombo(){
+
+    ui->cbHorizonName->clear();
+    ui->cbHorizonName->insertItems(0, horizons);
+}
+
 
 void CrossplotGridsInputDialog::updateAttributeCombo(){
 

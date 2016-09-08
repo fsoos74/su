@@ -348,10 +348,8 @@ void GatherLabel::drawHighlightedPoints( QPainter& painter,
 
         qreal x= trc * pixelPerTrace;
         qreal y= ( p.time - ft )*pixelPerSecond;
-        painter.drawEllipse( QPointF(x,y) ,m_highlightedPointSize, m_highlightedPointSize);
 
-        //std::cout<<"P il="<<p.iline<<" xl="<<p.xline<<" t="<<p.time;
-        //std::cout<<" cdp="<<cdp<<" trc="<<trc<<" "<<"x="<<x<<" y="<<y<<std::endl;
+        painter.drawEllipse( QPointF(x,y) ,m_highlightedPointSize, m_highlightedPointSize);
     }
 
     painter.restore();
