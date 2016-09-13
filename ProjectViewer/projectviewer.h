@@ -104,6 +104,8 @@ private slots:
 
     void on_actionImportVolume_triggered();
 
+    void on_actionExportSeismic_triggered();
+
     void on_action_Geometry_triggered();
 
     void on_action_About_triggered();
@@ -136,6 +138,8 @@ private:
     void editSeismicDatasetProperties(const QString& name);
     void renameSeismicDataset(const QString&);
     void removeSeismicDataset(const QString&);
+    void selectAndExportSeismicDataset();
+    void exportSeismicDataset(QString);
 
     void displayGrid( GridType t, const QString&);
     void displayGridHistogram( GridType t, const QString&);

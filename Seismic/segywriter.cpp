@@ -235,7 +235,7 @@ void SEGYWriter::write_trace(const Trace& trace){
 
     convert_trace_header();
     write_trace_header();
-
+//std::cout<<"NT="<<trace.size()<<std::endl<<std::flush;
     convert_samples(trace);
     write_samples(trace.size());
 

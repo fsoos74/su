@@ -44,7 +44,8 @@
 #include<memory>
 
 #include<projectgeometrydialog.h>
-
+#include<exportseismicprocess.h>
+#include<exportseismicdialog.h>
 #include <createtimesliceprocess.h>
 #include <createtimeslicedialog.h>
 #include <horizonamplitudesprocess.h>
@@ -437,6 +438,32 @@ void ProjectViewer::on_actionImportSeismic_triggered()
     updateProjectViews();
 }
 
+void ProjectViewer::selectAndExportSeismicDataset(){
+
+    ExportSeismicDialog dlg(this);
+    dlg.setWindowTitle("Export Seismic Dataset");
+    dlg.setDatasets(m_project->seismicDatasetList());
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new ExportSeismicProcess( m_project, this ), params );
+
+}
+
+void ProjectViewer::exportSeismicDataset( QString name ){
+
+    ExportSeismicDialog dlg(this);
+    dlg.setWindowTitle("Export Seismic Dataset");
+    dlg.setFixedDataset(name);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new ExportSeismicProcess( m_project, this ), params );
+}
 
 void ProjectViewer::selectAndExportGrid(GridType gridType)
 {
@@ -597,6 +624,12 @@ void ProjectViewer::on_actionExportVolume_triggered()
 {
     selectAndExportVolume();
 }
+
+void ProjectViewer::on_actionExportSeismic_triggered()
+{
+    selectAndExportSeismicDataset();
+}
+
 
 
 void ProjectViewer::on_actionSave_triggered()
@@ -1036,9 +1069,12 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
 
     QMenu menu;
     menu.addAction("display");
-    menu.addAction("display index");
     menu.addSeparator();
+    menu.addAction("display index");
     menu.addAction("properties");
+    menu.addSeparator();
+    menu.addAction("export");
+    menu.addSeparator();
     menu.addAction("remove");
 
     QAction* selectedAction = menu.exec(globalPos);
@@ -1052,7 +1088,10 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
     }
     else if( selectedAction->text()=="properties" ){
         editSeismicDatasetProperties(datasetName);
-     }
+    }
+    else if( selectedAction->text()=="export" ){
+        exportSeismicDataset(datasetName);
+    }
     else if( selectedAction->text()=="remove" ){
         removeSeismicDataset(datasetName);
     }
@@ -2024,6 +2063,7 @@ void ProjectViewer::updateMenu(){
     ui->actionExportOtherGrid->setEnabled(isProject);
     ui->actionExportAttributeGrid->setEnabled(isProject);
     ui->actionExportVolume->setEnabled(isProject);
+    ui->actionExportSeismic->setEnabled(isProject);
     ui->actionOpenGrid->setEnabled( isProject);
     ui->actionOpenSeismicDataset->setEnabled( isProject);
 

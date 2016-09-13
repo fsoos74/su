@@ -34,7 +34,8 @@ SOURCES += prozess.cpp \
     amplitudecurves.cpp \
     gatherfilter.cpp \
     rungridscriptprocess.cpp \
-    runvolumescriptprocess.cpp
+    runvolumescriptprocess.cpp \
+    exportseismicprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -53,7 +54,8 @@ HEADERS += prozess.h\
     amplitudecurves.h \
     gatherfilter.h \
     rungridscriptprocess.h \
-    runvolumescriptprocess.h
+    runvolumescriptprocess.h \
+    exportseismicprocess.h
 
 unix {
     target.path = /usr/lib
