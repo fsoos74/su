@@ -45,10 +45,21 @@ void ExportSeismicDialog::setFixedDataset(const QString & s){
 
 void ExportSeismicDialog::on_pbBrowse_clicked()
 {
-    QString fn=QFileDialog::getSaveFileName(this, QString("Export Seismic Dataset"), QDir::homePath(), QString(".sgy") );
-    if( !fn.isNull()){
-        ui->leOutputFile->setText(fn);
-        updateOkButton();
+    QString filter = "SEG-Y Files (*.sgy)";
+
+    QFileDialog dialog(this, tr("Export Seismic Dataset"), QDir::homePath(), filter);
+    dialog.setDefaultSuffix(tr(".sgy"));
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+
+    if( dialog.exec()==QDialog::Accepted && !dialog.selectedFiles().empty()){
+
+        QString fn=dialog.selectedFiles().front();
+
+       if( !fn.isNull()){
+            ui->leOutputFile->setText(fn);
+            updateOkButton();
+        }
     }
 }
 

@@ -19,34 +19,40 @@ ProjectProcess::ResultCode ExportSeismicProcess::init( const QMap<QString, QStri
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
     }
-    QString dataset=parameters.value(QString("dataset"));
+    m_datasetName=parameters.value(QString("dataset"));
+
+    m_reader= project()->openSeismicDataset( m_datasetName);
+    if( !m_reader){
+        setErrorString(QString("Open dataset \"%1\" failed!").arg(m_datasetName) );
+        return ResultCode::Error;
+    }
 
     if( parameters.contains(QString("min-inline"))){
         m_minInline=parameters.value(QString("min-inline")).toInt();
     }
     else{
-        m_minInline=std::numeric_limits<int>::min();
+        m_minInline=m_reader->minInline();
     }
 
     if( parameters.contains(QString("max-inline"))){
         m_maxInline=parameters.value(QString("max-inline")).toInt();
     }
     else{
-        m_maxInline=std::numeric_limits<int>::max();
+        m_maxInline=m_reader->maxInline();
     }
 
     if( parameters.contains(QString("min-crossline"))){
         m_minCrossline=parameters.value(QString("min-crossline")).toInt();
     }
     else{
-        m_minCrossline=std::numeric_limits<int>::min();
+        m_minCrossline=m_reader->minCrossline();
     }
 
     if( parameters.contains(QString("max-Crossline"))){
         m_maxCrossline=parameters.value(QString("max-crossline")).toInt();
     }
     else{
-        m_maxCrossline=std::numeric_limits<int>::max();
+        m_maxCrossline=m_reader->maxCrossline();
     }
 
 
@@ -55,12 +61,6 @@ ProjectProcess::ResultCode ExportSeismicProcess::init( const QMap<QString, QStri
         return ResultCode::Error;
     }
     m_outputFilename=parameters.value(QString("output-file"));
-
-    m_reader= project()->openSeismicDataset( dataset);
-    if( !m_reader){
-        setErrorString(QString("Open dataset \"%1\" failed!").arg(dataset) );
-        return ResultCode::Error;
-    }
 
 
 
@@ -83,7 +83,6 @@ ProjectProcess::ResultCode ExportSeismicProcess::run(){
     textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(m_minCrossline).arg(m_maxCrossline).toStdString());
     textHeaderStr.push_back("");
     textHeaderStr.push_back("Trace Header Definition:");
-    textHeaderStr.push_back("Time of first sample [ms]  bytes 109-110");
     textHeaderStr.push_back("Inline                     bytes 189-192");
     textHeaderStr.push_back("Crossline                  bytes 193-196");
     seismic::SEGYTextHeader textHeader=seismic::convertToRaw(textHeaderStr);
