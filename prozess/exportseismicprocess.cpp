@@ -90,9 +90,9 @@ ProjectProcess::ResultCode ExportSeismicProcess::run(){
     seismic::Header bhdr=reader->binaryHeader();
     bhdr["format"]=seismic::HeaderValue::makeIntValue( toInt( seismic::SEGYSampleFormat::IEEE) );
 
-    const int SCALCO=-10;   // need to get this from input ds
+    const int SCALCO=1;   // need to get this from input ds
     seismic::SEGYInfo info;
-    info.setScalco(-1./SCALCO);
+    info.setScalco(SCALCO);
     info.setSwap(true);     // XXX for little endian machines , NEED to automatically use endianess of machine a compile time
     info.setSampleFormat(seismic::SEGYSampleFormat::IEEE);
     //seismic::SEGYWriter writer( fileName.toStdString(), info, textHeader, bhdr );
