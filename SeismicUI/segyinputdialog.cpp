@@ -9,6 +9,7 @@
 #include<cmath>  // fabs
 #include<cstring> //memcpy
 #include<headerscandialog.h>
+#include<header.h>
 #include <ebcdicdialog.h>
 #include <headerdialog.h>
 #include<segyreader.h>
@@ -523,12 +524,44 @@ void SegyInputDialog::openReader(){
       }
 
       updateButtons();
+
+      updateControlsFromReader();
 }
 
 
 void SegyInputDialog::destroyReader(){
     m_reader.reset();
     updateButtons();
+}
+
+void SegyInputDialog::updateControlsFromReader(){
+
+    try{
+
+        m_reader->seek_trace(0);
+
+        seismic::Header th=m_reader->read_trace_header();
+
+        if( th.find("scalco")!=th.end() ){
+
+            int scalco=th["scalco"].intValue();
+
+            double scalFactor=1;
+
+            if( scalco<0 ){
+                scalFactor=-1./scalco;
+            }
+            else if( scalco>0 ){
+                scalFactor=1./scalco;
+            }
+
+            ui->leScalco->setText(QString::number(scalFactor));
+       }
+    }
+    catch( std::exception& err){
+        QMessageBox::critical(this, "update controls from reader", QString("Exception occured:\n")+QString(err.what()));
+    }
+
 }
 
 void SegyInputDialog::updateButtons(){

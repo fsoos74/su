@@ -87,6 +87,7 @@ private:
     void openReader();
     void destroyReader();
     void updateButtons();
+    void updateControlsFromReader();
     void updateEBCDICDialog();
     void updateBinaryDialog();
     void updateTraceHeaderDialog();
