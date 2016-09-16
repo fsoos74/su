@@ -4,7 +4,7 @@
 #include<array>
 #include<QPoint>
 #include<QPointF>
-
+#include<QTransform>
 
 // QPoint used for inline(x) and crossline(y)
 
@@ -26,6 +26,8 @@ public:
 
     void setInlineAndCrossline( int, QPoint);
     void setCoordinates( int, QPointF);
+
+    bool computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const;
 
 private:
 
