@@ -1,69 +1,87 @@
-#include "exportseismicdialog.h"
-#include "ui_exportseismicdialog.h"
+#include "exportvolumedialog.h"
+#include "ui_exportvolumedialog.h"
 
 #include<QIntValidator>
+#include<QDoubleValidator>
 #include<QFileDialog>
 
-ExportSeismicDialog::ExportSeismicDialog(QWidget *parent) :
+ExportVolumeDialog::ExportVolumeDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
-    ui(new Ui::ExportSeismicDialog)
+    ui(new Ui::ExportVolumeDialog)
 {
     ui->setupUi(this);
 
-    QIntValidator* validator=new QIntValidator(this);
-    ui->leMinInline->setValidator(validator);
-    ui->leMaxInline->setValidator(validator);
-    ui->leMinCrossline->setValidator(validator);
-    ui->leMaxCrossline->setValidator(validator);
+    QIntValidator* ivalidator=new QIntValidator(this);
+    ui->leMinInline->setValidator(ivalidator);
+    ui->leMaxInline->setValidator(ivalidator);
+    ui->leMinCrossline->setValidator(ivalidator);
+    ui->leMaxCrossline->setValidator(ivalidator);
+
+    QDoubleValidator* dvalidator=new QDoubleValidator(this);
+    ui->leMinTime->setValidator(dvalidator);
+    ui->leMaxTime->setValidator(dvalidator);
 
     connect(ui->leMinInline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMaxInline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMinCrossline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMaxCrossline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect(ui->leMinTime, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect(ui->leMaxTime, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
 
     updateOkButton();
 }
 
-ExportSeismicDialog::~ExportSeismicDialog()
+ExportVolumeDialog::~ExportVolumeDialog()
 {
     delete ui;
 }
 
-void ExportSeismicDialog::setDatasets( const QStringList& h){
-    ui->cbDataset->clear();
-    ui->cbDataset->addItems(h);
+void ExportVolumeDialog::setVolumes( const QStringList& h){
+    ui->cbVolume->clear();
+    ui->cbVolume->addItems(h);
     updateOkButton();
 }
 
-void ExportSeismicDialog::setFixedDataset(const QString & s){
+void ExportVolumeDialog::setFixedVolume(const QString & s){
 
-    // cannot select other ds because non-editable and no other items in list
-    ui->cbDataset->clear();
-    ui->cbDataset->addItem(s);
+    // cannot select other volume because non-editable and no other items in list
+    ui->cbVolume->clear();
+    ui->cbVolume->addItem(s);
     updateOkButton();
 }
 
-void ExportSeismicDialog::setMinimumInline(int i){
+void ExportVolumeDialog::setMinimumInline(int i){
 
     ui->leMinInline->setText(QString::number(i));
 }
 
-void ExportSeismicDialog::setMaximumInline(int i){
+void ExportVolumeDialog::setMaximumInline(int i){
 
     ui->leMaxInline->setText(QString::number(i));
 }
 
-void ExportSeismicDialog::setMinimumCrossline(int i){
+void ExportVolumeDialog::setMinimumCrossline(int i){
 
     ui->leMinCrossline->setText(QString::number(i));
 }
 
-void ExportSeismicDialog::setMaximumCrossline(int i){
+void ExportVolumeDialog::setMaximumCrossline(int i){
 
     ui->leMaxCrossline->setText(QString::number(i));
 }
 
-void ExportSeismicDialog::on_pbBrowse_clicked()
+void ExportVolumeDialog::setMinimumTime(double t){
+
+    ui->leMinTime->setText(QString::number(t));
+}
+
+void ExportVolumeDialog::setMaximumTime(double t){
+
+    ui->leMaxTime->setText(QString::number(t));
+}
+
+
+void ExportVolumeDialog::on_pbBrowse_clicked()
 {
     QString filter = "SEG-Y Files (*.sgy)";
 
@@ -84,26 +102,28 @@ void ExportSeismicDialog::on_pbBrowse_clicked()
 }
 
 
-QMap<QString,QString> ExportSeismicDialog::params(){
+QMap<QString,QString> ExportVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("dataset"), ui->cbDataset->currentText());
+    p.insert( QString("volume"), ui->cbVolume->currentText());
 
     p.insert( QString("output-file"), ui->leOutputFile->text() );
 
-    if( ui->cbRestrictArea->isChecked()){
+    if( ui->cbRestrictVolume->isChecked()){
         p.insert( QString("min-inline" ), ui->leMinInline->text() );
         p.insert( QString("max-inline" ), ui->leMaxInline->text() );
         p.insert( QString("min-crossline" ), ui->leMinCrossline->text() );
         p.insert( QString("max-crossline" ), ui->leMaxCrossline->text() );
+        p.insert( QString("min-time" ), ui->leMinTime->text() );
+        p.insert( QString("max-time" ), ui->leMaxTime->text() );
     }
 
     return p;
 }
 
 
-void ExportSeismicDialog::updateOkButton(){
+void ExportVolumeDialog::updateOkButton(){
 
     bool ok=true;
 
@@ -128,6 +148,15 @@ void ExportSeismicDialog::updateOkButton(){
     }
     ui->leMinCrossline->setPalette(crosslinePalette);
     ui->leMaxCrossline->setPalette(crosslinePalette);
+
+    QPalette timePalette;
+    if(ui->leMinTime->text().toDouble()>ui->leMaxTime->text().toDouble()){
+
+        ok=false;
+        timePalette.setColor(QPalette::Text, Qt::red);
+    }
+    ui->leMinTime->setPalette(timePalette);
+    ui->leMaxTime->setPalette(timePalette);
 
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(ok);

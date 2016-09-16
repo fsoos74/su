@@ -22,6 +22,10 @@ public:
 public slots:
     void setDatasets( const QStringList&);
     void setFixedDataset( const QString&);
+    void setMinimumInline( int );
+    void setMaximumInline( int );
+    void setMinimumCrossline( int );
+    void setMaximumCrossline( int );
 
 private slots:
     void on_pbBrowse_clicked();

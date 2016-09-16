@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       -= gui
+#need gui for QTransform
+#QT       -= gui
 
 win32{
     CONFIG+=staticlib
@@ -35,7 +36,8 @@ SOURCES += prozess.cpp \
     gatherfilter.cpp \
     rungridscriptprocess.cpp \
     runvolumescriptprocess.cpp \
-    exportseismicprocess.cpp
+    exportseismicprocess.cpp \
+    exportvolumeprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -55,7 +57,8 @@ HEADERS += prozess.h\
     gatherfilter.h \
     rungridscriptprocess.h \
     runvolumescriptprocess.h \
-    exportseismicprocess.h
+    exportseismicprocess.h \
+    exportvolumeprocess.h
 
 unix {
     target.path = /usr/lib

@@ -44,8 +44,13 @@
 #include<memory>
 
 #include<projectgeometrydialog.h>
+
+#include<exportvolumeprocess.h>
+#include<exportvolumedialog.h>
+
 #include<exportseismicprocess.h>
 #include<exportseismicdialog.h>
+
 #include <createtimesliceprocess.h>
 #include <createtimeslicedialog.h>
 #include <horizonamplitudesprocess.h>
@@ -629,7 +634,6 @@ void ProjectViewer::on_actionExportSeismic_triggered()
 {
     selectAndExportSeismicDataset();
 }
-
 
 
 void ProjectViewer::on_actionSave_triggered()
@@ -1219,213 +1223,32 @@ void ProjectViewer::removeGrid( GridType t, const QString& name){
 
 void ProjectViewer::selectAndExportVolume()
 {
-    bool ok=false;
-    QString volumeName = QInputDialog::getItem(this, QString("Export Volume"),
-                                         tr("Select Volume:"), m_project->volumeList(), 0, false, &ok);
-    if (ok && !volumeName.isEmpty()){
+    ExportVolumeDialog dlg(this);
+    dlg.setWindowTitle("Export Volume");
+    dlg.setVolumes(m_project->volumeList());
 
-        exportVolume(volumeName);
-    }
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new ExportVolumeProcess( m_project, this ), params );
 }
 
-bool computeTransforms(const ProjectGeometry& geom, QTransform &transformXYToIlXl, QTransform &transformIlXlToXY){
 
-    const qreal EPS=0.001;
-
-    QPoint inlineAndCrossline1=geom.inlineAndCrossline(0);
-    QPointF coords1=geom.coordinates(0);
-    QPoint inlineAndCrossline2=geom.inlineAndCrossline(1);
-    QPointF coords2=geom.coordinates(1);
-    QPoint inlineAndCrossline3=geom.inlineAndCrossline(2);
-    QPointF coords3=geom.coordinates(2);
-
-    int il1=inlineAndCrossline1.x();
-    int xl1=inlineAndCrossline1.y();
-    int il2=inlineAndCrossline2.x();
-    int xl2=inlineAndCrossline2.y();
-    int il3=inlineAndCrossline3.x();
-    int xl3=inlineAndCrossline3.y();
-
-    int x1=coords1.x();
-    int y1=coords1.y();
-    int x2=coords2.x();
-    int y2=coords2.y();
-    int x3=coords3.x();
-    int y3=coords3.y();
-
-    int il21=il2-il1;
-    int il31=il3-il1;
-    int xl21=xl2-xl1;
-    int xl31=xl3-xl1;
-    qreal x21=x2-x1;
-    qreal x31=x3-x1;
-    qreal y21=y2-y1;
-    qreal y31=y3-y1;
-
-    qreal D=x31*y21 - x21*y31;
-    if( std::fabs(D)<EPS ){
-        return false;
-    }
-
-    qreal m11=( il21*y31 + il31*y21 ) /D;
-
-    if( std::fabs(y21)<EPS && std::fabs(y31)<EPS){
-        return false;
-    }
-
-    qreal m21=( std::fabs(y21) > std::fabs(y31) ) ?
-                ( il21 - m11*x21 ) / y21 :
-                ( il31 - m11*x31 ) / y31;
-
-    qreal dx= il1 - m11*x1 - m21*y1;
-
-
-    D=y21*x31 - y31*x21;
-    if( std::fabs(D)<EPS ){
-        return false;
-    }
-
-    qreal m22=( xl21*x31 - xl31*x21 ) / D;
-
-    if( std::fabs(y21)<EPS && std::fabs(y31)<EPS ){
-        return false;
-    }
-
-    qreal m12=(std::fabs(x21) > std::fabs(x31) ) ?
-                ( xl21 - m22*y21 ) / x21 :
-                ( xl31 - m22*y31 ) / x31;
-
-    qreal dy= xl1- m22*y1 - m12*x1;
-
-    transformXYToIlXl.setMatrix( m11, m12, 0, m21, m22, 0, dx, dy, 1);
-    bool ok=false;
-    transformIlXlToXY=transformXYToIlXl.inverted(&ok);
-    return ok;
-}
 
 // XXX make this a process later
 void ProjectViewer::exportVolume( QString volumeName){
 
-    const int SCALCO=-10;
+    ExportVolumeDialog dlg(this);
+    dlg.setWindowTitle("Export Volume");
+    dlg.setFixedVolume(volumeName);
 
-    QTransform IlXlToXY;
-    QTransform XYToIlXl;
-    if( !computeTransforms(m_project->geometry(), XYToIlXl, IlXlToXY)){
-        QMessageBox::critical(this, "Export Volume", "Invalid geometry, failed to compute transformations!");
-        return;
-    }
+    if( dlg.exec()!=QDialog::Accepted) return;
 
+    QMap<QString,QString> params=dlg.params();
 
-    std::shared_ptr<Grid3D<float>> volume=m_project->loadVolume(volumeName);
-    if(!volume){
-        QMessageBox::critical(this, "Export Volume", QString("Loading volume %1 failed!").arg(volumeName));
-        return;
-    }
+    runProcess( new ExportVolumeProcess( m_project, this ), params );
 
-    QString fileName=QFileDialog::getSaveFileName(this, "Choose exported volume SEGY file", QDir::homePath(), "*.segy");
-    if( fileName.isNull()) return;
-
-
-
-    Grid3DBounds bounds=volume->bounds();
-
-    QProgressDialog progress(this);
-    progress.setWindowTitle("Export Volume");
-    progress.setLabelText("Writing SEGY");
-    progress.setRange(0, bounds.inlineCount());
-    progress.show();
-
-    double ft=bounds.ft();
-    size_t ns=bounds.sampleCount();
-    size_t dt=1000000*bounds.dt();   // make microseconds
-
-    seismic::SEGYTextHeaderStr textHeaderStr;
-    textHeaderStr.push_back("SEGY created with AVOUtensil");
-    textHeaderStr.push_back(QString("Content:     Volume %1").arg(volumeName).toStdString());
-    textHeaderStr.push_back(QString("Inlines:     %1 - %2").arg(bounds.inline1()).arg(bounds.inline2()).toStdString());
-    textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(bounds.crossline1()).arg(bounds.crossline2()).toStdString());
-    textHeaderStr.push_back("");
-    textHeaderStr.push_back("Trace Header Definition:");
-    textHeaderStr.push_back("Time of first sample [ms]  bytes 109-110");
-    textHeaderStr.push_back("Inline                     bytes 189-192");
-    textHeaderStr.push_back("Crossline                  bytes 193-196");
-    textHeaderStr.push_back("X-Coordinate               bytes 181-184");
-    textHeaderStr.push_back("Y-Coordinate               bytes 185-188");
-    seismic::SEGYTextHeader textHeader=seismic::convertToRaw(textHeaderStr);
-
-    seismic::Header bhdr;
-    bhdr["format"]=seismic::HeaderValue::makeIntValue( toInt( seismic::SEGYSampleFormat::IEEE) );
-    bhdr["ns"]=seismic::HeaderValue::makeUIntValue(ns);
-    bhdr["dt"]=seismic::HeaderValue::makeUIntValue(dt);
-
-    seismic::SEGYInfo info;
-    info.setScalco(-1./SCALCO);
-    info.setSwap(true);     // XXX for little endian machines , NEED to automatically use endianess of machine a compile time
-    info.setSampleFormat(seismic::SEGYSampleFormat::IEEE);
-    //seismic::SEGYWriter writer( fileName.toStdString(), info, textHeader, bhdr );
-    std::unique_ptr<seismic::SEGYWriter> writer( new seismic::SEGYWriter(
-                fileName.toStdString(), info, textHeader, bhdr ) );
-    writer->write_leading_headers();
-
-
-    seismic::Trace trace(bounds.ft(), bounds.dt(), bounds.sampleCount() );
-    seismic::Header& thdr=trace.header();
-    seismic::Trace::Samples& samples=trace.samples();
-
-    thdr["delrt"]=seismic::HeaderValue::makeIntValue(1000*ft);
-    thdr["ns"]=seismic::HeaderValue::makeUIntValue(ns);
-    thdr["dt"]=seismic::HeaderValue::makeUIntValue(dt);
-    thdr["scalco"]=seismic::HeaderValue::makeIntValue(SCALCO);
-
-    int n=0;
-    for( int iline=bounds.inline1(); iline<=bounds.inline2(); iline++){
-
-        for( int xline=bounds.crossline1(); xline<=bounds.crossline2(); xline++){
-
-            n++;
-
-            QPointF p=IlXlToXY.map( QPoint(iline, xline));
-            qreal x=p.x();
-            qreal y=p.y();
-
-            int cdp=1 + (iline-bounds.inline1())*bounds.crosslineCount() + xline - bounds.crossline1();
-
-            thdr["cdp"]=seismic::HeaderValue::makeIntValue(cdp);                                        // XXX, maybe read from db once
-            thdr["tracr"]=seismic::HeaderValue::makeIntValue(n);
-            thdr["tracl"]=seismic::HeaderValue::makeIntValue(n);
-            thdr["iline"]=seismic::HeaderValue::makeIntValue(iline);
-            thdr["xline"]=seismic::HeaderValue::makeIntValue(xline);
-            thdr["sx"]=seismic::HeaderValue::makeFloatValue(x);
-            thdr["sy"]=seismic::HeaderValue::makeFloatValue(y);
-            thdr["gx"]=seismic::HeaderValue::makeFloatValue(x);
-            thdr["gy"]=seismic::HeaderValue::makeFloatValue(y);
-            thdr["cdpx"]=seismic::HeaderValue::makeFloatValue(x);
-            thdr["cdpy"]=seismic::HeaderValue::makeFloatValue(y);
-
-            for( int i=0; i<bounds.sampleCount(); i++){
-
-                float s=(*volume)(iline,xline,i);
-
-                // write zero for NULL values, maybe make this selectable?
-                if( s==volume->NULL_VALUE ){
-                    s=0;
-                }
-
-                samples[i]=s;
-            }
-
-            //std::cout<<"n="<<n<<" cdp="<<cdp<<" iline="<<iline<<" xline="<<xline<<std::endl;
-            writer->write_trace(trace);
-        }
-
-        progress.setValue(iline-bounds.inline1());
-        qApp->processEvents();
-        if( progress.wasCanceled()){
-            // delete partial file
-            QFile(fileName).remove();
-            return;
-        }
-    }
 }
 
 
@@ -1436,7 +1259,7 @@ void ProjectViewer::exportVolumeSeisware( QString volumeName){
 
     QTransform IlXlToXY;
     QTransform XYToIlXl;
-    if( !computeTransforms(m_project->geometry(), XYToIlXl, IlXlToXY)){
+    if( !m_project->geometry().computeTransforms(XYToIlXl, IlXlToXY)){
         QMessageBox::critical(this, "Export Volume", "Invalid geometry, failed to compute transformations!");
         return;
     }
@@ -1966,6 +1789,9 @@ void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> 
 
     Q_ASSERT( process );
 
+    try{
+
+
     auto start = std::chrono::steady_clock::now();
 
     if( process->init(params)!=ProjectProcess::ResultCode::Ok ){
@@ -2018,6 +1844,10 @@ void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> 
         }
     }
 
+    }catch( std::exception& ex ){
+        QMessageBox::critical(this, tr("Unhandled Exception Running Process"), ex.what() );
+    }
+
 }
 
 
@@ -2064,6 +1894,7 @@ void ProjectViewer::updateMenu(){
     ui->actionExportAttributeGrid->setEnabled(isProject);
     ui->actionExportVolume->setEnabled(isProject);
     ui->actionExportSeismic->setEnabled(isProject);
+    ui->actionExportProject->setEnabled(isProject);
     ui->actionOpenGrid->setEnabled( isProject);
     ui->actionOpenSeismicDataset->setEnabled( isProject);
 

@@ -61,6 +61,12 @@ private slots:
 
     void on_actionExportOtherGrid_triggered();
 
+    void on_actionExportVolume_triggered();
+
+    void on_actionImportVolume_triggered();
+
+    void on_actionExportSeismic_triggered();
+
     void on_actionSaveProjectAs_triggered();
 
     void on_actionSave_triggered();
@@ -100,11 +106,7 @@ private slots:
     void on_actionFluid_Factor_Volume_triggered();
 
 
-    void on_actionExportVolume_triggered();
 
-    void on_actionImportVolume_triggered();
-
-    void on_actionExportSeismic_triggered();
 
     void on_action_Geometry_triggered();
 

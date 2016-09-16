@@ -30,7 +30,8 @@ SOURCES += prozessui.cpp \
     processparametersdialog.cpp \
     gridrunuserscriptdialog.cpp \
     runvolumescriptdialog.cpp \
-    exportseismicdialog.cpp
+    exportseismicdialog.cpp \
+    exportvolumedialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -44,7 +45,8 @@ HEADERS += prozessui.h\
     processparametersdialog.h \
     gridrunuserscriptdialog.h \
     runvolumescriptdialog.h \
-    exportseismicdialog.h
+    exportseismicdialog.h \
+    exportvolumedialog.h
 
 unix {
     target.path = /usr/lib
@@ -61,7 +63,8 @@ FORMS += \
     fluidfactorvolumedialog.ui \
     gridrunuserscriptdialog.ui \
     runvolumescriptdialog.ui \
-    exportseismicdialog.ui
+    exportseismicdialog.ui \
+    exportvolumedialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
