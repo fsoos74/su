@@ -27,6 +27,9 @@ private:
     std::shared_ptr<Grid3D<float> > m_intercept;
     std::shared_ptr<Grid3D<float> > m_gradient;
     std::shared_ptr<Grid3D<float> > m_volume;
+
+    bool m_computeAngle=true;
+    double m_angle=0;             // radians
 };
 
 #endif // FLUIDFACTORVOLUMEPROCESS_H

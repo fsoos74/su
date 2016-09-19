@@ -67,6 +67,15 @@ ProjectProcess::ResultCode FluidFactorVolumeProcess::init( const QMap<QString, Q
     m_volume=std::shared_ptr<Grid3D<float> >( new Grid3D<float>(bounds));
 
 
+    if( parameters.contains("angle") ){
+        m_computeAngle=false;
+        m_angle=parameters.value(QString("angle")).toDouble(); // in degrees
+        m_angle*=M_PI/180.0;    // convert to radian
+    }
+    else{
+        m_computeAngle=true;
+    }
+
     if( !m_volume){
         setErrorString("Allocating volume failed!");
         return ResultCode::Error;
@@ -77,13 +86,16 @@ ProjectProcess::ResultCode FluidFactorVolumeProcess::init( const QMap<QString, Q
 
 ProjectProcess::ResultCode FluidFactorVolumeProcess::run(){
 
-  //  std::ofstream os("/home/fsoos/ig.txt");
 
     // first step compute crossplot angle
     Grid3DBounds bounds=m_intercept->bounds();      // intercept and gradient have same bounds, checked on init
-    QVector<QPointF> all;
 
     int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
+
+    if( m_computeAngle ){
+
+    QVector<QPointF> all;
+
     emit currentTask("Computing crossplot angle");
     emit started(100);
 
@@ -115,8 +127,10 @@ ProjectProcess::ResultCode FluidFactorVolumeProcess::run(){
     }
 
     QPointF trendInterceptAndGradient=linearRegression(all);
+    m_angle=std::fabs(std::atan( trendInterceptAndGradient.y() ) );
+    }
 
-    double phi=std::atan2( -trendInterceptAndGradient.y(), trendInterceptAndGradient.x());
+    double phi=m_angle;
     double sinPhi=std::sin(phi);
     double cosPhi=std::cos(phi);
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>210</width>
-    <height>174</height>
+    <width>277</width>
+    <height>277</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,6 +53,37 @@
      </item>
      <item row="1" column="1">
       <widget class="QComboBox" name="cbGradient"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0" colspan="2">
+      <widget class="QCheckBox" name="cbComputeAngle">
+       <property name="text">
+        <string>Compute Angle</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Angle:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="leAngle">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -114,6 +145,22 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbComputeAngle</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leAngle</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>136</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>161</x>
+     <y>170</y>
     </hint>
    </hints>
   </connection>

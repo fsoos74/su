@@ -2,6 +2,7 @@
 #include "ui_fluidfactorvolumedialog.h"
 
 #include<QPushButton>
+#include<QDoubleValidator>
 #include<avoproject.h>
 
 FluidFactorVolumeDialog::FluidFactorVolumeDialog(QWidget *parent) :
@@ -9,6 +10,9 @@ FluidFactorVolumeDialog::FluidFactorVolumeDialog(QWidget *parent) :
     ui(new Ui::FluidFactorVolumeDialog)
 {
     ui->setupUi(this);
+
+    QDoubleValidator* validator=new QDoubleValidator(this);
+    ui->leAngle->setValidator(validator);
 
     connect( ui->leGrid, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
 
@@ -40,6 +44,10 @@ QMap<QString,QString> FluidFactorVolumeDialog::params(){
     p.insert( QString("intercept"), ui->cbIntercept->currentText());
 
     p.insert( QString("gradient"), ui->cbGradient->currentText() );
+
+    if( !ui->cbComputeAngle->isChecked() ){
+        p.insert( QString("angle"),ui->leAngle->text() );
+    }
 
     return p;
 }
