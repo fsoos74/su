@@ -42,6 +42,9 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     ui->lePosCDPY->setValidator( posValidator );
     ui->lePosOffset->setValidator( posValidator );
 
+    QDoubleValidator* dvalidator=new QDoubleValidator(this);
+    ui->leScalco->setValidator(dvalidator);
+
     QStringList items;
     items.append("2");
     items.append("4");
@@ -425,6 +428,8 @@ void SegyInputDialog::on_pbBrowse_clicked()
     ui->leFilename->setText(fn);    // filename always synchronized with lineedit
     readInfoFile();
     openReader();                    // openReader uses filename from lineedit
+
+    updateFixScalcoFromReader();
 }
 
 void SegyInputDialog::on_pbEBCDIC_clicked()
@@ -524,8 +529,6 @@ void SegyInputDialog::openReader(){
       }
 
       updateButtons();
-
-      updateControlsFromReader();
 }
 
 
@@ -534,7 +537,7 @@ void SegyInputDialog::destroyReader(){
     updateButtons();
 }
 
-void SegyInputDialog::updateControlsFromReader(){
+void SegyInputDialog::updateFixScalcoFromReader(){
 
     try{
 
@@ -559,7 +562,7 @@ void SegyInputDialog::updateControlsFromReader(){
        }
     }
     catch( std::exception& err){
-        QMessageBox::critical(this, "update controls from reader", QString("Exception occured:\n")+QString(err.what()));
+        QMessageBox::critical(this, "update fixed scalco from reader", QString("Exception occured:\n")+QString(err.what()));
     }
 
 }

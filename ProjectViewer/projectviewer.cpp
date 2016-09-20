@@ -877,14 +877,6 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
     dlg.setWindowTitle("Select Volumes for Crossplot");
     dlg.setVolumes(m_project->volumeList());
 
-    /*
-    TwoCombosDialog dlg;
-    dlg.setWindowTitle("Select Volumes for Crossplot");
-    dlg.setLabelText1("Volume #1 (x-axis):");
-    dlg.setLabelText2("Volune #2 (y-axis):");
-    dlg.setItems1(m_project->volumeList());
-    dlg.setItems2(m_project->volumeList());
-*/
     if( dlg.exec()!=QDialog::Accepted) return;
 
     std::shared_ptr<Grid3D<float> > volume1=m_project->loadVolume(dlg.xName());
@@ -950,6 +942,7 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
 
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
+    viewer->setFixedColor(!volumea);  // if attribute is used use variable color points
     viewer->setData(data); // add data after visible!!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
 
@@ -1515,6 +1508,9 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         int maxIline=reader->maxInline();
         int minXline=reader->minCrossline();
         int maxXline=reader->maxCrossline();
+std::cout<<"opened reader"<<std::endl;
+std::cout<<"inline range: "<<minIline<<" - "<<maxIline<<std::endl;
+std::cout<<"Crossline range: "<<minXline<<" - "<<maxXline<<std::endl<<std::flush;
 
         SeismicDataSelector* selector=new SeismicDataSelector(this);
         selector->setInlineRange(minIline, maxIline);
@@ -1525,7 +1521,7 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         selector->setCrossline(minXline);
         selector->setReader(reader);
 
-
+std::cout<<"Created selector"<<std::endl<<std::flush;
 
         QString verticalAxisLabel;
         if( info.domain()==SeismicDatasetInfo::Domain::Time){
@@ -1538,20 +1534,28 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         GatherViewer* viewer=new GatherViewer;//(this);
         viewer->setDispatcher(m_dispatcher);
         viewer->setWindowTitle( name );
+std::cout<<"Configurating viewer..."<<std::endl<<std::flush;
         if( info.mode()==SeismicDatasetInfo::Mode::Prestack){
+std::cout<<"initializing selector"<<std::endl<<std::flush;
             selector->setOrder(SeismicDataSelector::ORDER_INLINE_ASCENDING,
                                SeismicDataSelector::ORDER_CROSSLINE_ASCENDING,
                                SeismicDataSelector::ORDER_OFFSET_ASCENDING);
+std::cout<<"1"<<std::endl<<std::flush;
             selector->setInlineCount(1);
+std::cout<<"2"<<std::endl<<std::flush;
             selector->setCrosslineCount(10);
+std::cout<<"3"<<std::endl<<std::flush;
             std::pair<int, int> ftIlXl=reader->firstTraceInlineCrossline();
+std::cout<<"4"<<std::endl<<std::flush;
             selector->setInline(ftIlXl.first);
+std::cout<<"5"<<std::endl<<std::flush;
             selector->setCrossline(ftIlXl.second);
+std::cout<<"seting up gatherlabel"<<std::endl<<std::flush;
             GatherLabel* gatherLabel=viewer->view()->gatherLabel();
             gatherLabel->setDisplayWiggles(true);
             gatherLabel->setDisplayVariableArea(true);
             gatherLabel->setDisplayDensity(false);
-
+std::cout<<"setting trace annotations"<<std::endl<<std::flush;
             std::vector< std::pair< std::string, QString> > annos;
             annos.push_back( std::pair< std::string, QString >( "iline", QString("Inline")));
             annos.push_back( std::pair< std::string, QString >( "xline", QString("Crossline")));
@@ -1595,7 +1599,7 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         connect( selector, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), viewer, SLOT(setGather(std::shared_ptr<seismic::Gather>)));
         connect( viewer, SIGNAL(requestPoint(int,int)), selector,SLOT(providePoint(int,int)));
         connect( viewer, SIGNAL(requestPoints(QVector<QPoint>)), selector, SLOT( provideRandomLine(QVector<QPoint>)) );
-
+std::cout<<"Going to create viewer"<<std::endl<<std::flush;
         viewer->mainToolBar()->addWidget(selector);
         //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
         viewer->show();

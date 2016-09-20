@@ -79,9 +79,7 @@ int SeismicDatasetReader::maxCrossline(){
      int xl1=minCrossline();
      int xl2=maxCrossline();
      int xl3=xl1;
-std::cout<<"il1="<<il1<<" xl1="<<xl1<<std::endl;
-std::cout<<"il2="<<il2<<" xl2="<<xl2<<std::endl;
-std::cout<<"il3="<<il3<<" xl3="<<xl3<<std::endl;
+
 
      // point 1
      QSqlQuery query1("point1", m_db);
@@ -93,7 +91,6 @@ std::cout<<"il3="<<il3<<" xl3="<<xl3<<std::endl;
 
      qreal x1=query1.value("x").toDouble();
      qreal y1=query1.value("y").toDouble();
-std::cout<<"x1="<<x1<<" y1="<<y1<<std::endl;
 
      // point 2
      QSqlQuery query2("point2", m_db);
@@ -105,7 +102,7 @@ std::cout<<"x1="<<x1<<" y1="<<y1<<std::endl;
 
      qreal x2=query2.value("x").toDouble();
      qreal y2=query2.value("y").toDouble();
-std::cout<<"x2="<<x2<<" y2="<<y2<<std::endl;
+
 
      // point 3
      QSqlQuery query3("point3", m_db);
@@ -117,7 +114,6 @@ std::cout<<"x2="<<x2<<" y2="<<y2<<std::endl;
 
      qreal x3=query3.value("x").toDouble();
      qreal y3=query3.value("y").toDouble();
-std::cout<<"x3="<<x3<<" y3="<<y3<<std::endl;
 
      ProjectGeometry g;
      g.setCoordinates(0, QPointF(x1,y1));
@@ -249,7 +245,7 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
 
     std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
 
-
+std::cout<<"reading traces..."<<std::endl<<std::flush;
     while( query.next() && gather->size()<maxTraces){
 
         bool ok=false;
@@ -258,8 +254,11 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
             throw Exception(QString("Accessing trace number failed!"));
         }
 
+        std::cout<<"traceno:"<<traceNo<<std::endl<<std::flush;
         m_reader->seek_trace(traceNo);
+        std::cout<<"attempting to read trace"<<std::endl<<std::flush;
         gather->push_back(m_reader->read_trace());
+        std::cout<<"trace read successfully"<<std::endl<<std::flush;
     }
 
     return gather;

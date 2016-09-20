@@ -76,6 +76,7 @@ private slots:
 
     void on_pbScanTraceHeaders_clicked();
 
+
 private:
 
     void updateControlsFromInfo();
@@ -87,7 +88,8 @@ private:
     void openReader();
     void destroyReader();
     void updateButtons();
-    void updateControlsFromReader();
+    void updateFixScalcoFromReader();
+
     void updateEBCDICDialog();
     void updateBinaryDialog();
     void updateTraceHeaderDialog();

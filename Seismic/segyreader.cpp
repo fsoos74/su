@@ -279,17 +279,18 @@ void SEGYReader::convert_raw_samples( Trace& trc){
 }
 
 Trace SEGYReader::read_trace(){
-
+std::cout<<"SEGYReader::read_trace()"<<std::endl<<std::flush;
     if(m_is_next_trace_header ){
         read_trace_header();
     }
-
+std::cout<<"1"<<std::endl<<std::flush;
     Trace trc(m_ft, m_dt, m_nt, m_trace_header );      // sampling params m_dt and m_nt are updated in convert_trace_header
 
-
+std::cout<<"2"<<std::endl<<std::flush;
     read_samples();
+std::cout<<"3"<<std::endl<<std::flush;
     convert_raw_samples(trc);
-
+std::cout<<"4"<<std::endl<<std::flush;
     m_is_next_trace_header=true;
 
     m_cur_trace++;
@@ -311,12 +312,12 @@ std::shared_ptr<Gather> SEGYReader::read_gather( const std::string& key, const s
     if( it==firstHeader.end()) throw FormatError("Gather key does not exist!!!");
     HeaderValue keyValue=it->second;
 
-   // std::cout<<"Gather: key="<<key<<" value="<<keyValue<<std::endl;
+   std::cout<<"read_gather: key="<<key<<" value="<<keyValue<<std::endl;
 
     while( m_cur_trace<m_trace_count && gather->size()<max_traces){
 
         read_trace_header();
-       // std::cout<<"read value="<<m_trace_header[key]<<std::endl;
+
         if( m_trace_header[key] != keyValue) break;
         gather->push_back( read_trace() );
     }
@@ -333,6 +334,7 @@ void convert_ibm_to_samples( char* rawbuf, Trace::Samples& dest, size_t n, bool 
 
     for ( size_t i=0; i<n; i++)
     {
+
             fconv = *src;
 
             if (chend)      // XXX
@@ -340,9 +342,12 @@ void convert_ibm_to_samples( char* rawbuf, Trace::Samples& dest, size_t n, bool 
 
             if (fconv)
             {
-                    fmant = 0x00ffffff & fconv;
+                fmant = 0x00ffffff & fconv;
 
-
+                if( fmant==0){
+                    fconv=0;
+                }
+                else{
                     t = (int32_t) ((0x7f000000 & fconv) >> 22) - 130;
 
                     while (!(fmant & 0x00800000)) { --t; fmant <<= 1; }
@@ -354,6 +359,7 @@ void convert_ibm_to_samples( char* rawbuf, Trace::Samples& dest, size_t n, bool 
                             fconv = 0;
                     else
                             fconv = (0x80000000 & fconv) |(t << 23)|(0x007fffff & fmant);
+                }
             }
 
             dest[i] = *((float*)&(fconv));
