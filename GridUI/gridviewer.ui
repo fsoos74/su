@@ -53,7 +53,7 @@
      <x>0</x>
      <y>0</y>
      <width>1190</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -115,6 +115,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionSetup_Contours"/>
+   <addaction name="displayRangeAct"/>
+   <addaction name="EditColorTableAct"/>
+   <addaction name="action_Grid_Display"/>
+   <addaction name="actionDisplay_Histogram"/>
+   <addaction name="separator"/>
   </widget>
   <action name="openAct">
    <property name="icon">
@@ -145,7 +151,7 @@
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
-    <string>Zoom In (25%)</string>
+    <string>&amp;Zoom In (25%)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -157,7 +163,7 @@
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
-    <string>Zoom Out (25%)</string>
+    <string>Zoom &amp;Out (25%)</string>
    </property>
    <property name="toolTip">
     <string>Zoom Out (25%)</string>
@@ -168,13 +174,17 @@
   </action>
   <action name="zoomNormalAct">
    <property name="text">
-    <string>Zoom Fit Window (100%)</string>
+    <string>Zoom &amp;Fit Window (100%)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
    </property>
   </action>
   <action name="displayRangeAct">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/select-range-icon-32x32.png</normaloff>:/icons/images/select-range-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Display &amp;Range</string>
    </property>
@@ -183,6 +193,10 @@
    </property>
   </action>
   <action name="EditColorTableAct">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Edit &amp;Color Table</string>
    </property>
@@ -191,8 +205,12 @@
    </property>
   </action>
   <action name="actionSetup_Contours">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/contours-icon-32x32.png</normaloff>:/icons/images/contours-icon-32x32.png</iconset>
+   </property>
    <property name="text">
-    <string>Setup Contours</string>
+    <string>&amp;Setup Contours</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -200,10 +218,14 @@
   </action>
   <action name="actionAxxis_Orientation">
    <property name="text">
-    <string>Axis Orientation</string>
+    <string>&amp;Axis Orientation</string>
    </property>
   </action>
   <action name="action_Grid_Display">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/display-options-icon-32x32.png</normaloff>:/icons/images/display-options-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Grid Display &amp;Options</string>
    </property>
@@ -231,6 +253,15 @@
    </property>
    <property name="text">
     <string>&amp;Dispatch CDPs</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Histogram">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/histogram-icon-32x32.png</normaloff>:/icons/images/histogram-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Display Histogram</string>
    </property>
   </action>
  </widget>

@@ -18,6 +18,7 @@
 #include "griddisplayoptionsdialog.h"
 #include "orientationdialog.h"
 #include "displayrangedialog.h"
+#include <histogramdialog.h>
 
 #include <projectgeometry.h>
 
@@ -75,6 +76,8 @@ private slots:
 
     void on_action_Grid_Display_triggered();
 
+    void on_actionDisplay_Histogram_triggered();
+
 private:
 
     void setDefaultColorTable();
@@ -92,6 +95,8 @@ private:
     DisplayRangeDialog* displayRangeDialog=nullptr;
     IsoLineDialog* isoLineDialog=nullptr;
     GridDisplayOptionsDialog* gridDisplayOptionsDialog=nullptr;
+
 };
+
 
 #endif // MAINWINDOW_H

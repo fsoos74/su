@@ -31,8 +31,10 @@ public slots:
 
 private slots:
 
+    void updateStatisticsControls();
+    void updatePlotControlsFromData();
+    void updatePlotDataFromControls();
     void updateHistogram();
-    void updateDataMinMax();
 
 protected:
 
@@ -40,6 +42,7 @@ protected:
 
 private:
 
+    void computeStatistics();
     void updateMaximumCount();
     void updateScene();
 
@@ -49,6 +52,14 @@ private:
     QVector<double> m_data;
     double m_dataMin=0;
     double m_dataMax=1;
+    double m_dataMean;
+    double m_dataSigma;
+    double m_dataMedian;
+    double m_dataRMS;
+
+    double m_plotMin;
+    double m_plotMax;
+    double m_plotBinWidth;
 
     Histogram m_histogram;
     size_t m_maximumCount;

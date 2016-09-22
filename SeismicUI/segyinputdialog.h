@@ -72,13 +72,15 @@ private slots:
 
     void onTraceHeaderDialogFinished();
 
-    void navigateToTraceHeader( int );
+    void navigateToTraceHeader( size_t );
 
     void on_pbScanTraceHeaders_clicked();
 
 
 private:
 
+    seismic::SEGYHeaderWordDataType indexToDataType( int );
+    int DataTypeToIndex( seismic::SEGYHeaderWordDataType t);
     void updateControlsFromInfo();
     void updateInfoFromControls();
     void readInfoFile();

@@ -43,6 +43,12 @@ void swap_bytes(uint64_t* pv ){
     std::swap( *(p+3), *(p+4) );
 }
 
+void swap_bytes(float* pv ){
+    char* p=reinterpret_cast<char*>(pv);
+    std::swap( *p, *(p+3) );
+    std::swap( *(p+1), *(p+2) );
+}
+
 void get_from_raw( char* dst, char* praw, size_t size){
     std::memcpy( dst, praw, size);
 }
@@ -84,7 +90,7 @@ void get_from_raw( uint64_t* dst, char* praw, bool swap){
 
 void get_from_raw( float* dst, char* praw, bool swap){
     std::memcpy( reinterpret_cast<char*>(dst), praw, sizeof(float) );
-    if( swap ) swap_bytes( reinterpret_cast<int32_t*>(dst) );
+    if( swap ) swap_bytes(dst);
 }
 
 
@@ -124,7 +130,7 @@ void put_to_raw( uint64_t* src, char* praw, bool swap){
 
 void put_to_raw( float* src, char* praw, bool swap){
     std::memcpy( praw, reinterpret_cast<char*>(src), sizeof(float) );
-    if( swap ) swap_bytes( reinterpret_cast<int32_t*>(praw) );
+    if( swap ) swap_bytes( reinterpret_cast<float*>(praw) );
 }
 
 void put_to_raw( const char* src, size_t size, char* praw){

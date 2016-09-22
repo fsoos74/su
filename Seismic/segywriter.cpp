@@ -101,8 +101,14 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
             if( def.ctype==SEGYHeaderWordConvType::PLAIN ){
                 f=static_cast<float>(value.floatValue());
             }
+            else if( def.ctype==SEGYHeaderWordConvType::ELEV ){
+                f=value.floatValue()/m_info.scalel();
+            }
+            else if( def.ctype==SEGYHeaderWordConvType::COORD ){
+                f=value.floatValue()/m_info.scalco();
+            }
             else{
-                throw FormatError("SEGY_IEEE values can only be type plain!");
+                throw FormatError("SEGY_IEEE unhandled conversion type!");
             }
 
             put_to_raw( &f, &rhdr[0] + def.pos -1, m_info.isSwap() );

@@ -418,3 +418,22 @@ void GridViewer::loadSettings(){
 }
 
 
+
+void GridViewer::on_actionDisplay_Histogram_triggered()
+{
+
+    if( ! m_grid ) return;
+
+    QVector<double> data;
+    for( auto it=m_grid->values().cbegin(); it!=m_grid->values().cend(); ++it){
+        if( *it==m_grid->NULL_VALUE) continue;
+        data.push_back(*it);
+     }
+
+    HistogramDialog* viewer=new HistogramDialog;
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
+
+    viewer->show();
+
+}

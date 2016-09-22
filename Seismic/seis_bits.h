@@ -12,6 +12,7 @@ void swap_bytes(int64_t* pv );
 void swap_bytes(uint16_t* pv );
 void swap_bytes(uint32_t* pv );
 void swap_bytes(uint64_t* pv );
+void swap_bytes(float* pv );
 
 void get_from_raw( int16_t* dst, char* praw, bool swap=false);
 void get_from_raw( int32_t* dst, char* praw, bool swap=false);

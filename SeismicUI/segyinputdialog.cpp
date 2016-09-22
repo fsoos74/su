@@ -46,34 +46,18 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     ui->leScalco->setValidator(dvalidator);
 
     QStringList items;
-    items.append("2");
-    items.append("4");
+    items.append("2 byte integer");     // index = 0
+    items.append("4 byte integer");     // index = 1
+
     ui->cbSizeCDP->addItems(items);
     ui->cbSizeIline->addItems(items);
     ui->cbSizeXline->addItems(items);
-    ui->cbSizeOffset->addItems(items);
+
+    items.append("ieee floating point"); // index = 2
     ui->cbSizeCDPX->addItems(items);
     ui->cbSizeCDPY->addItems(items);
     ui->cbSizeOffset->addItems(items);
-/*
-    ui->lePosCDP->setText("21");
-    ui->cbSizeCDP->setCurrentIndex(1);
 
-    ui->lePosCDPX->setText("181");
-    ui->cbSizeCDPX->setCurrentIndex(1);
-
-    ui->lePosCDPY->setText("185");
-    ui->cbSizeCDPY->setCurrentIndex(1);
-
-    ui->lePosIline->setText("189");
-    ui->cbSizeIline->setCurrentIndex(1);
-
-    ui->lePosXline->setText("193");
-    ui->cbSizeXline->setCurrentIndex(1);
-
-    ui->lePosOffset->setText("37");
-    ui->cbSizeOffset->setCurrentIndex(1);
-*/
     QStringList format_items;
     format_items.append("From Header");
     format_items.append("IBM");
@@ -157,6 +141,7 @@ void SegyInputDialog::updateControlsFromInfo(){
             lePos=ui->lePosCDP;
             cbSize=ui->cbSizeCDP;
         }
+
         else if(def.name=="cdpx"){
             lePos=ui->lePosCDPX;
             cbSize=ui->cbSizeCDPX;
@@ -173,13 +158,11 @@ void SegyInputDialog::updateControlsFromInfo(){
 
 
         if( (lePos) && (cbSize) ){
-            std::cout<<"SET TO CONTROLS: "<<def.name<<" pos="<<def.pos<<std::endl;
+            std::cout<<"SET TO CONTROLS: "<<def.name<<" pos="<<def.pos<<" type="
+            <<seismic::toQString(def.dtype).toStdString()<<"=="<< DataTypeToIndex(def.dtype)<<std::endl;
+
             lePos->setText(QString::number(def.pos));
-            switch(def.dtype){
-            case seismic::SEGYHeaderWordDataType::INT16: cbSize->setCurrentIndex(0);break;
-            case seismic::SEGYHeaderWordDataType::INT32: cbSize->setCurrentIndex(1);break;
-            default: qFatal("Unexpected headerword size!");break;
-            }
+            cbSize->setCurrentIndex( DataTypeToIndex(def.dtype) );
         }
     }
 
@@ -252,11 +235,7 @@ void SegyInputDialog::updateInfoFromControls(){
 
         if( lePos && cbSize ){
             def.pos=lePos->text().toUInt();
-            switch(cbSize->currentIndex()){
-            case 0: def.dtype=seismic::SEGYHeaderWordDataType::INT16;break;
-            case 1: def.dtype=seismic::SEGYHeaderWordDataType::INT32;break;
-            default: qFatal("Unexpected index for headerword size!");break;
-            }
+            def.dtype=indexToDataType(cbSize->currentIndex());
         }
 
     }
@@ -298,6 +277,7 @@ void SegyInputDialog::on_btScan_clicked()
 
     seismic::SEGYInfo orig_info=m_reader->info();
 
+    // using only necessary header words to speed up scan
     std::vector<seismic::SEGYHeaderWordDef> tmp_def;
     for( auto& d : orig_info.traceHeaderDef()){
         if( d.name == "iline" ||
@@ -308,7 +288,7 @@ void SegyInputDialog::on_btScan_clicked()
                 d.name=="offset" ||
                 d.name=="scalco" ||
                 d.name=="ns" ||
-                d.name=="dt" ){ // need dt here, even if not used, missing would result in error in conert trace header!!!
+                d.name=="dt" ){ // need dt here, even if not used, missing would result in error in convert trace header!!!
                 tmp_def.push_back(d);
             }
         }
@@ -331,16 +311,16 @@ void SegyInputDialog::on_btScan_clicked()
         HeaderValue min_cdp(HeaderValue::int_type(1));
         HeaderValue max_cdp(HeaderValue::int_type(-1));
 
-        HeaderValue min_offset(HeaderValue::float_type(1));
-        HeaderValue max_offset(HeaderValue::float_type(-1));
+        HeaderValue min_offset(HeaderValue::int_type(1));
+        HeaderValue max_offset(HeaderValue::int_type(-1));
 
-        HeaderValue min_cdpx(HeaderValue::float_type(1.));
-        HeaderValue max_cdpx(HeaderValue::float_type(-1.));
+        HeaderValue min_cdpx(HeaderValue::float_type(1));
+        HeaderValue max_cdpx(HeaderValue::float_type(-1));
 
-        HeaderValue min_cdpy(HeaderValue::float_type(1.));
-        HeaderValue max_cdpy(HeaderValue::float_type(-1.));
+        HeaderValue min_cdpy(HeaderValue::float_type(1));
+        HeaderValue max_cdpy(HeaderValue::float_type(-1));
 
-         auto start = std::chrono::steady_clock::now();
+        auto start = std::chrono::steady_clock::now();
 
         for( int i=0; i<m_reader->trace_count(); i++){
 
@@ -464,7 +444,7 @@ void SegyInputDialog::on_pbTraceHeader_clicked()
         m_TraceHeaderDialog=new HeaderDialog(this, true);
          m_TraceHeaderDialog->navigationWidget()->setRange(1, m_reader->trace_count());
          m_TraceHeaderDialog->show();
-        connect( m_TraceHeaderDialog->navigationWidget(), SIGNAL( currentChanged(int)), this, SLOT(navigateToTraceHeader(int)));
+        connect( m_TraceHeaderDialog->navigationWidget(), SIGNAL( currentChanged(size_t)), this, SLOT(navigateToTraceHeader(size_t)));
         connect( m_TraceHeaderDialog, SIGNAL(finished(int)), this, SLOT(onTraceHeaderDialogFinished()));
         m_TraceHeaderDialog->navigationWidget()->setCurrent(1);
         navigateToTraceHeader( 1 ); // have to add this because NavigationWidget is posisionted at 1 and won't emit signal
@@ -604,7 +584,7 @@ void SegyInputDialog::onTraceHeaderDialogFinished(){
 }
 
 // n is one based, READER TRACE NUMBERS ARE 0 BASED!
- void SegyInputDialog::navigateToTraceHeader( int n ){
+ void SegyInputDialog::navigateToTraceHeader( size_t n ){
 
      Q_ASSERT( m_reader );
 
@@ -629,6 +609,34 @@ void SegyInputDialog::onTraceHeaderDialogFinished(){
     }
 }
 
+seismic::SEGYHeaderWordDataType SegyInputDialog::indexToDataType( int idx ){
+
+    seismic::SEGYHeaderWordDataType t;
+
+    switch(idx){
+    case 0: t=seismic::SEGYHeaderWordDataType::INT16;break;
+    case 1: t=seismic::SEGYHeaderWordDataType::INT32;break;
+    case 2: t=seismic::SEGYHeaderWordDataType::IEEE;break;
+    default: throw std::runtime_error("illegal segy header word type");
+    }
+
+    return t;
+
+}
+
+int SegyInputDialog::DataTypeToIndex( seismic::SEGYHeaderWordDataType t){
+
+    int idx;
+
+    switch(t){
+    case seismic::SEGYHeaderWordDataType::INT16: idx=0; break;
+    case seismic::SEGYHeaderWordDataType::INT32: idx=1; break;
+    case seismic::SEGYHeaderWordDataType::IEEE: idx=2; break;
+    default: throw std::runtime_error("illegal segy header word type");
+    }
+
+    return idx;
+}
 
 std::vector<seismic::SEGYHeaderWordDef> SegyInputDialog::getTraceHeaderDefinition(){
 
@@ -636,27 +644,27 @@ std::vector<seismic::SEGYHeaderWordDef> SegyInputDialog::getTraceHeaderDefinitio
     for( auto& d : thdef){
         if( d.name == "iline"){
             d.pos=ui->lePosIline->text().toUInt();
-            d.dtype=(ui->cbSizeIline->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
+            d.dtype=indexToDataType( ui->cbSizeIline->currentIndex());
         }
         else if( d.name == "xline"){
             d.pos=ui->lePosXline->text().toUInt();
-            d.dtype=(ui->cbSizeXline->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
+            d.dtype=indexToDataType( ui->cbSizeXline->currentIndex());
         }
         else if( d.name == "cdp"){
             d.pos=ui->lePosCDP->text().toUInt();
-            d.dtype=(ui->cbSizeCDP->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
+            d.dtype=indexToDataType( ui->cbSizeCDP->currentIndex());
         }
         else if( d.name == "cdpx"){
             d.pos=ui->lePosCDPX->text().toUInt();
-            d.dtype=(ui->cbSizeCDPX->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
+            d.dtype=indexToDataType( ui->cbSizeCDPX->currentIndex());
         }
         else if( d.name == "cdpy"){
             d.pos=ui->lePosCDPY->text().toUInt();
-            d.dtype=(ui->cbSizeCDPY->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
+            d.dtype=indexToDataType( ui->cbSizeCDPY->currentIndex());
         }
         else if( d.name == "offset"){
             d.pos=ui->lePosOffset->text().toUInt();
-            d.dtype=(ui->cbSizeOffset->currentIndex()==1)?seismic::SEGYHeaderWordDataType::INT32 : seismic::SEGYHeaderWordDataType::INT16;
+            d.dtype=indexToDataType( ui->cbSizeOffset->currentIndex());
         }
 
         // check for out of bounds header word pos
@@ -780,6 +788,8 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
     std::vector<int16_t> max16(headerSize, std::numeric_limits<int16_t>::min());
     std::vector<int32_t> min32(headerSize, std::numeric_limits<int32_t>::max());
     std::vector<int32_t> max32(headerSize, std::numeric_limits<int32_t>::min());
+    std::vector<float_t> minIEEE(headerSize, std::numeric_limits<float_t>::max());
+    std::vector<float_t> maxIEEE(headerSize, std::numeric_limits<float_t>::min());
 
     try{
 
@@ -797,11 +807,7 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
 
             for(size_t j=0; j+sizeof(int16_t)<headerSize; j++){
                 int16_t x;
-                std::memcpy(&x, &rawHeader[j], sizeof(x));
-
-                if( swap ){
-                   seismic::swap_bytes(&x);
-                }
+                seismic::get_from_raw(&x, &rawHeader[j], swap);
 
                 if( x<min16[j]) min16[j]=x;
                 if( x>max16[j]) max16[j]=x;
@@ -809,16 +815,20 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
 
             for(size_t j=0; j+sizeof(int32_t)<headerSize; j++){
                 int32_t x;
-                std::memcpy(&x, &rawHeader[j], sizeof(x));
-
-                if( swap ){
-                    seismic::swap_bytes(&x);
-                }
+                seismic::get_from_raw(&x, &rawHeader[j], swap);
 
                 if( x<min32[j]) min32[j]=x;
                 if( x>max32[j]) max32[j]=x;
             }
 
+            for(size_t j=0; j+sizeof(float_t)<headerSize; j++){
+
+                float x;
+                seismic::get_from_raw(&x, &rawHeader[j], swap);
+
+                if( x<minIEEE[j]) minIEEE[j]=x;
+                if( x>maxIEEE[j]) maxIEEE[j]=x;
+            }
 
             pdlg->setValue(i+1);
             qApp->processEvents();
@@ -832,7 +842,7 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
         QStandardItemModel* model=new QStandardItemModel(headerSize, 5, this);
 
         QStringList labels;
-        labels<<"start pos"<<"min int16"<<"max int16"<<"min int32"<<"max int32";
+        labels<<"start pos"<<"min int16"<<"max int16"<<"min int32"<<"max int32"<<"min IEEE"<<"max IEEE";
         model->setHorizontalHeaderLabels(labels);
 
         for( int i = 0; i< headerSize; i++){
@@ -844,6 +854,8 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
             model->setItem(i, column++, new QStandardItem(QString::number(max16[i])));
             model->setItem(i, column++, new QStandardItem(QString::number(min32[i])));
             model->setItem(i, column++, new QStandardItem(QString::number(max32[i])));
+            model->setItem(i, column++, new QStandardItem(QString::number(minIEEE[i])));
+            model->setItem(i, column++, new QStandardItem(QString::number(maxIEEE[i])));
         }
 
         if( !m_HeaderScanDialog ){

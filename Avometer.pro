@@ -17,4 +17,5 @@ SUBDIRS += \
     ProzessUI \
     utilUI \ 
     SegyTester \ 
-    Statistics 
+    Statistics \ 
+    StatisticsUI

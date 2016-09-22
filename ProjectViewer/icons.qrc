@@ -11,5 +11,11 @@
         <file>../images/seismic_utensils_symbol_black_fs_32_32.png</file>
         <file>../images/seismic_utensils_symbol_fs_192_192_white.png</file>
         <file>../images/logo_fs_64x64.png</file>
+        <file>../images/colortable-icon-32x32.png</file>
+        <file>../images/contours-icon-32x32.png</file>
+        <file>../images/display-options-icon-32x32.png</file>
+        <file>../images/histogram-icon-32x32.png</file>
+        <file>../images/select-range-icon-32x32.png</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

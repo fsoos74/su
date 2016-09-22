@@ -4,14 +4,16 @@
 #include<QGraphicsScene>
 #include<QGraphicsRectItem>
 #include<QGraphicsLineItem>
+#include<QMessageBox>
 #include<alignedtextgraphicsitem.h>
 #include<QDoubleValidator>
 #include<QKeyEvent>
 #include<limits>
 #include<iostream>
-
+#include<algorithm>
 #include<cmath>
 
+const int MAX_BIN_COUNT=1000;
 
 HistogramDialog::HistogramDialog(QWidget *parent) :
     QDialog(parent),
@@ -20,15 +22,18 @@ HistogramDialog::HistogramDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QDoubleValidator* validator=new QDoubleValidator(this);
-    ui->leMin->setValidator(validator);
-    ui->leMax->setValidator(validator);
+    ui->lePlotMinimum->setValidator(validator);
+    ui->lePlotMaximum->setValidator(validator);
+    ui->lePlotBinWidth->setValidator(validator);
 
-    connect( ui->leMin, SIGNAL( returnPressed()), this, SLOT(updateHistogram()));
-    connect( ui->leMax, SIGNAL( returnPressed()), this, SLOT(updateHistogram()));
-    connect( ui->sbBinCount, SIGNAL(valueChanged(int)), this, SLOT(updateHistogram()));
+    connect( ui->lePlotMinimum, SIGNAL( returnPressed()), this, SLOT(updatePlotDataFromControls() ));
+    connect( ui->lePlotMaximum, SIGNAL( returnPressed()), this, SLOT(updatePlotDataFromControls() ));
+    connect( ui->lePlotBinWidth, SIGNAL(returnPressed()), this, SLOT(updatePlotDataFromControls() ));
 
     connect( ui->pbMinFromData, SIGNAL(clicked()), this, SLOT(setMinimumFromData()));
     connect( ui->pbMaxFromData, SIGNAL(clicked()), this, SLOT(setMaximumFromData()));
+
+    connect( ui->pbRefresh, SIGNAL(clicked()), this, SLOT(updatePlotDataFromControls()) );
 }
 
 HistogramDialog::~HistogramDialog()
@@ -45,47 +50,44 @@ void HistogramDialog::setHistogram(const Histogram& h){
 
 void HistogramDialog::setData(QVector<double> data){
     m_data=data;
-    updateDataMinMax();
-    //updateHistogram();  // called byupdate min max
+
+    computeStatistics();
+    updateStatisticsControls();
+
+    m_plotMin=m_dataMin;
+    m_plotMax=m_dataMax;
+    m_plotBinWidth=(m_dataMax-m_dataMin)/20;
+
+    updatePlotControlsFromData();
+
+    updateHistogram();
 }
 
 void HistogramDialog::setMinimumFromData(){
-    ui->leMin->setText(QString::number(m_dataMin));
+    ui->lePlotMinimum->setText(QString::number(m_dataMin));
     updateHistogram();
 }
 
 void HistogramDialog::setMaximumFromData(){
-    ui->leMax->setText(QString::number(m_dataMax));
+    ui->lePlotMaximum->setText(QString::number(m_dataMax));
     updateHistogram();
 }
 
 
 void HistogramDialog::updateHistogram(){
-/*
-    double min=std::numeric_limits<double>::max();
-    double max=std::numeric_limits<double>::lowest();
-    for( auto x : m_data){
-        if(x<min)min=x;
-        if(x>max)max=x;
-    }
-*/
-    double min=ui->leMin->text().toDouble();
-    double max=ui->leMax->text().toDouble();
-    int binCount=ui->sbBinCount->value();
-/*
-    // estimate optimum bin width
-    double w=(max-min)/binCount;  // cannot be zero be cause of ui def
-    double q=std::pow(10, std::ceil(std::log10(w)));
-    if(q/5>w) w=q/5;
-    else if(q/2>w) w=q/2;
-    else w=q;
 
-    double delta=binCount*w - (max-min);    // center actual data range on plot
-    min=w*std::floor(min/w) - w*std::floor(delta/w/2);
-*/
-    double w=(max-min)/binCount;
+
+    long binCount=std::ceil((m_plotMax - m_plotMin)/m_plotBinWidth)+1;
+    if( binCount>MAX_BIN_COUNT ){
+
+        QMessageBox::warning(this, tr("Plot Histogram"), QString("Maximum number of bins(%1) exceeded").arg(QString::number(MAX_BIN_COUNT)));
+        return;
+    }
+
+    double min=m_plotBinWidth*std::floor(m_plotMin/m_plotBinWidth); // adjust to multiple of binwidth
+
     // generate histogram
-    Histogram hist(min, w, binCount);
+    Histogram hist(min, m_plotBinWidth, binCount);
     for( auto x : m_data){
         hist.addValue(x);
     }
@@ -93,6 +95,99 @@ void HistogramDialog::updateHistogram(){
     setHistogram(hist);
 }
 
+void HistogramDialog::computeStatistics(){
+
+    double min=std::numeric_limits<double>::max();
+    double max=std::numeric_limits<double>::lowest();
+    double sum=0;
+    double sum2=0;
+
+    for( auto x : m_data){
+        if(x<min)min=x;
+        if(x>max)max=x;
+        sum+=x;
+        sum2+=x*x;
+    }
+
+    double mean=0;
+    double rms=0;
+
+    if( m_data.size()>0 ){
+
+        mean=sum/m_data.size();
+        rms=std::sqrt(sum2/m_data.size());
+    }
+
+    std::nth_element(m_data.begin(), m_data.begin()+m_data.size()/2, m_data.end()); // this modifies the order of vector
+    double median=m_data[m_data.size()/2];
+
+    sum2=0;
+    for( auto x : m_data){
+        sum2+=(x-mean)*(x-mean);
+    }
+    double sigma=0;
+    if( m_data.size()>1){
+        sigma=std::sqrt(sum2/(m_data.size()-1));
+    }
+
+    m_dataMin=min;
+    m_dataMax=max;
+    m_dataMean=mean;
+    m_dataRMS=rms;
+    m_dataMedian=median;
+    m_dataSigma=sigma;
+}
+
+
+void HistogramDialog::updateStatisticsControls(){
+
+    ui->leStatMinimum->setText(QString::number(m_dataMin));
+    ui->leStatMaximum->setText(QString::number(m_dataMax));
+    ui->leStatMean->setText(QString::number(m_dataMean));
+    ui->leStatRMS->setText(QString::number(m_dataRMS));
+    ui->leStatMedian->setText(QString::number(m_dataMedian));
+    ui->leStatSigma->setText(QString::number(m_dataSigma));
+}
+
+void HistogramDialog::updatePlotControlsFromData(){
+    ui->lePlotMinimum->setText(QString::number(m_plotMin));
+    ui->lePlotMaximum->setText(QString::number(m_plotMax));
+    ui->lePlotBinWidth->setText(QString::number(m_plotBinWidth));
+}
+
+void HistogramDialog::updatePlotDataFromControls(){
+
+    bool ok=true;
+
+    double min=ui->lePlotMinimum->text().toDouble();
+    double max=ui->lePlotMaximum->text().toDouble();
+
+    QPalette minMaxPalette;
+    if( min>max){
+        ok=false;
+        minMaxPalette.setColor(QPalette::Text, Qt::red);
+    }
+    ui->lePlotMinimum->setPalette(minMaxPalette);
+    ui->lePlotMaximum->setPalette(minMaxPalette);
+
+    double binWidth=ui->lePlotBinWidth->text().toDouble();
+    QPalette widthPalette;
+    if(binWidth<=0){
+        ok=false;
+        widthPalette.setColor(QPalette::Text, Qt::red);
+    }
+    ui->lePlotBinWidth->setPalette(widthPalette);
+
+    if( !ok ) return;
+
+    m_plotMin=min;
+    m_plotMax=max;
+    m_plotBinWidth=binWidth;
+
+    updateHistogram();
+}
+
+/*
 void HistogramDialog::updateDataMinMax(){
     double min=std::numeric_limits<double>::max();
     double max=std::numeric_limits<double>::lowest();
@@ -121,6 +216,7 @@ void HistogramDialog::updateDataMinMax(){
 
     updateHistogram();
 }
+*/
 
 void HistogramDialog::updateMaximumCount(){
 
@@ -209,7 +305,7 @@ void HistogramDialog::updateScene(){
 
     ui->graphicsView->setScene(scene);
 
-    ui->graphicsView->setMinimumSize(scene->sceneRect().width(), scene->sceneRect().height());
+    //ui->graphicsView->setMaximumSize(scene->sceneRect().width(), scene->sceneRect().height());
 }
 
 

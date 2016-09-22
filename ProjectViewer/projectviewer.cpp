@@ -1132,36 +1132,12 @@ void ProjectViewer::displayGridHistogram( GridType t, const QString& name){
             if( *it==grid->NULL_VALUE) continue;
             data.push_back(*it);
          }
-/*
-        // XXX better have external process for histogram generation with process events
-        double min=std::numeric_limits<double>::max();
-        double max=std::numeric_limits<double>::lowest();
-        for( auto it=grid->values().cbegin(); it!=grid->values().cend(); ++it){
-            if( *it==grid->NULL_VALUE) continue;
-            if(*it<min)min=*it;
-            if(*it>max)max=*it;
-        }
 
-        // estimate optimum bin width
-        double w=(max-min)/N_BINS;
-        double q=std::pow(10, std::ceil(std::log10(w)));
-        if(q/5>w) w=q/5;
-        else if(q/2>w) w=q/2;
-        else w=q;
-        min=w*std::floor(min/w);
-
-        // generate histogram
-        Histogram hist(min, w, N_BINS);
-        for( auto it=grid->values().cbegin(); it!=grid->values().cend(); ++it){
-            if( *it==grid->NULL_VALUE) continue;
-            hist.addValue(*it);
-        }
-*/
         HistogramDialog* viewer=new HistogramDialog; //don't make this parent because projectviewer should be able to be displayed over gridviewer
         viewer->setData( data );
         QString typeName=gridType2String(t);
         viewer->setWindowTitle(QString("Histogram of Grid %1 - %2").arg(typeName, name) );  
-        //viewer->setHistogram(hist);
+
         viewer->show();
 
     }

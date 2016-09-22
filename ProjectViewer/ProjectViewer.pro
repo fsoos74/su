@@ -52,7 +52,6 @@ SOURCES += main.cpp\
     amplitudecurveviewer.cpp \
     projectgeometrydialog.cpp \
     aboutdialog.cpp \
-    histogramdialog.cpp \
     crossplot.cpp \
     volumedataselectiondialog.cpp \
     crossplotgridsinputdialog.cpp \
@@ -71,7 +70,6 @@ HEADERS  += projectviewer.h \
     projectgeometrydialog.h \
     aboutdialog.h \
     amplitudecurvedefinition.h \
-    histogramdialog.h \
     licenseinfo.h \
     crossplot.h \
     volumedataselectiondialog.h \
@@ -90,7 +88,6 @@ FORMS    += projectviewer.ui \
     amplitudecurveviewer.ui \
     projectgeometrydialog.ui \
     aboutdialog.ui \
-    histogramdialog.ui \
     volumedataselectiondialog.ui \
     crossplotgridsinputdialog.ui \
     crossplotvolumesinputdialog.ui
@@ -157,6 +154,14 @@ INCLUDEPATH += $$PWD/../Statistics
 DEPENDPATH += $$PWD/../Statistics
 
 
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/release/ -lStatisticsUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/debug/ -lStatisticsUI
+else:unix: LIBS += -L$$OUT_PWD/../StatisticsUI/ -lStatisticsUI
+
+INCLUDEPATH += $$PWD/../StatisticsUI
+DEPENDPATH += $$PWD/../StatisticsUI
+
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Seismic/release/ -lSeismic
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Seismic/debug/ -lSeismic
 else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
@@ -214,4 +219,7 @@ win32{
   INCLUDEPATH += $$PWD/../../dongle
   DEPENDPATH += $$PWD/../../dongle
 }
+
+DISTFILES += \
+    ../images/select-range-icon.png
 

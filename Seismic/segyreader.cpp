@@ -80,12 +80,18 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
 
         case SEGYHeaderWordDataType::IEEE:{
             float f;
-            get_from_raw( &f, &rhdr[def.pos], false );//m_info.isSwap() );
+            get_from_raw( &f, &rhdr[0] + def.pos - 1 , m_info.isSwap() );  // pos is 1-based !!!
             if( def.ctype==SEGYHeaderWordConvType::PLAIN ){
                 th[def.name]=HeaderValue(HeaderValue::float_type( f ) );
             }
+            else if( def.ctype==SEGYHeaderWordConvType::ELEV ){
+                th[def.name]=HeaderValue(HeaderValue::float_type( f*m_info.scalel() ));
+            }
+            else if( def.ctype==SEGYHeaderWordConvType::COORD ){
+                th[def.name]=HeaderValue(HeaderValue::float_type( f*m_info.scalco() ) );
+            }
             else{
-                throw FormatError("SEGY_FLOAT values can only be type plain!");
+                throw FormatError("SEGY_FLOAT unhandled conv type!");
             }
             break;
         }
