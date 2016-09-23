@@ -68,7 +68,7 @@ private slots:
 
     void on_EditColorTableAct_triggered();
 
-    void on_setBackgroundColorAct_triggered();
+    //void on_setBackgroundColorAct_triggered();
 
     void on_actionSetup_Contours_triggered();
 

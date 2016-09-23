@@ -62,6 +62,16 @@
        <property name="text">
         <string>Edit &amp;Color Table</string>
        </property>
+       <property name="icon">
+        <iconset resource="../ProjectViewer/icons.qrc">
+         <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
       </widget>
      </item>
     </layout>

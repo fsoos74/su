@@ -245,7 +245,6 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
 
     std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
 
-std::cout<<"reading traces..."<<std::endl<<std::flush;
     while( query.next() && gather->size()<maxTraces){
 
         bool ok=false;
@@ -254,11 +253,10 @@ std::cout<<"reading traces..."<<std::endl<<std::flush;
             throw Exception(QString("Accessing trace number failed!"));
         }
 
-        std::cout<<"traceno:"<<traceNo<<std::endl<<std::flush;
         m_reader->seek_trace(traceNo);
-        std::cout<<"attempting to read trace"<<std::endl<<std::flush;
+
         gather->push_back(m_reader->read_trace());
-        std::cout<<"trace read successfully"<<std::endl<<std::flush;
+
     }
 
     return gather;

@@ -30,7 +30,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -87,7 +87,18 @@
     <property name="title">
      <string>&amp;Data</string>
     </property>
+    <widget class="QMenu" name="menuHistogram">
+     <property name="title">
+      <string>Histogram</string>
+     </property>
+     <addaction name="action_HistogramXAxis"/>
+     <addaction name="action_HistogramYAxis"/>
+     <addaction name="action_HistogramAttribute"/>
+    </widget>
     <addaction name="actionSelect_By_Inline_Crossline_Ranges"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="menuHistogram"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_View"/>
@@ -109,6 +120,19 @@
    </attribute>
    <addaction name="actionZoom_In"/>
    <addaction name="actionZoom_Out"/>
+   <addaction name="separator"/>
+   <addaction name="actionSelect_By_Inline_Crossline_Ranges"/>
+   <addaction name="separator"/>
+   <addaction name="actionDisplay_Options"/>
+   <addaction name="actionAttribute_Range"/>
+   <addaction name="actionAttribute_Colortable"/>
+   <addaction name="separator"/>
+   <addaction name="action_HistogramXAxis"/>
+   <addaction name="action_HistogramYAxis"/>
+   <addaction name="action_HistogramAttribute"/>
+   <addaction name="separator"/>
+   <addaction name="action_Receive_CDPs"/>
+   <addaction name="action_Dispatch_CDPs"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -156,6 +180,10 @@
    </property>
   </action>
   <action name="actionDisplay_Options">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/display-options-icon-32x32.png</normaloff>:/icons/images/display-options-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Display &amp;Options</string>
    </property>
@@ -170,6 +198,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/receive-icon-32x32.png</normaloff>:/icons/images/receive-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Receive CDPs</string>
    </property>
@@ -180,6 +212,10 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/send-icon-32x32.png</normaloff>:/icons/images/send-icon-32x32.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Dispatch CDPs</string>
@@ -199,8 +235,12 @@
    </property>
   </action>
   <action name="actionSelect_By_Inline_Crossline_Ranges">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/select-range2-icon-32x32.png</normaloff>:/icons/images/select-range2-icon-32x32.png</iconset>
+   </property>
    <property name="text">
-    <string>Data Range</string>
+    <string>&amp;Data Range</string>
    </property>
   </action>
   <action name="actionDisplay_Trend_Line">
@@ -213,32 +253,67 @@
   </action>
   <action name="actionCompute_Trend_From_Loaded_Data">
    <property name="text">
-    <string>From Loaded Data</string>
+    <string>&amp;From Loaded Data</string>
    </property>
   </action>
   <action name="actionCompute_Trend_From_Displayed_Data">
    <property name="text">
-    <string>From Displayed Data</string>
+    <string>From &amp;Displayed Data</string>
    </property>
   </action>
   <action name="actionCompute_Trend_From_Selected_Data">
    <property name="text">
-    <string>From Selected Data</string>
+    <string>From &amp;Selected Data</string>
    </property>
   </action>
   <action name="actionAttribute_Colortable">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Edit  &amp;Colortable</string>
    </property>
   </action>
   <action name="actionAttribute_Range">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/select-range-icon-32x32.png</normaloff>:/icons/images/select-range-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Attribute &amp;Range</string>
    </property>
   </action>
   <action name="actionSet_Angle">
    <property name="text">
-    <string>Edit &amp; Angle</string>
+    <string>&amp;Edit  Angle</string>
+   </property>
+  </action>
+  <action name="action_HistogramXAxis">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/histogram-x-axis-icon-32x32.png</normaloff>:/icons/images/histogram-x-axis-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>x-axis</string>
+   </property>
+  </action>
+  <action name="action_HistogramYAxis">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/histogram-y-axis-icon-32x32.png</normaloff>:/icons/images/histogram-y-axis-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>y-axis</string>
+   </property>
+  </action>
+  <action name="action_HistogramAttribute">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/histogram-points-icon-32x32.png</normaloff>:/icons/images/histogram-points-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>attribute</string>
    </property>
   </action>
  </widget>

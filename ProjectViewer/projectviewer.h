@@ -89,10 +89,14 @@ private slots:
     void on_actionCrossplot_Volumes_triggered();
 
     void runDatasetContextMenu(const QPoint& pos);
+    void on_datasetsView_doubleClicked(const QModelIndex &index);
 
     void runHorizonContextMenu(const QPoint& pos);
     void runAttributeContextMenu(const QPoint& pos);
     void runOtherGridContextMenu(const QPoint& pos);
+    void on_horizonsView_doubleClicked(const QModelIndex &index);
+    void on_attributesView_doubleClicked(const QModelIndex &index);
+    void on_gridsView_doubleClicked(const QModelIndex &index);
 
     void runVolumeContextMenu(const QPoint& pos);
 
@@ -152,6 +156,7 @@ private:
     void exportGrid(GridType, QString);
     void runGridContextMenu(GridType, QListView*, const QPoint&);
 
+    void displayVolumeHistogram( const QString&);
     void renameVolume( const QString&);
     void removeVolume( const QString&);
     void selectAndExportVolume();

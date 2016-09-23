@@ -50,6 +50,7 @@ private:
     Ui::HistogramDialog *ui;
 
     QVector<double> m_data;
+    long m_dataCount=0;
     double m_dataMin=0;
     double m_dataMax=1;
     double m_dataMean;

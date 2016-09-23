@@ -37,7 +37,7 @@
      <x>0</x>
      <y>0</y>
      <width>601</width>
-     <height>27</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -112,8 +112,27 @@
    <addaction name="zoomInAct"/>
    <addaction name="zoomOutAct"/>
    <addaction name="separator"/>
+   <addaction name="actionTrace_Scaling"/>
+   <addaction name="action_Trace_Options"/>
+   <addaction name="actionVolume_Options"/>
+   <addaction name="action_Point_Display_Options"/>
+   <addaction name="separator"/>
+   <addaction name="action_Receive_CDPs"/>
+   <addaction name="action_Dispatch_CDPs"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="navigationToolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>true</bool>
+   </attribute>
+  </widget>
   <action name="exitAct">
    <property name="text">
     <string>E&amp;xit</string>
@@ -128,7 +147,7 @@
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
-    <string>Zoom In (25%)</string>
+    <string>&amp;Zoom In (25%)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
@@ -140,7 +159,7 @@
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
-    <string>Zoom Out (25%)</string>
+    <string>Zoom &amp;Out (25%)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
@@ -148,7 +167,7 @@
   </action>
   <action name="zoomFitWindowAct">
    <property name="text">
-    <string>Zoom Fit Window</string>
+    <string>Zoom &amp;Fit Window</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
@@ -164,7 +183,7 @@
   </action>
   <action name="closeGridAct">
    <property name="text">
-    <string>Horizon</string>
+    <string>&amp;Horizon</string>
    </property>
   </action>
   <action name="action_Receive_CDPs">
@@ -173,6 +192,10 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/receive-icon-32x32.png</normaloff>:/icons/images/receive-icon-32x32.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Receive CDPs</string>
@@ -185,21 +208,29 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/send-icon-32x32.png</normaloff>:/icons/images/send-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Dispatch CDPs</string>
    </property>
   </action>
   <action name="actionOpenVolume">
    <property name="text">
-    <string>Volume</string>
+    <string>&amp;Volume</string>
    </property>
   </action>
   <action name="actionCloseVolume">
    <property name="text">
-    <string>Volume</string>
+    <string>&amp;Volume</string>
    </property>
   </action>
   <action name="actionVolume_Options">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/volume-display-options-icon-32x32.png</normaloff>:/icons/images/volume-display-options-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Volume Display Options</string>
    </property>
@@ -208,6 +239,10 @@
    </property>
   </action>
   <action name="action_Trace_Options">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/trace-display-options-icon-32x32.png</normaloff>:/icons/images/trace-display-options-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Trace Display Options</string>
    </property>
@@ -216,6 +251,10 @@
    </property>
   </action>
   <action name="actionTrace_Scaling">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/trace-scaling-icon-32x32.png</normaloff>:/icons/images/trace-scaling-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Trace &amp;Scaling</string>
    </property>
@@ -224,6 +263,10 @@
    </property>
   </action>
   <action name="action_Point_Display_Options">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/point-display-options-icon-32x32.png</normaloff>:/icons/images/point-display-options-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Point Display Options</string>
    </property>

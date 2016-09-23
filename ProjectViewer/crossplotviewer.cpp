@@ -23,6 +23,9 @@
 #include <volumedataselectiondialog.h>
 #include <colortabledialog.h>
 
+#include<histogram.h>
+#include<histogramdialog.h>
+
 #include<cmath>
 
 const int DATA_INDEX_KEY=1;
@@ -671,6 +674,71 @@ void CrossplotViewer::on_actionAttribute_Range_triggered()
 }
 
 
+
+QVector<double> CrossplotViewer::collectHistogramData( std::function<double(const crossplot::DataPoint&)> f ){
+
+    QVector<double> data;
+
+    if( m_scene->selectedItems().empty()){
+        for( crossplot::DataPoint point : m_data){
+            // should be no NULL values here, they must be filterd out before
+            data.push_back( f(point));
+         }
+    }
+    else{
+        for( QGraphicsItem* item : m_scene->selectedItems() ){
+            int idx=item->data( DATA_INDEX_KEY ).toInt();
+            const crossplot::DataPoint& point=m_data.at(idx);
+            data.push_back(f(point));
+        }
+    }
+
+    return data;
+}
+
+void CrossplotViewer::on_action_HistogramXAxis_triggered()
+{
+    QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.x;} );
+    if(data.empty()) return;
+
+    HistogramDialog* viewer=new HistogramDialog;
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1 x-axis").arg(windowTitle() ) );
+
+    viewer->show();
+
+}
+
+
+void CrossplotViewer::on_action_HistogramYAxis_triggered()
+{
+
+    QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.y;} );
+    if(data.empty()) return;
+
+    HistogramDialog* viewer=new HistogramDialog;
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1 y-axis").arg(windowTitle() ) );
+
+    viewer->show();
+
+}
+
+
+void CrossplotViewer::on_action_HistogramAttribute_triggered()
+{
+    QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.attribute;} );
+    if(data.empty()) return;
+
+    HistogramDialog* viewer=new HistogramDialog;
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1 attribute").arg(windowTitle() ) );
+
+    viewer->show();
+
+}
+
+
 void CrossplotViewer::createDockWidgets(){
 
     m_attributeColorBarDock = new QDockWidget(tr("Attribute Colorbar"), this);
@@ -727,9 +795,5 @@ void CrossplotViewer::loadSettings(){
 
     settings.endGroup();
 }
-
-
-
-
 
 

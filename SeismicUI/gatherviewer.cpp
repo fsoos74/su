@@ -60,8 +60,8 @@ GatherViewer::~GatherViewer()
 }
 
 
-QToolBar* GatherViewer::mainToolBar()const{
-    return ui->mainToolBar;
+QToolBar* GatherViewer::navigationToolBar()const{
+    return ui->navigationToolBar;
 }
 
 void GatherViewer::receivePoint(SelectionPoint point){

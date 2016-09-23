@@ -49,7 +49,7 @@ public:
         return m_traceHeaderDef;
     }
 
-    QToolBar* mainToolBar()const;
+    QToolBar* navigationToolBar()const;
 
     GatherView* view()const{
         return gatherView;

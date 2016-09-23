@@ -214,7 +214,7 @@ void GridViewer::on_EditColorTableAct_triggered()
     delete colorTableDialog;
 }
 
-
+/*
 void GridViewer::on_setBackgroundColorAct_triggered()
 {
     const QColor color = QColorDialog::getColor( gridView->nullColor(), this, "Select Background Color");
@@ -226,6 +226,7 @@ void GridViewer::on_setBackgroundColorAct_triggered()
 
     }
 }
+*/
 
 void GridViewer::on_actionSetup_Contours_triggered()
 {

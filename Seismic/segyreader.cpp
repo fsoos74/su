@@ -123,7 +123,6 @@ SEGYReader::SEGYReader( const std::string& name,
     estimate_filesize();
     read_leading_headers();
     m_trace_count=( m_filesize - m_first_trace_pos ) / bytes_per_trace();
-    //std::cout<<"OPEN fs="<<m_filesize<<" ftpos="<<m_first_trace_pos<<" bpt="<<bytes_per_trace()<<" tracecount="<<m_trace_count<<std::endl<<std::flush;
 }
 
 
@@ -285,18 +284,17 @@ void SEGYReader::convert_raw_samples( Trace& trc){
 }
 
 Trace SEGYReader::read_trace(){
-std::cout<<"SEGYReader::read_trace()"<<std::endl<<std::flush;
+
     if(m_is_next_trace_header ){
         read_trace_header();
     }
-std::cout<<"1"<<std::endl<<std::flush;
+
     Trace trc(m_ft, m_dt, m_nt, m_trace_header );      // sampling params m_dt and m_nt are updated in convert_trace_header
 
-std::cout<<"2"<<std::endl<<std::flush;
     read_samples();
-std::cout<<"3"<<std::endl<<std::flush;
+
     convert_raw_samples(trc);
-std::cout<<"4"<<std::endl<<std::flush;
+
     m_is_next_trace_header=true;
 
     m_cur_trace++;
@@ -317,8 +315,6 @@ std::shared_ptr<Gather> SEGYReader::read_gather( const std::string& key, const s
     Header::iterator it=firstHeader.find(key);
     if( it==firstHeader.end()) throw FormatError("Gather key does not exist!!!");
     HeaderValue keyValue=it->second;
-
-   std::cout<<"read_gather: key="<<key<<" value="<<keyValue<<std::endl;
 
     while( m_cur_trace<m_trace_count && gather->size()<max_traces){
 

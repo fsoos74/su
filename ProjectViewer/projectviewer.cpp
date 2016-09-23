@@ -971,6 +971,14 @@ void ProjectViewer::on_action_About_triggered()
 }
 
 
+void ProjectViewer::on_datasetsView_doubleClicked(const QModelIndex &idx)
+{
+    QString datasetName=ui->datasetsView->model()->itemData(idx)[Qt::DisplayRole].toString();
+
+    displaySeismicDataset(datasetName);
+}
+
+
 void ProjectViewer::runGridContextMenu( GridType gridType, QListView* view, const QPoint& pos){
 
     Q_ASSERT(view);
@@ -1026,6 +1034,24 @@ void ProjectViewer::runOtherGridContextMenu(const QPoint& pos){
     runGridContextMenu(GridType::Other, ui->gridsView, pos);
 }
 
+void ProjectViewer::on_horizonsView_doubleClicked(const QModelIndex &idx)
+{
+    QString name=ui->horizonsView->model()->itemData(idx)[Qt::DisplayRole].toString();
+    displayGrid(GridType::Horizon, name);
+}
+
+void ProjectViewer::on_attributesView_doubleClicked(const QModelIndex &idx)
+{
+    QString name=ui->attributesView->model()->itemData(idx)[Qt::DisplayRole].toString();
+    displayGrid(GridType::Attribute, name);
+}
+
+void ProjectViewer::on_gridsView_doubleClicked(const QModelIndex &idx)
+{
+    QString name=ui->gridsView->model()->itemData(idx)[Qt::DisplayRole].toString();
+    displayGrid(GridType::Other, name);
+}
+
 void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
 
     QListView* view=ui->volumesView;
@@ -1035,6 +1061,8 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
     QString volumeName=view->model()->itemData(idx)[Qt::DisplayRole].toString();
 
     QMenu menu;
+    menu.addAction("histogram");
+    menu.addSeparator();
     menu.addAction("export");
     menu.addAction("export seisware");
     menu.addSeparator();
@@ -1044,7 +1072,10 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
     QAction* selectedAction = menu.exec(globalPos);
     if (!selectedAction) return;
 
-    if( selectedAction->text()=="export" ){
+    if( selectedAction->text()=="histogram" ){
+        displayVolumeHistogram( volumeName);
+    }
+    else if( selectedAction->text()=="export" ){
         exportVolume( volumeName);
     }
     else if( selectedAction->text()=="export seisware" ){
@@ -1204,6 +1235,27 @@ void ProjectViewer::selectAndExportVolume()
 }
 
 
+void ProjectViewer::displayVolumeHistogram( const QString& name){
+
+    if( m_project->volumeList().contains(name)){
+
+        std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+        if( !volume ) return;
+
+        QVector<double> data;
+        for( auto it=volume->values().cbegin(); it!=volume->values().cend(); ++it){
+            if( *it==volume->NULL_VALUE) continue;
+            data.push_back(*it);
+         }
+
+        HistogramDialog* viewer=new HistogramDialog; //don't make this parent because projectviewer should be able to be displayed over gridviewer
+        viewer->setData( data );
+        viewer->setWindowTitle(QString("Histogram of Volume %1").arg(name) );
+
+        viewer->show();
+
+    }
+}
 
 // XXX make this a process later
 void ProjectViewer::exportVolume( QString volumeName){
@@ -1575,11 +1627,11 @@ std::cout<<"setting trace annotations"<<std::endl<<std::flush;
         connect( selector, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), viewer, SLOT(setGather(std::shared_ptr<seismic::Gather>)));
         connect( viewer, SIGNAL(requestPoint(int,int)), selector,SLOT(providePoint(int,int)));
         connect( viewer, SIGNAL(requestPoints(QVector<QPoint>)), selector, SLOT( provideRandomLine(QVector<QPoint>)) );
-std::cout<<"Going to create viewer"<<std::endl<<std::flush;
-        viewer->mainToolBar()->addWidget(selector);
+
+        viewer->navigationToolBar()->addWidget(selector);
         //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
         viewer->show();
-        viewer->setMinimumWidth(viewer->mainToolBar()->width() + 100 );
+        viewer->setMinimumWidth(viewer->navigationToolBar()->width() + 100 );
 
         viewer->setProject( m_project );  // grant access to grids
 
@@ -1894,6 +1946,9 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
+
+
 
 
 

@@ -101,6 +101,9 @@ void TraceDisplayOptionsDialog::on_pbColorTable_clicked()
     QVector<QRgb> oldColors=m_colors;
 
     ColorTableDialog* dlg=new ColorTableDialog( oldColors);
+
+    dlg->setWindowTitle(tr("Select Density Color Table"));
+
     connect( dlg, SIGNAL(colorsChanged(QVector<QRgb>)), this, SLOT(setColors(QVector<QRgb>)) );
 
     if( dlg->exec()==QDialog::Accepted ){

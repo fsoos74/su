@@ -16,6 +16,20 @@
         <file>../images/display-options-icon-32x32.png</file>
         <file>../images/histogram-icon-32x32.png</file>
         <file>../images/select-range-icon-32x32.png</file>
+        <file>../images/trace-display-options-icon-32x32.png</file>
+        <file>../images/volume-display-options-icon-32x32.png</file>
+        <file>../images/point-display-options-icon-32x32.png</file>
+        <file>../images/receive-icon-32x32.png</file>
+        <file>../images/send-icon-32x32.png</file>
+        <file>../images/histogram-points-icon-32x32.png</file>
+        <file>../images/histogram-x-axis-icon-32x32.png</file>
+        <file>../images/histogram-y-axis-icon-32x32.png</file>
+        <file>../images/select-range2-icon-32x32.png</file>
+        <file>../images/add-curve-icon-32x32.png</file>
+        <file>../images/trace-scaling-icon-32x32.png</file>
+        <file>../images/open-icon-32x32.png</file>
+        <file>../images/save-as-icon-32x32.png</file>
+        <file>../images/save-icon-32x32.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

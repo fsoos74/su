@@ -83,6 +83,7 @@ void VolumeDisplayOptionsDialog::on_pbColorTable_clicked()
 
     ColorTableDialog dlg( oldColors);
 
+    dlg.setWindowTitle(tr("Select Volume Color Table"));
     if( dlg.exec()==QDialog::Accepted ){
         m_colors=dlg.colors();
         emit colorsChanged(m_colors);

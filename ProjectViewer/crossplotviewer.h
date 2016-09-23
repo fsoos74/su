@@ -24,6 +24,7 @@ class CrossplotViewer;
 
 
 #include<memory>
+#include<functional>
 #include<grid2d.h>
 #include<range.h>
 #include <crossplot.h>
@@ -117,7 +118,13 @@ private slots:
 
     void on_actionSet_Angle_triggered();
 
+    void on_action_HistogramXAxis_triggered();
+    void on_action_HistogramYAxis_triggered();
+    void on_action_HistogramAttribute_triggered();
+
 private:
+
+    QVector<double> collectHistogramData( std::function<double(const crossplot::DataPoint&)> );
 
     void scanBounds();
     void scanAttribute();

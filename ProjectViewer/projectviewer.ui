@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>528</width>
-    <height>420</height>
+    <width>597</width>
+    <height>564</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -105,6 +105,30 @@
    </layout>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>40</height>
+    </size>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -112,6 +136,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpenProject"/>
+   <addaction name="actionSave"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -119,7 +144,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>528</width>
+     <width>597</width>
      <height>28</height>
     </rect>
    </property>
@@ -129,7 +154,7 @@
     </property>
     <widget class="QMenu" name="menuImport">
      <property name="title">
-      <string>Import</string>
+      <string>&amp;Import</string>
      </property>
      <addaction name="actionImportSeismic"/>
      <addaction name="separator"/>
@@ -149,7 +174,7 @@
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
-      <string>Export</string>
+      <string>&amp;Export</string>
      </property>
      <addaction name="actionExportHorizon"/>
      <addaction name="actionExportAttributeGrid"/>
@@ -246,6 +271,10 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/save-as-icon-32x32.png</normaloff>:/icons/images/save-as-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Save</string>
    </property>
@@ -267,20 +296,20 @@
   <action name="actionOpenProject">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/icons/Open-icon.png</normaloff>:/icons/Open-icon.png</iconset>
+     <normaloff>:/icons/images/open-icon-32x32.png</normaloff>:/icons/images/open-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Project</string>
+    <string>&amp;Project</string>
    </property>
   </action>
   <action name="actionOpenGrid">
    <property name="text">
-    <string>Grid</string>
+    <string>&amp;Grid</string>
    </property>
   </action>
   <action name="actionOpenSeismicDataset">
    <property name="text">
-    <string>Seismic Dataset</string>
+    <string>&amp;Seismic Dataset</string>
    </property>
    <property name="toolTip">
     <string>Open Seismic Dataset</string>
@@ -288,7 +317,7 @@
   </action>
   <action name="actionCreateTimeslice">
    <property name="text">
-    <string>Create Timeslice</string>
+    <string>&amp;Create Timeslice</string>
    </property>
    <property name="toolTip">
     <string>Create Timeslice</string>
@@ -296,17 +325,17 @@
   </action>
   <action name="actionHorizon_Semblance">
    <property name="text">
-    <string>Horizon Semblance</string>
+    <string>Horizon &amp;Semblance</string>
    </property>
   </action>
   <action name="actionCompute_Intercept_Gradient">
    <property name="text">
-    <string>Compute Intercept and Gradient Grids</string>
+    <string>Compute &amp;Intercept and Gradient Grids</string>
    </property>
   </action>
   <action name="actionHorizon_Amplitudes">
    <property name="text">
-    <string>Horizon Amplitudes</string>
+    <string>&amp;Horizon Amplitudes</string>
    </property>
   </action>
   <action name="actionCrossplot_Grids">
@@ -316,7 +345,7 @@
   </action>
   <action name="actionAmplitude_vs_Offset_Plot">
    <property name="text">
-    <string>Amplitude vs Offset Plot</string>
+    <string>&amp;Amplitude vs Offset Plot</string>
    </property>
   </action>
   <action name="actionConvert_Time_Horizon_To_Depth">
@@ -331,17 +360,17 @@
   </action>
   <action name="actionCompute_Intercept_and_Gradient_Volumes">
    <property name="text">
-    <string>Compute Intercept and Gradient Volumes</string>
+    <string>C&amp;ompute Intercept and Gradient Volumes</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Grid">
    <property name="text">
-    <string>Generate Fluid Factor Grid</string>
+    <string>&amp;Generate Fluid Factor Grid</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Volume">
    <property name="text">
-    <string>Generate Fluid Factor Volume</string>
+    <string>Generate &amp;Fluid Factor Volume</string>
    </property>
   </action>
   <action name="actionImportAttributeGrid">
@@ -391,12 +420,12 @@
   </action>
   <action name="actionRun_Grid_User_Script">
    <property name="text">
-    <string>Run Grid Script</string>
+    <string>&amp;Run Grid Script</string>
    </property>
   </action>
   <action name="actionRun_Volume_Script">
    <property name="text">
-    <string>Run Volume Script</string>
+    <string>Run &amp;Volume Script</string>
    </property>
   </action>
   <action name="actionExportSeismic">

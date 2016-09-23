@@ -52,11 +52,12 @@ void HistogramDialog::setData(QVector<double> data){
     m_data=data;
 
     computeStatistics();
+
     updateStatisticsControls();
 
     m_plotMin=m_dataMin;
     m_plotMax=m_dataMax;
-    m_plotBinWidth=(m_dataMax-m_dataMin)/20;
+    m_plotBinWidth=(m_dataMax>m_dataMin) ? (m_dataMax-m_dataMin)/20 : 1.;   // important: handle case min==max
 
     updatePlotControlsFromData();
 
@@ -76,7 +77,7 @@ void HistogramDialog::setMaximumFromData(){
 
 void HistogramDialog::updateHistogram(){
 
-
+std::cout<<"pmin="<<m_plotMin<<" pmax="<<m_plotMax<<" pbw="<<m_plotBinWidth<<std::endl<<std::flush;
     long binCount=std::ceil((m_plotMax - m_plotMin)/m_plotBinWidth)+1;
     if( binCount>MAX_BIN_COUNT ){
 
@@ -130,6 +131,7 @@ void HistogramDialog::computeStatistics(){
         sigma=std::sqrt(sum2/(m_data.size()-1));
     }
 
+    m_dataCount=m_data.size();
     m_dataMin=min;
     m_dataMax=max;
     m_dataMean=mean;
@@ -141,6 +143,7 @@ void HistogramDialog::computeStatistics(){
 
 void HistogramDialog::updateStatisticsControls(){
 
+    ui->leStatCount->setText(QString::number(m_dataCount));
     ui->leStatMinimum->setText(QString::number(m_dataMin));
     ui->leStatMaximum->setText(QString::number(m_dataMax));
     ui->leStatMean->setText(QString::number(m_dataMean));
@@ -235,7 +238,8 @@ const qreal MARGIN_X=50;
 const qreal MARGIN_Y=50;
 const qreal BAR_WIDTH=25;
 const qreal BAR_MAX_HEIGHT=250;
-
+const int MAX_GRAPHICSVIEW_WIDTH=1000;
+const int MAX_GRAPHICSVIEW_HEIGHT=1000;
 
 void HistogramDialog::updateScene(){
 
@@ -279,6 +283,7 @@ void HistogramDialog::updateScene(){
         label->setHAlign(Qt::AlignRight);
         label->setVAlign(Qt::AlignVCenter);
         label->moveBy( -5, y);
+        //label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     }
 
 
@@ -287,6 +292,7 @@ void HistogramDialog::updateScene(){
         qreal barHeight= yfactor * qreal(m_histogram.binValue(i));
         qreal x= i * BAR_WIDTH;
         QGraphicsRectItem* bar=new QGraphicsRectItem( 0, 0, BAR_WIDTH, -barHeight, frame);
+        bar->setPen(QPen(Qt::black,0));
         bar->setBrush(Qt::red);
         bar->moveBy( x, BAR_MAX_HEIGHT);
 
@@ -305,7 +311,19 @@ void HistogramDialog::updateScene(){
 
     ui->graphicsView->setScene(scene);
 
-    //ui->graphicsView->setMaximumSize(scene->sceneRect().width(), scene->sceneRect().height());
+    // this distorts the labels, need to use scale factor 1
+    //ui->graphicsView->resetTransform();
+    //ui->graphicsView->scale(ui->graphicsView->width()/scene->sceneRect().width(), ui->graphicsView->height()/scene->sceneRect().height());
+
+
+    qreal ww=scene->sceneRect().width();
+    if( ww>MAX_GRAPHICSVIEW_WIDTH ) ww=MAX_GRAPHICSVIEW_WIDTH;
+    qreal hh=scene->sceneRect().height();
+    if( hh>MAX_GRAPHICSVIEW_HEIGHT ) hh=MAX_GRAPHICSVIEW_HEIGHT;
+
+    ui->graphicsView->setMinimumSize( ww, hh );
+    update();
+    //ui->graphicsView->setMinimumSize(std::min(scene->sceneRect().width(),1000.), std::min(scene->sceneRect().height(),1000.));
 }
 
 

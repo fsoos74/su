@@ -4,18 +4,18 @@ CONFIG += ordered
 
 SUBDIRS += \
     ColorUI \
-    Seismic \
-    SeismicUI \
-    Grid \
-    GridUI \
-    util \
-    Project \
-    ProjectViewer \
     Database \
     DatabaseUI \
+    util \
+    utilUI \
+    Statistics \
+    StatisticsUI \
+    Grid \
+    Seismic \
+    Project \
     prozess \
+    GridUI \
+    SeismicUI \
     ProzessUI \
-    utilUI \ 
-    SegyTester \ 
-    Statistics \ 
-    StatisticsUI
+    ProjectViewer
+
