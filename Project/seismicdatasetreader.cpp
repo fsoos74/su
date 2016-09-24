@@ -71,6 +71,107 @@ int SeismicDatasetReader::maxCrossline(){
 
 }
 
+bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){
+
+    int il1=minInline();
+    int il2=minInline();
+    int il3=maxInline();
+    int xl1=-1;
+    int xl2=-1;
+    int xl3=-1;
+
+    // min xline for min iline (point1)
+    QSqlQuery queryxl1("xl point1", m_db);
+    queryxl1.prepare(QString("select xline from map where iline==%1 order by 1 asc").arg(QString::number(il1) ) );
+    if( !queryxl1.exec()){
+        return false;
+    }
+    if( !queryxl1.next()) return false;
+    xl1=queryxl1.value("xline").toInt();
+
+    std::cout<<"P1 il="<<il1<<" xl="<<xl1<<std::endl;
+
+    // point 1
+    QSqlQuery query1("point1", m_db);
+    query1.prepare(QString("select * from map where iline==%1 and xline==%2 ").arg(QString::number(il1), QString::number(xl1) ) );
+    if( !query1.exec()){
+        return false;
+    }
+    if( !query1.next()) return false;
+
+    qreal x1=query1.value("x").toDouble();
+    qreal y1=query1.value("y").toDouble();
+
+    std::cout<<"P1 x="<<x1<<" y="<<y1<<std::endl;
+
+
+    // max xline for min iline (point2)
+    QSqlQuery queryxl2("xl point2", m_db);
+    queryxl2.prepare(QString("select xline from map where iline==%1 order by 1 desc").arg(QString::number(il2) ) );
+    if( !queryxl2.exec()){
+        return false;
+    }
+    if( !queryxl2.next()) return false;
+    xl2=queryxl2.value("xline").toInt();
+
+    std::cout<<"P2 il="<<il2<<" xl="<<xl2<<std::endl;
+
+    // point 2
+    QSqlQuery query2("point2", m_db);
+    query2.prepare(QString("select * from map where iline==%1 and xline==%2 ").arg(QString::number(il2), QString::number(xl2) ) );
+    if( !query2.exec()){
+        return false;
+    }
+    if( !query2.next()) return false;
+
+    qreal x2=query2.value("x").toDouble();
+    qreal y2=query2.value("y").toDouble();
+
+    std::cout<<"P2 x="<<x2<<" y="<<y2<<std::endl;
+
+
+    // min xline for max iline (point3)
+    QSqlQuery queryxl3("xl point3", m_db);
+    queryxl3.prepare(QString("select xline from map where iline==%1 order by 1 asc").arg(QString::number(il3) ) );
+    if( !queryxl3.exec()){
+        return false;
+    }
+    if( !queryxl3.next()) return false;
+    xl3=queryxl3.value("xline").toInt();
+
+    std::cout<<"P3 il="<<il3<<" xl="<<xl3<<std::endl;
+
+    // point 3
+    QSqlQuery query3("point3", m_db);
+    query3.prepare(QString("select * from map where iline==%1 and xline==%2 ").arg(QString::number(il3), QString::number(xl3) ) );
+    if( !query3.exec()){
+        return false;
+    }
+    if( !query3.next()) return false;
+
+    qreal x3=query3.value("x").toDouble();
+    qreal y3=query3.value("y").toDouble();
+
+    std::cout<<"P3 x="<<x3<<" y="<<y3<<std::endl;
+
+
+    ProjectGeometry g;
+    g.setCoordinates(0, QPointF(x1,y1));
+    g.setCoordinates(1, QPointF(x2,y2));
+    g.setCoordinates(2, QPointF(x3,y3));
+
+    g.setInlineAndCrossline(0, QPoint(il1,xl1));
+    g.setInlineAndCrossline(1, QPoint(il2,xl2));
+    g.setInlineAndCrossline(2, QPoint(il3,xl3));
+
+    if( !isValid(g)) return false;
+
+    geom=g;
+
+    return true;
+}
+
+/* last working version, problem: min xline not at min iline asf.
  bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){
 
      int il1=minInline();
@@ -79,7 +180,6 @@ int SeismicDatasetReader::maxCrossline(){
      int xl1=minCrossline();
      int xl2=maxCrossline();
      int xl3=xl1;
-
 
      // point 1
      QSqlQuery query1("point1", m_db);
@@ -91,6 +191,7 @@ int SeismicDatasetReader::maxCrossline(){
 
      qreal x1=query1.value("x").toDouble();
      qreal y1=query1.value("y").toDouble();
+
 
      // point 2
      QSqlQuery query2("point2", m_db);
@@ -115,6 +216,8 @@ int SeismicDatasetReader::maxCrossline(){
      qreal x3=query3.value("x").toDouble();
      qreal y3=query3.value("y").toDouble();
 
+
+
      ProjectGeometry g;
      g.setCoordinates(0, QPointF(x1,y1));
      g.setCoordinates(1, QPointF(x2,y2));
@@ -130,6 +233,7 @@ int SeismicDatasetReader::maxCrossline(){
 
      return true;
  }
+*/
 
 void SeismicDatasetReader::setOrder(const QString& key1, bool ascending1, const QString& key2, bool ascending2, const QString& key3, bool ascending3 ){
 

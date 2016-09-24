@@ -36,6 +36,7 @@ bool isApprox(const qreal& x1, const qreal& x2, const qreal& EPS=0.0001){
 // point3 (2): first crossline, last inline
 bool isValid( const ProjectGeometry& geom){
 
+/*   this does not work for rotated grids!!!
     qreal EPS=0.00001;
 
     if(geom.inlineAndCrossline(0).x()!=geom.inlineAndCrossline(1).x() ||
@@ -48,9 +49,12 @@ bool isValid( const ProjectGeometry& geom){
 
     if(isApprox(geom.coordinates(0).y(), geom.coordinates(1).y()) &&
             isApprox(geom.coordinates(0).y(), geom.coordinates(2).y())) return false;
+*/
 
+    QTransform transformXYToIlXl;
+    QTransform transformIlXlToXY;
 
-    return true;
+    return geom.computeTransforms(transformXYToIlXl, transformIlXlToXY);
 }
 
 
