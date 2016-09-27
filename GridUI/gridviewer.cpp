@@ -97,11 +97,11 @@ bool GridViewer::orientate(const ProjectGeometry& geom){
     return true;
 }
 
-void GridViewer::receivePoint( SelectionPoint point ){
+void GridViewer::receivePoint( SelectionPoint point, int code ){
 
     QVector<SelectionPoint> v{point};
 
-    gridView()->setHighlightedCDPs(v);//void onViewPolylineSelected( QVector<QPoint>);
+    gridView()->setHighlightedCDPs(v);
 }
 
 void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
@@ -312,7 +312,7 @@ void GridViewer::on_actionConfigure_Colorbar_triggered()
 // need this to forward point from view to dispatcher
 void GridViewer::onViewPointSelected( QPoint point){
 
-    sendPoint(SelectionPoint( point.x(), point.y() ));
+    sendPoint(SelectionPoint( point.x(), point.y() ), VIEWER_CURRENT_CDP);
 }
 
 void GridViewer::onViewPolylineSelected( QVector<QPoint> polyline){

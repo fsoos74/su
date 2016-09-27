@@ -59,7 +59,7 @@ public:
 
 protected:
 
-    void receivePoint( SelectionPoint );
+    void receivePoint( SelectionPoint, int code );
     void receivePoints( QVector<SelectionPoint>, int code);
     void closeEvent(QCloseEvent*);
 

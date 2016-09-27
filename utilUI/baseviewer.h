@@ -27,11 +27,11 @@ public:
         return m_dispatcher;
     }
 
-    void sendPoint(SelectionPoint);
+    void sendPoint(SelectionPoint, int code);
     void sendPoints(QVector<SelectionPoint>, int code);
 
 protected:
-    virtual void receivePoint( SelectionPoint )=0;
+    virtual void receivePoint( SelectionPoint, int code )=0;
     virtual void receivePoints( QVector<SelectionPoint>, int code)=0;
 
 public slots:

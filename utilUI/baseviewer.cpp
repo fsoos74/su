@@ -48,12 +48,12 @@ void BaseViewer::setBroadcastEnabled(bool on){
     emit broadcastEnabledChanged(on);
 }
 
-void BaseViewer::sendPoint(SelectionPoint point){
+void BaseViewer::sendPoint(SelectionPoint point, int code){
 
     if( !m_broadcastEnabled) return;
 
     if( m_dispatcher){
-        m_dispatcher->sendPoint(point, this);
+        m_dispatcher->sendPoint(point, code, this);
     }
 }
 

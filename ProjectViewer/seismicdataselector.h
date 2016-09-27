@@ -30,6 +30,13 @@ public:
         ORDER_OFFSET_DESCENDING
     };
 
+    enum SortKey{
+        SORT_NONE=0,
+        SORT_INLINE,
+        SORT_CROSSLINE,
+        SORT_OFFSET
+    };
+
     explicit SeismicDataSelector(QWidget *parent = 0);
     ~SeismicDataSelector();
 

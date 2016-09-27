@@ -1565,9 +1565,6 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         int maxIline=reader->maxInline();
         int minXline=reader->minCrossline();
         int maxXline=reader->maxCrossline();
-std::cout<<"opened reader"<<std::endl;
-std::cout<<"inline range: "<<minIline<<" - "<<maxIline<<std::endl;
-std::cout<<"Crossline range: "<<minXline<<" - "<<maxXline<<std::endl<<std::flush;
 
         SeismicDataSelector* selector=new SeismicDataSelector(this);
         selector->setInlineRange(minIline, maxIline);
@@ -1578,7 +1575,6 @@ std::cout<<"Crossline range: "<<minXline<<" - "<<maxXline<<std::endl<<std::flush
         selector->setCrossline(minXline);
         selector->setReader(reader);
 
-std::cout<<"Created selector"<<std::endl<<std::flush;
 
         QString verticalAxisLabel;
         if( info.domain()==SeismicDatasetInfo::Domain::Time){
@@ -1591,28 +1587,28 @@ std::cout<<"Created selector"<<std::endl<<std::flush;
         GatherViewer* viewer=new GatherViewer;//(this);
         viewer->setDispatcher(m_dispatcher);
         viewer->setWindowTitle( name );
-std::cout<<"Configurating viewer..."<<std::endl<<std::flush;
+
         if( info.mode()==SeismicDatasetInfo::Mode::Prestack){
-std::cout<<"initializing selector"<<std::endl<<std::flush;
+
             selector->setOrder(SeismicDataSelector::ORDER_INLINE_ASCENDING,
                                SeismicDataSelector::ORDER_CROSSLINE_ASCENDING,
                                SeismicDataSelector::ORDER_OFFSET_ASCENDING);
-std::cout<<"1"<<std::endl<<std::flush;
+
             selector->setInlineCount(1);
-std::cout<<"2"<<std::endl<<std::flush;
+
             selector->setCrosslineCount(10);
-std::cout<<"3"<<std::endl<<std::flush;
+
             std::pair<int, int> ftIlXl=reader->firstTraceInlineCrossline();
-std::cout<<"4"<<std::endl<<std::flush;
+
             selector->setInline(ftIlXl.first);
-std::cout<<"5"<<std::endl<<std::flush;
+
             selector->setCrossline(ftIlXl.second);
-std::cout<<"seting up gatherlabel"<<std::endl<<std::flush;
+
             GatherLabel* gatherLabel=viewer->view()->gatherLabel();
             gatherLabel->setDisplayWiggles(true);
             gatherLabel->setDisplayVariableArea(true);
             gatherLabel->setDisplayDensity(false);
-std::cout<<"setting trace annotations"<<std::endl<<std::flush;
+
             std::vector< std::pair< std::string, QString> > annos;
             annos.push_back( std::pair< std::string, QString >( "iline", QString("Inline")));
             annos.push_back( std::pair< std::string, QString >( "xline", QString("Crossline")));

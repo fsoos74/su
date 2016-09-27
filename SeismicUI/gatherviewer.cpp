@@ -64,7 +64,7 @@ QToolBar* GatherViewer::navigationToolBar()const{
     return ui->navigationToolBar;
 }
 
-void GatherViewer::receivePoint(SelectionPoint point){
+void GatherViewer::receivePoint(SelectionPoint point, int code){
 
     int iline=point.iline;
     int xline=point.xline;
@@ -101,7 +101,6 @@ void GatherViewer::zoomFitWindow(){
      gatherView->setGather(m_gather);
 
     emit gatherChanged();
-
  }
 
  void GatherViewer::setProject( std::shared_ptr<AVOProject> project){
@@ -204,7 +203,7 @@ void GatherViewer::onTraceSelected(size_t i){
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
-        sendPoint(SelectionPoint(iline, xline));
+        sendPoint(SelectionPoint(iline, xline), VIEWER_CURRENT_CDP);
     }
 }
 

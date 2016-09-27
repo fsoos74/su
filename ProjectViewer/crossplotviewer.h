@@ -58,7 +58,7 @@ public:
     }
 
 protected:
-    void receivePoint( SelectionPoint );
+    void receivePoint( SelectionPoint, int code );
     void receivePoints( QVector<SelectionPoint>, int code);
 
 public slots:

@@ -82,7 +82,7 @@ bool CrossplotViewer::isDisplayTrendLine(){
     return ui->actionDisplay_Trend_Line->isChecked();
 }
 
-void CrossplotViewer::receivePoint( SelectionPoint pt ){
+void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
 
     for( QGraphicsItem* item : m_scene->items()){
 
@@ -118,7 +118,7 @@ void CrossplotViewer::receivePoints( QVector<SelectionPoint> points, int code){
     // only use first point now because current algorithm is n**2 !!!
 
     if( !points.empty()){
-        receivePoint(points.front());
+        receivePoint(points.front(), code);
     }
 
 }
@@ -559,7 +559,7 @@ void CrossplotViewer::sceneSelectionChanged(){
 
     // this is for single selected point via double click
     if( points.size()==1){
-        sendPoint(points.front());
+        sendPoint(points.front(), VIEWER_CURRENT_CDP);
     }
 
     sendPoints(points, CODE_SINGLE_POINTS);

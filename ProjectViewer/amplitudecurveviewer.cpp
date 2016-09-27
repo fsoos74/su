@@ -82,7 +82,7 @@ AmplitudeCurveViewer::~AmplitudeCurveViewer()
 }
 
 
-void AmplitudeCurveViewer::receivePoint( SelectionPoint pt ){
+void AmplitudeCurveViewer::receivePoint( SelectionPoint pt, int code ){
 
     // trigger adding of curve for given point
     showSelector();
@@ -96,7 +96,7 @@ void AmplitudeCurveViewer::receivePoints( QVector<SelectionPoint> points, int co
 
     if( code!=CODE_SINGLE_POINTS) return;
     // add only first point from list if exists
-    if( !points.empty()) receivePoint(points.front());
+    if( !points.empty()) receivePoint(points.front(), code);
 }
 
 
@@ -297,7 +297,7 @@ void AmplitudeCurveViewer::sceneSelectionChanged(){
         int iline=m_curveInfos[curveIndex].inlineNumber;
         int xline=m_curveInfos[curveIndex].crosslineNumber;
 
-        sendPoint(  SelectionPoint(iline,xline) );
+        sendPoint(  SelectionPoint(iline,xline), VIEWER_CURRENT_CDP );
     }
 }
 

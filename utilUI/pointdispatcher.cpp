@@ -8,7 +8,7 @@ PointDispatcher::PointDispatcher()
 }
 
 
-void PointDispatcher::sendPoint( SelectionPoint point, BaseViewer* sender ){
+void PointDispatcher::sendPoint( SelectionPoint point, int code, BaseViewer* sender ){
 
     for( BaseViewer* viewer : m_viewers){
 
@@ -16,7 +16,7 @@ void PointDispatcher::sendPoint( SelectionPoint point, BaseViewer* sender ){
 
         if( viewer->receptionEnabled()){
 
-            viewer->receivePoint(point);
+            viewer->receivePoint(point, code);
 
         }
 
