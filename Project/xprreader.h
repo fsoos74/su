@@ -18,6 +18,7 @@ public:
 private:
 
     void readGeometry();
+    void readOrientation();
 
     QXmlStreamReader xml;
     AVOProject& m_project;

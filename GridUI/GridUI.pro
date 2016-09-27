@@ -25,7 +25,6 @@ SOURCES += gridui.cpp \
     gridimportdialog.cpp \
     isolinedialog.cpp \
     orientationdialog.cpp \
-    axxisorientation.cpp \
     gridviewer.cpp \
     griddisplayoptionsdialog.cpp \
     gridexportdialog.cpp
@@ -37,7 +36,6 @@ HEADERS += gridui.h\
     gridimportdialog.h \
     isolinedialog.h \
     orientationdialog.h \
-    axxisorientation.h \
     gridviewer.h \
     griddisplayoptionsdialog.h \
     gridexportdialog.h

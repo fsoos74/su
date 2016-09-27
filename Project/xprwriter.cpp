@@ -1,6 +1,6 @@
 #include "xprwriter.h"
 
-
+#include "axxisorientation.h"
 
 XPRWriter::XPRWriter( const AVOProject& project):m_project(project){
     xml.setAutoFormatting(true);
@@ -31,6 +31,11 @@ bool XPRWriter::writeFile(QIODevice *device){
     }
     xml.writeEndElement();
 
+    xml.writeStartElement("axis-setup");
+        xml.writeTextElement("inline-orientation", toQString(m_project.inlineOrientation()));
+        xml.writeTextElement("inline-direction", toQString(m_project.inlineDirection()));
+        xml.writeTextElement("crossline-direction", toQString(m_project.crosslineDirection()));
+    xml.writeEndElement();
 
      xml.writeEndElement();
 

@@ -44,7 +44,7 @@
 #include<memory>
 
 #include<projectgeometrydialog.h>
-
+#include<orientationdialog.h>
 #include<exportvolumeprocess.h>
 #include<exportvolumedialog.h>
 
@@ -244,10 +244,13 @@ license::LicenseInfo ProjectViewer::checkLicense(){
 
 void ProjectViewer::closeEvent(QCloseEvent *)
 {
+
     saveSettings();
 
     qApp->closeAllWindows(); // close all open windows because closing this quits the program
 }
+
+
 
 void ProjectViewer::on_actionNewProject_triggered()
 {
@@ -350,7 +353,27 @@ void ProjectViewer::on_action_Geometry_triggered()
         m_project->setGeometry(geom);
     }
 
+    //setDirty(true);
 }
+
+void ProjectViewer::on_actionAxis_Orientation_triggered()
+{
+    OrientationDialog dlg(this);
+    dlg.setWindowTitle(tr("Setup Project Axis Orientation"));
+    dlg.setInlineOrientation(m_project->inlineOrientation());
+    dlg.setInlineDirection(m_project->inlineDirection());
+    dlg.setCrosslineDirection(m_project->crosslineDirection());
+
+    if( dlg.exec() ){
+
+        m_project->setInlineOrientation(dlg.inlineOrientation());
+        m_project->setInlineDirection(dlg.inlineDirection());
+        m_project->setCrosslineDirection(dlg.crosslineDirection());
+    }
+
+    //setDirty(true);
+}
+
 
 void ProjectViewer::importGrid(GridType gridType){
 
@@ -1140,9 +1163,15 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
         viewer->setGrid(grid);
         QString typeName=gridType2String(t);
         viewer->setWindowTitle(QString("Grid %1 - %2").arg(typeName, name) );
+
+        GridView* gridView=viewer->gridView();
+        gridView->setInlineOrientation(m_project->inlineOrientation());
+        gridView->setInlineDirection(m_project->inlineDirection());
+        gridView->setCrosslineDirection(m_project->crosslineDirection());
+
         viewer->show();
 
-        viewer->orientate(m_project->geometry());
+        //viewer->orientate(m_project->geometry());  // this is now obtained from project
 
         viewer->setDispatcher(m_dispatcher);
 
@@ -1931,7 +1960,7 @@ void ProjectViewer::updateMenu(){
     ui->actionOpenSeismicDataset->setEnabled( isProject);
 
     ui->action_Geometry->setEnabled(isProject);
-
+    ui->actionAxis_Orientation->setEnabled(isProject);
     ui->actionCreateTimeslice->setEnabled(isProject);
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
     ui->actionHorizon_Semblance->setEnabled(isProject);
@@ -1946,6 +1975,7 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
 
 
 

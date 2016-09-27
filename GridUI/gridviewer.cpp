@@ -3,6 +3,7 @@
 
 #include<QMessageBox>
 #include<QFileDialog>
+#include<QInputDialog>
 #include<QFile>
 #include<QDir>
 #include<QColorDialog>
@@ -28,12 +29,12 @@ GridViewer::GridViewer(QWidget *parent) :
 
     setAttribute( Qt::WA_DeleteOnClose);
 
-    gridView = ui->gridView;//new GridView(this);
+    m_gridView = ui->gridView;//new GridView(this);
     colorBar=ui->colorBar;
-    gridView->setBackgroundRole(QPalette::Dark);
+    m_gridView->setBackgroundRole(QPalette::Dark);
     //setCentralWidget(gridView);
 
-    connect( gridView->label(), SIGNAL( mouseOver(int,int)), this, SLOT( onGridViewMouseOver(int,int)) );
+    connect( m_gridView->label(), SIGNAL( mouseOver(int,int)), this, SLOT( onGridViewMouseOver(int,int)) );
 
     setDefaultColorTable();
 
@@ -47,9 +48,9 @@ GridViewer::GridViewer(QWidget *parent) :
     qRegisterMetaTypeStreamOperators<AxxisDirection>("AxxisDirection");
 
 
-    connect( gridView, SIGNAL(pointSelected(QPoint)), this, SLOT(onViewPointSelected(QPoint)) );
+    connect( m_gridView, SIGNAL(pointSelected(QPoint)), this, SLOT(onViewPointSelected(QPoint)) );
 
-    connect( gridView, SIGNAL(polylineSelected(QVector<QPoint>)), this, SLOT(onViewPolylineSelected(QVector<QPoint>)) );
+    connect( m_gridView, SIGNAL(polylineSelected(QVector<QPoint>)), this, SLOT(onViewPolylineSelected(QVector<QPoint>)) );
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
@@ -89,9 +90,9 @@ bool GridViewer::orientate(const ProjectGeometry& geom){
         xlDirection=(dy10<0)?AxxisDirection::Ascending : AxxisDirection::Descending; // count from equator
     }
 
-    gridView->setInlineOrientation(ilOrientation);
-    gridView->setInlineDirection(ilDirection);
-    gridView->setCrosslineDirection(xlDirection);
+    gridView()->setInlineOrientation(ilOrientation);
+    gridView()->setInlineDirection(ilDirection);
+    gridView()->setCrosslineDirection(xlDirection);
 
     return true;
 }
@@ -100,21 +101,21 @@ void GridViewer::receivePoint( SelectionPoint point ){
 
     QVector<SelectionPoint> v{point};
 
-    gridView->setHighlightedCDPs(v);//void onViewPolylineSelected( QVector<QPoint>);
+    gridView()->setHighlightedCDPs(v);//void onViewPolylineSelected( QVector<QPoint>);
 }
 
 void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
     if( code==CODE_SINGLE_POINTS){
 
-        gridView->setHighlightedCDPs(points);
+        gridView()->setHighlightedCDPs(points);
     }
 }
 
 void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     m_grid=grid;
-    gridView->setGrid(grid);
-    gridView->setColorMapping( valueRange(*m_grid));
+    gridView()->setGrid(grid);
+    gridView()->setColorMapping( valueRange(*m_grid));
 }
 
 void GridViewer::setDefaultColorTable(){
@@ -122,8 +123,8 @@ void GridViewer::setDefaultColorTable(){
     QVector<QRgb> baseColors=ColorTable::defaultColors();
 
 
-    gridView->colorTable()->setColors(baseColors);
-    colorBar->setColorTable(gridView->colorTable());
+    gridView()->colorTable()->setColors(baseColors);
+    colorBar->setColorTable(gridView()->colorTable());
 
 }
 
@@ -163,17 +164,17 @@ void GridViewer::onGridViewMouseOver(int i, int j){
 
 void GridViewer::on_zoomInAct_triggered()
 {
-    gridView->zoomBy( 1.25);
+    gridView()->zoomBy( 1.25);
 }
 
 void GridViewer::on_zoomOutAct_triggered()
 {
-    gridView->zoomBy(0.8);
+    gridView()->zoomBy(0.8);
 }
 
 void GridViewer::on_zoomNormalAct_triggered()
 {
-    gridView->zoomFit();
+    gridView()->zoomFit();
 }
 
 void GridViewer::on_displayRangeAct_triggered()
@@ -183,12 +184,12 @@ void GridViewer::on_displayRangeAct_triggered()
 
         displayRangeDialog=new DisplayRangeDialog(this);
 
-        displayRangeDialog->setPower(gridView->colorTable()->power());
-        displayRangeDialog->setRange(gridView->colorTable()->range());
+        displayRangeDialog->setPower(gridView()->colorTable()->power());
+        displayRangeDialog->setRange(gridView()->colorTable()->range());
         connect( displayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 gridView->colorTable(), SLOT(setRange(std::pair<double,double>)) );
+                 gridView()->colorTable(), SLOT(setRange(std::pair<double,double>)) );
         connect( displayRangeDialog, SIGNAL(powerChanged(double)),
-                 gridView->colorTable(), SLOT( setPower(double)) );
+                 gridView()->colorTable(), SLOT( setPower(double)) );
     }
 
     displayRangeDialog->show();
@@ -197,18 +198,18 @@ void GridViewer::on_displayRangeAct_triggered()
 
 void GridViewer::on_EditColorTableAct_triggered()
 {
-    QVector<QRgb> oldColors=gridView->colorTable()->colors();
+    QVector<QRgb> oldColors=gridView()->colorTable()->colors();
 
     ColorTableDialog* colorTableDialog=new ColorTableDialog( oldColors);
 
     Q_ASSERT(colorTableDialog);
 
-    connect( colorTableDialog, SIGNAL(colorsChanged(QVector<QRgb>)), gridView, SLOT(setColors(QVector<QRgb>)));
+    connect( colorTableDialog, SIGNAL(colorsChanged(QVector<QRgb>)), gridView(), SLOT(setColors(QVector<QRgb>)));
 
     if( colorTableDialog->exec()==QDialog::Accepted ){
-        gridView->setColors( colorTableDialog->colors());
+        gridView()->setColors( colorTableDialog->colors());
     }else{
-        gridView->setColors( oldColors );
+        gridView()->setColors( oldColors );
     }
 
     delete colorTableDialog;
@@ -231,16 +232,16 @@ void GridViewer::on_setBackgroundColorAct_triggered()
 void GridViewer::on_actionSetup_Contours_triggered()
 {
     if(!isoLineDialog){
-        std::pair<double, double> range=gridView->colorTable()->range();
+        std::pair<double, double> range=gridView()->colorTable()->range();
         isoLineDialog=new IsoLineDialog(this);
         isoLineDialog->setFirst(range.first);
         isoLineDialog->setLast(range.second);
-        isoLineDialog->setLineColor(gridView->viewLabel()->isoLineColor());
-        isoLineDialog->setLineWidth(gridView->viewLabel()->isoLineWidth());
+        isoLineDialog->setLineColor(gridView()->viewLabel()->isoLineColor());
+        isoLineDialog->setLineWidth(gridView()->viewLabel()->isoLineWidth());
         isoLineDialog->setColorBarSteps(colorBar->ticks());
-        connect( isoLineDialog, SIGNAL( lineColorChanged(QColor)), gridView->label(), SLOT(setIsoLineColor(QColor)));
-        connect( isoLineDialog, SIGNAL( lineWidthChanged(int)), gridView->label(), SLOT( setIsoLineWidth(int)));
-        connect( isoLineDialog, SIGNAL( contoursChanged(const QVector<double>&)), gridView, SLOT( setIsoLineValues( const QVector<double>&) ));
+        connect( isoLineDialog, SIGNAL( lineColorChanged(QColor)), gridView()->label(), SLOT(setIsoLineColor(QColor)));
+        connect( isoLineDialog, SIGNAL( lineWidthChanged(int)), gridView()->label(), SLOT( setIsoLineWidth(int)));
+        connect( isoLineDialog, SIGNAL( contoursChanged(const QVector<double>&)), gridView(), SLOT( setIsoLineValues( const QVector<double>&) ));
         connect( colorBar, SIGNAL(ticksChanged( const QVector<double>&)), isoLineDialog, SLOT(setColorBarSteps(QVector<double>)) );
     }
 
@@ -251,22 +252,19 @@ void GridViewer::on_actionSetup_Contours_triggered()
 void GridViewer::on_actionAxxis_Orientation_triggered()
 {
 
-    if( !orientationDialog){
+    OrientationDialog orientationDialog(this);
+    orientationDialog.setInlineOrientation(gridView()->inlineOrientation());
+    orientationDialog.setInlineDirection(gridView()->inlineDirection());
+    orientationDialog.setCrosslineDirection(gridView()->crosslineDirection());
 
-        orientationDialog=new OrientationDialog(this);
-        orientationDialog->setInlineOrientation(gridView->inlineOrientation());
-        orientationDialog->setInlineDirection(gridView->inlineDirection());
-        orientationDialog->setCrosslineDirection(gridView->crosslineDirection());
-        connect( orientationDialog, SIGNAL(inlineOrientationChanged(AxxisOrientation)),
-                 gridView, SLOT( setInlineOrientation(AxxisOrientation)) );
-        connect( orientationDialog, SIGNAL( inlineDirectionChanged(AxxisDirection)),
-                 gridView, SLOT( setInlineDirection(AxxisDirection)) );
-        connect( orientationDialog, SIGNAL( crosslineDirectionChanged(AxxisDirection)),
-                 gridView, SLOT( setCrosslineDirection(AxxisDirection)) );
+    orientationDialog.setWindowTitle(tr("Configure Viewer Axis Orientation"));
+
+    if( orientationDialog.exec()==QDialog::Accepted){
+
+        gridView()->setInlineOrientation(orientationDialog.inlineOrientation());
+        gridView()->setInlineDirection(orientationDialog.inlineDirection() );
+        gridView()->setCrosslineDirection(orientationDialog.crosslineDirection() );
     }
-
-    orientationDialog->show();
-
 }
 
 void GridViewer::on_action_Grid_Display_triggered()
@@ -275,22 +273,41 @@ void GridViewer::on_action_Grid_Display_triggered()
     if( !gridDisplayOptionsDialog ){
 
         gridDisplayOptionsDialog=new GridDisplayOptionsDialog(this);
-        gridDisplayOptionsDialog->setTransformationMode( gridView->viewLabel()->transformationMode());
-        gridDisplayOptionsDialog->setBackgroundColor( gridView->nullColor());
-        gridDisplayOptionsDialog->setHighlightedCDPSize( gridView->viewLabel()->highlightCDPSize());
-        gridDisplayOptionsDialog->setHighlightedCDPColor( gridView->viewLabel()->highlightCDPColor());
+        gridDisplayOptionsDialog->setTransformationMode( gridView()->viewLabel()->transformationMode());
+        gridDisplayOptionsDialog->setBackgroundColor( gridView()->nullColor());
+        gridDisplayOptionsDialog->setHighlightedCDPSize( gridView()->viewLabel()->highlightCDPSize());
+        gridDisplayOptionsDialog->setHighlightedCDPColor( gridView()->viewLabel()->highlightCDPColor());
         connect( gridDisplayOptionsDialog, SIGNAL(transformationModeChanged(Qt::TransformationMode)),
-                 gridView->viewLabel(), SLOT( setTransformationMode(Qt::TransformationMode)) );
+                 gridView()->viewLabel(), SLOT( setTransformationMode(Qt::TransformationMode)) );
         connect( gridDisplayOptionsDialog, SIGNAL( backgroundColorChanged(QColor)),
-                 gridView, SLOT(setNullColor(QColor)) );
+                 gridView(), SLOT(setNullColor(QColor)) );
         connect( gridDisplayOptionsDialog, SIGNAL(highlightedCDPSizeChanged(int)),
-                 gridView->viewLabel(), SLOT(setHighlightCDPSize(int)) );
+                 gridView()->viewLabel(), SLOT(setHighlightCDPSize(int)) );
         connect( gridDisplayOptionsDialog, SIGNAL(highlightedCDPColorChanged(QColor)),
-                 gridView->viewLabel(),SLOT(setHighlightCDPColor(QColor)) );
+                 gridView()->viewLabel(),SLOT(setHighlightCDPColor(QColor)) );
     }
 
     gridDisplayOptionsDialog->show();
 }
+
+void GridViewer::on_actionConfigure_Colorbar_triggered()
+{
+    if( !colorBarConfigurationDialog){
+        colorBarConfigurationDialog=new ColorBarConfigurationDialog(this);
+        colorBarConfigurationDialog->setWindowTitle(tr("Configure Colorbar"));
+        colorBarConfigurationDialog->setScaleRange(ui->colorBar->range());
+        //std::cout<<"CB range: "<<ui->colorBar->range().first<<" - "<<ui->colorBar->range().second<<std::endl;
+        //std::cout<<"CT range: "<<ui->gridView->colorTable()->range().first<<" - "<<ui->gridView->colorTable()->range().second<<std::endl;
+        colorBarConfigurationDialog->setScaleSteps(ui->colorBar->steps());
+        connect(colorBarConfigurationDialog, SIGNAL(scaleRangeChanged(std::pair<double,double>)),
+                                                    ui->colorBar, SLOT(setRange(std::pair<double,double>)));
+        connect(colorBarConfigurationDialog, SIGNAL(scaleStepsChanged(int)),
+                ui->colorBar, SLOT(setSteps(int)));
+    }
+
+    colorBarConfigurationDialog->show();
+}
+
 
 // need this to forward point from view to dispatcher
 void GridViewer::onViewPointSelected( QPoint point){
@@ -341,27 +358,28 @@ void GridViewer::saveSettings(){
 
      settings.beginGroup("gridview");
 
+/* axis orientation is now stored per project in project-files
        settings.setValue("inline orientation", QVariant::fromValue(gridView->inlineOrientation()) );
 
        settings.setValue("inline direction", QVariant::fromValue(gridView->inlineDirection()) );
 
        settings.setValue("crossline direction", QVariant::fromValue(gridView->crosslineDirection()) );
+*/
+       settings.setValue("inline axxis label", gridView()->inlineAxxisLabel());
 
-       settings.setValue("inline axxis label", gridView->inlineAxxisLabel());
+       settings.setValue("crossline axxis label", gridView()->crosslineAxxisLabel());
 
-       settings.setValue("crossline axxis label", gridView->crosslineAxxisLabel());
+       settings.setValue("null color", QVariant::fromValue(gridView()->nullColor()));
 
-       settings.setValue("null color", QVariant::fromValue(gridView->nullColor()));
+       settings.setValue("isoline-width", gridView()->viewLabel()->isoLineWidth());
 
-       settings.setValue("isoline-width", gridView->viewLabel()->isoLineWidth());
+       settings.setValue("isoline-color", QVariant::fromValue(gridView()->viewLabel()->isoLineColor()));
 
-       settings.setValue("isoline-color", QVariant::fromValue(gridView->viewLabel()->isoLineColor()));
+       settings.setValue("highlight-cdp-size", gridView()->viewLabel()->highlightCDPSize());
 
-       settings.setValue("highlight-cdp-size", gridView->viewLabel()->highlightCDPSize());
+       settings.setValue("highlight-cdp-color", QVariant::fromValue(gridView()->viewLabel()->highlightCDPColor()));
 
-       settings.setValue("highlight-cdp-color", QVariant::fromValue(gridView->viewLabel()->highlightCDPColor()));
-
-       settings.setValue("image-transformation-mode", transformationModeToString( gridView->viewLabel()->transformationMode()) );
+       settings.setValue("image-transformation-mode", transformationModeToString( gridView()->viewLabel()->transformationMode()) );
 
      settings.endGroup();
 
@@ -386,6 +404,7 @@ void GridViewer::loadSettings(){
 
           QVariant value;
 
+/* axis orientation is now stored per project in project-files
           gridView->setInlineOrientation(
             settings.value("inline orientation", QVariant::fromValue(AxxisOrientation::Horizontal)).value<AxxisOrientation>());
 
@@ -394,26 +413,26 @@ void GridViewer::loadSettings(){
 
           gridView->setCrosslineDirection(
             settings.value("crossline direction", QVariant::fromValue(AxxisDirection::Ascending)).value<AxxisDirection>());
+*/
+          gridView()->setInlineAxxisLabel( settings.value("inline axxis label", "Inline Number").toString());
 
-          gridView->setInlineAxxisLabel( settings.value("inline axxis label", "Inline Number").toString());
+          gridView()->setCrosslineAxxisLabel( settings.value("crossline axxis label", "Crossline Number").toString());
 
-          gridView->setCrosslineAxxisLabel( settings.value("crossline axxis label", "Crossline Number").toString());
-
-          gridView->setNullColor(
+          gridView()->setNullColor(
                       settings.value("null color", QVariant::fromValue(Qt::gray)).value<QColor>());
 
-          gridView->viewLabel()->setIsoLineWidth( settings.value("isoline-width", 1 ).toInt());
+          gridView()->viewLabel()->setIsoLineWidth( settings.value("isoline-width", 1 ).toInt());
 
-          gridView->viewLabel()->setIsoLineColor(
+          gridView()->viewLabel()->setIsoLineColor(
                       settings.value("isoline-color",QVariant::fromValue(Qt::darkGray)).value<QColor>());
 
-          gridView->viewLabel()->setHighlightCDPSize(settings.value("highlight-cdp-size", 6).toInt());
+          gridView()->viewLabel()->setHighlightCDPSize(settings.value("highlight-cdp-size", 6).toInt());
 
-          gridView->viewLabel()->setHighlightCDPColor(
+          gridView()->viewLabel()->setHighlightCDPColor(
                       settings.value("highlight-cdp-color",QVariant::fromValue(Qt::red)).value<QColor>());
 
           QString str=settings.value("image-transformation-mode", "SMOOTH").toString();
-          gridView->viewLabel()->setTransformationMode(stringToTransformationMode(str));
+          gridView()->viewLabel()->setTransformationMode(stringToTransformationMode(str));
 
     settings.endGroup();
 }
@@ -438,3 +457,4 @@ void GridViewer::on_actionDisplay_Histogram_triggered()
     viewer->show();
 
 }
+

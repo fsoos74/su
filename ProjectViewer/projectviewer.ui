@@ -228,6 +228,7 @@
      <string>Pro&amp;ject</string>
     </property>
     <addaction name="action_Geometry"/>
+    <addaction name="actionAxis_Orientation"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -436,6 +437,11 @@
   <action name="actionExportProject">
    <property name="text">
     <string>&amp;Project</string>
+   </property>
+  </action>
+  <action name="actionAxis_Orientation">
+   <property name="text">
+    <string>Axis &amp;Orientation</string>
    </property>
   </action>
  </widget>

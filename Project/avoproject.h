@@ -15,6 +15,7 @@
 #include<iostream>
 
 #include "projectgeometry.h"
+#include "axxisorientation.h"
 #include<grid2d.h>
 #include<grid3d.h>
 #include"seismicdatasetinfo.h"
@@ -75,6 +76,25 @@ public:
     }
 
     void setGeometry( const ProjectGeometry&);
+
+    const AxxisOrientation& inlineOrientation()const{
+        return m_inlineOrientation;
+    }
+
+    void setInlineOrientation( const AxxisOrientation&);
+
+    const AxxisDirection& inlineDirection()const{
+        return m_inlineDirection;
+    }
+
+    void setInlineDirection( const AxxisDirection&);
+
+    const AxxisDirection& crosslineDirection()const{
+        return m_crosslineDirection;
+    }
+
+    void setCrosslineDirection( const AxxisDirection&);
+
 
     const QString& projectDirectory()const{
         return m_projectDirectory;
@@ -178,6 +198,10 @@ private:
 
 
     ProjectGeometry m_geometry;
+
+    AxxisOrientation m_inlineOrientation=AxxisOrientation::Horizontal;
+    AxxisDirection m_inlineDirection=AxxisDirection::Ascending;
+    AxxisDirection m_crosslineDirection=AxxisDirection::Ascending;
 
     QString m_projectDirectory;
     QString m_seismicDirectory;

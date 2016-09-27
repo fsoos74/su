@@ -81,6 +81,20 @@ void AVOProject::setGeometry(const ProjectGeometry &geom){
     m_geometry=geom;
 }
 
+void AVOProject::setInlineOrientation( const AxxisOrientation& o){
+    m_inlineOrientation=o;
+}
+
+void AVOProject::setInlineDirection( const AxxisDirection& d){
+    m_inlineDirection=d;
+}
+
+void AVOProject::setCrosslineDirection( const AxxisDirection& d){
+    m_crosslineDirection=d;
+}
+
+
+
 void AVOProject::setProjectDirectory( const QString& dir){
 
     m_projectDirectory=dir;

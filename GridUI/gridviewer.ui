@@ -68,6 +68,7 @@
     </property>
     <addaction name="separator"/>
     <addaction name="displayRangeAct"/>
+    <addaction name="actionConfigure_Colorbar"/>
     <addaction name="actionSetup_Contours"/>
     <addaction name="actionAxxis_Orientation"/>
     <addaction name="action_Grid_Display"/>
@@ -262,6 +263,14 @@
    </property>
    <property name="text">
     <string>Display Histogram</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Colorbar">
+   <property name="text">
+    <string>Configure &amp;Colorbar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
    </property>
   </action>
  </widget>

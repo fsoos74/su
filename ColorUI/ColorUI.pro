@@ -26,7 +26,8 @@ SOURCES += colorui.cpp \
     colortabledialog.cpp \
     xctwriter.cpp \
     xctreader.cpp \
-    colorbutton.cpp
+    colorbutton.cpp \
+    colorbarconfigurationdialog.cpp
 
 HEADERS += colorui.h\
         colorui_global.h \
@@ -35,9 +36,13 @@ HEADERS += colorui.h\
     colortabledialog.h \
     xctreader.h \
     xctwriter.h \
-    colorbutton.h
+    colorbutton.h \
+    colorbarconfigurationdialog.h
 
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
+
+FORMS += \
+    colorbarconfigurationdialog.ui

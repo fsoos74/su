@@ -17,11 +17,13 @@ void ColorBarWidget::setColorTable( ColorTable* ct){
     if( ct==m_colorTable) return;
 
     m_colorTable=ct;
+    m_range=ct->range();
 
     emit colorTableChanged( ct );
 
     connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(refreshImage()));
-    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshTicks()));
+    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this,
+             SLOT(setRange(std::pair<double,double>)));         // allways adjust colorbar to colortable
 
     refreshImage();  // calls update
     refreshTicks();  // calls update
@@ -58,14 +60,36 @@ void ColorBarWidget::setLabel(const QString &label){
     emit labelChanged(label);
 }
 
+void ColorBarWidget::setSteps(int n){
+
+    if( n==m_steps) return;
+
+    m_steps=n;
+
+    refreshTicks();
+
+    emit stepsChanged(m_steps);
+}
+
+void ColorBarWidget::setRange(std::pair<double, double> r){
+
+    if( r==m_range) return;
+
+    m_range=r;
+
+    refreshTicks();
+
+    emit rangeChanged(r);
+}
+
+template<typename T>
+void constrain( T& value, const T& min, const T& max){
+
+    value=(value<min)? min : ((value>max)? max : value );
+}
+
 void ColorBarWidget::paintEvent( QPaintEvent * ev){
-/*
-    const int N_STEPS=10;
-    const int BOX_WIDTH=30;
-    const int BOX_LINE_WIDTH=2;
-    const int MARK_SIZE=10;
-    const int PAD_Y=10;
-*/
+
     QVector<std::pair<int,QString>> coordAndLabel(m_ticks.size());
 
     QWidget::paintEvent(ev);
@@ -74,15 +98,15 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
 
     QSize label_size=painter.fontMetrics().size( Qt::TextSingleLine, m_label);
 
-    double range=m_colorTable->range().second - m_colorTable->range().first;
-    double absRange=std::fabs(m_colorTable->range().first - m_colorTable->range().second);
+    double range=m_range.second - m_range.first;
+    double absRange=std::fabs(m_range.first - m_range.second);
     int size_pix=height() - 2*PAD_Y;
-    int dy=size_pix/N_STEPS;
+    int dy=size_pix/m_steps;
 
     for( int i=0; i<m_ticks.size(); i++ ){
 
         double value=m_ticks[i];
-        int y= PAD_Y + i*size_pix/N_STEPS;
+        int y= PAD_Y + i*size_pix/m_steps;
         y=height()-y;                       // lowest at bottom
         if(absRange>10){
             value=std::round(value);
@@ -143,8 +167,24 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
 
     QPen boxPen( Qt::black );
     boxPen.setWidth( BOX_LINE_WIDTH);
-    painter.drawPixmap( boxX, PAD_Y + BOX_LINE_WIDTH/2, BOX_WIDTH, boxHeight,
-                        QPixmap::fromImage(m_image).scaled(BOX_WIDTH, boxHeight));
+    //painter.drawPixmap( boxX, PAD_Y + BOX_LINE_WIDTH/2, BOX_WIDTH, boxHeight,
+    //                    QPixmap::fromImage(m_image).scaled(BOX_WIDTH, boxHeight));
+
+    qreal ytop=m_range.second;
+    qreal ybottom=m_range.first;
+    constrain(ytop, m_colorTable->range().first, m_colorTable->range().second);
+    constrain(ybottom, m_colorTable->range().first, m_colorTable->range().second);
+
+    qreal dybottom=height() - ( PAD_Y + (ybottom-m_range.first) * size_pix / absRange );
+    qreal dytop=height() - ( PAD_Y + (ytop-m_range.first) * size_pix / absRange );
+
+    qreal sytop=( ytop - m_colorTable->range().first )*m_image.height() / (m_colorTable->range().second - m_colorTable->range().first);
+    qreal sybottom=( ybottom- m_colorTable->range().first )*m_image.height() / (m_colorTable->range().second - m_colorTable->range().first);
+
+    painter.drawPixmap( boxX, dytop, BOX_WIDTH, std::fabs(dybottom-dytop),
+                        QPixmap::fromImage(m_image), 0, sybottom, m_image.width(), std::fabs(sytop-sybottom));
+
+
 
     painter.setPen(boxPen);
     painter.drawRect( boxX, PAD_Y, BOX_WIDTH, height() - 2*PAD_Y );
@@ -170,6 +210,7 @@ void ColorBarWidget::refreshImage(){
     QImage img( 1, m_colorTable->colors().size(), QImage::Format_Indexed8);
 
     img.setColorCount( m_colorTable->colors().size());
+    //img.setColorCount( m_colorTable->colors().size());
     img.setColorTable( m_colorTable->colors());
 
     for( int i=0; i<img.height(); i++){
@@ -183,14 +224,17 @@ void ColorBarWidget::refreshImage(){
 
 void ColorBarWidget::refreshTicks(){
 
-    if( ! m_colorTable) return;
+    //if( ! m_colorTable) return;
 
-    QVector<double> ti(N_STEPS+1);
+    if( m_steps<1 )return;  // silently ignore this for now
+
+    QVector<double> ti(m_steps+1);
 
 
-    for( int i=0; i<=N_STEPS; i++ ){
+    for( int i=0; i<=m_steps; i++ ){
 
-        double value=m_colorTable->range().first + i*(m_colorTable->range().second - m_colorTable->range().first) / N_STEPS;
+        //double value=m_colorTable->range().first + i*(m_colorTable->range().second - m_colorTable->range().first) / m_steps;
+        double value=m_range.first + i*(m_range.second - m_range.first) / m_steps;
         ti[i]=value;
     }
 

@@ -19,7 +19,7 @@
 #include "orientationdialog.h"
 #include "displayrangedialog.h"
 #include <histogramdialog.h>
-
+#include<colorbarconfigurationdialog.h>
 #include <projectgeometry.h>
 
 #include<baseviewer.h>
@@ -36,6 +36,10 @@ class GridViewer : public BaseViewer
 public:
     explicit GridViewer(QWidget *parent = 0);
     ~GridViewer();
+
+    GridView* gridView()const{
+        return m_gridView;
+    }
 
     bool orientate(const ProjectGeometry&);
 
@@ -78,6 +82,8 @@ private slots:
 
     void on_actionDisplay_Histogram_triggered();
 
+    void on_actionConfigure_Colorbar_triggered();
+
 private:
 
     void setDefaultColorTable();
@@ -86,15 +92,15 @@ private:
     void loadSettings();
 
     Ui::GridViewer *ui;
-    GridView* gridView;
+    GridView* m_gridView;
     ColorBarWidget* colorBar;
 
     std::shared_ptr<Grid2D<float> > m_grid;
 
-    OrientationDialog* orientationDialog=nullptr;
     DisplayRangeDialog* displayRangeDialog=nullptr;
     IsoLineDialog* isoLineDialog=nullptr;
     GridDisplayOptionsDialog* gridDisplayOptionsDialog=nullptr;
+    ColorBarConfigurationDialog* colorBarConfigurationDialog=nullptr;
 
 };
 

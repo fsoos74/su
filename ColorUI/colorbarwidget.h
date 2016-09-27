@@ -28,11 +28,22 @@ public:
         return m_label;
 
     }
+
+    const int steps()const{
+        return m_steps;
+    }
+
+    std::pair<double,double> range()const{
+        return m_range;
+    }
+
 signals:
 
     void colorTableChanged( ColorTable* );
     void ticksChanged( const QVector<double>&);
     void labelChanged( QString );
+    void stepsChanged(int);
+    void rangeChanged(std::pair<double,double>);
 
 public slots:
 
@@ -40,7 +51,8 @@ public slots:
     void setTicks( const QVector<double>& ticks);
     void setScaleAlignment(ScaleAlignment);
     void setLabel( const QString&);
-
+    void setSteps(int);
+    void setRange(std::pair<double,double>);
 protected:
 
      void paintEvent( QPaintEvent *);
@@ -52,14 +64,14 @@ private slots:
 
 private:
 
-
-
-     const int N_STEPS=10;
+     //const int N_STEPS=10; now this is a property
      const int BOX_WIDTH=30;
      const int BOX_LINE_WIDTH=2;
      const int MARK_SIZE=10;
      const int PAD_Y=10;
 
+    int m_steps=10;
+    std::pair<double,double> m_range;
     QVector<double> m_ticks;
     QImage m_image;
     ColorTable* m_colorTable=nullptr;

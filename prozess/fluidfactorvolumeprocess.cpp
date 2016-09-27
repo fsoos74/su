@@ -126,10 +126,12 @@ ProjectProcess::ResultCode FluidFactorVolumeProcess::run(){
         }
     }
 
+
+
     QPointF trendInterceptAndGradient=linearRegression(all);
     m_angle=std::fabs(std::atan( trendInterceptAndGradient.y() ) );
     }
-
+std::cout<<"angle="<<m_angle<<std::endl<<std::flush;
     double phi=m_angle;
     double sinPhi=std::sin(phi);
     double cosPhi=std::cos(phi);

@@ -109,10 +109,9 @@ private slots:
 
     void on_actionFluid_Factor_Volume_triggered();
 
-
-
-
     void on_action_Geometry_triggered();
+
+    void on_actionAxis_Orientation_triggered();
 
     void on_action_About_triggered();
 
@@ -126,6 +125,8 @@ private slots:
     void on_actionRun_Grid_User_Script_triggered();
 
     void on_actionRun_Volume_Script_triggered();
+
+
 
 protected:
 

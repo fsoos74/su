@@ -1,5 +1,6 @@
 #include "xprreader.h"
 
+#include "axxisorientation.h"
 #include<iostream>
 
 XPRReader::XPRReader( AVOProject& project) : m_project( project )
@@ -98,6 +99,36 @@ void XPRReader::readGeometry(){
         std::cout<<"No Geometry"<<std::endl;
     }
 
+}
+
+void XPRReader::readOrientation(){
+
+    // read geometry if exists, check is done because of compatabiity with old version
+    if(xml.readNextStartElement()) {
+
+        if (xml.name() == "axis-setup" ){
+
+            if(!xml.readNextStartElement() || xml.name()!="inline-orientation" ){
+                xml.raiseError("Unexpected element!");
+            }
+            AxxisOrientation inline_orientation=toAxxisOrientation( xml.readElementText() );
+
+            if(!xml.readNextStartElement() || xml.name()!="inline-direction" ){
+                xml.raiseError("Unexpected element!");
+            }
+            AxxisDirection inline_direction=toAxxisDirection( xml.readElementText() );
+
+            if(!xml.readNextStartElement() || xml.name()!="crossline-direction" ){
+                xml.raiseError("Unexpected element!");
+            }
+            AxxisDirection crossline_direction=toAxxisDirection( xml.readElementText() );
+
+            m_project.setInlineOrientation(inline_orientation );
+            m_project.setInlineDirection(inline_direction);
+            m_project.setCrosslineDirection(crossline_direction);
+
+       }
+   }
 }
 
 QString XPRReader::errorString() const
