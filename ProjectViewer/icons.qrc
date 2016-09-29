@@ -30,6 +30,8 @@
         <file>../images/open-icon-32x32.png</file>
         <file>../images/save-as-icon-32x32.png</file>
         <file>../images/save-icon-32x32.png</file>
+        <file>../images/iline-icon-32x32.png</file>
+        <file>../images/xline-icon-32x32.png</file>
     </qresource>
     <qresource prefix="/"/>
 </RCC>

@@ -35,6 +35,7 @@ bool XPRReader::read(QIODevice *device)
 
            readGeometry();
 
+           readOrientation();
         }
         else{
             xml.raiseError(QObject::tr("The file is not an xpr version 1.0 file."));
@@ -90,6 +91,9 @@ void XPRReader::readGeometry(){
                 geom.setCoordinates( i, QPointF(x,y));
             }
 
+            xml.skipCurrentElement();
+            //xml.readNext();
+
             m_project.setGeometry(geom);
         }
         else{
@@ -103,7 +107,7 @@ void XPRReader::readGeometry(){
 
 void XPRReader::readOrientation(){
 
-    // read geometry if exists, check is done because of compatabiity with old version
+    // read orientation if exists, check is done because of compatabiity with old version
     if(xml.readNextStartElement()) {
 
         if (xml.name() == "axis-setup" ){
