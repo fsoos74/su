@@ -3,19 +3,38 @@
 
 #include<QIntValidator>
 
+const QString ORDER_NONE_STR("none");
+const QString ILINE_ASC_STR("inline ascending");
+const QString ILINE_DESC_STR("inline descending");
+const QString XLINE_ASC_STR("crossline ascending");
+const QString XLINE_DESC_STR("crossline descending");
+const QString OFFSET_ASC_STR("offset ascending");
+const QString OFFSET_DESC_STR("offset descending");
+
+const int ORDER_NONE_INDEX=0;
+const int ILINE_ASC_INDEX=1;
+const int ILINE_DESC_INDEX=2;
+const int XLINE_ASC_INDEX=3;
+const int XLINE_DESC_INDEX=4;
+const int OFFSET_ASC_INDEX=5;
+const int OFFSET_DESC_INDEX=6;
+
+
 SeismicDataSelector::SeismicDataSelector(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SeismicDataSelector)
 {
     ui->setupUi(this);
+
     QStringList order;
-    order.append("none");
-    order.append("inline ascending");
-    order.append("inline descending");
-    order.append("crossline ascending");
-    order.append("crossline descending");
-    order.append("offset ascending");
-    order.append("offset descending");
+    order.append(ORDER_NONE_STR);
+    order.append(ILINE_ASC_STR);
+    order.append(ILINE_DESC_STR);
+    order.append( XLINE_ASC_STR);
+    order.append(XLINE_DESC_STR);
+    order.append(OFFSET_ASC_STR);
+    order.append(OFFSET_DESC_STR);
+
 
     ui->cbOrder1->addItems(order);
     ui->cbOrder2->addItems(order);
@@ -212,28 +231,29 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
 
 void SeismicDataSelector::indexToKey( int idx, QString& key, bool& ascending){
 
-    if( idx>0){
-        switch(idx){
-        case 1:
-        case 2:
-                    key="iline";
-                    break;
-        case 3:
-        case 4:
-                    key="xline";
-                    break;
-        case 5:
-        case 6:
-                    key="offset";
-                    break;
+    ascending=false;
 
-        }
-    }
-    else{
+    switch(idx){
+
+    case ILINE_ASC_INDEX:
+                ascending=true;
+    case ILINE_DESC_INDEX:
+                key="iline";
+                break;
+    case XLINE_ASC_INDEX:
+                ascending=true;
+    case XLINE_DESC_INDEX:
+                key="xline";
+                break;
+    case OFFSET_ASC_INDEX:
+                ascending=true;
+    case OFFSET_DESC_INDEX:
+                key="offset";
+                break;
+
+    default:
         key="";
     }
-
-    ascending=((idx%2)==1);
 }
 
 void SeismicDataSelector::changeOrder(){
@@ -277,4 +297,47 @@ void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
     ui->cbOrder1->setEnabled(!checked);
     ui->cbOrder2->setEnabled(!checked);
     ui->cbOrder3->setEnabled(!checked);
+}
+
+void SeismicDataSelector::on_tbInline_clicked()
+{
+    ui->cbOrder1->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending
+    ui->cbOrder2->setCurrentIndex(XLINE_ASC_INDEX);   // xline ascending
+
+    ui->sbInline->setValue( m_reader->minInline());
+    ui->sbIlineCount->setValue(1);
+
+    if(m_reader->info().mode()==SeismicDatasetInfo::Mode::Poststack ){
+        ui->sbXline->setValue(m_reader->minCrossline());
+        ui->sbXlineCount->setValue(m_reader->maxCrossline() - m_reader->minCrossline() + 1 );
+        ui->cbOrder3->setCurrentIndex( ORDER_NONE_INDEX );
+    }
+    else{
+        ui->sbXline->setValue(m_reader->minCrossline());
+        ui->sbXlineCount->setValue( 10 );
+        ui->cbOrder3->setCurrentIndex(OFFSET_ASC_INDEX);   // offset ascending
+
+    }
+}
+
+void SeismicDataSelector::on_tbXLine_clicked()
+{
+    ui->cbOrder1->setCurrentIndex(XLINE_ASC_INDEX);   // xline ascending
+    ui->cbOrder2->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending
+
+    ui->sbXline->setValue( m_reader->minCrossline());
+    ui->sbXlineCount->setValue(1);
+
+    if(m_reader->info().mode()==SeismicDatasetInfo::Mode::Poststack ){
+        ui->sbInline->setValue(m_reader->minInline());
+        ui->sbIlineCount->setValue(m_reader->maxInline() - m_reader->minInline() + 1 );
+        ui->cbOrder3->setCurrentIndex(ORDER_NONE_INDEX);
+    }
+    else{
+        ui->sbInline->setValue(m_reader->minInline());
+        ui->sbIlineCount->setValue( 10 );
+        ui->cbOrder3->setCurrentIndex(OFFSET_ASC_INDEX);
+    }
+
+
 }

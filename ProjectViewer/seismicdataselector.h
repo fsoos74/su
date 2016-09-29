@@ -73,6 +73,10 @@ private slots:
 
     void on_rbRandomLine_toggled(bool checked);
 
+    void on_tbInline_clicked();
+
+    void on_tbXLine_clicked();
+
 private:
 
     void indexToKey( int idx, QString& key, bool& ascending);
