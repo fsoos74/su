@@ -17,6 +17,7 @@
 #include<isolinedialog.h>
 #include "griddisplayoptionsdialog.h"
 #include "aspectratiodialog.h"
+#include "scaledialog.h"
 #include "orientationdialog.h"
 #include "displayrangedialog.h"
 #include <histogramdialog.h>
@@ -88,6 +89,8 @@ private slots:
 
     void on_actionAspect_Ratio_triggered();
 
+    void on_actionConfigure_Scales_triggered();
+
 private:
 
     void setDefaultColorTable();
@@ -103,6 +106,7 @@ private:
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
     AspectRatioDialog* aspectRatioDialog=nullptr;
+    ScaleDialog* scaleDialog=nullptr;
     IsoLineDialog* isoLineDialog=nullptr;
     GridDisplayOptionsDialog* gridDisplayOptionsDialog=nullptr;
     ColorBarConfigurationDialog* colorBarConfigurationDialog=nullptr;

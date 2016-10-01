@@ -74,6 +74,7 @@
     <addaction name="action_Grid_Display"/>
     <addaction name="EditColorTableAct"/>
     <addaction name="actionAspect_Ratio"/>
+    <addaction name="actionConfigure_Scales"/>
    </widget>
    <widget class="QMenu" name="menu_Scale">
     <property name="title">
@@ -302,6 +303,11 @@
   <action name="actionAspect_Ratio">
    <property name="text">
     <string>Set Aspect Ratio</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Scales">
+   <property name="text">
+    <string>Configure Scales</string>
    </property>
   </action>
  </widget>

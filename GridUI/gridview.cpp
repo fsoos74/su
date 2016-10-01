@@ -53,6 +53,10 @@ GridView::GridView(QWidget* parent):QScrollArea(parent),
 
     connect( this, SIGNAL(polylineSelected(QVector<QPoint>)), m_label, SLOT(update()));
 
+    // adapt grid lines to scale ticks
+    connect( m_leftRuler, SIGNAL(ticksChanged()), m_label, SLOT(update()) );
+    connect( m_topRuler, SIGNAL(ticksChanged()), m_label, SLOT(update()) );
+
      updateGeometry();
 
     m_label->installEventFilter(this);
@@ -1028,6 +1032,12 @@ void ViewLabel::drawPolyline( QPainter& painter, const QPen& pen){
 }
 
 Ruler::Ruler( GridView* parent, Orientation orient ):QWidget(parent), m_view(parent), m_orientation( orient){
+
+    if( m_view ){
+        connect( m_view, SIGNAL(gridChanged(std::shared_ptr<Grid2D<float> >)), this, SLOT(updateTickIncrement()) );
+        connect( m_view->horizontalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SLOT(updateTickIncrement()) );
+        connect( m_view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)), this, SLOT(updateTickIncrement()) );
+    }
 }
 
 
@@ -1038,15 +1048,22 @@ void Ruler::setTickIncrement(int i){
     m_tickIncrement=i;
 
     update();
+
+    emit tickIncrementChanged(i);
+    emit ticksChanged();
 }
 
-void Ruler::setAutoTickIncrement(bool on){
+void Ruler::setFixedTickIncrement(bool on){
 
-    if( on==m_autoTickIncrement ) return;
+    if( on==m_fixedTickIncrement ) return;
 
-    m_autoTickIncrement=on;
+    m_fixedTickIncrement=on;
 
-    update();
+    //update();
+    updateTickIncrement();
+
+    emit fixedTickIncrementChanged(on);
+    emit ticksChanged();
 }
 
 void Ruler::paintEvent(QPaintEvent*){
@@ -1064,6 +1081,10 @@ void Ruler::paintEvent(QPaintEvent*){
 
 }
 
+void Ruler::resizeEvent(QResizeEvent *){
+
+    updateTickIncrement();
+}
 
 
 int Ruler::autoTickIncrement(int size_pix, int size_grid, int min_distance)const{
@@ -1092,11 +1113,11 @@ int Ruler::autoTickIncrement(int size_pix, int size_grid, int min_distance)const
     return incr;
 }
 
-int Ruler::tickIncrement()const{
+void Ruler::updateTickIncrement(){
 
-    if( !m_autoTickIncrement )  return m_tickIncrement;
+    if( m_fixedTickIncrement )  return;// m_tickIncrement;
 
-    if( !m_view || !m_view->m_grid) return -1;
+    if( !m_view || !m_view->m_grid) return;// -1;
 
     Grid2D<float>::bounds_type bounds=m_view->grid()->bounds();
     int size_pix;
@@ -1116,11 +1137,13 @@ int Ruler::tickIncrement()const{
         min_distance=TICK_LABEL_DX;
     }
 
-    return autoTickIncrement( size_pix, size_grid, min_distance);
+    setTickIncrement( autoTickIncrement( size_pix, size_grid, min_distance) );
 }
 
 
 QVector< Ruler::Tick > Ruler::computeTicks( int coord1, int coord2 )const{
+
+
 
     QVector< Tick > ticks;
 
@@ -1131,7 +1154,7 @@ QVector< Ruler::Tick > Ruler::computeTicks( int coord1, int coord2 )const{
 
        QPointF startP( 0, coord1);
        QPointF endP( 0, coord2);
-       int incr=tickIncrement();
+       int incr=m_tickIncrement;
 
        if( m_view->inlineOrientation() == AxxisOrientation::Horizontal ){   // inlines on vertical label
 
@@ -1169,7 +1192,7 @@ QVector< Ruler::Tick > Ruler::computeTicks( int coord1, int coord2 )const{
         QPointF startP( coord1, 0);
         QPointF endP( coord2, 0);
 
-        int incr=tickIncrement();
+        int incr=m_tickIncrement;
 
         if( m_view->inlineOrientation() == AxxisOrientation::Horizontal ){   // crosslines on horizontal label
 

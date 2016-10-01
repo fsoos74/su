@@ -56,21 +56,34 @@ public:
 
     Ruler( GridView* parent, Orientation orient );
 
-    int tickIncrement()const;
+    int tickIncrement()const{
+        return m_tickIncrement;
+    }
 
-    bool isAutoTickIncrement()const{
-        return m_autoTickIncrement;
+    bool isFixedTickIncrement()const{
+        return m_fixedTickIncrement;
     }
 
     QVector< Tick > computeTicks( int coord1, int coord2 )const;
 
+signals:
+
+    void tickIncrementChanged(int);
+    void fixedTickIncrementChanged(bool);
+    void ticksChanged();
+
 public slots:
 
-    void setAutoTickIncrement(bool);
+    void setFixedTickIncrement(bool);
     void setTickIncrement(int);
+
+private slots:
+
+    void updateTickIncrement();
 
 protected:
     void paintEvent( QPaintEvent*);
+    void resizeEvent( QResizeEvent* );
 
 private:
 
@@ -82,7 +95,7 @@ private:
     GridView* m_view;
     Orientation m_orientation;
     int m_tickIncrement=1;
-    bool m_autoTickIncrement=true;
+    bool m_fixedTickIncrement=false;
 };
 
 

@@ -55,10 +55,7 @@ GridViewer::GridViewer(QWidget *parent) :
 
     loadSettings();
 
-    gridView()->horizontalRuler()->setAutoTickIncrement(false);
-    gridView()->horizontalRuler()->setTickIncrement(25);
-    gridView()->verticalRuler()->setAutoTickIncrement(false);
-    gridView()->verticalRuler()->setTickIncrement(25);
+
 }
 
 GridViewer::~GridViewer()
@@ -317,6 +314,32 @@ void GridViewer::on_actionAspect_Ratio_triggered()
     aspectRatioDialog->show();
 }
 
+void GridViewer::on_actionConfigure_Scales_triggered()
+{
+    if( !scaleDialog ){
+
+        scaleDialog=new ScaleDialog(this);
+        scaleDialog->setWindowTitle(tr("Configure Scales"));
+
+        scaleDialog->setHorizontalIncrement( gridView()->horizontalRuler()->tickIncrement() );
+        scaleDialog->setHorizontalFixed(gridView()->horizontalRuler()->isFixedTickIncrement() );
+        connect( scaleDialog, SIGNAL(horizontalFixedChanged(bool)), gridView()->horizontalRuler(), SLOT(setFixedTickIncrement(bool)) );
+        connect( scaleDialog, SIGNAL(horizontalIncrementChanged(int)), gridView()->horizontalRuler(), SLOT(setTickIncrement(int)) );
+        connect( gridView()->horizontalRuler(), SIGNAL(fixedTickIncrementChanged(bool)), scaleDialog, SLOT(setHorizontalFixed(bool)) );
+        connect( gridView()->horizontalRuler(), SIGNAL(tickIncrementChanged(int)), scaleDialog, SLOT(setHorizontalIncrement(int)) );
+
+        scaleDialog->setVerticalIncrement( gridView()->verticalRuler()->tickIncrement() );
+        scaleDialog->setVerticalFixed(gridView()->verticalRuler()->isFixedTickIncrement() );
+        connect( scaleDialog, SIGNAL(verticalFixedChanged(bool)), gridView()->verticalRuler(), SLOT(setFixedTickIncrement(bool)) );
+        connect( scaleDialog, SIGNAL(verticalIncrementChanged(int)), gridView()->verticalRuler(), SLOT(setTickIncrement(int)) );
+        connect( gridView()->verticalRuler(), SIGNAL(fixedTickIncrementChanged(bool)), scaleDialog, SLOT(setVerticalFixed(bool)) );
+        connect( gridView()->verticalRuler(), SIGNAL(tickIncrementChanged(int)), scaleDialog, SLOT(setVerticalIncrement(int)) );
+    }
+
+    scaleDialog->show();
+}
+
+
 void GridViewer::on_actionConfigure_Colorbar_triggered()
 {
     if( !colorBarConfigurationDialog){
@@ -486,6 +509,7 @@ void GridViewer::on_actionDisplay_Histogram_triggered()
     viewer->show();
 
 }
+
 
 
 
