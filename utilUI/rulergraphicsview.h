@@ -44,12 +44,22 @@ public:
         return m_label;
     }
 
+    bool isAutoTickIncrement()const{
+        return m_autoTickIncrement;
+    }
+
+    qreal tickIncrement()const{
+        return m_tickIncrement;
+    }
+
     QVector< Tick > computeTicks()const;
 
     void setAnnotationFunction( std::function<QString(qreal)> );
 
 public slots:
 
+    void setAutoTickIncrement(bool);
+    void setTickIncrement(qreal);
     void setTickMarkSize(int);
     void setMinimumValueIncrement(qreal);
     void setMinimumPixelIncrement(int);
@@ -63,7 +73,7 @@ protected:
 
 private:
 
-    qreal tickIncrement(int size_pix, qreal size_data)const;
+    qreal computeTickIncrement(int size_pix, qreal size_data)const;
 
 
     void drawVertical( QPainter& painter );
@@ -76,6 +86,8 @@ private:
 
     qreal   m_minimumValueIncrement=0;          // ticks will be at least spaced at this value distance
     int     m_minimumPixelIncrement=50;         // ticks will be at least that many pixels  apart
+    qreal   m_tickIncrement=1;                  // current tick increment
+    bool    m_autoTickIncrement=true;           // automatically compute tick increment
     int m_TICK_MARK_SIZE=5;
     //int m_TICK_LABEL_DX=100;
     //int m_TICK_LABEL_DY=50;

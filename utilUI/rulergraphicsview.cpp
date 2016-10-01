@@ -451,7 +451,25 @@ void GVRuler::paintEvent(QPaintEvent*){
 
 
 
-qreal GVRuler::tickIncrement(int size_pix, qreal size_data)const{
+void GVRuler::setAutoTickIncrement(bool on){
+
+    if( on==m_autoTickIncrement) return;
+
+    m_autoTickIncrement=on;
+
+    update();
+}
+
+void GVRuler::setTickIncrement(qreal incr){
+
+    if( incr==m_tickIncrement ) return;
+
+    m_tickIncrement=incr;
+
+    update();
+}
+
+qreal GVRuler::computeTickIncrement(int size_pix, qreal size_data)const{
 
     qreal pix_per_unit=std::fabs( qreal(size_pix)/size_data );
     qreal incr= std::pow(10,std::floor(std::log10( m_minimumPixelIncrement/pix_per_unit)));   //
@@ -490,7 +508,9 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
        QPoint startP( 0, mappedSceneRect.top());
        QPoint endP( 0, mappedSceneRect.bottom());
-       qreal incr=tickIncrement( mappedSceneRect.height(), m_view->sceneRect().height() );
+       qreal incr=( m_autoTickIncrement) ?
+                   computeTickIncrement( mappedSceneRect.height(), m_view->sceneRect().height() ) :
+                   m_tickIncrement;
 
        qreal startVal=m_view->mapToScene( startP ).y();
        qreal endVal=m_view->mapToScene(endP).y();
@@ -512,7 +532,9 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
         QPoint startP( mappedSceneRect.left(), 0);
         QPoint endP( mappedSceneRect.right(), 0);
-        qreal incr=tickIncrement( mappedSceneRect.width(), m_view->sceneRect().width() );
+        qreal incr=(m_autoTickIncrement) ?
+                    computeTickIncrement( mappedSceneRect.width(), m_view->sceneRect().width() ) :
+                    m_tickIncrement;
 
         qreal startVal=m_view->mapToScene( startP ).x();
         qreal endVal=m_view->mapToScene(endP).x();

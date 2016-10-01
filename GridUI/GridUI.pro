@@ -27,7 +27,8 @@ SOURCES += gridui.cpp \
     orientationdialog.cpp \
     gridviewer.cpp \
     griddisplayoptionsdialog.cpp \
-    gridexportdialog.cpp
+    gridexportdialog.cpp \
+    aspectratiodialog.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
@@ -38,7 +39,8 @@ HEADERS += gridui.h\
     orientationdialog.h \
     gridviewer.h \
     griddisplayoptionsdialog.h \
-    gridexportdialog.h
+    gridexportdialog.h \
+    aspectratiodialog.h
 
 unix {
     target.path = /usr/lib
@@ -54,7 +56,8 @@ FORMS += \
     orientationdialog.ui \
     gridviewer.ui \
     griddisplayoptionsdialog.ui \
-    gridexportdialog.ui
+    gridexportdialog.ui \
+    aspectratiodialog.ui
 
 
 

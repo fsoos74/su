@@ -73,10 +73,11 @@
     <addaction name="actionAxxis_Orientation"/>
     <addaction name="action_Grid_Display"/>
     <addaction name="EditColorTableAct"/>
+    <addaction name="actionAspect_Ratio"/>
    </widget>
    <widget class="QMenu" name="menu_Scale">
     <property name="title">
-     <string>&amp;Scale</string>
+     <string>Sc&amp;ale</string>
     </property>
     <addaction name="zoomInAct"/>
     <addaction name="zoomOutAct"/>
@@ -148,7 +149,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -160,7 +161,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -267,10 +268,40 @@
   </action>
   <action name="actionConfigure_Colorbar">
    <property name="text">
-    <string>Configure &amp;Colorbar</string>
+    <string>Co&amp;nfigure Colorbar</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
+   </property>
+  </action>
+  <action name="actionSet_Aspect_Ratio">
+   <property name="text">
+    <string>Set Aspect Ratio</string>
+   </property>
+   <property name="toolTip">
+    <string>Set Aspect Ratio</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionFixed_Aspect_Ratio">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Fixed Aspect Ratio</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionAspect_Ratio">
+   <property name="text">
+    <string>Set Aspect Ratio</string>
    </property>
   </action>
  </widget>
@@ -290,6 +321,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../SeismicUI/icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

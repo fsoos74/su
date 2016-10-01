@@ -40,6 +40,8 @@ public:
     explicit SeismicDataSelector(QWidget *parent = 0);
     ~SeismicDataSelector();
 
+    SortKey primarySort();
+
 public slots:
     void setReader(std::shared_ptr<SeismicDatasetReader>);
     void setInlineRange( int min, int max);

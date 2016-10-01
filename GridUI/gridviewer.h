@@ -16,6 +16,7 @@
 #include<displayrangedialog.h>
 #include<isolinedialog.h>
 #include "griddisplayoptionsdialog.h"
+#include "aspectratiodialog.h"
 #include "orientationdialog.h"
 #include "displayrangedialog.h"
 #include <histogramdialog.h>
@@ -42,6 +43,7 @@ public:
     }
 
     bool orientate(const ProjectGeometry&);
+
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
@@ -84,6 +86,8 @@ private slots:
 
     void on_actionConfigure_Colorbar_triggered();
 
+    void on_actionAspect_Ratio_triggered();
+
 private:
 
     void setDefaultColorTable();
@@ -98,10 +102,10 @@ private:
     std::shared_ptr<Grid2D<float> > m_grid;
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
+    AspectRatioDialog* aspectRatioDialog=nullptr;
     IsoLineDialog* isoLineDialog=nullptr;
     GridDisplayOptionsDialog* gridDisplayOptionsDialog=nullptr;
     ColorBarConfigurationDialog* colorBarConfigurationDialog=nullptr;
-
 };
 
 

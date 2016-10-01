@@ -52,27 +52,37 @@ public:
 
     const int TICK_MARK_SIZE=5;
     const int TICK_LABEL_DX=60;
-    const int TICK_LABEL_DY=40;
+    const int TICK_LABEL_DY=60;
 
     Ruler( GridView* parent, Orientation orient );
 
     int tickIncrement()const;
 
+    bool isAutoTickIncrement()const{
+        return m_autoTickIncrement;
+    }
+
     QVector< Tick > computeTicks( int coord1, int coord2 )const;
 
+public slots:
+
+    void setAutoTickIncrement(bool);
+    void setTickIncrement(int);
 
 protected:
     void paintEvent( QPaintEvent*);
 
 private:
 
-    int tickIncrement(int size_pix, int size_grid, int min_distance)const;
+    int autoTickIncrement(int size_pix, int size_grid, int min_distance)const;
 
     void drawVertical( QPainter& painter );
     void drawHorizontal( QPainter& painter );
 
     GridView* m_view;
     Orientation m_orientation;
+    int m_tickIncrement=1;
+    bool m_autoTickIncrement=true;
 };
 
 
@@ -213,6 +223,14 @@ public:
         return m_grid;                   //!!!!
     }
 
+    bool isFixedAspectRatio()const{
+        return m_fixedAspectRatio;
+    }
+
+    qreal aspectRatio()const{
+        return m_aspectRatio;
+    }
+
     const QVector<SelectionPoint>& highlightedCDPs()const{
         return m_highlightedCDPs;
     }
@@ -220,6 +238,9 @@ public:
     const QVector<QPoint>& polylineSelection()const{
         return m_polyline;
     }
+
+
+
 
     ColorTable* colorTable()const{
         return m_colorTable;
@@ -273,9 +294,13 @@ public:
      ViewLabel* label()const{ return m_label;}
 
 
+     qreal computeILXLBasedAspectRatio()const;
+
 signals:
 
     void gridChanged( std::shared_ptr<Grid2D<float> >);
+    void fixedAspectRatioChanged(bool);
+    void aspectRatioChanged(qreal);
     void colorTableChanged( ColorTable*);
     void nullColorChanged( QColor );
     void scaleChanged(double);
@@ -291,6 +316,9 @@ signals:
 public slots:
 
     void setGrid( std::shared_ptr<Grid2D<float> > );
+    void setFixedAspectRatio(bool);
+    void setAspectRatio(qreal);
+
     void setHighlightedCDPs( QVector<SelectionPoint>);
     void setColorMapping( const std::pair<double,double>& m);
     void setColors( const QVector<QRgb>&);
@@ -337,12 +365,16 @@ private:
     QTransform computeGrid2ImageTransform_IlHorizontal()const;
     QTransform computeGrid2ImageTransform_IlVertical()const;
 
+    QSize adjustedToAspectRatio(QSize)const;
+
 
     GridViewer* m_viewer=nullptr;
     ViewLabel* m_label=nullptr;
     Ruler* m_leftRuler=nullptr;
     Ruler* m_topRuler=nullptr;
     std::shared_ptr<Grid2D<float> > m_grid;
+    bool m_fixedAspectRatio=true;
+    qreal m_aspectRatio=1.; // w/h
     ColorTable* m_colorTable;           // holds colors and display range
     QColor m_nullColor;
     QTransform m_gridToImageTransform;

@@ -41,7 +41,6 @@ GridViewer::GridViewer(QWidget *parent) :
     setWindowTitle(tr("Grid Viewer"));
 
 
-
     //resize(800, 600);
 
     qRegisterMetaTypeStreamOperators<AxxisOrientation>("AxxisOrientation");
@@ -56,6 +55,10 @@ GridViewer::GridViewer(QWidget *parent) :
 
     loadSettings();
 
+    gridView()->horizontalRuler()->setAutoTickIncrement(false);
+    gridView()->horizontalRuler()->setTickIncrement(25);
+    gridView()->verticalRuler()->setAutoTickIncrement(false);
+    gridView()->verticalRuler()->setTickIncrement(25);
 }
 
 GridViewer::~GridViewer()
@@ -81,11 +84,11 @@ bool GridViewer::orientate(const ProjectGeometry& geom){
     AxxisDirection ilDirection;
     AxxisDirection xlDirection;
     if( ilOrientation==AxxisOrientation::Horizontal){
-        //std::cout<<"il horizontal"<<std::endl;
+
         ilDirection=(dy20<0)?AxxisDirection::Ascending : AxxisDirection::Descending; // count from equator
         xlDirection=(dx10>0)?AxxisDirection::Ascending : AxxisDirection::Descending;
     }else{
-        //std::cout<<"il vertical"<<std::endl;
+
         ilDirection=(dx20>0)?AxxisDirection::Ascending : AxxisDirection::Descending;
         xlDirection=(dy10<0)?AxxisDirection::Ascending : AxxisDirection::Descending; // count from equator
     }
@@ -116,6 +119,8 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     m_grid=grid;
     gridView()->setGrid(grid);
     gridView()->setColorMapping( valueRange(*m_grid));
+
+    gridView()->zoomFit();
 }
 
 void GridViewer::setDefaultColorTable(){
@@ -256,8 +261,8 @@ void GridViewer::on_actionAxxis_Orientation_triggered()
     orientationDialog.setInlineOrientation(gridView()->inlineOrientation());
     orientationDialog.setInlineDirection(gridView()->inlineDirection());
     orientationDialog.setCrosslineDirection(gridView()->crosslineDirection());
-
     orientationDialog.setWindowTitle(tr("Configure Viewer Axis Orientation"));
+
 
     if( orientationDialog.exec()==QDialog::Accepted){
 
@@ -290,19 +295,43 @@ void GridViewer::on_action_Grid_Display_triggered()
     gridDisplayOptionsDialog->show();
 }
 
+
+void GridViewer::on_actionAspect_Ratio_triggered()
+{
+    if( !aspectRatioDialog ){
+
+        aspectRatioDialog=new AspectRatioDialog(this);
+        aspectRatioDialog->setWindowTitle(tr("Define Aspect Ratio"));
+
+        aspectRatioDialog->setDefaultRatio(gridView()->computeILXLBasedAspectRatio()); // need to update this on inline orientation change!!!
+        aspectRatioDialog->setRatio(gridView()->aspectRatio());
+        aspectRatioDialog->setFixed(gridView()->isFixedAspectRatio());
+
+        connect( aspectRatioDialog, SIGNAL(ratioChanged(double)), gridView(), SLOT(setAspectRatio(qreal)) );
+        connect( aspectRatioDialog, SIGNAL(fixedChanged(bool)), gridView(), SLOT(setFixedAspectRatio(bool)) );
+
+        connect( gridView(), SIGNAL(fixedAspectRatioChanged(bool)), aspectRatioDialog, SLOT(setFixed(bool)) );
+        connect( gridView(), SIGNAL(aspectRatioChanged(qreal)), aspectRatioDialog, SLOT(setRatio(double)) );
+    }
+
+    aspectRatioDialog->show();
+}
+
 void GridViewer::on_actionConfigure_Colorbar_triggered()
 {
     if( !colorBarConfigurationDialog){
         colorBarConfigurationDialog=new ColorBarConfigurationDialog(this);
         colorBarConfigurationDialog->setWindowTitle(tr("Configure Colorbar"));
         colorBarConfigurationDialog->setScaleRange(ui->colorBar->range());
-        //std::cout<<"CB range: "<<ui->colorBar->range().first<<" - "<<ui->colorBar->range().second<<std::endl;
-        //std::cout<<"CT range: "<<ui->gridView->colorTable()->range().first<<" - "<<ui->gridView->colorTable()->range().second<<std::endl;
+
         colorBarConfigurationDialog->setScaleSteps(ui->colorBar->steps());
         connect(colorBarConfigurationDialog, SIGNAL(scaleRangeChanged(std::pair<double,double>)),
                                                     ui->colorBar, SLOT(setRange(std::pair<double,double>)));
         connect(colorBarConfigurationDialog, SIGNAL(scaleStepsChanged(int)),
                 ui->colorBar, SLOT(setSteps(int)));
+
+        connect( gridView()->colorTable(), SIGNAL(rangeChanged(std::pair<double,double>)),
+                 colorBarConfigurationDialog, SLOT(setScaleRange(std::pair<double,double>) ) );    // update dialog if range is changed
     }
 
     colorBarConfigurationDialog->show();
@@ -457,4 +486,7 @@ void GridViewer::on_actionDisplay_Histogram_triggered()
     viewer->show();
 
 }
+
+
+
 

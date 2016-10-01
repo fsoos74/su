@@ -73,16 +73,27 @@ void GridView::setGrid( std::shared_ptr<Grid2D<float> > g){
     m_label->setImage( grid2image());
 
     setGridToImageTransform( computeGridToImageTransform());
+
+    setAspectRatio( computeILXLBasedAspectRatio() );
+
+}
+
+void GridView::setFixedAspectRatio(bool on){
+
+    if( on==m_fixedAspectRatio ) return;
+
+    m_fixedAspectRatio=on;
+
+    zoomFit(); // this should update everything
+
+    emit fixedAspectRatioChanged(on);
 }
 
 void GridView::setHighlightedCDPs( QVector<SelectionPoint> inlinesAndCrosslines){
 
-    //std::cout<<"GridView::setHighlightedCDPS n="<<inlinesAndCrosslines.size()<<std::endl;
     if( m_highlightedCDPs==inlinesAndCrosslines) return;
 
     m_highlightedCDPs=inlinesAndCrosslines;
-
-    //std::cout<<"GridView::setHighlightedCDPS n="<<inlinesAndCrosslines.size()<<std::endl;
 
     m_label->update();
 }
@@ -154,6 +165,8 @@ void GridView::setInlineOrientation( AxxisOrientation o){
 
     setGridToImageTransform( computeGridToImageTransform());
 
+    setAspectRatio( computeILXLBasedAspectRatio() );
+
     m_label->setImage( grid2image());
 
 }
@@ -217,22 +230,95 @@ void GridView::setCrosslineAxxisLabel( const QString& s ){
     emit crosslineAxxisLabelChanged(s);
 }
 
+void GridView::setAspectRatio(qreal r){
+
+    if( r==m_aspectRatio ) return;
+
+    m_aspectRatio=r;
+
+    zoomFit();
+
+    emit aspectRatioChanged( r );
+}
+
 void GridView::onColorTableChanged(){
 
     m_label->setImage( grid2image());
+}
+
+
+void GridView::zoom( QRect rect ){
+
+
+    const int ZOOM_PIXEL_LIMIT=6;           // selection of less pixels is considered zoom out
+
+    setUpdatesEnabled(false);
+
+    int oldWidth=m_label->width();
+    int oldHeight=m_label->height();
+
+    int newWidth=(rect.width()>ZOOM_PIXEL_LIMIT)?
+                m_label->width() * viewport()->width() / rect.width() :
+                viewport()->width();
+
+    int newHeight=(rect.height()>ZOOM_PIXEL_LIMIT)?
+                m_label->height() * viewport()->height() / rect.height() :
+                viewport()->height();
+
+    if( newWidth<viewport()->width()) newWidth=viewport()->width();
+
+    if( newHeight<viewport()->height()) newHeight=viewport()->height();
+
+    QSize newSize( newWidth, newHeight );
+    if( m_fixedAspectRatio){
+        newSize=adjustedToAspectRatio(newSize);
+        newWidth=newSize.width();
+        newHeight=newSize.height();
+    }
+
+
+    m_label->setFixedSize(newWidth, newHeight);
+    horizontalScrollBar()->setPageStep(viewport()->width());
+    horizontalScrollBar()->setRange(0, newWidth - viewport()->width());
+    verticalScrollBar()->setPageStep(viewport()->height());
+    verticalScrollBar()->setRange(0,newHeight-viewport()->height());
+
+    int newX=rect.left()*newWidth/oldWidth;
+    if( newX>=newWidth-viewport()->width()){
+        newX=newWidth-viewport()->width();
+    }
+    if( newX<0) newX=0;
+
+    int newY=rect.top()*newHeight/oldHeight;
+    if( newY>=newHeight-viewport()->height()){
+        newY=newHeight-viewport()->height();
+    }
+    if( newY<0 ) newY=0;
+
+    horizontalScrollBar()->setValue(newX);
+    verticalScrollBar()->setValue(newY);
+
+    setUpdatesEnabled(true);
+
+    update();
 }
 
 void GridView::zoomBy( qreal factor ){
 
     //setUpdatesEnabled(false);
 
+    QSize oldSize=m_label->size();
     QSize newSize=factor * m_label->size();
     if( newSize.width()<viewport()->width()) newSize.setWidth(viewport()->width());
     if( newSize.height()<viewport()->height()) newSize.setHeight( viewport()->height());
 
+    if( m_fixedAspectRatio){
+        newSize=adjustedToAspectRatio(newSize);
+    }
+
     m_label->setFixedSize( newSize );
-    adjustScrollBar( horizontalScrollBar(), factor);
-    adjustScrollBar( verticalScrollBar(), factor);
+    adjustScrollBar( horizontalScrollBar(), qreal(newSize.width())/oldSize.width());// factor);
+    adjustScrollBar( verticalScrollBar(), qreal(newSize.height())/oldSize.height());//factor);
 
     //m_leftRuler->update();
     //m_topRuler->update();
@@ -246,7 +332,24 @@ void GridView::zoomFit(){
 
     setUpdatesEnabled(false);
 
-    m_label->setFixedSize( horizontalScrollBar()->pageStep(), verticalScrollBar()->pageStep());
+    int w=horizontalScrollBar()->pageStep();
+    int h=verticalScrollBar()->pageStep();
+    QSize newSize( w, h );
+
+    if( m_fixedAspectRatio ){
+
+        newSize=adjustedToAspectRatio(newSize);
+
+    }
+
+
+    m_label->setFixedSize( newSize );
+
+    horizontalScrollBar()->setPageStep(w);
+    verticalScrollBar()->setPageStep(h);
+    horizontalScrollBar()->setMaximum(newSize.width()-w);
+    verticalScrollBar()->setMaximum(newSize.height()-h);
+
     horizontalScrollBar()->setValue(0);
     verticalScrollBar()->setValue(0);
 
@@ -255,6 +358,37 @@ void GridView::zoomFit(){
 
     setUpdatesEnabled(true);
     update();
+}
+
+qreal GridView::computeILXLBasedAspectRatio()const{
+
+    int n_ilines=m_grid->bounds().i2() - m_grid->bounds().i1() + 1;
+    int n_xlines=m_grid->bounds().j2() - m_grid->bounds().j1() + 1;
+
+    if( inlineOrientation() == AxxisOrientation::Vertical){
+
+        return qreal( n_ilines ) / n_xlines;
+    }
+    else {
+        return qreal( n_xlines) / n_ilines;
+    }
+
+}
+
+
+// based on m_aspectRatio
+QSize GridView::adjustedToAspectRatio(QSize s)const{
+
+    qreal ratio=qreal(s.width())/s.height();
+
+    if( ratio < m_aspectRatio ){  // too narrow, increase width
+        s.setWidth( m_aspectRatio*s.height() );
+    }
+    else{                       // too low, increase height
+        s.setHeight( qreal(s.width()) / m_aspectRatio );
+    }
+
+    return s;
 }
 
 
@@ -291,7 +425,17 @@ void GridView::updateLayout(){
 
 void GridView::resizeEvent(QResizeEvent *){
 
-    m_label->setMinimumSize( viewport()->size());
+    int labelWidth=m_label->width();
+    int labelHeight=m_label->height();
+    if( labelWidth<viewport()->width()) labelWidth=viewport()->width();
+    if( labelHeight<viewport()->height()) labelHeight=viewport()->height();
+    QSize newLabelSize(labelWidth, labelHeight );
+
+    if( m_fixedAspectRatio ){
+        newLabelSize=adjustedToAspectRatio(newLabelSize);
+    }
+
+    m_label->setMinimumSize( newLabelSize );
 
     m_topRuler->update();
     m_leftRuler->update();
@@ -330,47 +474,7 @@ QPoint GridView::mouseEventToLabel( QPoint pt, bool start ){
     return pt;
 }
 
-void GridView::zoom( QRect rect ){
 
-
-    const int ZOOM_PIXEL_LIMIT=6;           // selection of less pixels is considered zoom out
-
-    setUpdatesEnabled(false);
-
-    int oldWidth=m_label->width();
-    int oldHeight=m_label->height();
-
-    int newWidth=(rect.width()>ZOOM_PIXEL_LIMIT)?
-                m_label->width() * viewport()->width() / rect.width() :
-                viewport()->width();
-
-    int newHeight=(rect.height()>ZOOM_PIXEL_LIMIT)?
-                m_label->height() * viewport()->height() / rect.height() :
-                viewport()->height();
-
-    m_label->setFixedSize(newWidth, newHeight);
-    horizontalScrollBar()->setRange(0, newWidth);
-    verticalScrollBar()->setRange(0,newHeight);
-
-    int newX=rect.left()*newWidth/oldWidth;
-    if( newX>=newWidth-viewport()->width()){
-        newX=newWidth-viewport()->width();
-    }
-    if( newX<0) newX=0;
-
-    int newY=rect.top()*newHeight/oldHeight;
-    if( newY>=newHeight-viewport()->height()){
-        newY=newHeight-viewport()->height();
-    }
-    if( newY<0 ) newY=0;
-
-    horizontalScrollBar()->setValue(newX);
-    verticalScrollBar()->setValue(newY);
-
-    setUpdatesEnabled(true);
-
-    update();
-}
 
 
 bool GridView::eventFilter(QObject *obj, QEvent *ev){
@@ -739,7 +843,6 @@ void ViewLabel::paintEvent( QPaintEvent* ev){
 
     if( !m_view->grid())return;
 
-
     QPainter painter(this);
 
 
@@ -782,7 +885,6 @@ void ViewLabel::mouseMoveEvent(QMouseEvent * ev){
     int i=std::round( p.y() );
     int j=std::round( p.x() );
 
-    //std::cout<<"MO point="<<x<<"/"<<y<<" -> il="<<i<<" xl="<<j<<std::endl;
 
     emit mouseOver( i, j );
 }
@@ -929,6 +1031,23 @@ Ruler::Ruler( GridView* parent, Orientation orient ):QWidget(parent), m_view(par
 }
 
 
+void Ruler::setTickIncrement(int i){
+
+    if( i==m_tickIncrement) return;
+
+    m_tickIncrement=i;
+
+    update();
+}
+
+void Ruler::setAutoTickIncrement(bool on){
+
+    if( on==m_autoTickIncrement ) return;
+
+    m_autoTickIncrement=on;
+
+    update();
+}
 
 void Ruler::paintEvent(QPaintEvent*){
 
@@ -947,7 +1066,7 @@ void Ruler::paintEvent(QPaintEvent*){
 
 
 
-int Ruler::tickIncrement(int size_pix, int size_grid, int min_distance)const{
+int Ruler::autoTickIncrement(int size_pix, int size_grid, int min_distance)const{
 
     double pix_per_unit=double(size_pix)/size_grid;
     int incr= std::pow(10,std::floor(std::log10(min_distance/pix_per_unit)));
@@ -975,6 +1094,8 @@ int Ruler::tickIncrement(int size_pix, int size_grid, int min_distance)const{
 
 int Ruler::tickIncrement()const{
 
+    if( !m_autoTickIncrement )  return m_tickIncrement;
+
     if( !m_view || !m_view->m_grid) return -1;
 
     Grid2D<float>::bounds_type bounds=m_view->grid()->bounds();
@@ -995,7 +1116,7 @@ int Ruler::tickIncrement()const{
         min_distance=TICK_LABEL_DX;
     }
 
-    return tickIncrement( size_pix, size_grid, min_distance);
+    return autoTickIncrement( size_pix, size_grid, min_distance);
 }
 
 

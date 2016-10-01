@@ -55,7 +55,37 @@ SeismicDataSelector::~SeismicDataSelector()
     delete ui;
 }
 
+
+SeismicDataSelector::SortKey SeismicDataSelector::primarySort(){
+
+
+    SortKey key=SortKey::SORT_NONE;
+
+    switch(ui->cbOrder1->currentIndex()){
+
+    case ILINE_ASC_INDEX:
+    case ILINE_DESC_INDEX:
+                key=SortKey::SORT_INLINE;
+                break;
+    case XLINE_ASC_INDEX:
+    case XLINE_DESC_INDEX:
+                key=SortKey::SORT_CROSSLINE;
+                break;
+    case OFFSET_ASC_INDEX:
+    case OFFSET_DESC_INDEX:
+                key=SortKey::SORT_OFFSET;
+                break;
+    default:
+                key=SortKey::SORT_NONE;
+                break;
+    }
+
+    return key;
+}
+
+
 void SeismicDataSelector::apply(){
+
     readGather();
 }
 
@@ -134,6 +164,7 @@ void SeismicDataSelector::readGather(){
                                   MAXIMUM_TRACES_PER_SCREEN);
 
     emit gatherChanged(m_gather);
+
 
 }
 
@@ -256,6 +287,7 @@ void SeismicDataSelector::indexToKey( int idx, QString& key, bool& ascending){
     }
 }
 
+
 void SeismicDataSelector::changeOrder(){
 
     QString key1;
@@ -287,6 +319,10 @@ void SeismicDataSelector::on_sbXlineCount_valueChanged(int arg1)
 
 void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
 {
+    static int saveIndex1;
+    static int saveIndex2;
+    static int saveIndex3;
+
     ui->label->setEnabled(!checked);
     ui->label_2->setEnabled(!checked);
     ui->label_3->setEnabled(!checked);
@@ -297,6 +333,21 @@ void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
     ui->cbOrder1->setEnabled(!checked);
     ui->cbOrder2->setEnabled(!checked);
     ui->cbOrder3->setEnabled(!checked);
+
+    if(checked){    // for random lines there is no primary sort order
+
+        saveIndex1=ui->cbOrder1->currentIndex();
+        saveIndex2=ui->cbOrder2->currentIndex();
+        saveIndex3=ui->cbOrder3->currentIndex();
+        ui->cbOrder1->setCurrentIndex(ORDER_NONE_INDEX);
+        ui->cbOrder2->setCurrentIndex(ORDER_NONE_INDEX);
+        ui->cbOrder3->setCurrentIndex(ORDER_NONE_INDEX);
+    }
+    else{       // restore old sort
+        ui->cbOrder1->setCurrentIndex(saveIndex1);
+        ui->cbOrder2->setCurrentIndex(saveIndex2);
+        ui->cbOrder3->setCurrentIndex(saveIndex3);
+    }
 }
 
 void SeismicDataSelector::on_tbInline_clicked()
