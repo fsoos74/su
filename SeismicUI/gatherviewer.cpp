@@ -252,13 +252,30 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
 
         message += anno.second + "=" + toQString( trc.header().at( anno.first) ) + ", ";
     }
+
+    int iline=trc.header().at("iline").intValue();
+    int xline=trc.header().at("xline").intValue();
+
+    // compute x,y from inline/crossline rather than taking from header from header
+    // possible improvement: poststack disp cdpx, cdpy; prestack: sx,sy,gx,gy from header, if not present use computed as fallback
+    QTransform IlXlToXY;
+    QTransform XYToIlXl;
+    if( m_project && m_project->geometry().computeTransforms( XYToIlXl, IlXlToXY)){
+
+
+            QPointF p=IlXlToXY.map( QPoint(iline, xline));
+            qreal x=p.x();
+            qreal y=p.y();
+
+            message+=QString::asprintf("x*=%.1lf, y*=%.1lf, ", x, y);
+    }
+
+
     message+=QString( " Time=") + mills + QString(", Amplitude= ")+ amp;
 
     // this MUST changed to time instead of samples because sampling of volume can be different from trace!!!
     if( gatherView->volume()){
 
-        int iline=trc.header().at("iline").intValue();
-        int xline=trc.header().at("xline").intValue();
         float attr=gatherView->volume()->value(iline,xline,secs);
         message+=QString(", Attibute=");
         if( attr!=gatherView->volume()->NULL_VALUE){
