@@ -170,6 +170,16 @@ void ColorTableDialog::onReset(){
 }
 
 
+void ColorTableDialog::onFlip(){
+
+    QVector<QRgb> colors(m_colors.size());
+
+    for( int i=0; i<m_colors.size(); i++){
+        colors[i]=m_colors[ m_colors.size() - i - 1];
+    }
+    setColors(colors);
+}
+
 void ColorTableDialog::onColorButtonClicked(){
 
     QObject* sender=QObject::sender();
@@ -394,6 +404,7 @@ QLayout* ColorTableDialog::createAndLayoutButtons(){
 
     btOk=new QPushButton("Ok", this);
     btReset=new QPushButton("Reset", this);
+    btFlip=new QPushButton("Flip", this);
     btCancel=new QPushButton("Cancel", this);
     btLoad=new QPushButton("Load", this);
     btSave=new QPushButton("Save", this);
@@ -403,6 +414,7 @@ QLayout* ColorTableDialog::createAndLayoutButtons(){
     buttonLayout->addWidget(btLoad);
     buttonLayout->addWidget(btSave);
     buttonLayout->addWidget(btReset);
+    buttonLayout->addWidget(btFlip);
     buttonLayout->addItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
     buttonLayout->addWidget(btCancel);
     buttonLayout->addWidget(btOk);
@@ -436,6 +448,7 @@ void ColorTableDialog::makeConnections(){
     connect( btLoad, SIGNAL(clicked()), this, SLOT(onLoad()));
     connect( btSave, SIGNAL(clicked()), this, SLOT(onSave()));
     connect( btReset, SIGNAL(clicked()), this, SLOT(onReset()));
+    connect( btFlip, SIGNAL(clicked()), this, SLOT(onFlip()));
 }
 
 void ColorTableDialog::saveSettings(){

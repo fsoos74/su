@@ -58,6 +58,7 @@ private slots:
     void onLoad();
     void onSave();
     void onReset();
+    void onFlip();
     void onColorButtonClicked();
     void sliderValueChanged();
     void lineEditReturnPressed();
@@ -90,6 +91,7 @@ private:
     QLineEdit* leAlpha;
     QPushButton* btOk;
     QPushButton* btReset;
+    QPushButton* btFlip;
     QPushButton* btCancel;
     QPushButton* btLoad;
     QPushButton* btSave;
