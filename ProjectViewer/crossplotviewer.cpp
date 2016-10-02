@@ -730,12 +730,13 @@ void CrossplotViewer::on_action_HistogramAttribute_triggered()
     QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.attribute;} );
     if(data.empty()) return;
 
-    HistogramDialog* viewer=new HistogramDialog;
+    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
+                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
     viewer->setData( data );
     viewer->setWindowTitle(QString("Histogram of %1 attribute").arg(windowTitle() ) );
 
+    viewer->setColorTable( m_colorTable );        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
-
 }
 
 

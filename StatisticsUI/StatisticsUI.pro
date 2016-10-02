@@ -45,3 +45,12 @@ else:unix: LIBS += -L$$OUT_PWD/../utilUI/ -lutilUI
 
 INCLUDEPATH += $$PWD/../utilUI
 DEPENDPATH += $$PWD/../utilUI
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
+else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
+
+INCLUDEPATH += $$PWD/../ColorUI
+DEPENDPATH += $$PWD/../ColorUI
+

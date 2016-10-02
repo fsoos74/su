@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <algorithm>
 #include<histogram.h>
-
+#include<colortable.h>
 #include<QVector>
 
 
@@ -23,11 +23,16 @@ public:
 
     void setHistogram(const Histogram&);
 
+    ColorTable* colorTable()const{
+        return m_colorTable;
+    }
+
 public slots:
 
     void setData( QVector<double> );
     void setMinimumFromData();
     void setMaximumFromData();
+    void setColorTable(ColorTable*);
 
 private slots:
 
@@ -35,6 +40,8 @@ private slots:
     void updatePlotControlsFromData();
     void updatePlotDataFromControls();
     void updateHistogram();
+    void updateScene();
+
 
 protected:
 
@@ -44,10 +51,11 @@ private:
 
     void computeStatistics();
     void updateMaximumCount();
-    void updateScene();
 
 
     Ui::HistogramDialog *ui;
+
+    ColorTable* m_colorTable=nullptr;
 
     QVector<double> m_data;
     long m_dataCount=0;

@@ -48,6 +48,22 @@ void HistogramDialog::setHistogram(const Histogram& h){
     updateScene();
 }
 
+void HistogramDialog::setColorTable(ColorTable * ct){
+
+    if( ct==m_colorTable ) return;
+
+    if( m_colorTable ) disconnect(m_colorTable, 0, 0, 0);
+
+    m_colorTable=ct;
+
+    connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(updateScene()) );
+    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene()) );
+    connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(updateScene()) );
+
+
+    updateScene();
+}
+
 void HistogramDialog::setData(QVector<double> data){
     m_data=data;
 
@@ -287,13 +303,24 @@ void HistogramDialog::updateScene(){
     }
 
 
+    // drawbars
     for( size_t i=0; i<m_histogram.binCount(); i++){
 
         qreal barHeight= yfactor * qreal(m_histogram.binValue(i));
         qreal x= i * BAR_WIDTH;
         QGraphicsRectItem* bar=new QGraphicsRectItem( 0, 0, BAR_WIDTH, -barHeight, frame);
         bar->setPen(QPen(Qt::black,0));
-        bar->setBrush(Qt::red);
+
+        if( m_colorTable ){
+            // get color from colortable based on center value of bar
+            std::pair<double, double> interval=m_histogram.binInterval(i);
+            double cv=(interval.first + interval.second)/2;
+            QColor color=m_colorTable->map( cv );
+            bar->setBrush(color);
+        }
+        else{
+            bar->setBrush(Qt::red);
+        }
         bar->moveBy( x, BAR_MAX_HEIGHT);
 
         AlignedTextGraphicsItem* label=new AlignedTextGraphicsItem(

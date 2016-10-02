@@ -531,10 +531,11 @@ void GridViewer::on_actionDisplay_Histogram_triggered()
         data.push_back(*it);
      }
 
-    HistogramDialog* viewer=new HistogramDialog;
+    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
+                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
     viewer->setData( data );
     viewer->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
-
+    viewer->setColorTable(gridView()->colorTable());        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
 
 }
