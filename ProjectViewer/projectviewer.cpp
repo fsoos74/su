@@ -1172,7 +1172,7 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
         viewer->show();
 
         //viewer->orientate(m_project->geometry());  // this is now obtained from project
-
+        viewer->setProject( m_project );    // need this for il/xl coords conversion
         viewer->setDispatcher(m_dispatcher);
 
     }

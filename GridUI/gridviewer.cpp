@@ -112,7 +112,19 @@ void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
     }
 }
 
+void GridViewer::setProject(std::shared_ptr<AVOProject> p){
+
+    if( p==m_project ) return;
+
+    m_project=p;
+
+    update();
+}
+
 void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
+
+    if( grid==m_grid) return;
+
     m_grid=grid;
     gridView()->setGrid(grid);
     gridView()->setColorMapping( valueRange(*m_grid));
@@ -154,14 +166,31 @@ void GridViewer::onGridViewMouseOver(int i, int j){
         return;
     }
 
+    QString msg=QString::asprintf("inline=%d  crossline=%d  ", i, j);
+
+
+    QTransform IlXlToXY;
+    QTransform XYToIlXl;
+    if( m_project && m_project->geometry().computeTransforms( XYToIlXl, IlXlToXY)){
+
+
+            QPointF p=IlXlToXY.map( QPoint(i, j));
+            qreal x=p.x();
+            qreal y=p.y();
+
+            msg+=QString::asprintf("x=%.1lf  y=%.1lf  ", x, y);
+    }
+
     double val=(*m_grid)( i, j);
 
     if( val!=Grid2D<float>::NULL_VALUE){
-        statusBar()->showMessage(QString::asprintf("inline=%d  crossline=%d   value=%.2lf", i, j, val));
+        msg+=QString::asprintf("value=%.2lf  ", val);
     }
     else{
-        statusBar()->showMessage(QString::asprintf("inline=%d  crossline=%d  value=NULL", i, j));
+        msg+=tr("value=NULL");
     }
+
+    statusBar()->showMessage(msg);
 }
 
 void GridViewer::on_zoomInAct_triggered()

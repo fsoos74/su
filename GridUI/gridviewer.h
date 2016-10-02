@@ -26,6 +26,9 @@
 
 #include<baseviewer.h>
 #include<selectionpoint.h>
+#include<projectgeometry.h> // il/xl -> x/y
+#include<avoproject.h>
+
 
 namespace Ui {
 class GridViewer;
@@ -48,6 +51,7 @@ public:
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
+    void setProject( std::shared_ptr<AVOProject> );
 
 protected:
 
@@ -103,6 +107,8 @@ private:
     ColorBarWidget* colorBar;
 
     std::shared_ptr<Grid2D<float> > m_grid;
+    std::shared_ptr<AVOProject> m_project;
+
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
     AspectRatioDialog* aspectRatioDialog=nullptr;
