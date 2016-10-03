@@ -79,6 +79,7 @@ void GatherViewer::receivePoints(QVector<SelectionPoint> points, int code){
         rpoints.push_back(QPoint(p.iline, p.xline));
     }
     if( code==CODE_POLYLINE ){
+
         emit requestPoints( rpoints );
         return;
     }

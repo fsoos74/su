@@ -170,7 +170,8 @@ void SeismicDataSelector::readGather(){
 
 
 void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
-
+//std::cout<<"SeismicDataSelector::provideRandomLine"<<std::endl;
+//std::cout<<"#points="<<polyline.size()<<std::endl;
     if( !m_reader ) return;
 
     if( !ui->rbRandomLine->isChecked()) return;
@@ -245,10 +246,13 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
     // fill gather
     std::shared_ptr<seismic::Gather> gather( new seismic::Gather);
     for( QPoint point : allPoints){
-
-        std::shared_ptr<seismic::Trace> trace=m_reader->readFirstTrace("iline", QString::number(point.x()),
-                                                                       "xline", QString::number(point.y()));
+//std::cout<<"adding trace il="<<point.x()<<" xl="<<point.y()<<std::endl;
+        //std::shared_ptr<seismic::Trace> trace=m_reader->readFirstTrace("iline", QString::number(point.x()),
+        //                                                               "xline", QString::number(point.y()));
+        std::shared_ptr<seismic::Trace> trace=m_reader->readFirstTrace("iline", QString::number(point.y()),         // changed this inline is y???
+                                                                       "xline", QString::number(point.x()));
         if( !trace ){   // need error message!!!
+            std::cerr<<"reading trace failed!"<<std::endl;
             continue;
         }
 
@@ -256,7 +260,7 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
     }
 
     m_gather=gather;
-
+//std::cout<<"gather size="<<m_gather->size()<<std::endl;
     emit gatherChanged(m_gather);
 }
 

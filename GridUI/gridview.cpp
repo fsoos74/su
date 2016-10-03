@@ -1018,6 +1018,7 @@ void ViewLabel::drawPolyline( QPainter& painter, const QPen& pen){
 
         const QPoint& inlineAndCrossline=polyline[i];
         QPointF point=trans.map( QPointF(inlineAndCrossline.y(), inlineAndCrossline.x() ) ); // IMPORTANT: internally inline on y-axis!!!!
+        //QPointF point=trans.map( QPointF(inlineAndCrossline.x(), inlineAndCrossline.y() ) ); // IMPORTANT: changed from above!!!
         if( i>0 ){
             path.lineTo(point);
         }
