@@ -1,10 +1,50 @@
 #include "seismicdatasetinfo.h"
 
 #include <stdexcept>
+#include<QDir>
 
 SeismicDatasetInfo::SeismicDatasetInfo()
 {
 
+}
+
+
+void SeismicDatasetInfo::makeRelative( const QString& dir){
+
+    // make abolute paths relative to dir
+    if( QDir(infoPath()).isAbsolute() ){
+        QString s=QDir(dir).relativeFilePath(infoPath());
+        setInfoPath(s);
+    }
+
+    if( QDir(indexPath()).isAbsolute()){
+        QString s=QDir(dir).relativeFilePath(indexPath() );
+        setIndexPath(s);
+    }
+
+    if( QDir(path()).isAbsolute()){
+        QString s=QDir(dir).relativeFilePath(path());
+        setPath(s);
+    }
+}
+
+void SeismicDatasetInfo::makeAbsolute( const QString& dir){
+
+    // make abolute paths relative to dir
+    if( QDir(infoPath()).isRelative() ){
+        QString s=QDir(dir).absoluteFilePath(infoPath());
+        setInfoPath(s);
+    }
+
+    if( QDir(indexPath()).isRelative()){
+        QString s=QDir(dir).absoluteFilePath(indexPath() );
+        setIndexPath(s);
+    }
+
+    if( QDir(path()).isRelative()){
+        QString s=QDir(dir).absoluteFilePath(path());
+        setPath(s);
+    }
 }
 
 

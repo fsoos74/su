@@ -164,8 +164,6 @@ public:
 
     QStringList seismicDatasetList(SeismicDatasetInfo::Mode);
 
-    QString getSeismicDatasetPath(const QString& datasetName);
-
     SeismicDatasetInfo getSeismicDatasetInfo( const QString& datasetName);
 
     bool setSeismicDatasetInfo( const QString& datasetName, const SeismicDatasetInfo& info);
@@ -179,6 +177,10 @@ public:
     std::shared_ptr<SeismicDatasetReader> openSeismicDataset(const QString& datasetName);
     //std::shared_ptr<seismic::SEGYReader> openSeismicDataset(const QString& datasetName);
 
+
+private:
+    // made these private because external access must be through datasetinfo which handles relative paths!!!!
+    QString getSeismicDatasetPath(const QString& datasetName);
     QString getSeismicDatasetIndexPath(const QString& datasetName);
 
 

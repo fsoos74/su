@@ -44,9 +44,13 @@ public:
     void setDomain(Domain);
     void setMode(Mode);
 
+    void makeRelative(const QString& dir);
+    void makeAbsolute(const QString& dir);
+
 private:
 
     QString m_name;
+    bool    m_internal=false;
     QString m_path;
     QString m_infoPath;
     QString m_indexPath;

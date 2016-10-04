@@ -296,6 +296,7 @@ bool AVOProject::renameVolume( const QString& name, const QString& newName){
  }
 
 
+ // returns info as is, i.e. possibly relative paths, call makeAbsolute
 SeismicDatasetInfo AVOProject::getSeismicDatasetInfo(const QString& datasetName){
 
     SeismicDatasetInfo datasetInfo;
@@ -309,6 +310,29 @@ SeismicDatasetInfo AVOProject::getSeismicDatasetInfo(const QString& datasetName)
         throw std::runtime_error("Reading dataset info file failed!");
     }
 
+    /*
+    // make relative paths absolute
+    if( QDir(datasetInfo.infoPath()).isRelative() ){
+        QString s=seismicDirectory() + QDir::separator() + datasetInfo.infoPath();
+        datasetInfo.setInfoPath(s);
+    }
+
+    if( QDir(datasetInfo.indexPath()).isRelative()){
+        QString s=seismicDirectory() + QDir::separator() + datasetInfo.indexPath();
+        datasetInfo.setIndexPath(s);
+    }
+
+    if( QDir(datasetInfo.path()).isRelative()){
+        QString s=seismicDirectory() + QDir::separator() + datasetInfo.path();
+        datasetInfo.setPath(s);
+    }
+    */
+/*
+    std::cout<<"get dsinfo: "<<std::endl;
+    std::cout<<"info path:"<<datasetInfo.infoPath().toStdString()<<std::endl;
+    std::cout<<"index path:"<<datasetInfo.indexPath().toStdString()<<std::endl;
+    std::cout<<"path:"<<datasetInfo.path().toStdString()<<std::endl<<std::flush;
+*/
     return datasetInfo;
 }
 
@@ -342,6 +366,66 @@ bool AVOProject::setSeismicDatasetInfo( const QString& datasetName, const Seismi
 }
 
 bool AVOProject::addSeismicDataset( const QString& name, const QString& path, const seismic::SEGYInfo& segyInfo){
+
+    QString relSegyInfoPath=name + ".xsi";
+    QString segyInfoPath=QDir::cleanPath( m_seismicDirectory + QDir::separator() + relSegyInfoPath);
+    QFile segyInfoFile(segyInfoPath);
+    if (!segyInfoFile.open(QFile::WriteOnly | QFile::Text)) return false;
+    seismic::XSIWriter segyInfoWriter(segyInfo);
+    if( ! segyInfoWriter.writeFile(&segyInfoFile) ){
+        segyInfoFile.remove();                  // don't leave traces
+        return false;
+    }
+
+    QString relIndexPath=name + QString(".") + DatabaseSuffix;
+    QString indexPath=QDir::cleanPath( m_seismicDirectory + QDir::separator() + relIndexPath);
+
+    SeismicDatasetInfo datasetInfo;
+    datasetInfo.setName(name);
+
+    // copy path
+    QString opath=path;
+    // check if segfile is already in seismic dir
+    if(QFileInfo(path).absoluteDir().path() == m_seismicDirectory ){
+        // make path relative
+        opath=QDir(m_seismicDirectory).relativeFilePath(opath);
+        std::cout<<"MADE RELATIVE: "<<opath.toStdString()<<std::endl;
+    }
+
+    datasetInfo.setPath(opath); // segy
+    datasetInfo.setInfoPath(relSegyInfoPath);
+    datasetInfo.setIndexPath(relIndexPath);
+    QString xdiPath=getSeismicDatasetPath(name);
+
+    QFile datasetInfoFile(xdiPath);     // xdi
+
+    if( datasetInfoFile.exists() || !datasetInfoFile.open(QFile::WriteOnly | QFile::Text)){
+        segyInfoFile.remove();
+        return false;
+    }
+
+    std::shared_ptr<seismic::SEGYReader> ptr;
+
+    ptr=std::shared_ptr<seismic::SEGYReader>(new seismic::SEGYReader(path.toStdString(), segyInfo) );  // we need the absolute path here
+    if( !ptr || !createDatasetIndex(indexPath, ptr) ) return false;                                     // needabs path
+
+
+    XDIWriter datasetInfoWriter(datasetInfo);
+    if( ! datasetInfoWriter.writeFile(&datasetInfoFile) ){
+        segyInfoFile.remove();
+        datasetInfoFile.remove();                  // don't leave traces
+        QFile(datasetInfo.indexPath()).remove();
+        return false;
+    }
+
+    syncSeismicDatasetList();
+
+    return true;
+}
+
+
+/*
+ * bool AVOProject::addSeismicDataset( const QString& name, const QString& path, const seismic::SEGYInfo& segyInfo){
 
     QString segyInfoPath=QDir::cleanPath( m_seismicDirectory + QDir::separator() + name + QString(".") + "xsi");
     QFile segyInfoFile(segyInfoPath);
@@ -383,21 +467,27 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& path, co
 
     return true;
 }
+*/
 
 bool AVOProject::removeSeismicDataset( const QString& name){
 
     if( !seismicDatasetList().contains(name)) return false;
 
-    QString segyInfoPath=QDir::cleanPath( m_seismicDirectory + QDir::separator() + name + QString(".") + "xsi");
-    QFile infoFile(segyInfoPath);
+    SeismicDatasetInfo info=getSeismicDatasetInfo(name);
+
+    QString infoPath=QDir::cleanPath( m_seismicDirectory + QDir::separator() + name + QString(".") + "xdi");
+    QFile infoFile(infoPath);
     infoFile.remove();
 
-    QString indexPath=QDir::cleanPath( m_seismicDirectory + QDir::separator() + name + QString(".") + DatabaseSuffix);
-    QFile indexFile(indexPath);
+    QFile segyInfoFile(info.infoPath());
+    segyInfoFile.remove();
+
+    QFile indexFile(info.indexPath());
     indexFile.remove();
 
-    QFile file(getSeismicDatasetPath(name));
+    QFile file(info.path());
     bool res=file.remove();
+
     syncSeismicDatasetList();
 
     return res;
@@ -422,6 +512,22 @@ std::shared_ptr<SeismicDatasetReader> AVOProject::openSeismicDataset(const QStri
 
     std::shared_ptr<SeismicDatasetReader> ptr;
 
+    SeismicDatasetInfo datasetInfo=getSeismicDatasetInfo(datasetName);
+    datasetInfo.makeAbsolute(seismicDirectory());
+    //QString datasetInfoPath=getSeismicDatasetPath(datasetName);
+    //QFile datasetInfoFile(datasetInfoPath);
+    //if( !datasetInfoFile.exists() || !datasetInfoFile.open(QFile::ReadOnly | QFile::Text)) return ptr;  // return nullptr on error
+    //XDIReader datasetInfoReader(datasetInfo);
+    //if( !datasetInfoReader.read(&datasetInfoFile)) return ptr;  // return nullptr on error
+
+    return std::shared_ptr<SeismicDatasetReader>( new SeismicDatasetReader(datasetInfo));
+}
+
+/*
+ * std::shared_ptr<SeismicDatasetReader> AVOProject::openSeismicDataset(const QString& datasetName){
+
+    std::shared_ptr<SeismicDatasetReader> ptr;
+
     SeismicDatasetInfo datasetInfo;
     QString datasetInfoPath=getSeismicDatasetPath(datasetName);
     QFile datasetInfoFile(datasetInfoPath);
@@ -431,6 +537,7 @@ std::shared_ptr<SeismicDatasetReader> AVOProject::openSeismicDataset(const QStri
 
     return std::shared_ptr<SeismicDatasetReader>( new SeismicDatasetReader(datasetInfo));
 }
+*/
 
 /*
 std::shared_ptr<seismic::SEGYReader> AVOProject::openSeismicDataset(const QString& datasetName){
@@ -523,7 +630,7 @@ bool AVOProject::createDatasetIndex( const QString& path, std::shared_ptr<seismi
 
     auto end = std::chrono::steady_clock::now();
     auto diff = end - start;
-    std::cout<<"Filling db took "<< std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
 
     return true;
 }

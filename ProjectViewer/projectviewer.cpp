@@ -444,11 +444,11 @@ void ProjectViewer::on_actionImportSeismic_triggered()
     segyInputDialog.setWindowTitle("Import SEG-Y");
     if( segyInputDialog.exec()!=QDialog::Accepted) return;
 
-
+/*
     SeismicDatasetInfo info;
     info.setDomain(propertiesDialog.domain());
     info.setMode(propertiesDialog.mode());
-
+*/
     if( !m_project->addSeismicDataset(name, segyInputDialog.path(), segyInputDialog.info())){
         QMessageBox::critical(this, "Import Dataset", "Adding seismic dataset to project failed!");
         return;
@@ -1677,11 +1677,9 @@ void ProjectViewer::displaySeismicDatasetIndex(const QString& name){
 
     if( m_project->seismicDatasetList().contains(name)){
 
-        QString path=m_project->getSeismicDatasetIndexPath(name);
-        if( name.isNull()){
-            QMessageBox::critical(this, "Display Dataset Index", "No index path!");
-            return;
-        }
+        SeismicDatasetInfo info=m_project->getSeismicDatasetInfo(name);
+        info.makeAbsolute(m_project->seismicDirectory());
+        QString path=info.indexPath(); //m_project->getSeismicDatasetIndexPath(name);
 
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
         db.setDatabaseName(path);

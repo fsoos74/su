@@ -55,7 +55,8 @@ SOURCES += main.cpp\
     crossplot.cpp \
     volumedataselectiondialog.cpp \
     crossplotgridsinputdialog.cpp \
-    crossplotvolumesinputdialog.cpp
+    crossplotvolumesinputdialog.cpp \
+    edittrenddialog.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -74,7 +75,8 @@ HEADERS  += projectviewer.h \
     crossplot.h \
     volumedataselectiondialog.h \
     crossplotgridsinputdialog.h \
-    crossplotvolumesinputdialog.h
+    crossplotvolumesinputdialog.h \
+    edittrenddialog.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -90,7 +92,8 @@ FORMS    += projectviewer.ui \
     aboutdialog.ui \
     volumedataselectiondialog.ui \
     crossplotgridsinputdialog.ui \
-    crossplotvolumesinputdialog.ui
+    crossplotvolumesinputdialog.ui \
+    edittrenddialog.ui
 
 RESOURCES += \
     icons.qrc
