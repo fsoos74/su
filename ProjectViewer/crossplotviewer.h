@@ -45,6 +45,8 @@ public:
         return m_fixedColor;
     }
 
+    bool isDetailedPointInformation();
+
     QColor pointColor()const{
         return m_pointColor;
     }
@@ -64,6 +66,7 @@ protected:
 public slots:
 
     void setData( crossplot::Data);
+    void setDetailedPointInformation(bool);
     void setTrend( QPointF ); // p(intercept, gradient)
     void setAxisLabels( const QString& xAxisAnnotation, const QString& yAxisAnnotation );
     void setRegion( Grid2DBounds, Range<float>);

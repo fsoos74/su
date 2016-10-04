@@ -49,6 +49,7 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
 
      ui->graphicsView->scale(1,-1); // flip vertical axxis, smallest at bottom, greatest top
 
+     ui->graphicsView->setMouseTracking(true);  // also send mouse move events when no button is pressed
     connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
 
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
@@ -80,6 +81,10 @@ bool CrossplotViewer::isFlattenTrend(){
 
 bool CrossplotViewer::isDisplayTrendLine(){
     return ui->actionDisplay_Trend_Line->isChecked();
+}
+
+bool CrossplotViewer::isDetailedPointInformation(){
+    return ui->actionDetailed_Point_Information->isChecked();
 }
 
 void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
@@ -195,6 +200,11 @@ void CrossplotViewer::setData( crossplot::Data data){
 }
 
 
+void CrossplotViewer::setDetailedPointInformation(bool on){
+
+    ui->actionDetailed_Point_Information->setChecked(on);
+}
+
 void CrossplotViewer::setTrend(QPointF t){
 
     if( t==m_trend) return;
@@ -300,22 +310,32 @@ void CrossplotViewer::setTrendlineColor(QColor color){
 
 void CrossplotViewer::onMouseOver(QPointF scenePos){
 
-    QString message=QString("x=%1, y=%2").arg(scenePos.x()).arg(scenePos.y());
-/* THIS IS TOO SLOW FOR MANY ITEMS
-    QPoint viewPos=ui->graphicsView->mapFromScene(scenePos);
-    QGraphicsItem* item=ui->graphicsView->itemAt(viewPos);
+   // QString message=QString("x=%1, y=%2").arg(scenePos.x()).arg(scenePos.y());
+   QString message=QString("%1=%2,  %3=%4").arg(ui->graphicsView->topRuler()->label()).arg(scenePos.x()).
+           arg(ui->graphicsView->leftRuler()->label()).arg(scenePos.y());
 
-    if( item ){
 
-        DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
-        if( datapointItem){
-            int inlineNumber=datapointItem->data(INLINE_DATA_KEY).toInt();
-            int crosslineNumber=datapointItem->data(CROSSLINE_DATA_KEY).toInt();
-            message.append(QString(", Inline=%1, Crossline=%2").arg(inlineNumber).arg(crosslineNumber));
+   // THIS IS TOO SLOW FOR MANY ITEMS therefore only do it on user request
+    if( ui->actionDetailed_Point_Information->isChecked() ){
+
+        QPoint viewPos=ui->graphicsView->mapFromScene(scenePos);
+        QGraphicsItem* item=ui->graphicsView->itemAt(viewPos);
+
+        if( item ){
+
+            DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
+            int index=datapointItem->data(DATA_INDEX_KEY).toInt();
+            if( index>0 && index<m_data.size() ){
+                crossplot::DataPoint p = m_data[index];
+
+                message.append(QString(",  Inline=%1,  Crossline=%2,  Time[ms]=%3,  Attribute=%4").
+                               arg(p.iline).arg(p.xline).arg(1000*p.time).arg(p.attribute));
+            }
+
         }
 
     }
-    */
+
     statusBar()->showMessage(message);
 }
 

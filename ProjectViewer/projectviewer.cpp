@@ -883,6 +883,7 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
     viewer->setFixedColor(!grida);  // if attribute is used use variable color points
     viewer->setData(data); // add data after visible!!!! /// XXX QVECTOR!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
+    //viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
 
     viewer->setDispatcher(m_dispatcher);
 }
@@ -968,7 +969,7 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
     viewer->setFixedColor(!volumea);  // if attribute is used use variable color points
     viewer->setData(data); // add data after visible!!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
-
+    viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
     viewer->setDispatcher(m_dispatcher);
 
 }

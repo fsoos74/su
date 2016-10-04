@@ -57,6 +57,7 @@
     <addaction name="actionAttribute_Range"/>
     <addaction name="separator"/>
     <addaction name="actionDisplay_Trend_Line"/>
+    <addaction name="actionDetailed_Point_Information"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -89,7 +90,7 @@
     </property>
     <widget class="QMenu" name="menuHistogram">
      <property name="title">
-      <string>Histogram</string>
+      <string>&amp;Histogram</string>
      </property>
      <addaction name="action_HistogramXAxis"/>
      <addaction name="action_HistogramYAxis"/>
@@ -144,7 +145,7 @@
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -156,7 +157,7 @@
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../SeismicUI/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -295,7 +296,7 @@
      <normaloff>:/icons/images/histogram-x-axis-icon-32x32.png</normaloff>:/icons/images/histogram-x-axis-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>x-axis</string>
+    <string>&amp;x-axis</string>
    </property>
   </action>
   <action name="action_HistogramYAxis">
@@ -304,7 +305,7 @@
      <normaloff>:/icons/images/histogram-y-axis-icon-32x32.png</normaloff>:/icons/images/histogram-y-axis-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>y-axis</string>
+    <string>&amp;y-axis</string>
    </property>
   </action>
   <action name="action_HistogramAttribute">
@@ -313,7 +314,21 @@
      <normaloff>:/icons/images/histogram-points-icon-32x32.png</normaloff>:/icons/images/histogram-points-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>attribute</string>
+    <string>&amp;attribute</string>
+   </property>
+  </action>
+  <action name="actionDetailed_Point_Information">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Detailed Point Information</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
    </property>
   </action>
  </widget>
@@ -325,6 +340,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../SeismicUI/icons.qrc"/>
   <include location="icons.qrc"/>
  </resources>
  <connections>
