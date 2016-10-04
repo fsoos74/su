@@ -209,10 +209,6 @@ void ColorBarWidget::refreshImage(){
 
     QImage img( 1, m_colorTable->colors().size(), QImage::Format_RGB32);
 
-    //img.setColorCount( m_colorTable->colors().size());
-    //img.setColorCount( m_colorTable->colors().size());
-    //img.setColorTable( m_colorTable->colors());
-
     for( int i=0; i<img.height(); i++){
         double v=m_colorTable->range().first + i*(m_colorTable->range().second - m_colorTable->range().first)/img.height();
 
@@ -224,25 +220,6 @@ void ColorBarWidget::refreshImage(){
     update();
 }
 
-/*
-void ColorBarWidget::refreshImage(){
-
-    if( ! m_colorTable) return;
-
-    QImage img( 1, m_colorTable->colors().size(), QImage::Format_Indexed8);
-
-    img.setColorCount( m_colorTable->colors().size());
-    //img.setColorCount( m_colorTable->colors().size());
-    img.setColorTable( m_colorTable->colors());
-
-    for( int i=0; i<img.height(); i++){
-        img.setPixel(0,i,img.height()-i-1);   // lowest at bottom
-    }
-
-    m_image=img;
-
-    update();
-}*/
 
 void ColorBarWidget::refreshTicks(){
 

@@ -190,8 +190,6 @@ void RulerGraphicsView::mouseMoveEvent(QMouseEvent* event){
     QPointF scenePos=mapToScene(event->pos());
 
     emit mouseOver( scenePos);
-
-
 }
 
 void RulerGraphicsView::mouseDoubleClickEvent(QMouseEvent* event){

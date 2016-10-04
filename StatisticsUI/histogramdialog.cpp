@@ -71,8 +71,8 @@ void HistogramDialog::setData(QVector<double> data){
 
     updateStatisticsControls();
 
-    m_plotMin=m_dataMin;
-    m_plotMax=m_dataMax;
+    m_plotMinX=m_dataMin;
+    m_plotMaxX=m_dataMax;
     m_plotBinWidth=(m_dataMax>m_dataMin) ? (m_dataMax-m_dataMin)/20 : 1.;   // important: handle case min==max
 
     updatePlotControlsFromData();
@@ -93,15 +93,14 @@ void HistogramDialog::setMaximumFromData(){
 
 void HistogramDialog::updateHistogram(){
 
-std::cout<<"pmin="<<m_plotMin<<" pmax="<<m_plotMax<<" pbw="<<m_plotBinWidth<<std::endl<<std::flush;
-    long binCount=std::ceil((m_plotMax - m_plotMin)/m_plotBinWidth)+1;
+    long binCount=std::ceil((m_plotMaxX - m_plotMinX)/m_plotBinWidth)+1;
     if( binCount>MAX_BIN_COUNT ){
 
         QMessageBox::warning(this, tr("Plot Histogram"), QString("Maximum number of bins(%1) exceeded").arg(QString::number(MAX_BIN_COUNT)));
         return;
     }
 
-    double min=m_plotBinWidth*std::floor(m_plotMin/m_plotBinWidth); // adjust to multiple of binwidth
+    double min=m_plotBinWidth*std::floor(m_plotMinX/m_plotBinWidth); // adjust to multiple of binwidth
 
     // generate histogram
     Histogram hist(min, m_plotBinWidth, binCount);
@@ -169,8 +168,8 @@ void HistogramDialog::updateStatisticsControls(){
 }
 
 void HistogramDialog::updatePlotControlsFromData(){
-    ui->lePlotMinimum->setText(QString::number(m_plotMin));
-    ui->lePlotMaximum->setText(QString::number(m_plotMax));
+    ui->lePlotMinimum->setText(QString::number(m_plotMinX));
+    ui->lePlotMaximum->setText(QString::number(m_plotMaxX));
     ui->lePlotBinWidth->setText(QString::number(m_plotBinWidth));
 }
 
@@ -199,8 +198,8 @@ void HistogramDialog::updatePlotDataFromControls(){
 
     if( !ok ) return;
 
-    m_plotMin=min;
-    m_plotMax=max;
+    m_plotMinX=min;
+    m_plotMaxX=max;
     m_plotBinWidth=binWidth;
 
     updateHistogram();

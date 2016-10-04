@@ -66,10 +66,11 @@ private:
     double m_dataMedian;
     double m_dataRMS;
 
-    double m_plotMin;
-    double m_plotMax;
+    double m_plotMinX;
+    double m_plotMaxX;
     double m_plotBinWidth;
-
+    double m_plotMinY;
+    double m_plotMaxY;
     Histogram m_histogram;
     size_t m_maximumCount;
 };
