@@ -287,7 +287,7 @@
   </action>
   <action name="actionSet_Angle">
    <property name="text">
-    <string>&amp;Edit  Angle</string>
+    <string>&amp;Edit  Trend</string>
    </property>
   </action>
   <action name="action_HistogramXAxis">

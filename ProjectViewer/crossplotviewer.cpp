@@ -26,6 +26,8 @@
 #include<histogram.h>
 #include<histogramdialog.h>
 
+#include "edittrenddialog.h"
+
 #include<cmath>
 
 const int DATA_INDEX_KEY=1;
@@ -541,6 +543,17 @@ void CrossplotViewer::on_action_Pick_Trend_triggered()
 void CrossplotViewer::on_actionSet_Angle_triggered()
 {
     double phi=std::fabs(180.*std::atan( m_trend.y())/M_PI);  // in degrees, must be positive
+
+    EditTrendDialog dlg(this);
+    dlg.setAngle(phi);
+    dlg.setIntercept(m_trend.x());
+    dlg.setWindowTitle(tr("Edit Trend"));
+
+    if( dlg.exec()==QDialog::Accepted){
+        phi=-std::tan(M_PI*dlg.angle()/180.);    // negative, angle is clockwise x-axxis to trend
+        setTrend(QPointF(dlg.intercept(), phi));
+    }
+    /*
     bool ok=false;
     double d=QInputDialog::getDouble(this, "Crossplot Angle", "angle [degrees]", phi, 0, 90, 4, &ok );
 
@@ -548,6 +561,7 @@ void CrossplotViewer::on_actionSet_Angle_triggered()
         double y=-std::tan(M_PI*d/180.);    // negative, angle is clockwise x-axxis to trend
         setTrend(QPointF(m_trend.x(), y));
     }
+    */
 }
 
 
