@@ -102,6 +102,15 @@ void GridView::setHighlightedCDPs( QVector<SelectionPoint> inlinesAndCrosslines)
     m_label->update();
 }
 
+void GridView::setViewerCurrentPoint(SelectionPoint p){
+
+    if( p == m_viewerCurrentPoint ) return;
+
+    m_viewerCurrentPoint=p;
+
+    m_label->update();
+}
+
 void GridView::setColorMapping( const std::pair<double,double>& m){
     Q_ASSERT( m_colorTable);
     m_colorTable->setRange(m);
@@ -868,6 +877,10 @@ void ViewLabel::paintEvent( QPaintEvent* ev){
     QPen linePen(Qt::red);
     linePen.setWidth(0);
     drawPolyline(painter, linePen);
+
+    if( m_showViewerCurrentPoint){
+        drawViewerCurrentPoint(painter);
+    }
 }
 
 
@@ -916,6 +929,17 @@ void ViewLabel::setTransformationMode( Qt::TransformationMode m ){
 
 
     updatePixmap();
+}
+
+void ViewLabel::setShowViewerCurrentPoint(bool on){
+
+    if( on==m_showViewerCurrentPoint ) return;
+
+    m_showViewerCurrentPoint=on;
+
+    update();
+
+    emit showViewerCurrentPointChanged(on);
 }
 
 void ViewLabel::updatePixmap(){
@@ -1002,6 +1026,23 @@ void ViewLabel::drawHighlightedCDPs( QPainter& painter){
         QPointF point=trans.map( QPointF(spoint.xline, spoint.iline ) ); // IMPORTANT: internally inline on y-axis!!!!
         painter.drawEllipse(point, 0.5*m_highlightCDPSize, 0.5*m_highlightCDPSize);
     }
+
+    painter.restore();
+}
+
+void ViewLabel::drawViewerCurrentPoint( QPainter& painter){
+
+    painter.save();
+
+    QPen thePen(Qt::red, 0);
+    painter.setPen(thePen);
+
+    SelectionPoint spoint=m_view->viewerCurrentPoint();
+    QTransform trans=m_view->gridToImageTransform();
+    QPointF p=trans.map( QPointF(spoint.xline, spoint.iline ) ); // IMPORTANT: internally inline on y-axis!!!!
+
+    painter.drawLine( p.x(), 0, p.x(), height());
+    painter.drawLine(0, p.y(), width(), p.y());
 
     painter.restore();
 }

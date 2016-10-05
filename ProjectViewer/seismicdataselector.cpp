@@ -56,31 +56,40 @@ SeismicDataSelector::~SeismicDataSelector()
 }
 
 
-SeismicDataSelector::SortKey SeismicDataSelector::primarySort(){
+void SeismicDataSelector::updatePrimarySort(){
 
 
-    SortKey key=SortKey::SORT_NONE;
+    GatherSortKey key=GatherSortKey::None;
 
     switch(ui->cbOrder1->currentIndex()){
 
     case ILINE_ASC_INDEX:
     case ILINE_DESC_INDEX:
-                key=SortKey::SORT_INLINE;
+                key=GatherSortKey::Inline;
                 break;
     case XLINE_ASC_INDEX:
     case XLINE_DESC_INDEX:
-                key=SortKey::SORT_CROSSLINE;
+                key=GatherSortKey::Crossline;
                 break;
     case OFFSET_ASC_INDEX:
     case OFFSET_DESC_INDEX:
-                key=SortKey::SORT_OFFSET;
+                key=GatherSortKey::Offset;
                 break;
     default:
-                key=SortKey::SORT_NONE;
+                key=GatherSortKey::None;
                 break;
     }
 
-    return key;
+    setPrimarySort(key);
+}
+
+void SeismicDataSelector::setPrimarySort(GatherSortKey key){
+
+    if( key==m_primarySortKey ) return;
+
+    m_primarySortKey=key;
+
+    emit primarySortChanged(key);
 }
 
 
@@ -305,6 +314,8 @@ void SeismicDataSelector::changeOrder(){
     QString key3;
     bool ascending3;
     indexToKey(ui->cbOrder3->currentIndex(), key3, ascending3);
+
+    updatePrimarySort();
 
     m_reader->setOrder(key1,ascending1, key2,ascending2, key3,ascending3);
 

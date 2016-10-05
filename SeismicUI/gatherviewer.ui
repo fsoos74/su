@@ -89,6 +89,8 @@
     </property>
     <addaction name="action_Receive_CDPs"/>
     <addaction name="action_Dispatch_CDPs"/>
+    <addaction name="separator"/>
+    <addaction name="actionShare_Current_Position"/>
    </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
@@ -119,6 +121,7 @@
    <addaction name="separator"/>
    <addaction name="action_Receive_CDPs"/>
    <addaction name="action_Dispatch_CDPs"/>
+   <addaction name="actionShare_Current_Position"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -269,6 +272,24 @@
    </property>
    <property name="text">
     <string>&amp;Point Display Options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionShare_Current_Position">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/current-point-icon-32x32.png</normaloff>:/icons/images/current-point-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Share Current Position</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>

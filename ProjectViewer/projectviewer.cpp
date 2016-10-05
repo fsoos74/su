@@ -1648,8 +1648,9 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
                     );*/
         }
 
-
-
+        viewer->setShareCurrentPoint( info.mode()==SeismicDatasetInfo::Mode::Poststack  );
+        viewer->view()->setPrimarySortKey(selector->primarySort()); // need to kep in sync from start on
+        connect( selector, SIGNAL(primarySortChanged(GatherSortKey)), viewer->view(), SLOT(setPrimarySortKey(GatherSortKey)) );
         connect( selector, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), viewer, SLOT(setGather(std::shared_ptr<seismic::Gather>)));
         connect( viewer, SIGNAL(requestPoint(int,int)), selector,SLOT(providePoint(int,int)));
         connect( viewer, SIGNAL(requestPoints(QVector<QPoint>)), selector, SLOT( provideRandomLine(QVector<QPoint>)) );

@@ -32,6 +32,9 @@
         <file>../images/save-icon-32x32.png</file>
         <file>../images/iline-icon-32x32.png</file>
         <file>../images/xline-icon-32x32.png</file>
+        <file>../images/current-point-icon-32x32.png</file>
     </qresource>
-    <qresource prefix="/"/>
+    <qresource prefix="/">
+        <file>../images/current-point-icon-32x32.png</file>
+    </qresource>
 </RCC>

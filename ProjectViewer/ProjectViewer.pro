@@ -224,5 +224,6 @@ win32{
 }
 
 DISTFILES += \
-    ../images/select-range-icon.png
+    ../images/select-range-icon.png \
+    ../images/current-point-icon-32x32.png
 

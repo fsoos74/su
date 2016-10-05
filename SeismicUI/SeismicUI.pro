@@ -34,7 +34,8 @@ SOURCES += seismicui.cpp \
     volumedisplayoptionsdialog.cpp \
     tracedisplayoptionsdialog.cpp \
     tracescalingdialog.cpp \
-    headerscandialog.cpp
+    headerscandialog.cpp \
+    gathersortkey.cpp
 
 HEADERS += seismicui.h\
         seismicui_global.h \
@@ -53,7 +54,8 @@ HEADERS += seismicui.h\
     volumedisplayoptionsdialog.h \
     tracedisplayoptionsdialog.h \
     tracescalingdialog.h \
-    headerscandialog.h
+    headerscandialog.h \
+    gathersortkey.h
 
 unix {
     target.path = /usr/lib

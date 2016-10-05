@@ -90,6 +90,8 @@
     </property>
     <addaction name="action_Receive_CDPs"/>
     <addaction name="action_Dispatch_CDPs"/>
+    <addaction name="separator"/>
+    <addaction name="actionShare_Current_Position"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Scale"/>
@@ -124,6 +126,7 @@
    <addaction name="action_Grid_Display"/>
    <addaction name="actionDisplay_Histogram"/>
    <addaction name="separator"/>
+   <addaction name="actionShare_Current_Position"/>
   </widget>
   <action name="openAct">
    <property name="icon">
@@ -150,7 +153,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -162,7 +165,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -302,12 +305,27 @@
   </action>
   <action name="actionAspect_Ratio">
    <property name="text">
-    <string>Set Aspect Ratio</string>
+    <string>S&amp;et Aspect Ratio</string>
    </property>
   </action>
   <action name="actionConfigure_Scales">
    <property name="text">
-    <string>Configure Scales</string>
+    <string>Con&amp;figure Scales</string>
+   </property>
+  </action>
+  <action name="actionShare_Current_Position">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/current-point-icon-32x32.png</normaloff>:/icons/images/current-point-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Share Current Position</string>
    </property>
   </action>
  </widget>
@@ -327,7 +345,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../SeismicUI/icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

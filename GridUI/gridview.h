@@ -138,6 +138,9 @@ public:
         return m_highlightCDPSize;
     }
 
+    bool showViewerCurrentPoint()const{
+        return m_showViewerCurrentPoint;
+    }
 
 public slots:
 
@@ -150,6 +153,8 @@ public slots:
     void setHighlightCDPSize( int );
 
     void setHighlightCDPColor( QColor );
+
+    void setShowViewerCurrentPoint(bool);
 
     void setIsoLineSegments( const QVector<QLineF>& );
 
@@ -175,6 +180,8 @@ signals:
 
     void highlightCDPSizeChanged(int);
 
+    void showViewerCurrentPointChanged(bool);
+
     void mouseOver(int, int);
 
 protected:
@@ -190,6 +197,7 @@ private:
    void drawVerticalGrid( QPainter& painter);
    void drawHorizontalGrid( QPainter& painter);
    void drawHighlightedCDPs( QPainter& painter);
+   void drawViewerCurrentPoint( QPainter& painter);
    void drawPolyline( QPainter&, const QPen& );
 
    GridView* m_view;
@@ -201,6 +209,7 @@ private:
    int m_isoLineWidth;
    int m_highlightCDPSize=4;
    QColor m_highlightCDPColor=Qt::red;
+   bool m_showViewerCurrentPoint=true;
 };
 
 
@@ -246,6 +255,10 @@ public:
 
     const QVector<SelectionPoint>& highlightedCDPs()const{
         return m_highlightedCDPs;
+    }
+
+    const SelectionPoint viewerCurrentPoint()const{
+        return m_viewerCurrentPoint;
     }
 
     const QVector<QPoint>& polylineSelection()const{
@@ -333,6 +346,7 @@ public slots:
     void setAspectRatio(qreal);
 
     void setHighlightedCDPs( QVector<SelectionPoint>);
+    void setViewerCurrentPoint(SelectionPoint);
     void setColorMapping( const std::pair<double,double>& m);
     void setColors( const QVector<QRgb>&);
     void setNullColor( QColor );
@@ -400,6 +414,7 @@ private:
     QString m_crosslineAxxisLabel="Crossline Number";
 
     QVector<SelectionPoint> m_highlightedCDPs;
+    SelectionPoint m_viewerCurrentPoint;
     QVector<QPoint> m_polyline;
 
     QRubberBand*        rubberBand=nullptr;

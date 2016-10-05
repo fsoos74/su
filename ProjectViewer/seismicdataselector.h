@@ -6,6 +6,7 @@
 #include<memory>
 #include <seismicdatasetreader.h>
 #include <gather.h>
+#include <gathersortkey.h>
 
 
 namespace Ui {
@@ -29,18 +30,20 @@ public:
         ORDER_OFFSET_ASCENDING,
         ORDER_OFFSET_DESCENDING
     };
-
+/*
     enum SortKey{
         SORT_NONE=0,
         SORT_INLINE,
         SORT_CROSSLINE,
         SORT_OFFSET
     };
-
+*/
     explicit SeismicDataSelector(QWidget *parent = 0);
     ~SeismicDataSelector();
 
-    SortKey primarySort();
+    GatherSortKey primarySort()const{
+        return m_primarySortKey;
+    }
 
 public slots:
     void setReader(std::shared_ptr<SeismicDatasetReader>);
@@ -59,6 +62,7 @@ public slots:
 
 signals:
     void gatherChanged(std::shared_ptr<seismic::Gather>);
+    void primarySortChanged(GatherSortKey);
 
 protected:
     // override this to keep return pressed in line edit move up to parent
@@ -66,6 +70,10 @@ protected:
 
 
 private slots:
+
+    void updatePrimarySort();
+    void setPrimarySort(GatherSortKey);
+
     void readGather();
     void changeOrder();
 
@@ -87,6 +95,8 @@ private:
 
     std::shared_ptr<SeismicDatasetReader>   m_reader;
     std::shared_ptr<seismic::Gather>        m_gather;
+
+    GatherSortKey m_primarySortKey=GatherSortKey::Inline;
 };
 
 #endif // SEISMICDATASELECTOR_H

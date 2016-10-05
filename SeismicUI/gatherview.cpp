@@ -64,6 +64,8 @@ void GatherView::setGather( std::shared_ptr<seismic::Gather> g){
 
     m_gather=g;
 
+    buildTraceLookup();
+
     updateTimeRange();
 
     // update pixel pixels per trace rather than resizing
@@ -88,6 +90,82 @@ void GatherView::setGather( std::shared_ptr<seismic::Gather> g){
 void GatherView::setHighlightedPoints(QVector<SelectionPoint> points){
     m_highlightedPoints=points;
     m_gatherLabel->update();
+}
+
+
+void GatherView::setPrimarySortKey(GatherSortKey k){
+
+    if( k==m_primarySortKey ) return;
+
+    m_primarySortKey=k;
+
+    buildTraceLookup();
+
+    emit primarySortKeyChanged(k);
+}
+
+
+
+void GatherView::buildTraceLookup(){
+
+    m_traceLookup.clear();
+
+    if( !m_gather ) return;
+
+    std::string key2;
+
+    if( m_primarySortKey == GatherSortKey::Inline ){
+        key2="xline";
+    }
+    else if( m_primarySortKey == GatherSortKey::Crossline ){
+        key2="iline";
+    }
+    else{   // if not inline/crossline or crossline/inline sorted don't lookup
+        return;
+    }
+
+    for( int i=0; i<m_gather->size(); i++){
+
+        int line=(*m_gather)[i].header().at(key2).intValue();
+
+        m_traceLookup.insert( line, i );
+
+        //std::cout<<key.toStdString()<<" -> "<<i<<std::endl;
+    }
+}
+
+// return trace number or -1 if not found
+int GatherView::lookupTrace(int iline, int xline){
+
+    int key2;
+
+    if( m_primarySortKey==GatherSortKey::Inline ){
+        key2=xline;
+    }
+    else if( m_primarySortKey==GatherSortKey::Crossline){
+        key2=iline;
+    }
+    else{
+        return -1; // if not il/xl or xl/il sorted don't lookup
+    }
+
+    if( !m_traceLookup.contains(key2) ) return -1;
+
+    return m_traceLookup.value(key2);
+}
+
+void GatherView::setViewerCurrentPoint(SelectionPoint p){
+//std::cout<<"GatherView p: il="<<p.iline<<" xl="<<p.xline<<std::endl<<std::flush;
+//std::cout<<"current il="<<m_viewerCurrentPoint.iline<<" xl="<<m_viewerCurrentPoint.xline<<std::endl<<std::flush;
+    if( p==m_viewerCurrentPoint ) return;
+
+    m_viewerCurrentPoint=p;
+
+    int traceno=lookupTrace( p.iline, p.xline );
+
+    m_gatherLabel->setHighlightedTrace(traceno);
+
+    //std::cout<<"trace #"<<traceno<<" il="<<p.iline<<" xl="<<p.xline<<std::endl<<std::flush;
 }
 
 std::shared_ptr<Grid2D<float> > GatherView::horizon(QString name)const{

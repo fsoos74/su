@@ -41,6 +41,10 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
+
+    gatherView->gatherLabel()->setHighlightTrace( ui->actionShare_Current_Position->isChecked()  );
+    connect( ui->actionShare_Current_Position, SIGNAL(toggled(bool)), gatherView->gatherLabel(), SLOT(setHighlightTrace(bool)) );
+
     //resize(sizeHint());
     //setMinimumWidth(ui->mainToolBar->width() + 50);
 
@@ -64,11 +68,29 @@ QToolBar* GatherViewer::navigationToolBar()const{
     return ui->navigationToolBar;
 }
 
+bool GatherViewer::isShareCurrentPoint()const{
+    return ui->actionShare_Current_Position->isChecked();
+}
+
+void GatherViewer::setShareCurrentPoint(bool on){
+    ui->actionShare_Current_Position->setChecked(on);
+}
+
 void GatherViewer::receivePoint(SelectionPoint point, int code){
 
-    int iline=point.iline;
-    int xline=point.xline;
-    emit requestPoint(iline, xline);
+    //std::cout<<"GatherViewer receive point il="<<point.iline<<" xl="<<point.xline<<" code="<<code<<std::endl<<std::flush;
+    switch( code ){
+
+    case PointCode::VIEWER_CURRENT_CDP:
+        if( ui->actionShare_Current_Position->isChecked()){
+            gatherView->setViewerCurrentPoint(point);
+        }
+        break;
+
+    default:
+        emit requestPoint( point.iline, point. xline);
+        break;
+    }
 }
 
 void GatherViewer::receivePoints(QVector<SelectionPoint> points, int code){
@@ -113,7 +135,6 @@ void GatherViewer::zoomFitWindow(){
     emit projectChanged();
 
  }
-
 
 
 
@@ -288,6 +309,11 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
     }
 
     statusBar()->showMessage( message );
+
+    if( ui->actionShare_Current_Position->isChecked()){
+        view()->gatherLabel()->setHighlightedTrace(trace);      // need to set this because the send point will not be received by this viewer
+        sendPoint( SelectionPoint(iline, xline, secs), PointCode::VIEWER_CURRENT_CDP);
+    }
 
 }
 
@@ -532,3 +558,4 @@ void GatherViewer::on_action_Point_Display_Options_triggered()
 
     m_pointDisplayOptionsDialog->show();
 }
+

@@ -13,6 +13,8 @@
 #include<gatherscaler.h>
 #include<grid3d.h>
 
+#include "gathersortkey.h"
+
 class GatherLabel;
 class GatherRuler;
 class AxxisLabelWidget;
@@ -37,6 +39,10 @@ public:
 
     const QVector<SelectionPoint>& highlightedPoints()const{
         return m_highlightedPoints;
+    }
+
+    const SelectionPoint viewerCurrentPoint()const{
+        return m_viewerCurrentPoint;
     }
 
     std::shared_ptr<seismic::Gather> gather()const{
@@ -97,9 +103,14 @@ public:
 
     QStringList traceAnnotation( size_t traceNumber )const;
 
+    GatherSortKey primarySortKey()const{
+        return m_primarySortKey;
+    }
+
 signals:
 
     void gatherChanged( std::shared_ptr<seismic::Gather>);
+    void primarySortKeyChanged(GatherSortKey);
     void pixelPerTraceChanged(qreal);
     void pixelPerSecondChanged(qreal);
     void traceAnnotationFuntionChanged();
@@ -110,7 +121,9 @@ signals:
 public slots:
 
     void setGather( std::shared_ptr<seismic::Gather>);
+    void setPrimarySortKey(GatherSortKey);
     void setHighlightedPoints(QVector<SelectionPoint>);
+    void setViewerCurrentPoint(SelectionPoint);
     void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
@@ -130,14 +143,19 @@ protected:
 
 private:
 
+    void buildTraceLookup();
+    int lookupTrace(int iline, int xline);  // return -1 if not found
+
     QPoint mouseEventToLabel( QPoint, bool start=true );    // if start ruler val set to 0 else to rightmost/bottommost
     void updateLayout();
     void updateTimeRange();
     void adjustScrollBar(QScrollBar *scrollBar, qreal factor);
 
-    void buildGatherIndex();
+    //void buildGatherIndex();
 
     std::shared_ptr<seismic::Gather> m_gather;
+
+    GatherSortKey m_primarySortKey=GatherSortKey::None;
 
     QMap<QString, std::shared_ptr<Grid2D<float> > > m_horizons;
     QMap<QString, QColor> m_horizonColors;
@@ -145,7 +163,10 @@ private:
 
     std::shared_ptr<Grid3D<float>> m_volume;
 
+    QMap<int, int> m_traceLookup;       // line(either inline or crossline) vs. trace number
+
     QVector<SelectionPoint> m_highlightedPoints;
+    SelectionPoint m_viewerCurrentPoint;
 
     GatherLabel* m_gatherLabel=nullptr;
     GatherRuler* m_leftRuler;

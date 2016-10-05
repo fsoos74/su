@@ -80,7 +80,8 @@ void GatherLabel::setHighlightTrace( bool on){
 
     m_highlightTrace=on;
 
-    updatePixmap();
+    //updatePixmap();
+    updateBuffers();
 }
 
 void GatherLabel::setHighlightedTrace( size_t t){

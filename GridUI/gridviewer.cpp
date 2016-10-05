@@ -36,6 +36,9 @@ GridViewer::GridViewer(QWidget *parent) :
 
     connect( m_gridView->label(), SIGNAL( mouseOver(int,int)), this, SLOT( onGridViewMouseOver(int,int)) );
 
+    m_gridView->label()->setShowViewerCurrentPoint(ui->actionShare_Current_Position->isChecked());
+    connect( ui->actionShare_Current_Position, SIGNAL(toggled(bool)), m_gridView->label(), SLOT(setShowViewerCurrentPoint(bool)));
+
     setDefaultColorTable();
 
     setWindowTitle(tr("Grid Viewer"));
@@ -99,9 +102,21 @@ bool GridViewer::orientate(const ProjectGeometry& geom){
 
 void GridViewer::receivePoint( SelectionPoint point, int code ){
 
-    QVector<SelectionPoint> v{point};
+    switch( code ){
 
-    gridView()->setHighlightedCDPs(v);
+    case PointCode::VIEWER_CURRENT_CDP:
+        if( ui->actionShare_Current_Position->isChecked()){
+            gridView()->setViewerCurrentPoint(point);
+        }
+        break;
+
+    default:{
+        QVector<SelectionPoint> v{point};
+        gridView()->setHighlightedCDPs(v);
+        break;
+    }
+
+    }
 }
 
 void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
@@ -191,6 +206,12 @@ void GridViewer::onGridViewMouseOver(int i, int j){
     }
 
     statusBar()->showMessage(msg);
+
+    if( ui->actionShare_Current_Position->isChecked()){
+        SelectionPoint currentPoint( i, j, 0);
+        gridView()->setViewerCurrentPoint( currentPoint );              // also update current point, sendpoint does not send to sender!!!
+        sendPoint( currentPoint , PointCode::VIEWER_CURRENT_CDP );
+    }
 }
 
 void GridViewer::on_zoomInAct_triggered()

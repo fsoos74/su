@@ -18,6 +18,8 @@
 #include"tracedisplayoptionsdialog.h"
 #include "volumedisplayoptionsdialog.h"
 #include "pointdisplayoptionsdialog.h"
+#include "gathersortkey.h"
+
 #include <baseviewer.h>
 #include <QDockWidget>
 #include<colorbarwidget.h>
@@ -59,6 +61,8 @@ public:
         return m_traceAnnotations;
     }
 
+    bool isShareCurrentPoint()const;
+
 protected:
 
     void receivePoint(SelectionPoint, int code);
@@ -70,6 +74,7 @@ public slots:
     void setTraceHeaderDef(const std::vector<seismic::SEGYHeaderWordDef>&);
     void zoomFitWindow();
     void setTraceAnnotations( const std::vector< std::pair< std::string, QString > >& );  
+    void setShareCurrentPoint(bool);
 
 signals:
     void projectChanged();
