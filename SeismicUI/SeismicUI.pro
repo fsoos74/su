@@ -131,3 +131,33 @@ else:unix: LIBS += -L$$OUT_PWD/../utilUI/ -lutilUI
 
 INCLUDEPATH += $$PWD/../utilUI
 DEPENDPATH += $$PWD/../utilUI
+
+# need this to share current points from seismic viewer and grid viewer
+# this is currently done in a method of gatherviewer
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../GridUI/release/ -lGridUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../GridUI/debug/ -lGridUI
+else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
+
+INCLUDEPATH += $$PWD/../GridUI
+DEPENDPATH += $$PWD/../GridUI
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/release/ -lStatisticsUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/debug/ -lStatisticsUI
+else:unix: LIBS += -L$$OUT_PWD/../StatisticsUI/ -lStatisticsUI
+
+INCLUDEPATH += $$PWD/../StatisticsUI
+DEPENDPATH += $$PWD/../StatisticsUI
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Statistics/release/ -lStatistics
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Statistics/debug/ -lStatistics
+else:unix: LIBS += -L$$OUT_PWD/../Statistics/ -lStatistics
+
+INCLUDEPATH += $$PWD/../Statistics
+DEPENDPATH += $$PWD/../Statistics
+
+
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil

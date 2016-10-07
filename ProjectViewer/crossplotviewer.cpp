@@ -91,6 +91,8 @@ bool CrossplotViewer::isDetailedPointInformation(){
 
 void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
 
+    if( code!=PointCode::VIEWER_POINT_SELECTED) return; // only handle this for now
+
     for( QGraphicsItem* item : m_scene->items()){
 
         DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);

@@ -197,6 +197,7 @@ private:
    void drawVerticalGrid( QPainter& painter);
    void drawHorizontalGrid( QPainter& painter);
    void drawHighlightedCDPs( QPainter& painter);
+   void drawIntersectionPoints( QPainter& painter);
    void drawViewerCurrentPoint( QPainter& painter);
    void drawPolyline( QPainter&, const QPen& );
 
@@ -255,6 +256,10 @@ public:
 
     const QVector<SelectionPoint>& highlightedCDPs()const{
         return m_highlightedCDPs;
+    }
+
+    const QVector<SelectionPoint>& intersectionPoints()const{
+        return m_intersectionPoints;
     }
 
     const SelectionPoint viewerCurrentPoint()const{
@@ -347,7 +352,8 @@ public slots:
 
     void setHighlightedCDPs( QVector<SelectionPoint>);
     void setViewerCurrentPoint(SelectionPoint);
-    void setColorMapping( const std::pair<double,double>& m);
+    void setIntersectionPoints( QVector<SelectionPoint>);
+    void setColorMapping( const std::pair<double,double>& );
     void setColors( const QVector<QRgb>&);
     void setNullColor( QColor );
     void setGridToImageTransform( const QTransform&);
@@ -414,6 +420,7 @@ private:
     QString m_crosslineAxxisLabel="Crossline Number";
 
     QVector<SelectionPoint> m_highlightedCDPs;
+    QVector<SelectionPoint>m_intersectionPoints;
     SelectionPoint m_viewerCurrentPoint;
     QVector<QPoint> m_polyline;
 

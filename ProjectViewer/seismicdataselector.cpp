@@ -56,6 +56,26 @@ SeismicDataSelector::~SeismicDataSelector()
 }
 
 
+QString SeismicDataSelector::selectionDescription(){
+
+    if( !m_reader ) return QString();
+
+    QString name=m_reader->info().name();
+
+    GatherSortKey psort=primarySort();
+    if( psort==GatherSortKey::Inline){
+        return QString("%1 - inline %2 (%3)").arg(name).arg(ui->sbInline->value()).arg(ui->sbIlineCount->value());
+    }
+    else if( psort==GatherSortKey::Crossline){
+        return QString("%1 - crossline %2 (%3)").arg(name).arg(ui->sbXline->value()).arg(ui->sbXlineCount->value());
+    }
+    else{
+        return QString("%1 - random line").arg(name);
+    }
+}
+
+
+
 void SeismicDataSelector::updatePrimarySort(){
 
 
@@ -142,11 +162,28 @@ void SeismicDataSelector::setOrder(int k1, int k2, int k3){
     ui->cbOrder3->setCurrentIndex(k3);
 }
 
+// smart version
 void SeismicDataSelector::providePoint(int iline, int xline){
+
+   if( primarySort()==GatherSortKey::Inline){
+        ui->sbInline->setValue(iline);
+   }
+   else if( primarySort()==GatherSortKey::Crossline){
+        ui->sbXline->setValue(xline);
+   }
+   else{
+       ui->sbInline->setValue(iline);
+       ui->sbXline->setValue(xline);
+   }
+}
+
+/*
+ * void SeismicDataSelector::providePoint(int iline, int xline){
 
    ui->sbInline->setValue(iline);
    ui->sbXline->setValue(xline);
 }
+*/
 
 void SeismicDataSelector::keyPressEvent(QKeyEvent *ev){
     if( ev->key() == Qt::Key_Return){
@@ -174,7 +211,7 @@ void SeismicDataSelector::readGather(){
 
     emit gatherChanged(m_gather);
 
-
+    emit descriptionChanged( selectionDescription() );
 }
 
 

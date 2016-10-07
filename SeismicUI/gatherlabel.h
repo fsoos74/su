@@ -90,6 +90,10 @@ public:
         return m_volumeOpacity;
     }
 
+    int viewerCurrentTrace()const{
+        return m_viewerCurrentTrace;
+    }
+
 public slots:
 
     void setTraceColor(QColor);
@@ -105,6 +109,7 @@ public slots:
     void setDisplayLines(bool);
     void setHighlightTrace( bool on=true);
     void setHighlightedTrace( size_t);
+    void setViewerCurrentTrace(int);
     void updateTraceScaleFactors();
     void updateBuffers();
 
@@ -131,7 +136,8 @@ private:
     void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen);
     void drawHorizontalLines(QPainter& painter, const QRect& rect);
     void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
-
+    void drawViewerCurrentPosition( QPainter& painter, SelectionPoint);
+    void drawIntersectionTraces( QPainter& painter, const QVector<int>& trc);
 
     void updateTimeRange();
     void updatePixmap();
@@ -164,6 +170,7 @@ private:
     QColor m_horizonColor=Qt::red;
     bool m_highlightTrace=false;
     size_t m_highlightedTrace=0;
+    int m_viewerCurrentTrace=-1;
 
     QMap<int,int> traceLookup;
     QVector<qreal> traceScaleFactors;

@@ -7,7 +7,6 @@
 #include<QPainter>
 #include<QPaintEvent>
 #include<iostream>
-#include<chrono>
 #include<QScrollBar>
 #include<QApplication>
 
@@ -90,16 +89,17 @@ void GatherLabel::setHighlightedTrace( size_t t){
 
     m_highlightedTrace=t;
 
-    //std::cout<<"calling  update pixmap from setHighlightedTravce"<<std::endl;
    updateBuffers();
-    //update();
-   /*
-    updatePixmap();
-    m_dirty=true;
-    update();
-*/
 }
 
+void GatherLabel::setViewerCurrentTrace( int t){
+
+    if( t == m_viewerCurrentTrace) return;
+
+    m_viewerCurrentTrace=t;
+
+    update();
+}
 
 void GatherLabel::setHorizonColor(QColor color){
 
@@ -214,6 +214,12 @@ void GatherLabel::paintEvent(QPaintEvent *event){
    drawHorizons( painter );
 
    drawHighlightedPoints( painter, m_view->highlightedPoints() );
+
+   drawIntersectionTraces( painter, m_view->intersectionTraces() );
+
+
+   SelectionPoint sp=m_view->viewerCurrentPoint();
+   drawViewerCurrentPosition( painter, sp);
 
    m_dirty=false;
  }
@@ -357,6 +363,52 @@ void GatherLabel::drawHighlightedPoints( QPainter& painter,
 
 }
 
+
+void GatherLabel::drawViewerCurrentPosition( QPainter& painter, SelectionPoint sp){
+
+    const int CURSOR_SIZE=5;
+    const int CURSOR_PEN_WIDTH=3;
+
+    if( sp==SelectionPoint::NONE) return;   // maybe skip this because iline and xline will give incalid trace number which is checked anyway
+
+    int trc=m_view->lookupTrace(  sp.iline, sp.xline);
+    if( trc == -1 || sp.time==SelectionPoint::NO_TIME) return;
+
+    painter.save();
+
+    painter.setPen( QPen(Qt::red, CURSOR_PEN_WIDTH ) );  // make this selectable
+
+    qreal x= ( trc + 0.5 ) * m_view->pixelPerTrace(); // center of trace bin
+    qreal pixelPerSecond=m_view->pixelPerSecond();
+    qreal ft=m_view->ft();
+    qreal y= ( sp.time - ft )*pixelPerSecond;
+
+    painter.drawLine( x - CURSOR_SIZE, y, x+CURSOR_SIZE, y );
+    painter.drawLine( x, y-CURSOR_SIZE, x, y+CURSOR_SIZE);
+
+    painter.restore();
+
+}
+
+
+void GatherLabel::drawIntersectionTraces( QPainter& painter, const QVector<int>& trc){
+
+    painter.save();
+
+    painter.setPen( QPen(Qt::blue, 0) );  // make this selectable
+    //painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_Xor );
+    qreal pixelPerTrace=m_view->pixelPerTrace();
+
+    for( auto t : trc ){
+
+        qreal x= t * pixelPerTrace +0.5*pixelPerTrace ; // center
+        painter.drawLine( x, 0, x, height());
+    }
+
+    painter.restore();
+
+}
+
 void GatherLabel::drawHorizontalLines(QPainter& painter, const QRect& rect){
 
 
@@ -395,7 +447,6 @@ void GatherLabel::updatePixmap(){
 
     if( !m_view->gather() || m_view->gather()->size()<1) return;
 
-    auto start = std::chrono::steady_clock::now();
 
     QPainter painter(&m_pixmap);
 
@@ -495,9 +546,7 @@ void GatherLabel::updatePixmap(){
 
     painter.setOpacity(1);
    m_dirty=true;
-    auto end = std::chrono::steady_clock::now();
-    auto diff = end - start;
-    std::cout<<"Updating pixmap  took "<< std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
+
         //setUpdatesEnabled(true)
 }
 

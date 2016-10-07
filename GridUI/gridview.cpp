@@ -102,6 +102,16 @@ void GridView::setHighlightedCDPs( QVector<SelectionPoint> inlinesAndCrosslines)
     m_label->update();
 }
 
+void GridView::setIntersectionPoints( QVector<SelectionPoint> points){
+
+    if( m_intersectionPoints == points ) return;
+
+    m_intersectionPoints=points;
+
+    m_label->update();
+}
+
+
 void GridView::setViewerCurrentPoint(SelectionPoint p){
 
     if( p == m_viewerCurrentPoint ) return;
@@ -872,6 +882,8 @@ void ViewLabel::paintEvent( QPaintEvent* ev){
     painter.setPen(isoPen);
     painter.drawLines(paintSegs);
 
+    drawIntersectionPoints(painter);
+
     drawHighlightedCDPs(painter);
 
     QPen linePen(Qt::red);
@@ -1030,19 +1042,51 @@ void ViewLabel::drawHighlightedCDPs( QPainter& painter){
     painter.restore();
 }
 
-void ViewLabel::drawViewerCurrentPoint( QPainter& painter){
+void ViewLabel::drawIntersectionPoints( QPainter& painter){
 
     painter.save();
 
-    QPen thePen(Qt::red, 0);
-    painter.setPen(thePen);
+    painter.setPen( Qt::white);
+    painter.setBrush(Qt::blue);
+    //painter.setCompositionMode(QPainter::CompositionMode::RasterOp_SourceOrDestination);
+
+    QTransform trans=m_view->gridToImageTransform();
+
+    qreal l=2;//m_highlightCDPSize;
+    QPainterPath path;
+    for( SelectionPoint spoint : m_view->intersectionPoints() ){
+
+        QPointF point=trans.map( QPointF(spoint.xline, spoint.iline ) ); // IMPORTANT: internally inline on y-axis!!!!
+
+        painter.drawRect( point.x() - 0.5*l, point.y() - 0.5*l, l, l);
+    }
+
+    painter.restore();
+}
+
+void ViewLabel::drawViewerCurrentPoint( QPainter& painter){
+
+    const int CURSOR_SIZE=5;
+    const int CURSOR_PEN_WIDTH=3;
 
     SelectionPoint spoint=m_view->viewerCurrentPoint();
+
+    if( spoint==SelectionPoint::NONE) return;
+
+    painter.save();
+
+    QPen thePen(Qt::red, CURSOR_PEN_WIDTH);
+    painter.setPen(thePen);
+
+
     QTransform trans=m_view->gridToImageTransform();
     QPointF p=trans.map( QPointF(spoint.xline, spoint.iline ) ); // IMPORTANT: internally inline on y-axis!!!!
 
-    painter.drawLine( p.x(), 0, p.x(), height());
-    painter.drawLine(0, p.y(), width(), p.y());
+    qreal x=p.x();//-0.5*CURSOR_PEN_WIDTH;
+    qreal y=p.y();//-0.5*CURSOR_PEN_WIDTH;
+
+    painter.drawLine( x, y - CURSOR_SIZE, x, y + CURSOR_SIZE);
+    painter.drawLine( x - CURSOR_SIZE, y, x + CURSOR_SIZE, y);
 
     painter.restore();
 }

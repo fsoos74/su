@@ -8,6 +8,17 @@ PointDispatcher::PointDispatcher()
 }
 
 
+QVector<BaseViewer*> PointDispatcher::viewers()const{
+
+    QVector<BaseViewer*> v;
+    v.reserve(m_viewers.size() );
+    for( BaseViewer* viewer : m_viewers ){
+        v.push_back(viewer);
+    }
+
+    return v;
+}
+
 void PointDispatcher::sendPoint( SelectionPoint point, int code, BaseViewer* sender ){
 
     for( BaseViewer* viewer : m_viewers){

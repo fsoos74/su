@@ -107,6 +107,12 @@ public:
         return m_primarySortKey;
     }
 
+     int lookupTrace(int iline, int xline);  // return -1 if not found
+
+     QVector<int> intersectionTraces()const{
+         return m_intersectionTraces;
+     }
+
 signals:
 
     void gatherChanged( std::shared_ptr<seismic::Gather>);
@@ -116,12 +122,14 @@ signals:
     void traceAnnotationFuntionChanged();
     void mouseOver( int traceNo, qreal second);
     void traceClicked( size_t );
-    void traceSelected( size_t );
+    //void traceSelected( size_t );
+    void pointSelected( SelectionPoint );
 
 public slots:
 
     void setGather( std::shared_ptr<seismic::Gather>);
     void setPrimarySortKey(GatherSortKey);
+    void setIntersectionTraces( QVector<int>);
     void setHighlightedPoints(QVector<SelectionPoint>);
     void setViewerCurrentPoint(SelectionPoint);
     void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
@@ -144,7 +152,6 @@ protected:
 private:
 
     void buildTraceLookup();
-    int lookupTrace(int iline, int xline);  // return -1 if not found
 
     QPoint mouseEventToLabel( QPoint, bool start=true );    // if start ruler val set to 0 else to rightmost/bottommost
     void updateLayout();
@@ -163,8 +170,9 @@ private:
 
     std::shared_ptr<Grid3D<float>> m_volume;
 
-    QMap<int, int> m_traceLookup;       // line(either inline or crossline) vs. trace number
+    QMap< QString, int> m_traceLookup;       // key is combination il and xl : "iline_xline"
 
+    QVector<int>    m_intersectionTraces;
     QVector<SelectionPoint> m_highlightedPoints;
     SelectionPoint m_viewerCurrentPoint;
 

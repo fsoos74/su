@@ -5,6 +5,11 @@
 struct SelectionPoint
 {
 public:
+
+    static const double NO_TIME;
+    static const int NO_LINE;
+    static const SelectionPoint NONE;
+
     SelectionPoint(int il=0, int xl=0, double t=0);
 
     bool operator==(const SelectionPoint& other )const{

@@ -59,6 +59,7 @@ protected:
     void receivePoints( QVector<SelectionPoint>, int code);
 
     void closeEvent(QCloseEvent*);
+    void leaveEvent(QEvent*);
 
 private slots:
 
@@ -96,6 +97,8 @@ private slots:
     void on_actionConfigure_Scales_triggered();
 
 private:
+
+    QString createStatusMessage( SelectionPoint);
 
     void setDefaultColorTable();
 

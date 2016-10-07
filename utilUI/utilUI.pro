@@ -33,7 +33,8 @@ SOURCES += utilui.cpp \
     alignedtextgraphicsitem.cpp \
     activetextgraphicsitem.cpp \
     selectionpoint.cpp \
-    pointdisplayoptionsdialog.cpp
+    pointdisplayoptionsdialog.cpp \
+    selectionpointbuffer.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -46,7 +47,8 @@ HEADERS += utilui.h\
     alignedtextgraphicsitem.h \
     activetextgraphicsitem.h \
     selectionpoint.h \
-    pointdisplayoptionsdialog.h
+    pointdisplayoptionsdialog.h \
+    selectionpointbuffer.h
 
 unix {
     target.path = /usr/lib

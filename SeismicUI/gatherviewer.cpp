@@ -21,6 +21,8 @@
 #include <QSettings>
 #include <pointdisplayoptionsdialog.h>
 
+#include<gridviewer.h>
+
 GatherViewer::GatherViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::GatherViewer)
@@ -37,7 +39,8 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
     connect( gatherView, SIGNAL(mouseOver(int,qreal)), this, SLOT(onMouseOver(int,qreal)));
     connect( gatherView, SIGNAL(traceClicked(size_t)), this, SLOT(showTraceHeader(size_t)));
-    connect( gatherView, SIGNAL(traceSelected(size_t)), this, SLOT(onTraceSelected(size_t)) );
+   // connect( gatherView, SIGNAL(traceSelected(size_t)), this, SLOT(onTraceSelected(size_t)) );
+    connect( gatherView, SIGNAL(pointSelected(SelectionPoint)), this, SLOT(onViewPointSelected(SelectionPoint)) );
 
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
@@ -84,10 +87,12 @@ void GatherViewer::receivePoint(SelectionPoint point, int code){
     case PointCode::VIEWER_CURRENT_CDP:
         if( ui->actionShare_Current_Position->isChecked()){
             gatherView->setViewerCurrentPoint(point);
+            QString msg=createStatusMessage(point);
+            statusBar()->showMessage(msg);
         }
         break;
 
-    default:
+    default:    // VIEWER_CURRENT_POUNT_SELECTED will be handled here
         emit requestPoint( point.iline, point. xline);
         break;
     }
@@ -122,6 +127,10 @@ void GatherViewer::zoomFitWindow(){
      m_gather=gather;
 
      gatherView->setGather(m_gather);
+
+     gatherView->setIntersectionTraces( computeIntersections() );
+
+     updateIntersections();
 
     emit gatherChanged();
  }
@@ -225,8 +234,14 @@ void GatherViewer::onTraceSelected(size_t i){
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
-        sendPoint(SelectionPoint(iline, xline), VIEWER_CURRENT_CDP);
+
+        sendPoint(SelectionPoint(iline, xline, SelectionPoint::NO_TIME), VIEWER_CURRENT_CDP);
     }
+}
+
+
+void GatherViewer::onViewPointSelected(SelectionPoint sp){
+    sendPoint(sp, PointCode::VIEWER_POINT_SELECTED);
 }
 
 // this function was added because navigation widgets numbers are 1-based where as show trace header uses 0-based trace numbers
@@ -262,9 +277,11 @@ void GatherViewer::on_zoomFitWindowAct_triggered()
 
 void GatherViewer::onMouseOver(int trace, qreal secs){
 
+
     if( !m_gather || trace>=m_gather->size()) return;
 
     const seismic::Trace& trc=(*m_gather)[trace];
+    /*
     size_t i=trc.time_to_index(secs);
     QString amp=(i<trc.size()) ? QString::number(trc[i]) : QString("n/a");
     QString mills=QString::number( int(1000*secs) );
@@ -274,10 +291,10 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
 
         message += anno.second + "=" + toQString( trc.header().at( anno.first) ) + ", ";
     }
-
+*/
     int iline=trc.header().at("iline").intValue();
     int xline=trc.header().at("xline").intValue();
-
+/*
     // compute x,y from inline/crossline rather than taking from header from header
     // possible improvement: poststack disp cdpx, cdpy; prestack: sx,sy,gx,gy from header, if not present use computed as fallback
     QTransform IlXlToXY;
@@ -307,12 +324,17 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
             message+="NULL";
         }
     }
+*/
+
+    SelectionPoint sp(iline, xline, secs);
+    QString message=createStatusMessage( sp );
 
     statusBar()->showMessage( message );
 
     if( ui->actionShare_Current_Position->isChecked()){
-        view()->gatherLabel()->setHighlightedTrace(trace);      // need to set this because the send point will not be received by this viewer
-        sendPoint( SelectionPoint(iline, xline, secs), PointCode::VIEWER_CURRENT_CDP);
+
+        gatherView->setViewerCurrentPoint(sp);      // need to set this because the send point will not be received by this viewer
+        sendPoint( sp, PointCode::VIEWER_CURRENT_CDP);
     }
 
 }
@@ -481,6 +503,16 @@ void GatherViewer::on_actionCloseVolume_triggered()
 void GatherViewer::closeEvent(QCloseEvent *)
 {
     saveSettings();
+
+    sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );  // notify other viewers
+}
+
+void GatherViewer::leaveEvent(QEvent *){
+
+    gatherView->setViewerCurrentPoint(SelectionPoint::NONE);
+    QString msg=createStatusMessage(SelectionPoint::NONE);
+    statusBar()->showMessage(msg);
+    sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );
 }
 
 void GatherViewer::saveSettings(){
@@ -506,6 +538,61 @@ void GatherViewer::loadSettings(){
     settings.endGroup();
 
 
+}
+
+
+QString GatherViewer::createStatusMessage( SelectionPoint sp){
+
+    if( sp==SelectionPoint::NONE) return QString();
+
+    int tno=gatherView->lookupTrace(sp.iline, sp.xline); // find trace number, -1 if not found
+    if( tno<0 ) return QString();
+
+    const seismic::Trace& trc=(*m_gather)[tno];
+    size_t i=trc.time_to_index(sp.time);
+    QString amp=(i<trc.size()) ? QString::number(trc[i]) : QString("n/a");
+    QString mills=QString::number( int(1000*sp.time) );
+
+    QString message;
+    for( auto anno : m_traceAnnotations ){
+
+        message += anno.second + "=" + toQString( trc.header().at( anno.first) ) + ", ";
+    }
+
+    int iline=trc.header().at("iline").intValue();
+    int xline=trc.header().at("xline").intValue();
+
+    // compute x,y from inline/crossline rather than taking from header from header
+    // possible improvement: poststack disp cdpx, cdpy; prestack: sx,sy,gx,gy from header, if not present use computed as fallback
+    QTransform IlXlToXY;
+    QTransform XYToIlXl;
+    if( m_project && m_project->geometry().computeTransforms( XYToIlXl, IlXlToXY)){
+
+
+            QPointF p=IlXlToXY.map( QPoint(iline, xline));
+            qreal x=p.x();
+            qreal y=p.y();
+
+            message+=QString::asprintf("x*=%.1lf, y*=%.1lf, ", x, y);
+    }
+
+
+    message+=QString( " Time=") + mills + QString(", Amplitude= ")+ amp;
+
+    // this MUST changed to time instead of samples because sampling of volume can be different from trace!!!
+    if( gatherView->volume()){
+
+        float attr=gatherView->volume()->value(iline,xline,sp.time);
+        message+=QString(", Attibute=");
+        if( attr!=gatherView->volume()->NULL_VALUE){
+            message+=QString::number(attr);
+        }
+        else{
+            message+="NULL";
+        }
+    }
+
+    return message;
 }
 
 
@@ -558,4 +645,68 @@ void GatherViewer::on_action_Point_Display_Options_triggered()
 
     m_pointDisplayOptionsDialog->show();
 }
+
+void GatherViewer::updateIntersections(){
+
+    QVector<SelectionPoint> allTraces;
+
+    for( BaseViewer* v : dispatcher()->viewers() ){
+
+        GatherViewer* gv=dynamic_cast<GatherViewer*>(v);
+
+        if( !gv || !gv->gather() ) continue;
+
+        for(auto trc : *(gv->gather())){
+            int iline=trc.header().at("iline").intValue();
+            int xline=trc.header().at("xline").intValue();
+            allTraces.push_back(SelectionPoint(iline, xline, 0));
+        }
+
+        if( gv==this ) continue;
+
+        gv->gatherView->setIntersectionTraces( gv->computeIntersections() );
+
+
+    }
+
+    for( BaseViewer* v : dispatcher()->viewers() ){
+
+        GridViewer* gv=dynamic_cast<GridViewer*>(v);
+
+        if( gv ){
+            gv->gridView()->setIntersectionPoints(allTraces);
+        }
+    }
+}
+
+QVector<int> GatherViewer::computeIntersections(){
+
+    if( ! dispatcher() ) return QVector<int>();
+
+    if( !m_gather ) return QVector<int>();
+
+    QVector<int> res;
+
+    for( BaseViewer* v : dispatcher()->viewers() ){
+
+        GatherViewer* gv=dynamic_cast<GatherViewer*>(v);
+
+        if( !gv || !gv->gather() || gv==this ) continue;
+
+        for( auto trc : *(gv->gather()) ){
+
+            int iline=trc.header().at("iline").intValue();
+            int xline=trc.header().at("xline").intValue();
+
+            int i  = gatherView->lookupTrace(iline,xline);
+
+            if( i!=-1 ) res.push_back(i);
+        }
+
+    }
+
+    return res;
+}
+
+
 

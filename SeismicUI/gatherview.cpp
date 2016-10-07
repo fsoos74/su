@@ -74,6 +74,7 @@ void GatherView::setGather( std::shared_ptr<seismic::Gather> g){
         setPixelPerTrace( qreal(m_gatherLabel->width())/m_gather->size());
     }
 
+
     emit gatherChanged(m_gather); // important to do this after the pixel per trace is updated!!!
 /*
     if( m_gather && m_gather->size()>0 && m_gatherLabel->highlightedTrace()>=m_gather->size() ){
@@ -92,6 +93,15 @@ void GatherView::setHighlightedPoints(QVector<SelectionPoint> points){
     m_gatherLabel->update();
 }
 
+void GatherView::setIntersectionTraces(QVector<int> trc){
+
+    if( trc==m_intersectionTraces) return;
+
+    m_intersectionTraces=trc;
+
+    m_gatherLabel->update();
+}
+
 
 void GatherView::setPrimarySortKey(GatherSortKey k){
 
@@ -105,67 +115,50 @@ void GatherView::setPrimarySortKey(GatherSortKey k){
 }
 
 
-
 void GatherView::buildTraceLookup(){
 
     m_traceLookup.clear();
 
     if( !m_gather ) return;
 
-    std::string key2;
-
-    if( m_primarySortKey == GatherSortKey::Inline ){
-        key2="xline";
-    }
-    else if( m_primarySortKey == GatherSortKey::Crossline ){
-        key2="iline";
-    }
-    else{   // if not inline/crossline or crossline/inline sorted don't lookup
-        return;
-    }
-
     for( int i=0; i<m_gather->size(); i++){
 
-        int line=(*m_gather)[i].header().at(key2).intValue();
+        int iline=(*m_gather)[i].header().at("iline").intValue();
+        int xline=(*m_gather)[i].header().at("xline").intValue();
 
-        m_traceLookup.insert( line, i );
+        QString key=QString("%1_%2").arg(iline).arg(xline);
 
-        //std::cout<<key.toStdString()<<" -> "<<i<<std::endl;
+        m_traceLookup.insert( key, i );
     }
 }
 
 // return trace number or -1 if not found
 int GatherView::lookupTrace(int iline, int xline){
 
-    int key2;
+    QString key=QString("%1_%2").arg(iline).arg(xline);
 
-    if( m_primarySortKey==GatherSortKey::Inline ){
-        key2=xline;
-    }
-    else if( m_primarySortKey==GatherSortKey::Crossline){
-        key2=iline;
-    }
-    else{
-        return -1; // if not il/xl or xl/il sorted don't lookup
-    }
-
-    if( !m_traceLookup.contains(key2) ) return -1;
-
-    return m_traceLookup.value(key2);
+    return m_traceLookup.value(key, -1);
 }
 
 void GatherView::setViewerCurrentPoint(SelectionPoint p){
-//std::cout<<"GatherView p: il="<<p.iline<<" xl="<<p.xline<<std::endl<<std::flush;
-//std::cout<<"current il="<<m_viewerCurrentPoint.iline<<" xl="<<m_viewerCurrentPoint.xline<<std::endl<<std::flush;
+
     if( p==m_viewerCurrentPoint ) return;
 
     m_viewerCurrentPoint=p;
 
-    int traceno=lookupTrace( p.iline, p.xline );
+    m_gatherLabel->update();
 
-    m_gatherLabel->setHighlightedTrace(traceno);
+    /*
+    int traceno=-1;     // no trace highlighted
 
-    //std::cout<<"trace #"<<traceno<<" il="<<p.iline<<" xl="<<p.xline<<std::endl<<std::flush;
+    if( m_primarySortKey==GatherSortKey::Inline ||
+            m_primarySortKey==GatherSortKey::Crossline ){
+
+        traceno=lookupTrace( p.iline, p.xline );    // sets traceno=-1 if not displayed cdp
+    }
+
+    m_gatherLabel->setViewerCurrentTrace(traceno);
+*/
 }
 
 std::shared_ptr<Grid2D<float> > GatherView::horizon(QString name)const{
@@ -455,11 +448,18 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
 
     if( !(widget==m_gatherLabel || widget==m_leftRuler || widget==m_topRuler)) return QObject::eventFilter(obj,ev);
 
-    // select trace on double click
+    // select point on double click
     if( widget==m_gatherLabel && mouseEvent->type()==QEvent::MouseButtonDblClick){
         QPoint p=mouseEvent->pos();
         int trace=p.x()/m_pixelPerTrace;
-        if( trace>=0 ) emit traceSelected(static_cast<size_t>(trace));
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+
+        //if( trace>=0 ) emit traceSelected(static_cast<size_t>(trace));
+        if( trace>=0 ){
+            int iline=(*m_gather)[trace].header().at("iline").intValue();
+            int xline=(*m_gather)[trace].header().at("xline").intValue();
+            emit pointSelected( SelectionPoint( iline, xline, secs ));
+        }
     }
 
     // emit position

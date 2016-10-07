@@ -107,12 +107,17 @@ void GridViewer::receivePoint( SelectionPoint point, int code ){
     case PointCode::VIEWER_CURRENT_CDP:
         if( ui->actionShare_Current_Position->isChecked()){
             gridView()->setViewerCurrentPoint(point);
+            QString msg=createStatusMessage(point);
+            statusBar()->showMessage(msg);
         }
         break;
-
-    default:{
+    case PointCode::VIEWER_POINT_SELECTED:{
         QVector<SelectionPoint> v{point};
         gridView()->setHighlightedCDPs(v);
+        break;
+    }
+    default:{               // nop
+
         break;
     }
 
@@ -181,23 +186,47 @@ void GridViewer::onGridViewMouseOver(int i, int j){
         return;
     }
 
-    QString msg=QString::asprintf("inline=%d  crossline=%d  ", i, j);
+    double time=SelectionPoint::NO_TIME;
+    if( true ){ // check for grid is time horizon
+        double val=(*m_grid)( i, j);
+        time=val/1000;  // convert mses to secs
+    }
+    SelectionPoint sp( i, j, time );
 
+    statusBar()->showMessage( createStatusMessage( sp ) );
+
+    if( ui->actionShare_Current_Position->isChecked()){
+
+        gridView()->setViewerCurrentPoint( sp );              // also update current point, sendpoint does not send to sender!!!
+        sendPoint( sp , PointCode::VIEWER_CURRENT_CDP );
+    }
+}
+
+
+QString GridViewer::createStatusMessage( SelectionPoint sp ){
+
+    if( !m_grid) return QString();
+
+    if( sp==SelectionPoint::NONE){
+        return QString();
+    }
+
+    QString msg=QString::asprintf("inline=%d  crossline=%d  ", sp.iline, sp.xline);
 
     QTransform IlXlToXY;
     QTransform XYToIlXl;
     if( m_project && m_project->geometry().computeTransforms( XYToIlXl, IlXlToXY)){
 
 
-            QPointF p=IlXlToXY.map( QPoint(i, j));
+            QPointF p=IlXlToXY.map( QPoint(sp.iline, sp.xline));
             qreal x=p.x();
             qreal y=p.y();
 
             msg+=QString::asprintf("x=%.1lf  y=%.1lf  ", x, y);
     }
 
-    double val=(*m_grid)( i, j);
 
+    double val=(*m_grid)( sp.iline, sp.xline);
     if( val!=Grid2D<float>::NULL_VALUE){
         msg+=QString::asprintf("value=%.2lf  ", val);
     }
@@ -205,13 +234,7 @@ void GridViewer::onGridViewMouseOver(int i, int j){
         msg+=tr("value=NULL");
     }
 
-    statusBar()->showMessage(msg);
-
-    if( ui->actionShare_Current_Position->isChecked()){
-        SelectionPoint currentPoint( i, j, 0);
-        gridView()->setViewerCurrentPoint( currentPoint );              // also update current point, sendpoint does not send to sender!!!
-        sendPoint( currentPoint , PointCode::VIEWER_CURRENT_CDP );
-    }
+    return msg;
 }
 
 void GridViewer::on_zoomInAct_triggered()
@@ -414,8 +437,28 @@ void GridViewer::on_actionConfigure_Colorbar_triggered()
 // need this to forward point from view to dispatcher
 void GridViewer::onViewPointSelected( QPoint point){
 
-    sendPoint(SelectionPoint( point.x(), point.y() ), VIEWER_CURRENT_CDP);
+    int iline=point.x();
+    int xline=point.y();
+
+    double time=SelectionPoint::NO_TIME;
+    if( true ){ // check for grid is time horizon
+
+        if( m_grid ){
+            double val=(*m_grid)( iline, xline);
+            if( val!=m_grid->NULL_VALUE ){
+                time=val/1000;  // convert mses to secs
+            }
+            else{
+                time=SelectionPoint::NO_TIME;
+            }
+        }
+    }
+
+    SelectionPoint sp( iline, xline, time );
+
+    sendPoint(sp, PointCode::VIEWER_POINT_SELECTED);
 }
+
 
 void GridViewer::onViewPolylineSelected( QVector<QPoint> polyline){
 
@@ -430,6 +473,16 @@ void GridViewer::onViewPolylineSelected( QVector<QPoint> polyline){
 void GridViewer::closeEvent(QCloseEvent *)
 {
     saveSettings();
+
+    sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );  // notify other viewers
+}
+
+void GridViewer::leaveEvent(QEvent *){
+
+    gridView()->setViewerCurrentPoint(SelectionPoint::NONE );
+    QString msg=createStatusMessage(SelectionPoint::NONE);
+    statusBar()->showMessage(msg);
+    sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );
 }
 
 QMap<Qt::TransformationMode, QString> TransformationModeMap{

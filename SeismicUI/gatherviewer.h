@@ -12,13 +12,13 @@
 #include<string>
 #include<vector>
 #include<headerdialog.h>
-#include<QMap>
-
 #include"tracescalingdialog.h"
 #include"tracedisplayoptionsdialog.h"
 #include "volumedisplayoptionsdialog.h"
 #include "pointdisplayoptionsdialog.h"
 #include "gathersortkey.h"
+
+#include <selectionpointbuffer.h>
 
 #include <baseviewer.h>
 #include <QDockWidget>
@@ -86,6 +86,7 @@ signals:
 protected:
 
     void closeEvent(QCloseEvent*);
+    void leaveEvent(QEvent*);
 
 private slots:
 
@@ -94,6 +95,7 @@ private slots:
     void onTraceHeaderDialogFinished();
 
     void onTraceSelected(size_t);
+    void onViewPointSelected( SelectionPoint );
 
     void onMouseOver(int, qreal);
 
@@ -127,11 +129,18 @@ private:
 
     void createDockWidgets();
 
+    QString createStatusMessage( SelectionPoint);
+
+    QVector<int> computeIntersections();
+    void updateIntersections();
+
+
     Ui::GatherViewer *ui;
 
     GatherView* gatherView;
 
     std::shared_ptr<Gather> m_gather;
+
 
     std::shared_ptr<AVOProject> m_project;
 

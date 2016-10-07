@@ -85,10 +85,11 @@ AmplitudeCurveViewer::~AmplitudeCurveViewer()
 void AmplitudeCurveViewer::receivePoint( SelectionPoint pt, int code ){
 
     // trigger adding of curve for given point
-    showSelector();
-    selector->setInlineNumber(pt.iline);
-    selector->setCrosslineNumber(pt.xline);
-
+    if( code==PointCode::VIEWER_POINT_SELECTED){
+        showSelector();
+        selector->setInlineNumber(pt.iline);
+        selector->setCrosslineNumber(pt.xline);
+    }
 
 }
 
@@ -296,8 +297,8 @@ void AmplitudeCurveViewer::sceneSelectionChanged(){
         int curveIndex=item->data( CURVE_INDEX_KEY).toInt();
         int iline=m_curveInfos[curveIndex].inlineNumber;
         int xline=m_curveInfos[curveIndex].crosslineNumber;
-
-        sendPoint(  SelectionPoint(iline,xline), VIEWER_CURRENT_CDP );
+        double time=SelectionPoint::NO_TIME;
+        sendPoint(  SelectionPoint(iline,xline, time), PointCode::VIEWER_POINT_SELECTED );
     }
 }
 

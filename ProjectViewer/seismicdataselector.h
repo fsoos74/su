@@ -45,6 +45,8 @@ public:
         return m_primarySortKey;
     }
 
+    QString selectionDescription();
+
 public slots:
     void setReader(std::shared_ptr<SeismicDatasetReader>);
     void setInlineRange( int min, int max);
@@ -63,6 +65,7 @@ public slots:
 signals:
     void gatherChanged(std::shared_ptr<seismic::Gather>);
     void primarySortChanged(GatherSortKey);
+    void descriptionChanged(QString);
 
 protected:
     // override this to keep return pressed in line edit move up to parent
