@@ -118,6 +118,15 @@ void GridView::setViewerCurrentPoint(SelectionPoint p){
 
     m_viewerCurrentPoint=p;
 
+    if( inlineOrientation()==AxxisOrientation::Horizontal ){
+        m_leftRuler->setCurrentPos( p.iline );
+        m_topRuler->setCurrentPos( p.xline );
+    }
+    else{
+        m_leftRuler->setCurrentPos( p.xline );
+        m_topRuler->setCurrentPos( p.iline );
+    }
+
     m_label->update();
 }
 
@@ -1152,6 +1161,15 @@ void Ruler::setFixedTickIncrement(bool on){
     emit ticksChanged();
 }
 
+void Ruler::setCurrentPos(qreal x){
+
+    if( x==m_currentPos) return;
+
+    m_currentPos=x;
+
+    update();
+}
+
 void Ruler::paintEvent(QPaintEvent*){
 
     QPainter painter(this);
@@ -1316,6 +1334,19 @@ QVector< Ruler::Tick > Ruler::computeTicks( int coord1, int coord2 )const{
 }
 
 
+void Ruler::drawVerticalIndicator(QPainter& painter, QPoint p){
+
+    const int INDICATOR_SIZE=4;
+
+    if( p.y()<-INDICATOR_SIZE || p.y()>height()+INDICATOR_SIZE ) return;
+
+    QPolygon poly;
+    poly<<QPoint( 0, 0 )<<QPoint( -INDICATOR_SIZE, - INDICATOR_SIZE)<<QPoint( -INDICATOR_SIZE, INDICATOR_SIZE);
+    poly.translate( p );
+    painter.drawPolygon(poly);
+}
+
+
 void Ruler::drawVertical( QPainter& painter ){
 
 
@@ -1362,6 +1393,29 @@ void Ruler::drawVertical( QPainter& painter ){
 
     }
 
+    const QTransform& grid2img=m_view->gridToImageTransform();
+    qreal y;
+    if(  m_view->inlineOrientation() == AxxisOrientation::Horizontal ){ // inline numbers on left label(vertical)
+        y=grid2img.map( QPointF( 0, m_currentPos )).y();
+    }
+    else{  // crosslines on left ruler
+        y=grid2img.map( QPointF( m_currentPos, 0 )).y();
+    }
+    y-=sb->value();
+    drawVerticalIndicator(painter, QPoint(width()-1, y));
+
+}
+
+void Ruler::drawHorizontalIndicator(QPainter& painter, QPoint p){
+
+    const int INDICATOR_SIZE=4;
+
+    if( p.x()<-INDICATOR_SIZE || p.x()>width()+INDICATOR_SIZE) return;
+
+    QPolygon poly;
+    poly<<QPoint( 0, 0 )<<QPoint( -INDICATOR_SIZE, - INDICATOR_SIZE)<<QPoint( INDICATOR_SIZE, -INDICATOR_SIZE);
+    poly.translate( p );
+    painter.drawPolygon(poly);
 }
 
 void Ruler::drawHorizontal( QPainter& painter ){
@@ -1400,6 +1454,17 @@ void Ruler::drawHorizontal( QPainter& painter ){
         painter.drawLine( x, y1, x, y2 );
         painter.drawText( x - TICK_LABEL_DX/2, 0, TICK_LABEL_DX, y2, Qt::AlignBottom|Qt::AlignHCenter, QString::number(tick.value()) );
     }
+
+    const QTransform& grid2img=m_view->gridToImageTransform();
+    qreal x;
+    if(  m_view->inlineOrientation() == AxxisOrientation::Horizontal ){ // xline numbers on top label(horizontal)
+        x=grid2img.map( QPointF( m_currentPos, 0 )).x();
+    }
+    else{  // inline on top ruler
+        x=grid2img.map( QPointF( 0, m_currentPos )).x();
+    }
+
+    drawHorizontalIndicator(painter, QPoint( x, height()-1 ));
 
 }
 

@@ -1165,6 +1165,8 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
         QString typeName=gridType2String(t);
         viewer->setWindowTitle(QString("Grid %1 - %2").arg(typeName, name) );
 
+        viewer->setGridMilliseconds( t==GridType::Horizon );    // the samples of time horizons are millis
+
         GridView* gridView=viewer->gridView();
         gridView->setInlineOrientation(m_project->inlineOrientation());
         gridView->setInlineDirection(m_project->inlineDirection());

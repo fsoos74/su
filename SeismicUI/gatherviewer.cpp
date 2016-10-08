@@ -48,6 +48,7 @@ GatherViewer::GatherViewer(QWidget *parent) :
     gatherView->gatherLabel()->setHighlightTrace( ui->actionShare_Current_Position->isChecked()  );
     connect( ui->actionShare_Current_Position, SIGNAL(toggled(bool)), gatherView->gatherLabel(), SLOT(setHighlightTrace(bool)) );
 
+
     //resize(sizeHint());
     //setMinimumWidth(ui->mainToolBar->width() + 50);
 
@@ -549,9 +550,6 @@ QString GatherViewer::createStatusMessage( SelectionPoint sp){
     if( tno<0 ) return QString();
 
     const seismic::Trace& trc=(*m_gather)[tno];
-    size_t i=trc.time_to_index(sp.time);
-    QString amp=(i<trc.size()) ? QString::number(trc[i]) : QString("n/a");
-    QString mills=QString::number( int(1000*sp.time) );
 
     QString message;
     for( auto anno : m_traceAnnotations ){
@@ -576,10 +574,13 @@ QString GatherViewer::createStatusMessage( SelectionPoint sp){
             message+=QString::asprintf("x*=%.1lf, y*=%.1lf, ", x, y);
     }
 
+    if( sp.time==SelectionPoint::NO_TIME ) return message;  // that's all we can do without valid time
+
+    size_t i=trc.time_to_index(sp.time);
+    QString amp=(i<trc.size()) ? QString::number(trc[i]) : QString("n/a");
+    QString mills=QString::number( int(1000*sp.time) );
 
     message+=QString( " Time=") + mills + QString(", Amplitude= ")+ amp;
-
-    // this MUST changed to time instead of samples because sampling of volume can be different from trace!!!
     if( gatherView->volume()){
 
         float attr=gatherView->volume()->value(iline,xline,sp.time);

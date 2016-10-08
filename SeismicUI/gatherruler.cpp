@@ -25,6 +25,15 @@ void GatherRuler::setAxxisLabels(const QStringList & l){
     update();
 }
 
+void GatherRuler::setCurrentPos(qreal x){
+
+    if( x==m_currentPos) return;
+
+    m_currentPos=x;
+
+    update();
+}
+
 QVector< GatherRuler::Tick > GatherRuler::computeTicks( int pixFrom, int pixTo )const{
 
     QVector< Tick > ticks;
@@ -39,7 +48,6 @@ QVector< GatherRuler::Tick > GatherRuler::computeTicks( int pixFrom, int pixTo )
         int millsTo=  firstMill + pixTo / pixelPerMill;
 
         int incr=tickIncrement( pixTo - pixFrom + 1, millsTo - millsFrom, TICK_LABEL_DY);
-
 
 
         if( incr > 0 ){
@@ -94,6 +102,17 @@ void GatherRuler::paintEvent(QPaintEvent*){
 
 }
 
+void GatherRuler::drawVerticalIndicator(QPainter& painter, QPoint p){
+
+    const int INDICATOR_SIZE=4;
+
+    if( p.y()<-INDICATOR_SIZE || p.y()>height()+INDICATOR_SIZE ) return;
+
+    QPolygon poly;
+    poly<<QPoint( 0, 0 )<<QPoint( -INDICATOR_SIZE, - INDICATOR_SIZE)<<QPoint( -INDICATOR_SIZE, INDICATOR_SIZE);
+    poly.translate( p );
+    painter.drawPolygon(poly);
+}
 
 void GatherRuler::drawVertical( QPainter& painter ){
 
@@ -135,6 +154,21 @@ void GatherRuler::drawVertical( QPainter& painter ){
         }
     }
 
+
+    qreal y=(m_currentPos - m_view->ft())*m_view->pixelPerSecond() - sb->value();
+    drawVerticalIndicator( painter, QPoint( width()-1, y) );
+}
+
+void GatherRuler::drawHorizontalIndicator(QPainter& painter, QPoint p){
+
+    const int INDICATOR_SIZE=4;
+
+    if( p.x()<-INDICATOR_SIZE || p.x()>width()+INDICATOR_SIZE) return;
+
+    QPolygon poly;
+    poly<<QPoint( 0, 0 )<<QPoint( -INDICATOR_SIZE, - INDICATOR_SIZE)<<QPoint( INDICATOR_SIZE, -INDICATOR_SIZE);
+    poly.translate( p );
+    painter.drawPolygon(poly);
 }
 
 void GatherRuler::drawHorizontal( QPainter& painter ){
@@ -173,6 +207,9 @@ void GatherRuler::drawHorizontal( QPainter& painter ){
 
     }
 
+
+    qreal x=(m_currentPos + 0.5)*m_view->pixelPerTrace();
+    drawHorizontalIndicator( painter, QPoint( x, height()-1) );
 }
 
 

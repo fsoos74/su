@@ -64,6 +64,10 @@ public:
         return m_fixedTickIncrement;
     }
 
+    qreal currentPos()const{
+        return m_currentPos;
+    }
+
     QVector< Tick > computeTicks( int coord1, int coord2 )const;
 
 signals:
@@ -76,6 +80,7 @@ public slots:
 
     void setFixedTickIncrement(bool);
     void setTickIncrement(int);
+    void setCurrentPos(qreal);
 
 private slots:
 
@@ -91,8 +96,11 @@ private:
 
     void drawVertical( QPainter& painter );
     void drawHorizontal( QPainter& painter );
+    void drawHorizontalIndicator( QPainter&, QPoint );
+    void drawVerticalIndicator( QPainter&, QPoint );
 
     GridView* m_view;
+    qreal m_currentPos;
     Orientation m_orientation;
     int m_tickIncrement=1;
     bool m_fixedTickIncrement=false;

@@ -48,10 +48,15 @@ public:
 
     bool orientate(const ProjectGeometry&);
 
+    bool isGridMilliseconds();
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
     void setProject( std::shared_ptr<AVOProject> );
+    void setGridMilliseconds(bool);
+
+signals:
+    void gridMillisecondsChanged(bool);
 
 protected:
 
@@ -112,6 +117,7 @@ private:
     std::shared_ptr<Grid2D<float> > m_grid;
     std::shared_ptr<AVOProject> m_project;
 
+    bool m_gridMilliseconds=false;
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
     AspectRatioDialog* aspectRatioDialog=nullptr;

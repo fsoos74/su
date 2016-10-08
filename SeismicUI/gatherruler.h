@@ -59,6 +59,10 @@ public:
         return m_axxisLabels;
     }
 
+    qreal currentPos(){
+        return m_currentPos;
+    }
+
     virtual QVector< Tick > computeTicks( int pixFrom, int pixTo )const;
 
 signals:
@@ -68,12 +72,15 @@ signals:
 public slots:
 
     void setAxxisLabels(const QStringList&);
+    void setCurrentPos(qreal);
 
 protected:
 
     void paintEvent( QPaintEvent*);
     void drawVertical( QPainter& painter );
     void drawHorizontal( QPainter& painter );
+    void drawHorizontalIndicator( QPainter&, QPoint );
+    void drawVerticalIndicator( QPainter&, QPoint );
 
 private:
 
@@ -82,7 +89,7 @@ private:
     GatherView* m_view;
     Orientation m_orientation;
     QStringList m_axxisLabels;
-
+    qreal m_currentPos;
 };
 
 #endif // GATHERRULER_H

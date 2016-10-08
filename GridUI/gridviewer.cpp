@@ -152,6 +152,15 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     gridView()->zoomFit();
 }
 
+void GridViewer::setGridMilliseconds(bool on){
+
+    if( on == m_gridMilliseconds) return;
+
+    m_gridMilliseconds=on;
+
+    emit gridMillisecondsChanged(on);
+}
+
 void GridViewer::setDefaultColorTable(){
 
     QVector<QRgb> baseColors=ColorTable::defaultColors();
@@ -187,7 +196,7 @@ void GridViewer::onGridViewMouseOver(int i, int j){
     }
 
     double time=SelectionPoint::NO_TIME;
-    if( true ){ // check for grid is time horizon
+    if( m_gridMilliseconds ){ // check for grid is time horizon
         double val=(*m_grid)( i, j);
         time=val/1000;  // convert mses to secs
     }

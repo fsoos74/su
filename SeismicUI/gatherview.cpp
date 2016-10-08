@@ -148,17 +148,10 @@ void GatherView::setViewerCurrentPoint(SelectionPoint p){
 
     m_gatherLabel->update();
 
-    /*
-    int traceno=-1;     // no trace highlighted
+    int trcno=lookupTrace(p.iline, p.xline);
+    topRuler()->setCurrentPos(trcno);
+    leftRuler()->setCurrentPos( p.time );
 
-    if( m_primarySortKey==GatherSortKey::Inline ||
-            m_primarySortKey==GatherSortKey::Crossline ){
-
-        traceno=lookupTrace( p.iline, p.xline );    // sets traceno=-1 if not displayed cdp
-    }
-
-    m_gatherLabel->setViewerCurrentTrace(traceno);
-*/
 }
 
 std::shared_ptr<Grid2D<float> > GatherView::horizon(QString name)const{
