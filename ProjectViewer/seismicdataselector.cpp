@@ -222,7 +222,12 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
 
     if( !ui->rbRandomLine->isChecked()) return;
 
-    if( polyline.size()<2) return;
+    // return emptx gather if 0 or 1 point since this is not a line
+    if( polyline.size()<2){
+        m_gather=std::shared_ptr<seismic::Gather>( new seismic::Gather);
+        emit gatherChanged(m_gather);
+        return;
+    }
 
     // find all cdp/points on line
     QVector<QPoint> allPoints;
