@@ -167,8 +167,8 @@ protected:
 
                 if( gather.empty() ) continue;
 
-                if( !job.horizon->bounds().isInside(il, xl)) continue;
-                double v=(*job.horizon)(il, xl);
+                //if( !job.horizon->bounds().isInside(il, xl)) continue;  // valueAt does the job
+                double v=job.horizon->valueAt(il, xl);
                 if( v == job.horizon->NULL_VALUE ) continue;
                 double t=0.001 * v;    // horizon in millis
                 (*job.grid)(il, xl)=semblance(gather, job.halfSamples, t);

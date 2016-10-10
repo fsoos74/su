@@ -209,8 +209,8 @@ private:
                 if( gather.empty() ){
                     continue;
                 }
-                if( !m_job.horizon->bounds().isInside(iline, xline)) continue;
-                double v=(*m_job.horizon)(iline, xline);
+                //if( !m_job.horizon->bounds().isInside(iline, xline)) continue; // valueAt does the job
+                double v=m_job.horizon->valueAt(iline, xline);
                 if( v == m_job.horizon->NULL_VALUE ) continue;
                 double t=0.001 * v;    // horizon in millis
 

@@ -103,8 +103,8 @@ ProjectProcess::ResultCode CreateTimesliceProcess::run(){
         qreal t=0.001*m_sliceTime;  // slicetime in millisecs
         if( m_horizon){ // we are using a horizon and not constant time
 
-            if( !m_horizon->bounds().isInside(iline, xline)) continue;
-            Grid2D<float>::value_type v=(*m_horizon)(iline, xline);
+            //if( !m_horizon->bounds().isInside(iline, xline)) continue; // don't need this anymore. valueAt does the job
+            Grid2D<float>::value_type v=m_horizon->valueAt(iline, xline);
             if( v == m_horizon->NULL_VALUE ) continue;
 
             t=0.001 * v;    // horizon in millis

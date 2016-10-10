@@ -104,8 +104,8 @@ ProjectProcess::ResultCode HorizonAmplitudesProcess::run(){
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
 
-        if( !m_horizon->bounds().isInside(iline, xline)) continue;
-        Grid2D<float>::value_type v=(*m_horizon)(iline, xline);
+        //if( !m_horizon->bounds().isInside(iline, xline)) continue;  //valueAt does the job
+        Grid2D<float>::value_type v=m_horizon->valueAt(iline, xline);
         if( v != m_horizon->NULL_VALUE ){
 
             qreal t=0.001 * v;      // horizon is in millis
