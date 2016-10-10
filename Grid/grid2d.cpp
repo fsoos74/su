@@ -24,6 +24,7 @@ const Grid2D<QPointF>::value_type Grid2D<QPointF>::NULL_VALUE =
 template<>
 const Grid2D<seismic::Trace*>::value_type Grid2D<seismic::Trace*>::NULL_VALUE=nullptr;
 
+
 std::pair<float, float> valueRange( const Grid2D<float>& grid){
 
     float min=std::numeric_limits<float>::max();

@@ -97,6 +97,18 @@ public:
         return m_values(i-m_bounds.i1(), j-m_bounds.j1());
     }
 
+    //this also checks if i,j is inside and returns NULL if not
+    value_type valueAt( const index_type& i, const index_type& j)const{
+
+        if( m_bounds.isInside(i,j) ){
+            return (*this)(i,j);
+        }
+        else{
+            return NULL_VALUE;
+        }
+    }
+
+
     const values_type& values()const{
         return m_values;
     }

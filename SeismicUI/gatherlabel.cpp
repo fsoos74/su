@@ -268,7 +268,10 @@ void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> 
        const seismic::Header& header=trace.header();
        int iline=header.at("iline").intValue();
        int xline=header.at("xline").intValue();
-       qreal t=horizon( iline, xline );
+       //qreal t=horizon.bounds().isInside(iline,xline) ?           // need to check this here because it is not checked in grid
+       //            horizon( iline, xline ) : horizon.NULL_VALUE;  // maybe add a getValue function to grid that includes this check
+
+       qreal t=horizon.valueAt(iline, xline);
 
        if( t==horizon.NULL_VALUE){
 
