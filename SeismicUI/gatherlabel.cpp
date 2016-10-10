@@ -165,7 +165,7 @@ void GatherLabel::setVolumeOpacity(int o){
 
 void GatherLabel::onViewGatherChanged(std::shared_ptr<seismic::Gather>){
 
-    buildTraceLookup();
+    //buildTraceLookup(); this is now part of gatherview
 
     updateTraceScaleFactors();  // this will call updatePixmap and update
 
@@ -296,6 +296,8 @@ void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> 
    painter.strokePath(path, thePen);
 }
 
+
+/* this is now in gatherview with improved key
 // currently virtual cdps numbers are used. PROBLEMS WHEN INLINE NUMBERS >999999!!!!! XXX
 int ilxlToCDP( int iline, int xline){
     const int IL_FACTOR=1000000;
@@ -334,7 +336,7 @@ int GatherLabel::lookupTrace(int iline, int xline){
 
     return -1;
 }
-
+*/
 
 void GatherLabel::drawHighlightedPoints( QPainter& painter,
                                          const QVector<SelectionPoint>& points){
@@ -353,7 +355,8 @@ void GatherLabel::drawHighlightedPoints( QPainter& painter,
 
     for( SelectionPoint p : points){
 
-        int trc=lookupTrace( p.iline, p.xline );
+        //int trc=lookupTrace( p.iline, p.xline );
+        int trc=m_view->lookupTrace( p.iline, p.xline );
         if( trc < 0 ) continue;           // no trace in gather with that cdp
 
         qreal x= trc * pixelPerTrace;

@@ -657,17 +657,19 @@ void GatherViewer::updateIntersections(){
 
         if( !gv || !gv->gather() ) continue;
 
-        for(auto trc : *(gv->gather())){
-            int iline=trc.header().at("iline").intValue();
-            int xline=trc.header().at("xline").intValue();
-            allTraces.push_back(SelectionPoint(iline, xline, 0));
+        if( gv->ui->actionShare_Current_Position->isChecked()){  // only add traces from viewers that share
+
+            for(auto trc : *(gv->gather())){
+                int iline=trc.header().at("iline").intValue();
+                int xline=trc.header().at("xline").intValue();
+                allTraces.push_back(SelectionPoint(iline, xline, 0));
+            }
+
         }
 
+        gv->gatherView->setIntersectionTraces( gv->computeIntersections() );  // will set empty vector if no sharing
+
         if( gv==this ) continue;
-
-        gv->gatherView->setIntersectionTraces( gv->computeIntersections() );
-
-
     }
 
     for( BaseViewer* v : dispatcher()->viewers() ){
@@ -686,6 +688,8 @@ QVector<int> GatherViewer::computeIntersections(){
 
     if( !m_gather ) return QVector<int>();
 
+    if( !ui->actionShare_Current_Position->isChecked()) return QVector<int>();
+
     QVector<int> res;
 
     for( BaseViewer* v : dispatcher()->viewers() ){
@@ -693,6 +697,8 @@ QVector<int> GatherViewer::computeIntersections(){
         GatherViewer* gv=dynamic_cast<GatherViewer*>(v);
 
         if( !gv || !gv->gather() || gv==this ) continue;
+
+        if( !gv->ui->actionShare_Current_Position->isChecked()) continue; // ignore viewers that don't share, make this a function for better readability
 
         for( auto trc : *(gv->gather()) ){
 
@@ -711,3 +717,9 @@ QVector<int> GatherViewer::computeIntersections(){
 
 
 
+
+void GatherViewer::on_actionShare_Current_Position_toggled(bool on)
+{
+    // need to update all viewers accordingly
+    updateIntersections();
+}

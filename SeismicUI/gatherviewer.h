@@ -122,6 +122,8 @@ private slots:
 
     void on_action_Point_Display_Options_triggered();
 
+    void on_actionShare_Current_Position_toggled(bool arg1);
+
 private:
 
     void saveSettings();

@@ -146,8 +146,9 @@ private:
     void updateDensityPlot();
     void updateVolumePixmap();
 
-    void buildTraceLookup();
-    int lookupTrace( int iline, int xline );
+    // this is now part of gatherview
+    //void buildTraceLookup();
+    //int lookupTrace( int iline, int xline );
 
     GatherView* m_view=nullptr;
 
