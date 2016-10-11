@@ -141,6 +141,7 @@ private:
     bool saveProject( const QString& fileName);
 
     void displaySeismicDataset( const QString& name);
+    void displaySeismicDatasetSlice( const QString& name);
     void displaySeismicDatasetIndex( const QString& name);
     void editSeismicDatasetProperties(const QString& name);
     void renameSeismicDataset(const QString&);

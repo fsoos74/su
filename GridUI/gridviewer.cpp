@@ -66,6 +66,10 @@ GridViewer::~GridViewer()
     delete ui;
 }
 
+QToolBar* GridViewer::toolBar(){
+    return ui->toolBar;
+}
+
 bool GridViewer::orientate(const ProjectGeometry& geom){
 
     if( !isValid(geom)) return false;

@@ -2,6 +2,7 @@
 #include "ui_projectviewer.h"
 
 #include "seismicdataselector.h"
+#include "sliceselector.h"
 #include "datasetpropertiesdialog.h"
 #include "twocombosdialog.h"
 #include "aboutdialog.h"
@@ -1121,6 +1122,7 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
 
     QMenu menu;
     menu.addAction("display");
+    menu.addAction("display slice");
     menu.addSeparator();
     menu.addAction("display index");
     menu.addAction("properties");
@@ -1134,6 +1136,9 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
 
     if( selectedAction->text()=="display" ){
         displaySeismicDataset(datasetName);
+    }
+    else if( selectedAction->text()=="display slice" ){
+        displaySeismicDatasetSlice(datasetName);
     }
     else if( selectedAction->text()=="display index" ){
         displaySeismicDatasetIndex(datasetName);
@@ -1675,7 +1680,50 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
 }
 
 
+void ProjectViewer::displaySeismicDatasetSlice(const QString& name){
 
+    if( m_project->seismicDatasetList().contains(name)){
+
+        SeismicDatasetInfo info=m_project->getSeismicDatasetInfo(name);
+
+        if( info.mode()!=SeismicDatasetInfo::Mode::Poststack){
+            return;
+        }
+
+        std::shared_ptr<SeismicDatasetReader> reader=m_project->openSeismicDataset(name);
+        if( !reader){
+            QMessageBox::critical(this, "Display Seismic Dataset Slice", "Open reader failed!");
+            return;
+        }
+
+
+        SliceSelector* sliceSelector=new SliceSelector(this);
+        sliceSelector->setReader(reader);
+        sliceSelector->setTimeRange(std::pair<int,int>(0,10000));
+        sliceSelector->setTime(0);
+        sliceSelector->setTimeIncrement(1);
+
+        GridViewer* viewer=new GridViewer();
+
+        viewer->setDispatcher(m_dispatcher);
+        viewer->setWindowTitle( tr("Time Slice") );
+        //viewer->setShareCurrentPoint( true);        // this is poststack data
+        //viewer->view()->setPrimarySortKey(selector->primarySort()); // need to kep in sync from start on
+        connect( sliceSelector, SIGNAL(sliceChanged(std::shared_ptr<Grid2D<float>>)),
+                 viewer, SLOT(setGrid(std::shared_ptr<Grid2D<float>>)));
+        //connect( selector, SIGNAL(descriptionChanged(QString)), viewer, SLOT(setWindowTitle(QString)) );
+
+        viewer->toolBar()->addWidget(sliceSelector);
+        //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
+        viewer->show();
+        //viewer->setMinimumWidth(viewer->navigationToolBar()->width() + 100 );
+
+        viewer->setProject( m_project );  // grant access to grids
+
+
+    }
+
+}
 
 
 void ProjectViewer::displaySeismicDatasetIndex(const QString& name){
@@ -1710,6 +1758,8 @@ void ProjectViewer::displaySeismicDatasetIndex(const QString& name){
     }
 
 }
+
+
 
 
 void ProjectViewer::editSeismicDatasetProperties(const QString& name){

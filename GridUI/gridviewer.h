@@ -50,6 +50,8 @@ public:
 
     bool isGridMilliseconds();
 
+    QToolBar* toolBar();
+
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
     void setProject( std::shared_ptr<AVOProject> );
