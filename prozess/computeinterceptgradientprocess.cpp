@@ -344,6 +344,8 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
 
         gather=filter.filter(gather);
 
+        if( gather->empty() ) continue;  // filtering could leave empty gather
+
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
