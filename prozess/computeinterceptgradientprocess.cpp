@@ -229,7 +229,8 @@ private:
                 QPointF interceptAndGradient=linearRegression(curve, &q);
 
                 // linear regression returns nan if all input values are zero
-                if( std::isnan(interceptAndGradient.x()) || std::isnan(interceptAndGradient.y())){
+                // linear regression returns nan for empty curve
+                if( std::isnan(interceptAndGradient.x()) || std::isnan(interceptAndGradient.y()) ){
                     (*m_job.intercept)(iline, xline)=m_job.intercept->NULL_VALUE;
                     (*m_job.gradient)(iline, xline)=m_job.gradient->NULL_VALUE;
                     (*m_job.quality)(iline, xline)=0;
