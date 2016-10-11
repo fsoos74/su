@@ -1658,7 +1658,7 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
 
         connect( viewer, SIGNAL(requestPoint(int,int)), selector,SLOT(providePoint(int,int)));
         connect( viewer, SIGNAL(requestPoints(QVector<QPoint>)), selector, SLOT( provideRandomLine(QVector<QPoint>)) );
-
+        connect( viewer, SIGNAL(requestPerpendicularLine(int,int)), selector, SLOT(providePerpendicularLine(int,int)) );
         viewer->navigationToolBar()->addWidget(selector);
         //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
         viewer->show();

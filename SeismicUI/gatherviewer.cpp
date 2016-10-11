@@ -48,6 +48,7 @@ GatherViewer::GatherViewer(QWidget *parent) :
     gatherView->gatherLabel()->setHighlightTrace( ui->actionShare_Current_Position->isChecked()  );
     connect( ui->actionShare_Current_Position, SIGNAL(toggled(bool)), gatherView->gatherLabel(), SLOT(setHighlightTrace(bool)) );
 
+    connect( gatherView, SIGNAL(topRulerClicked(int)), this, SLOT(onTopRulerClicked(int)) );
 
     //resize(sizeHint());
     //setMinimumWidth(ui->mainToolBar->width() + 50);
@@ -298,6 +299,18 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
 
 }
 
+
+void GatherViewer::onTopRulerClicked( int traceno ){
+
+    if( !m_gather || traceno<0 || traceno>=m_gather->size()) return;
+
+    const seismic::Trace& trace=(*m_gather)[traceno];
+
+    int iline=trace.header().at("iline").intValue();
+    int xline=trace.header().at("xline").intValue();
+
+    emit requestPerpendicularLine(iline, xline);
+}
 
 void GatherViewer::on_actionTrace_Scaling_triggered()
 {

@@ -68,6 +68,7 @@ public:
 signals:
 
     void axxisLabelsChanged( const QStringList& );
+    void clicked(qreal);
 
 public slots:
 
@@ -77,6 +78,7 @@ public slots:
 protected:
 
     void paintEvent( QPaintEvent*);
+
     void drawVertical( QPainter& painter );
     void drawHorizontal( QPainter& painter );
     void drawHorizontalIndicator( QPainter&, QPoint );

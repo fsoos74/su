@@ -30,11 +30,13 @@ GatherView::GatherView( QWidget* parent) : QScrollArea(parent)
     setViewportMargins( RULER_WIDTH, RULER_HEIGHT, 0, 0);
 
     m_leftRuler=new GatherRuler( this, GatherRuler::VERTICAL_RULER );
+    m_leftRuler->setMouseTracking(true);
     connect( verticalScrollBar(), SIGNAL(valueChanged(int)), m_leftRuler, SLOT( update()) );
     connect( this, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), m_leftRuler, SLOT(update()));
     //connect( this, SIGNAL(pixelPerSecondChanged(qreal)),  m_gatherLabel, SLOT(updatePixmap()));
 
     m_topRuler=new GatherRuler( this, GatherRuler::HORIZONTAL_RULER );
+    m_topRuler->setMouseTracking(true);
     connect( horizontalScrollBar(), SIGNAL(valueChanged(int)), m_topRuler, SLOT( update()) );
     connect( this, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), m_topRuler, SLOT(update()));
     //connect( this, SIGNAL(pixelPerTraceChanged(qreal)), m_gatherLabel, SLOT(updatePixmap()));
@@ -475,6 +477,32 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
         return true;
     }
 
+    // emit position
+    if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseMove ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=std::floor(qreal(horizontalScrollBar()->value() + p.x())/m_pixelPerTrace);
+        qreal secs=m_ft;
+        emit mouseOver(trace, secs);
+    }
+
+    // click on top ruler, emit trace
+    if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseButtonPress ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=std::floor(qreal(horizontalScrollBar()->value() + p.x())/m_pixelPerTrace);
+        qreal secs=m_ft;
+        emit topRulerClicked(trace);
+    }
+
+    // emit position
+    if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseMove ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=0;    // rightmost
+        qreal secs=m_ft + qreal(verticalScrollBar()->value() + p.y() )/m_pixelPerSecond;
+        emit mouseOver(trace, secs);
+    }
 
     if (mouseEvent->modifiers() != Qt::ControlModifier && !mouseSelection) return QObject::eventFilter(obj, ev);
 

@@ -407,6 +407,46 @@ void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
     }
 }
 
+
+void SeismicDataSelector::providePerpendicularLine(int iline, int xline){
+
+    // currently only for poststack data!!
+    if( !(m_reader->info().mode()==SeismicDatasetInfo::Mode::Poststack) ) return;
+
+    int order1=ui->cbOrder1->currentIndex();
+    int order2=ui->cbOrder2->currentIndex();
+
+    // if il/xl sorted make xl/il sort, keep directions (ascending, descending)
+    if( order1==ILINE_ASC_INDEX || order1==ILINE_DESC_INDEX ){
+
+        if( order2==XLINE_ASC_INDEX  || order2==XLINE_DESC_INDEX ){
+
+            ui->sbInline->setValue(1);
+            ui->sbIlineCount->setValue(m_reader->maxInline() - m_reader->minInline() + 1 );
+            ui->sbXline->setValue(xline);
+            ui->sbXlineCount->setValue(1);
+            ui->cbOrder1->setCurrentIndex(order2);
+            ui->cbOrder2->setCurrentIndex(order1);
+        }
+
+    }
+    // if xl/il sorted make il/xl sort, keep directions (ascending, descending)
+    else if( order1==XLINE_ASC_INDEX || order1==XLINE_DESC_INDEX ){
+
+        if( order2==ILINE_ASC_INDEX  || order2==ILINE_DESC_INDEX ){
+
+            ui->sbXline->setValue(1);
+            ui->sbXlineCount->setValue(m_reader->maxCrossline() - m_reader->minCrossline() + 1 );
+            ui->sbInline->setValue(iline);
+            ui->sbIlineCount->setValue(1);
+            ui->cbOrder1->setCurrentIndex(order2);
+            ui->cbOrder2->setCurrentIndex(order1);
+        }
+
+    }
+
+}
+
 void SeismicDataSelector::on_tbInline_clicked()
 {
     ui->cbOrder1->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending

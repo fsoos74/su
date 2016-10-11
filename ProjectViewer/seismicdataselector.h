@@ -61,6 +61,7 @@ public slots:
     void apply();
     void providePoint(int iline, int xline);
     void provideRandomLine( QVector<QPoint> polyline);
+    void providePerpendicularLine(int, int);
 
 signals:
     void gatherChanged(std::shared_ptr<seismic::Gather>);

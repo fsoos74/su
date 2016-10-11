@@ -82,6 +82,7 @@ signals:
     void traceAnnotationsChanged();
     void requestPoint(int,int);
     void requestPoints(QVector<QPoint>);
+    void requestPerpendicularLine(int,int);
 
 protected:
 
@@ -99,6 +100,7 @@ private slots:
 
     void onMouseOver(int, qreal);
 
+    void onTopRulerClicked( int  );
 
     void on_zoomInAct_triggered();
 

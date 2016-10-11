@@ -121,6 +121,7 @@ signals:
     void pixelPerSecondChanged(qreal);
     void traceAnnotationFuntionChanged();
     void mouseOver( int traceNo, qreal second);
+    void topRulerClicked( int traceNo );
     void traceClicked( size_t );
     //void traceSelected( size_t );
     void pointSelected( SelectionPoint );
@@ -143,6 +144,7 @@ public slots:
     void normalize();
     void zoom(QRect);
     void zoomBy(qreal);
+
 
 protected:
 

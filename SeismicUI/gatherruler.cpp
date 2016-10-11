@@ -5,6 +5,7 @@
 #include "headerui.h"
 #include<QPainter>
 #include<QScrollBar>
+#include<QMouseEvent>
 
 #include<iostream>
 
@@ -101,6 +102,7 @@ void GatherRuler::paintEvent(QPaintEvent*){
     }
 
 }
+
 
 void GatherRuler::drawVerticalIndicator(QPainter& painter, QPoint p){
 
