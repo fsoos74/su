@@ -64,7 +64,7 @@ public:
         return m_fixedTickIncrement;
     }
 
-    qreal currentPos()const{
+    qreal cursorPosition()const{
         return m_currentPos;
     }
 
@@ -270,8 +270,8 @@ public:
         return m_intersectionPoints;
     }
 
-    const SelectionPoint viewerCurrentPoint()const{
-        return m_viewerCurrentPoint;
+    const SelectionPoint cursorPosition()const{
+        return m_cursorPosition;
     }
 
     const QVector<QPoint>& polylineSelection()const{
@@ -429,7 +429,7 @@ private:
 
     QVector<SelectionPoint> m_highlightedCDPs;
     QVector<SelectionPoint>m_intersectionPoints;
-    SelectionPoint m_viewerCurrentPoint;
+    SelectionPoint m_cursorPosition;
     QVector<QPoint> m_polyline;
 
     QRubberBand*        rubberBand=nullptr;

@@ -48,6 +48,7 @@ void BaseViewer::setBroadcastEnabled(bool on){
     emit broadcastEnabledChanged(on);
 }
 
+
 void BaseViewer::sendPoint(SelectionPoint point, int code){
 
     if( !m_broadcastEnabled) return;

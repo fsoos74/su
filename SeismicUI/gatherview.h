@@ -41,8 +41,8 @@ public:
         return m_highlightedPoints;
     }
 
-    const SelectionPoint viewerCurrentPoint()const{
-        return m_viewerCurrentPoint;
+    const SelectionPoint cursorPosition()const{
+        return m_cursorPosition;
     }
 
     std::shared_ptr<seismic::Gather> gather()const{
@@ -131,7 +131,7 @@ public slots:
     void setPrimarySortKey(GatherSortKey);
     void setIntersectionTraces( QVector<int>);
     void setHighlightedPoints(QVector<SelectionPoint>);
-    void setViewerCurrentPoint(SelectionPoint);
+    void setCursorPosition(SelectionPoint);
     void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
@@ -174,7 +174,7 @@ private:
 
     QVector<int>    m_intersectionTraces;
     QVector<SelectionPoint> m_highlightedPoints;
-    SelectionPoint m_viewerCurrentPoint;
+    SelectionPoint m_cursorPosition;
 
     GatherLabel* m_gatherLabel=nullptr;
     GatherRuler* m_leftRuler;

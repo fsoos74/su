@@ -44,6 +44,10 @@ signals:
 
     void receptionEnabledChanged(bool);
     void broadcastEnabledChanged(bool);
+    void shareCursorPositionChanged(bool);
+
+private slots:
+
 
 private:
     std::shared_ptr<PointDispatcher> m_dispatcher;

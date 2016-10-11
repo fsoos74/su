@@ -218,7 +218,7 @@ void GatherLabel::paintEvent(QPaintEvent *event){
    drawIntersectionTraces( painter, m_view->intersectionTraces() );
 
 
-   SelectionPoint sp=m_view->viewerCurrentPoint();
+   SelectionPoint sp=m_view->cursorPosition();
    drawViewerCurrentPosition( painter, sp);
 
    m_dirty=false;

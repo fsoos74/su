@@ -87,7 +87,7 @@ void GatherViewer::receivePoint(SelectionPoint point, int code){
 
     case PointCode::VIEWER_CURRENT_CDP:
         if( ui->actionShare_Current_Position->isChecked()){
-            gatherView->setViewerCurrentPoint(point);
+            gatherView->setCursorPosition(point);
             QString msg=createStatusMessage(point);
             statusBar()->showMessage(msg);
         }
@@ -282,51 +282,9 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
     if( !m_gather || trace>=m_gather->size()) return;
 
     const seismic::Trace& trc=(*m_gather)[trace];
-    /*
-    size_t i=trc.time_to_index(secs);
-    QString amp=(i<trc.size()) ? QString::number(trc[i]) : QString("n/a");
-    QString mills=QString::number( int(1000*secs) );
 
-    QString message;
-    for( auto anno : m_traceAnnotations ){
-
-        message += anno.second + "=" + toQString( trc.header().at( anno.first) ) + ", ";
-    }
-*/
     int iline=trc.header().at("iline").intValue();
     int xline=trc.header().at("xline").intValue();
-/*
-    // compute x,y from inline/crossline rather than taking from header from header
-    // possible improvement: poststack disp cdpx, cdpy; prestack: sx,sy,gx,gy from header, if not present use computed as fallback
-    QTransform IlXlToXY;
-    QTransform XYToIlXl;
-    if( m_project && m_project->geometry().computeTransforms( XYToIlXl, IlXlToXY)){
-
-
-            QPointF p=IlXlToXY.map( QPoint(iline, xline));
-            qreal x=p.x();
-            qreal y=p.y();
-
-            message+=QString::asprintf("x*=%.1lf, y*=%.1lf, ", x, y);
-    }
-
-
-    message+=QString( " Time=") + mills + QString(", Amplitude= ")+ amp;
-
-    // this MUST changed to time instead of samples because sampling of volume can be different from trace!!!
-    if( gatherView->volume()){
-
-        float attr=gatherView->volume()->value(iline,xline,secs);
-        message+=QString(", Attibute=");
-        if( attr!=gatherView->volume()->NULL_VALUE){
-            message+=QString::number(attr);
-        }
-        else{
-            message+="NULL";
-        }
-    }
-*/
-
     SelectionPoint sp(iline, xline, secs);
     QString message=createStatusMessage( sp );
 
@@ -334,7 +292,7 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
 
     if( ui->actionShare_Current_Position->isChecked()){
 
-        gatherView->setViewerCurrentPoint(sp);      // need to set this because the send point will not be received by this viewer
+        gatherView->setCursorPosition(sp);      // need to set this because the send point will not be received by this viewer
         sendPoint( sp, PointCode::VIEWER_CURRENT_CDP);
     }
 
@@ -510,7 +468,7 @@ void GatherViewer::closeEvent(QCloseEvent *)
 
 void GatherViewer::leaveEvent(QEvent *){
 
-    gatherView->setViewerCurrentPoint(SelectionPoint::NONE);
+    gatherView->setCursorPosition(SelectionPoint::NONE);
     QString msg=createStatusMessage(SelectionPoint::NONE);
     statusBar()->showMessage(msg);
     sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );
@@ -647,6 +605,7 @@ void GatherViewer::on_action_Point_Display_Options_triggered()
     m_pointDisplayOptionsDialog->show();
 }
 
+
 void GatherViewer::updateIntersections(){
 
     QVector<SelectionPoint> allTraces;
@@ -657,8 +616,8 @@ void GatherViewer::updateIntersections(){
 
         if( !gv || !gv->gather() ) continue;
 
-        if( gv->ui->actionShare_Current_Position->isChecked()){  // only add traces from viewers that share
-
+        //if( gv->ui->actionShare_Current_Position->isChecked()){  // only add traces from viewers that share
+        if( gv->broadcastEnabled()){
             for(auto trc : *(gv->gather())){
                 int iline=trc.header().at("iline").intValue();
                 int xline=trc.header().at("xline").intValue();
@@ -672,12 +631,16 @@ void GatherViewer::updateIntersections(){
         if( gv==this ) continue;
     }
 
+    // prosecc grid viewers
     for( BaseViewer* v : dispatcher()->viewers() ){
 
         GridViewer* gv=dynamic_cast<GridViewer*>(v);
 
         if( gv ){
-            gv->gridView()->setIntersectionPoints(allTraces);
+
+            if( gv->receptionEnabled() ){
+                gv->gridView()->setIntersectionPoints(allTraces);
+            }
         }
     }
 }
@@ -688,7 +651,8 @@ QVector<int> GatherViewer::computeIntersections(){
 
     if( !m_gather ) return QVector<int>();
 
-    if( !ui->actionShare_Current_Position->isChecked()) return QVector<int>();
+    //if( !ui->actionShare_Current_Position->isChecked()) return QVector<int>();
+    if( !receptionEnabled()) return QVector<int>();     // no intersection is reception os disabled
 
     QVector<int> res;
 
@@ -698,7 +662,7 @@ QVector<int> GatherViewer::computeIntersections(){
 
         if( !gv || !gv->gather() || gv==this ) continue;
 
-        if( !gv->ui->actionShare_Current_Position->isChecked()) continue; // ignore viewers that don't share, make this a function for better readability
+        if( !gv->broadcastEnabled() ) continue; // ignore viewers that don't share
 
         for( auto trc : *(gv->gather()) ){
 
@@ -721,5 +685,17 @@ QVector<int> GatherViewer::computeIntersections(){
 void GatherViewer::on_actionShare_Current_Position_toggled(bool on)
 {
     // need to update all viewers accordingly
+    updateIntersections();
+}
+
+void GatherViewer::on_action_Receive_CDPs_toggled(bool on)
+{
+    setReceptionEnabled(on);
+    updateIntersections();
+}
+
+void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
+{
+    setBroadcastEnabled(on);
     updateIntersections();
 }

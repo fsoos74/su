@@ -124,6 +124,10 @@ private slots:
 
     void on_actionShare_Current_Position_toggled(bool arg1);
 
+    void on_action_Receive_CDPs_toggled(bool arg1);
+
+    void on_action_Dispatch_CDPs_toggled(bool arg1);
+
 private:
 
     void saveSettings();

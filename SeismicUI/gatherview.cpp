@@ -140,11 +140,11 @@ int GatherView::lookupTrace(int iline, int xline){
     return m_traceLookup.value(key, -1);
 }
 
-void GatherView::setViewerCurrentPoint(SelectionPoint p){
+void GatherView::setCursorPosition(SelectionPoint p){
 
-    if( p==m_viewerCurrentPoint ) return;
+    if( p==m_cursorPosition ) return;
 
-    m_viewerCurrentPoint=p;
+    m_cursorPosition=p;
 
     m_gatherLabel->update();
 

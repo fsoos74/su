@@ -78,7 +78,7 @@
    </widget>
    <widget class="QMenu" name="menu_Scale">
     <property name="title">
-     <string>Sc&amp;ale</string>
+     <string>&amp;Scale</string>
     </property>
     <addaction name="zoomInAct"/>
     <addaction name="zoomOutAct"/>
@@ -126,6 +126,8 @@
    <addaction name="action_Grid_Display"/>
    <addaction name="actionDisplay_Histogram"/>
    <addaction name="separator"/>
+   <addaction name="action_Receive_CDPs"/>
+   <addaction name="action_Dispatch_CDPs"/>
    <addaction name="actionShare_Current_Position"/>
   </widget>
   <action name="openAct">
@@ -246,6 +248,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/receive-icon-32x32.png</normaloff>:/icons/images/receive-icon-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Receive CDPs</string>
    </property>
@@ -256,6 +262,10 @@
    </property>
    <property name="checked">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/send-icon-32x32.png</normaloff>:/icons/images/send-icon-32x32.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Dispatch CDPs</string>

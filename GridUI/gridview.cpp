@@ -114,9 +114,9 @@ void GridView::setIntersectionPoints( QVector<SelectionPoint> points){
 
 void GridView::setViewerCurrentPoint(SelectionPoint p){
 
-    if( p == m_viewerCurrentPoint ) return;
+    if( p == m_cursorPosition ) return;
 
-    m_viewerCurrentPoint=p;
+    m_cursorPosition=p;
 
     if( inlineOrientation()==AxxisOrientation::Horizontal ){
         m_leftRuler->setCurrentPos( p.iline );
@@ -1078,7 +1078,7 @@ void ViewLabel::drawViewerCurrentPoint( QPainter& painter){
     const int CURSOR_SIZE=5;
     const int CURSOR_PEN_WIDTH=3;
 
-    SelectionPoint spoint=m_view->viewerCurrentPoint();
+    SelectionPoint spoint=m_view->cursorPosition();
 
     if( spoint==SelectionPoint::NONE) return;
 
