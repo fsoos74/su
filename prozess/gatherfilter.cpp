@@ -46,7 +46,7 @@ bool GatherFilter::isAzimuthAccepted(const seismic::Trace& trace){
     if( azimuth < 0 ){
         azimuth+=180;
     }
-    //std::cout<<"sx="<<sx<<" sy="<<sy<<" gx="<<gx<<" gy="<<gy<<" az="<<azimuth<<std::endl<<std::flush;
+
     return ( azimuth>=m_minAzimuth && azimuth<=m_maxAzimuth);
 
 }

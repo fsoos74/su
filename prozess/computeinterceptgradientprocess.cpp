@@ -343,13 +343,13 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
         std::shared_ptr<seismic::Gather> gather=reader->read_gather("cdp");
         if( !gather ) break;
 
-        gather=filter.filter(gather);
-
-        if( gather->empty() ) continue;  // filtering could leave empty gather
-
+        // extract this before filter because filter could leave empty gather
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
+
+        gather=filter.filter(gather);
+
 
         // buffer full, now process
         if( iline>lastFullDataIline){
