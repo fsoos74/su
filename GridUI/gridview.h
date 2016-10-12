@@ -190,13 +190,13 @@ signals:
 
     void showViewerCurrentPointChanged(bool);
 
-    void mouseOver(int, int);
+//    void mouseOver(int, int);
 
 protected:
 
     void paintEvent( QPaintEvent*);
     void resizeEvent( QResizeEvent*);
-    void mouseMoveEvent( QMouseEvent* );
+    //void mouseMoveEvent( QMouseEvent* );
 
 private:
 
@@ -352,6 +352,8 @@ signals:
     void inlineAxxisLabelChanged( const QString&);
     void crosslineAxxisLabelChanged( const QString&);
 
+    void mouseOver( int iline, int xline );
+
 public slots:
 
     void setGrid( std::shared_ptr<Grid2D<float> > );
@@ -382,7 +384,7 @@ public slots:
 
 signals:
 
-     void pointSelected(QPoint);
+     void pointSelected(SelectionPoint);
      void polylineSelected(QVector<QPoint>);
 
 protected:

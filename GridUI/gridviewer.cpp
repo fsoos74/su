@@ -34,7 +34,8 @@ GridViewer::GridViewer(QWidget *parent) :
     m_gridView->setBackgroundRole(QPalette::Dark);
     //setCentralWidget(gridView);
 
-    connect( m_gridView->label(), SIGNAL( mouseOver(int,int)), this, SLOT( onGridViewMouseOver(int,int)) );
+    //connect( m_gridView->label(), SIGNAL( mouseOver(int,int)), this, SLOT( onGridViewMouseOver(int,int)) );
+    connect( m_gridView, SIGNAL(mouseOver(int,int)), this, SLOT(onGridViewMouseOver(int,int)) );
 
     m_gridView->label()->setShowViewerCurrentPoint(ui->actionShare_Current_Position->isChecked());
     connect( ui->actionShare_Current_Position, SIGNAL(toggled(bool)), m_gridView->label(), SLOT(setShowViewerCurrentPoint(bool)));
@@ -50,7 +51,7 @@ GridViewer::GridViewer(QWidget *parent) :
     qRegisterMetaTypeStreamOperators<AxxisDirection>("AxxisDirection");
 
 
-    connect( m_gridView, SIGNAL(pointSelected(QPoint)), this, SLOT(onViewPointSelected(QPoint)) );
+    connect( m_gridView, SIGNAL(pointSelected(SelectionPoint)), this, SLOT(onViewPointSelected(SelectionPoint)) );
 
     connect( m_gridView, SIGNAL(polylineSelected(QVector<QPoint>)), this, SLOT(onViewPolylineSelected(QVector<QPoint>)) );
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
@@ -485,28 +486,13 @@ void GridViewer::on_actionConfigure_Colorbar_triggered()
 
 
 // need this to forward point from view to dispatcher
-void GridViewer::onViewPointSelected( QPoint point){
+void GridViewer::onViewPointSelected( SelectionPoint point){
 
-    int iline=point.x();
-    int xline=point.y();
+    point.time=pointTime( point.iline, point.xline );
 
-    double time=SelectionPoint::NO_TIME;
-    if( true ){ // check for grid is time horizon
+    std::cout<<"sending il="<<point.iline<<" xl="<<point.xline<<" time="<<point.time<<std::endl;
 
-        if( m_grid ){
-            double val=(*m_grid)( iline, xline);
-            if( val!=m_grid->NULL_VALUE ){
-                time=val/1000;  // convert mses to secs
-            }
-            else{
-                time=SelectionPoint::NO_TIME;
-            }
-        }
-    }
-
-    SelectionPoint sp( iline, xline, time );
-
-    sendPoint(sp, PointCode::VIEWER_POINT_SELECTED);
+    sendPoint( point, PointCode::VIEWER_POINT_SELECTED);
 }
 
 

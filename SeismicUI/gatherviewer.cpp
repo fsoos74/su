@@ -94,9 +94,18 @@ void GatherViewer::receivePoint(SelectionPoint point, int code){
         }
         break;
 
-    default:    // VIEWER_CURRENT_POUNT_SELECTED will be handled here
+    case PointCode::VIEWER_POINT_SELECTED:{
+        if( !m_gather || m_gather->empty() ) break;
+        const seismic::Trace& trace=m_gather->front();
+        int iline=trace.header().at("iline").intValue();
+        int xline=trace.header().at("xline").intValue();
+        if( point.iline==SelectionPoint::NO_LINE) point.iline=iline;
+        if( point.xline==SelectionPoint::NO_LINE) point.xline=xline;
         emit requestPoint( point.iline, point. xline);
         break;
+    }
+    default:
+            break;
     }
 }
 

@@ -30,10 +30,12 @@ GridView::GridView(QWidget* parent):QScrollArea(parent),
     setViewportMargins( RULER_WIDTH, RULER_HEIGHT, 0, 0);
 
     m_leftRuler=new Ruler( this, Ruler::VERTICAL_RULER);
+    m_leftRuler->setMouseTracking(true);
     connect( verticalScrollBar(), SIGNAL(valueChanged(int)), m_leftRuler, SLOT( update()) );
     //connect( this, SIGNAL(gridChanged(std::shared_ptr<Grid2D>)), m_leftRuler, SLOT(update()));
 
     m_topRuler=new Ruler( this, Ruler::HORIZONTAL_RULER);
+    m_topRuler->setMouseTracking(true);
     connect( horizontalScrollBar(), SIGNAL(valueChanged(int)), m_topRuler, SLOT( update()) );
     //connect( this, SIGNAL(gridChanged(std::shared_ptr<Grid2D>)), m_topRuler, SLOT(update()));
 
@@ -518,6 +520,17 @@ bool GridView::eventFilter(QObject *obj, QEvent *ev){
 
     if( !(widget==m_label || widget==m_leftRuler || widget==m_topRuler)) return QObject::eventFilter(obj,ev);
 
+    // move on label emit position
+    if (widget==m_label && mouseEvent->type()==QEvent::MouseMove){
+        int x=mouseEvent->x();
+        int y=mouseEvent->y();
+        QPointF p=imageToGridTransform().map( QPointF(x,y));
+        int iline=std::round( p.y() );
+        int xline=std::round( p.x() );
+        emit mouseOver( iline, xline );
+    }
+
+
     // dispatch point
     if (widget==m_label && mouseEvent->type()==QEvent::MouseButtonDblClick){
         int x=mouseEvent->x();
@@ -525,7 +538,7 @@ bool GridView::eventFilter(QObject *obj, QEvent *ev){
         QPointF p=imageToGridTransform().map( QPointF(x,y));
         int iline=std::round( p.y() );
         int xline=std::round( p.x() );
-        emit(pointSelected(QPoint(iline,xline)));
+        emit pointSelected(SelectionPoint(iline, xline));
     }
 
     // select line add point
@@ -539,6 +552,63 @@ bool GridView::eventFilter(QObject *obj, QEvent *ev){
         m_polyline.append(point);
         emit polylineSelected(m_polyline);  // triggers update of label
     }
+
+
+    // emit position, mouse move on top tuler
+    if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseMove ){
+
+        int x=horizontalScrollBar()->value() + mouseEvent->x();
+        int y=0;//mouseEvent->y();
+        QPointF p=imageToGridTransform().map( QPointF(x,y));
+        int iline=std::round( p.y() );
+        int xline=std::round( p.x() );
+        emit mouseOver(iline, xline);
+    }
+
+    // click on top ruler, emit line
+    if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
+
+        int x=horizontalScrollBar()->value() + mouseEvent->x();
+        int y=0;//mouseEvent->y();
+        QPointF p=imageToGridTransform().map( QPointF(x,y));
+        int iline=std::round( p.y() );
+        int xline=std::round( p.x() );
+        if( m_inlineOrientation==AxxisOrientation::Vertical){  // inlines on top ruler
+            emit pointSelected(SelectionPoint(iline, SelectionPoint::NO_LINE, SelectionPoint::NO_TIME));
+         }
+        else{                                                   // xlines on top ruler
+            emit pointSelected(SelectionPoint(SelectionPoint::NO_LINE, xline, SelectionPoint::NO_TIME));
+        }
+    }
+
+    // emit position, mouse move on left ruler
+    if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseMove ){
+
+        int x=0; // leftmost
+        int y=verticalScrollBar()->value() + mouseEvent->y();
+        QPointF p=imageToGridTransform().map( QPointF(x,y));
+        int iline=std::round( p.y() );
+        int xline=std::round( p.x() );
+        emit mouseOver(iline, xline);
+    }
+
+    // click on left ruler, emit line
+    if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
+
+        int x=0; // leftmost
+        int y=verticalScrollBar()->value() + mouseEvent->y();
+        QPointF p=imageToGridTransform().map( QPointF(x,y));
+        int iline=std::round( p.y() );
+        int xline=std::round( p.x() );
+
+        if(m_inlineOrientation==AxxisOrientation::Horizontal){ // inline on left ruler
+            emit pointSelected(SelectionPoint(iline, SelectionPoint::NO_LINE, SelectionPoint::NO_TIME));
+        }
+        else{                                                   // xlines on left ruler
+            emit pointSelected(SelectionPoint(SelectionPoint::NO_LINE, xline, SelectionPoint::NO_TIME));
+        }
+    }
+
 
     if (mouseEvent->modifiers() != Qt::ControlModifier && !mouseSelection) return QObject::eventFilter(obj, ev);
 
@@ -913,6 +983,7 @@ void ViewLabel::resizeEvent(QResizeEvent*){
     updateLineSegments();
 }
 
+/*
 void ViewLabel::mouseMoveEvent(QMouseEvent * ev){
 
     int x=ev->x();
@@ -926,7 +997,7 @@ void ViewLabel::mouseMoveEvent(QMouseEvent * ev){
 
     emit mouseOver( i, j );
 }
-
+*/
 
 void ViewLabel::setImage( QImage img ){
 

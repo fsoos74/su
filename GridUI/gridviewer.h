@@ -82,7 +82,7 @@ protected:
 
 private slots:
 
-    void onViewPointSelected( QPoint );     // need this to forward point from view to dispatcher
+    void onViewPointSelected( SelectionPoint );     // need this to forward point from view to dispatcher
 
     void onViewPolylineSelected( QVector<QPoint>);  // see above
 

@@ -41,6 +41,8 @@ void SeismicSliceSelector::setTime(int i){
 
     ui->leTime->setText(QString::number(i));
 
+    apply();
+
     emit timeChanged(i);
 }
 
