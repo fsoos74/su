@@ -110,6 +110,8 @@ void GridViewer::receivePoint( SelectionPoint point, int code ){
 
     case PointCode::VIEWER_CURRENT_CDP:
         if( ui->actionShare_Current_Position->isChecked()){
+            // we only use the coords of received positions
+            point.time=SelectionPoint::NO_TIME;
             gridView()->setViewerCurrentPoint(point);
             QString msg=createStatusMessage(point);
             statusBar()->showMessage(msg);
@@ -118,6 +120,11 @@ void GridViewer::receivePoint( SelectionPoint point, int code ){
     case PointCode::VIEWER_POINT_SELECTED:{
         QVector<SelectionPoint> v{point};
         gridView()->setHighlightedCDPs(v);
+        break;
+    }
+    case PointCode::VIEWER_TIME_SELECTED:{
+        int msecs=1000*point.time;              // convert from seconds
+        emit requestSlice(msecs);
         break;
     }
     default:{               // nop
@@ -156,14 +163,24 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     gridView()->zoomFit();
 }
 
-void GridViewer::setGridMilliseconds(bool on){
+void GridViewer::setTimeSource(TimeSource s){
 
-    if( on == m_gridMilliseconds) return;
+    if( s==m_timeSource ) return;
 
-    m_gridMilliseconds=on;
+    m_timeSource=s;
 
-    emit gridMillisecondsChanged(on);
+    emit timeSourceChanged(s);
 }
+
+void GridViewer::setFixedTime(int mills){
+
+    if( mills==m_fixedTime ) return;
+
+    m_fixedTime=mills;
+
+    emit fixedTimeChanged(mills);
+}
+
 
 void GridViewer::setDefaultColorTable(){
 
@@ -173,6 +190,26 @@ void GridViewer::setDefaultColorTable(){
     gridView()->colorTable()->setColors(baseColors);
     colorBar->setColorTable(gridView()->colorTable());
 
+}
+
+double GridViewer::pointTime( int iline, int xline ){
+
+    if( !m_grid ) return SelectionPoint::NO_TIME;
+
+    double time;
+
+    switch( m_timeSource ){
+    case TimeSource::TIME_GRID:
+        time=0.001*(*m_grid)( iline, xline);    // convert to seconds, grid is in millis
+        break;
+    case TimeSource::TIME_FIXED:
+        time=0.001*m_fixedTime;                       // convert to seconds
+        break;
+    default:
+        time=SelectionPoint::NO_TIME;
+    }
+
+    return time;
 }
 
 void GridViewer::onGridViewMouseOver(int i, int j){
@@ -199,11 +236,8 @@ void GridViewer::onGridViewMouseOver(int i, int j){
         return;
     }
 
-    double time=SelectionPoint::NO_TIME;
-    if( m_gridMilliseconds ){ // check for grid is time horizon
-        double val=(*m_grid)( i, j);
-        time=val/1000;  // convert mses to secs
-    }
+    double time=pointTime(i,j);
+
     SelectionPoint sp( i, j, time );
 
     statusBar()->showMessage( createStatusMessage( sp ) );
@@ -230,12 +264,15 @@ QString GridViewer::createStatusMessage( SelectionPoint sp ){
     QTransform XYToIlXl;
     if( m_project && m_project->geometry().computeTransforms( XYToIlXl, IlXlToXY)){
 
-
             QPointF p=IlXlToXY.map( QPoint(sp.iline, sp.xline));
             qreal x=p.x();
             qreal y=p.y();
 
             msg+=QString::asprintf("x=%.1lf  y=%.1lf  ", x, y);
+    }
+
+    if( sp.time!=SelectionPoint::NO_TIME){
+        msg+=QString("time[ms]=%1  ").arg(std::round(1000*sp.time) );
     }
 
 

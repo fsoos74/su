@@ -2,7 +2,7 @@
 #include "ui_projectviewer.h"
 
 #include "seismicdataselector.h"
-#include "sliceselector.h"
+#include "seismicsliceselector.h"
 #include "datasetpropertiesdialog.h"
 #include "twocombosdialog.h"
 #include "aboutdialog.h"
@@ -1170,7 +1170,9 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
         QString typeName=gridType2String(t);
         viewer->setWindowTitle(QString("Grid %1 - %2").arg(typeName, name) );
 
-        viewer->setGridMilliseconds( t==GridType::Horizon );    // the samples of time horizons are millis
+        if( t==GridType::Horizon ){    // the samples of time horizons are millis
+            viewer->setTimeSource(GridViewer::TimeSource::TIME_GRID);
+        }
 
         GridView* gridView=viewer->gridView();
         gridView->setInlineOrientation(m_project->inlineOrientation());
@@ -1696,31 +1698,43 @@ void ProjectViewer::displaySeismicDatasetSlice(const QString& name){
             return;
         }
 
+        // get sampling information from first trace
+        std::pair<int, int> ftIlXl=reader->firstTraceInlineCrossline();
+        std::shared_ptr<seismic::Trace> firstTrace=reader->readFirstTrace("iline", QString::number(ftIlXl.first),
+                                                                          "xline", QString::number(ftIlXl.second) );
+        if( !firstTrace ){
+            QMessageBox::critical(this, tr("Display Seismic Slice"), tr("Reading first trace failed!"), "Ok" );
+            return;
+        }
+        int ft=static_cast<int>(1000*firstTrace->ft());  // convert to msecs
+        //int dt=static_cast<int>(1000*firstTrace->dt()); // convert to msecs
+        int lt=static_cast<int>(1000*firstTrace->lt());  // convert to msecs
 
-        SliceSelector* sliceSelector=new SliceSelector(this);
+
+        SeismicSliceSelector* sliceSelector=new  SeismicSliceSelector(this);
         sliceSelector->setReader(reader);
-        sliceSelector->setTimeRange(std::pair<int,int>(0,10000));
+        sliceSelector->setTimeRange(std::pair<int,int>( ft, lt));
         sliceSelector->setTime(0);
-        sliceSelector->setTimeIncrement(1);
 
         GridViewer* viewer=new GridViewer();
 
         viewer->setDispatcher(m_dispatcher);
         viewer->setWindowTitle( tr("Time Slice") );
-        //viewer->setShareCurrentPoint( true);        // this is poststack data
-        //viewer->view()->setPrimarySortKey(selector->primarySort()); // need to kep in sync from start on
+
+        viewer->setTimeSource(GridViewer::TimeSource::TIME_FIXED);
+
         connect( sliceSelector, SIGNAL(sliceChanged(std::shared_ptr<Grid2D<float>>)),
                  viewer, SLOT(setGrid(std::shared_ptr<Grid2D<float>>)));
-        //connect( selector, SIGNAL(descriptionChanged(QString)), viewer, SLOT(setWindowTitle(QString)) );
+        connect( sliceSelector, SIGNAL(descriptionChanged(QString)), viewer, SLOT(setWindowTitle(QString)) );
+
+        connect( viewer, SIGNAL(requestSlice(int)), sliceSelector, SLOT(setTime(int)) );
+        connect( sliceSelector, SIGNAL(timeChanged(int)), viewer, SLOT(setFixedTime(int)) );
 
         viewer->toolBar()->addWidget(sliceSelector);
-        //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
         viewer->show();
-        //viewer->setMinimumWidth(viewer->navigationToolBar()->width() + 100 );
+        viewer->setProject( m_project );  // grant access to grid
 
-        viewer->setProject( m_project );  // grant access to grids
-
-
+        sliceSelector->apply();
     }
 
 }

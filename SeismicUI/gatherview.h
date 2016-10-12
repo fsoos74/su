@@ -122,6 +122,7 @@ signals:
     void traceAnnotationFuntionChanged();
     void mouseOver( int traceNo, qreal second);
     void topRulerClicked( int traceNo );
+    void leftRulerClicked( qreal secs );
     void traceClicked( size_t );
     //void traceSelected( size_t );
     void pointSelected( SelectionPoint );

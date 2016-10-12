@@ -334,8 +334,10 @@ void CrossplotViewer::onMouseOver(QPointF scenePos){
 
                 message.append(QString(",  Inline=%1,  Crossline=%2,  Time[ms]=%3,  Attribute=%4").
                                arg(p.iline).arg(p.xline).arg(1000*p.time).arg(p.attribute));
-            }
 
+                SelectionPoint sp(p.iline, p.xline, p.time);
+                sendPoint( sp, PointCode::VIEWER_CURRENT_CDP);
+            }
         }
 
     }
@@ -595,7 +597,7 @@ void CrossplotViewer::sceneSelectionChanged(){
 
     // this is for single selected point via double click
     if( points.size()==1){
-        sendPoint(points.front(), VIEWER_CURRENT_CDP);
+        sendPoint(points.front(), PointCode::VIEWER_POINT_SELECTED);
     }
 
     sendPoints(points, CODE_SINGLE_POINTS);

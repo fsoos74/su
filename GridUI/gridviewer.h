@@ -39,6 +39,9 @@ class GridViewer : public BaseViewer
     Q_OBJECT
 
 public:
+
+    enum TimeSource{ TIME_NONE, TIME_GRID, TIME_FIXED };
+
     explicit GridViewer(QWidget *parent = 0);
     ~GridViewer();
 
@@ -48,17 +51,26 @@ public:
 
     bool orientate(const ProjectGeometry&);
 
-    bool isGridMilliseconds();
+    TimeSource timeSource(){
+        return m_timeSource;
+    }
+
+    int fixedTime()const{           // millis
+        return m_fixedTime;
+    }
 
     QToolBar* toolBar();
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
     void setProject( std::shared_ptr<AVOProject> );
-    void setGridMilliseconds(bool);
+    void setTimeSource(TimeSource);
+    void setFixedTime(int);
 
 signals:
-    void gridMillisecondsChanged(bool);
+    void timeSourceChanged(TimeSource);
+    void fixedTimeChanged(int);
+    void requestSlice(int msecs);
 
 protected:
 
@@ -105,6 +117,8 @@ private slots:
 
 private:
 
+    double pointTime( int iline, int xline );
+
     QString createStatusMessage( SelectionPoint);
 
     void setDefaultColorTable();
@@ -119,7 +133,8 @@ private:
     std::shared_ptr<Grid2D<float> > m_grid;
     std::shared_ptr<AVOProject> m_project;
 
-    bool m_gridMilliseconds=false;
+    TimeSource m_timeSource=TimeSource::TIME_NONE;
+    int m_fixedTime=0;
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
     AspectRatioDialog* aspectRatioDialog=nullptr;

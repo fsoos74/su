@@ -477,7 +477,7 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
         return true;
     }
 
-    // emit position
+    // emit position, mouse move on top tuler
     if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseMove ){
 
         QPoint p=mouseEvent->pos();
@@ -487,21 +487,28 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
     }
 
     // click on top ruler, emit trace
-    if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseButtonPress ){
+    if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
 
         QPoint p=mouseEvent->pos();
         int trace=std::floor(qreal(horizontalScrollBar()->value() + p.x())/m_pixelPerTrace);
-        qreal secs=m_ft;
         emit topRulerClicked(trace);
     }
 
-    // emit position
+    // emit position, mouse move on left ruler
     if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseMove ){
 
         QPoint p=mouseEvent->pos();
         int trace=0;    // rightmost
         qreal secs=m_ft + qreal(verticalScrollBar()->value() + p.y() )/m_pixelPerSecond;
         emit mouseOver(trace, secs);
+    }
+
+    // click on left ruler, emit time
+    if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
+
+        QPoint p=mouseEvent->pos();
+        qreal secs=m_ft + qreal(verticalScrollBar()->value() + p.y() )/m_pixelPerSecond;
+        emit leftRulerClicked(secs);
     }
 
     if (mouseEvent->modifiers() != Qt::ControlModifier && !mouseSelection) return QObject::eventFilter(obj, ev);

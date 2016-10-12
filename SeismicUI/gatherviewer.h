@@ -100,7 +100,9 @@ private slots:
 
     void onMouseOver(int, qreal);
 
-    void onTopRulerClicked( int  );
+    void onTopRulerClicked( int trace );
+
+    void onLeftRulerClicked( qreal secs);
 
     void on_zoomInAct_triggered();
 

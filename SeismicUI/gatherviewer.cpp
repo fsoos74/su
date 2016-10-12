@@ -49,7 +49,7 @@ GatherViewer::GatherViewer(QWidget *parent) :
     connect( ui->actionShare_Current_Position, SIGNAL(toggled(bool)), gatherView->gatherLabel(), SLOT(setHighlightTrace(bool)) );
 
     connect( gatherView, SIGNAL(topRulerClicked(int)), this, SLOT(onTopRulerClicked(int)) );
-
+    connect( gatherView, SIGNAL(leftRulerClicked(qreal)), this, SLOT(onLeftRulerClicked(qreal)) );
     //resize(sizeHint());
     //setMinimumWidth(ui->mainToolBar->width() + 50);
 
@@ -310,6 +310,12 @@ void GatherViewer::onTopRulerClicked( int traceno ){
     int xline=trace.header().at("xline").intValue();
 
     emit requestPerpendicularLine(iline, xline);
+}
+
+void GatherViewer::onLeftRulerClicked(qreal secs){
+
+    SelectionPoint sp(SelectionPoint::NO_LINE, SelectionPoint::NO_LINE, secs);
+    sendPoint( sp, PointCode::VIEWER_TIME_SELECTED);
 }
 
 void GatherViewer::on_actionTrace_Scaling_triggered()
