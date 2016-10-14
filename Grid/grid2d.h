@@ -53,6 +53,10 @@ public:
         return (m_i1==other.m_i1) && (m_i2==other.m_i2) && (m_j1==other.m_j1) && (m_j2==other.m_j2);
     }
 
+    bool operator!=(const Grid2DBounds& other)const{
+        return !(*this==other);
+    }
+
 private:
     int m_i1;
     int m_j1;

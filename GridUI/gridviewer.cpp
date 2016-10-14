@@ -157,11 +157,22 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
 
     if( grid==m_grid) return;
 
-    m_grid=grid;
-    gridView()->setGrid(grid);
-    gridView()->setColorMapping( valueRange(*m_grid));
+    Grid2DBounds oldBounds;
+    if( m_grid){
+        oldBounds=m_grid->bounds();
+    }
 
-    gridView()->zoomFit();
+    m_grid=grid;
+    gridView()->setGrid(m_grid);
+
+    if( m_grid ){
+
+        gridView()->setColorMapping( valueRange(*m_grid));
+
+        if( oldBounds != m_grid->bounds() ){
+            gridView()->zoomFit();
+        }
+    }
 }
 
 void GridViewer::setTimeSource(TimeSource s){
@@ -200,9 +211,16 @@ double GridViewer::pointTime( int iline, int xline ){
     double time;
 
     switch( m_timeSource ){
-    case TimeSource::TIME_GRID:
-        time=0.001*(*m_grid)( iline, xline);    // convert to seconds, grid is in millis
+    case TimeSource::TIME_GRID:{
+        double t=(*m_grid)( iline, xline);
+        if( t!=m_grid->NULL_VALUE){
+            time=0.001*t;   // convert to seconds, grid is in millis
+        }
+        else{               // grid has NULL at pos, return appropriate time
+            time=SelectionPoint::NO_TIME;
+        }
         break;
+    }
     case TimeSource::TIME_FIXED:
         time=0.001*m_fixedTime;                       // convert to seconds
         break;
@@ -217,25 +235,7 @@ void GridViewer::onGridViewMouseOver(int i, int j){
 
     if( !m_grid) return;
 
-    if( i<m_grid->bounds().i1() ){
-        qWarning("i<ilmin");
-        return;
-    }
-
-    if( i>m_grid->bounds().i2() ){
-        qWarning("i>ilmax");
-        return;
-    }
-
-    if( j<m_grid->bounds().j1() ){
-        qWarning("j<xlmin");
-        return;
-    }
-
-    if( j>m_grid->bounds().j2() ){
-        qWarning("j>xlmax");
-        return;
-    }
+    if( !m_grid->bounds().isInside(i,j)) return;
 
     double time=pointTime(i,j);
 

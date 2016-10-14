@@ -3,6 +3,7 @@
 
 #include "seismicdataselector.h"
 #include "seismicsliceselector.h"
+#include "volumesliceselector.h"
 #include "datasetpropertiesdialog.h"
 #include "twocombosdialog.h"
 #include "aboutdialog.h"
@@ -1086,6 +1087,7 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
     QString volumeName=view->model()->itemData(idx)[Qt::DisplayRole].toString();
 
     QMenu menu;
+    menu.addAction("display slice");
     menu.addAction("histogram");
     menu.addSeparator();
     menu.addAction("export");
@@ -1097,7 +1099,10 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
     QAction* selectedAction = menu.exec(globalPos);
     if (!selectedAction) return;
 
-    if( selectedAction->text()=="histogram" ){
+    if( selectedAction->text()=="display slice" ){
+        displayVolumeSlice( volumeName);
+    }
+    else if( selectedAction->text()=="histogram" ){
         displayVolumeHistogram( volumeName);
     }
     else if( selectedAction->text()=="export" ){
@@ -1272,6 +1277,54 @@ void ProjectViewer::selectAndExportVolume()
 
     runProcess( new ExportVolumeProcess( m_project, this ), params );
 }
+
+
+void ProjectViewer::displayVolumeSlice( const QString& name){
+
+    if( m_project->volumeList().contains(name)){
+
+        std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+        if( !volume ) return;
+
+        Grid3DBounds bounds=volume->bounds();
+        int ft=static_cast<int>(1000*bounds.ft());  // convert to msecs
+        int lt=static_cast<int>(1000*bounds.lt());  // convert to msecs
+        int dt=static_cast<int>(1000*bounds.dt());  // convert to msecs
+
+        VolumeSliceSelector* sliceSelector=new  VolumeSliceSelector(this);
+
+        sliceSelector->setVolumeName(name);
+
+        sliceSelector->setTimeRange(std::pair<int,int>( ft, lt));
+        sliceSelector->setTimeStep(dt);
+        sliceSelector->setTime(ft);
+
+        GridViewer* viewer=new GridViewer();
+        GridView* gridView=viewer->gridView();
+        gridView->setInlineOrientation(m_project->inlineOrientation());
+        gridView->setInlineDirection(m_project->inlineDirection());
+        gridView->setCrosslineDirection(m_project->crosslineDirection());
+
+        viewer->setDispatcher(m_dispatcher);
+
+        viewer->setTimeSource(GridViewer::TimeSource::TIME_FIXED);
+
+        connect( sliceSelector, SIGNAL(gridChanged(std::shared_ptr<Grid2D<float>>)),
+                 viewer, SLOT(setGrid(std::shared_ptr<Grid2D<float>>)));
+        connect( sliceSelector, SIGNAL(descriptionChanged(QString)), viewer, SLOT(setWindowTitle(QString)) );
+
+        connect( viewer, SIGNAL(requestSlice(int)), sliceSelector, SLOT(setTime(int)) );
+        connect( sliceSelector, SIGNAL(timeChanged(int)), viewer, SLOT(setFixedTime(int)) );
+
+        viewer->toolBar()->addWidget(sliceSelector);
+        viewer->show();
+        viewer->setProject( m_project );  // grant access to grid
+
+        sliceSelector->setVolume(volume);
+    }
+
+}
+
 
 
 void ProjectViewer::displayVolumeHistogram( const QString& name){
@@ -1717,6 +1770,10 @@ void ProjectViewer::displaySeismicDatasetSlice(const QString& name){
         sliceSelector->setTime(0);
 
         GridViewer* viewer=new GridViewer();
+        GridView* gridView=viewer->gridView();
+        gridView->setInlineOrientation(m_project->inlineOrientation());
+        gridView->setInlineDirection(m_project->inlineDirection());
+        gridView->setCrosslineDirection(m_project->crosslineDirection());
 
         viewer->setDispatcher(m_dispatcher);
         viewer->setWindowTitle( tr("Time Slice") );

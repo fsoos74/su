@@ -47,7 +47,12 @@ public:
 
     QString selectionDescription();
 
+    bool isLocked()const{
+        return m_lock;
+    }
+
 public slots:
+
     void setReader(std::shared_ptr<SeismicDatasetReader>);
     void setInlineRange( int min, int max);
     void setCrosslineRange( int min, int max);
@@ -58,12 +63,17 @@ public slots:
     void setInlineCount( int count );
     void setCrosslineCount( int count );
     void setOrder(int, int, int);
-    void apply();
+
     void providePoint(int iline, int xline);
     void provideRandomLine( QVector<QPoint> polyline);
     void providePerpendicularLine(int, int);
 
+    void setLock(bool);
+    void apply();
+
 signals:
+
+    void lockChanged(bool);
     void gatherChanged(std::shared_ptr<seismic::Gather>);
     void primarySortChanged(GatherSortKey);
     void descriptionChanged(QString);
@@ -91,6 +101,8 @@ private slots:
 
     void on_tbXLine_clicked();
 
+    void on_pbLock_toggled(bool checked);
+
 private:
 
     void indexToKey( int idx, QString& key, bool& ascending);
@@ -99,6 +111,8 @@ private:
 
     std::shared_ptr<SeismicDatasetReader>   m_reader;
     std::shared_ptr<seismic::Gather>        m_gather;
+
+    bool m_lock=false;
 
     GatherSortKey m_primarySortKey=GatherSortKey::Inline;
 };

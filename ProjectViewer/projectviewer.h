@@ -158,6 +158,7 @@ private:
     void exportGrid(GridType, QString);
     void runGridContextMenu(GridType, QListView*, const QPoint&);
 
+    void displayVolumeSlice( const QString&);
     void displayVolumeHistogram( const QString&);
     void renameVolume( const QString&);
     void removeVolume( const QString&);

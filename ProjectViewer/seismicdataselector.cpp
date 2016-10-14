@@ -41,10 +41,10 @@ SeismicDataSelector::SeismicDataSelector(QWidget *parent) :
     ui->cbOrder3->addItems(order);
 
 
-    connect(ui->sbInline, SIGNAL(valueChanged(int)), this, SLOT(readGather()));
-    connect(ui->sbXline, SIGNAL(valueChanged(int)), this, SLOT(readGather()));
-    connect(ui->sbIlineCount, SIGNAL(valueChanged(int)), this, SLOT(readGather()));
-    connect(ui->sbXlineCount, SIGNAL(valueChanged(int)), this, SLOT(readGather()));
+    connect(ui->sbInline, SIGNAL(valueChanged(int)), this, SLOT(apply()));
+    connect(ui->sbXline, SIGNAL(valueChanged(int)), this, SLOT(apply()));
+    connect(ui->sbIlineCount, SIGNAL(valueChanged(int)), this, SLOT(apply()));
+    connect(ui->sbXlineCount, SIGNAL(valueChanged(int)), this, SLOT(apply()));
     connect( ui->cbOrder1, SIGNAL(currentIndexChanged(int)), this, SLOT(changeOrder()));
     connect( ui->cbOrder2, SIGNAL(currentIndexChanged(int)), this, SLOT(changeOrder()));
     connect( ui->cbOrder3, SIGNAL(currentIndexChanged(int)), this, SLOT(changeOrder()));
@@ -103,6 +103,17 @@ void SeismicDataSelector::updatePrimarySort(){
     setPrimarySort(key);
 }
 
+void SeismicDataSelector::setLock(bool on){
+
+    if( on==m_lock) return;
+
+    m_lock=on;
+
+    emit lockChanged(on);
+
+    if( !m_lock ) apply();
+}
+
 void SeismicDataSelector::setPrimarySort(GatherSortKey key){
 
     if( key==m_primarySortKey ) return;
@@ -115,6 +126,8 @@ void SeismicDataSelector::setPrimarySort(GatherSortKey key){
 
 void SeismicDataSelector::apply(){
 
+    if( m_lock ) return;
+
     readGather();
 }
 
@@ -124,38 +137,64 @@ void SeismicDataSelector::setReader(std::shared_ptr<SeismicDatasetReader> reader
 }
 
 void SeismicDataSelector::setInlineRange( int min, int max){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbInline->setRange(min,max);
 }
 
 void SeismicDataSelector::setCrosslineRange( int min, int max){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbXline->setRange(min,max);
 }
 
 void SeismicDataSelector::setInlineCountRange( int min, int max ){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbIlineCount->setRange(min, max);
 }
 
 void SeismicDataSelector::setCrosslineCountRange( int min, int max ){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbXlineCount->setRange(min, max);
 }
 
 void SeismicDataSelector::setInline( int val ){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbInline->setValue(val);
 }
 
 void SeismicDataSelector::setCrossline( int val ){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbXline->setValue(val);
 }
 
 void SeismicDataSelector::setInlineCount( int count ){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbIlineCount->setValue(count);
 }
 
 void SeismicDataSelector::setCrosslineCount( int count ){
+
+    if( ui->pbLock->isChecked() ) return;
+
     ui->sbXlineCount->setValue(count);
 }
 
 void SeismicDataSelector::setOrder(int k1, int k2, int k3){
+
+    if( ui->pbLock->isChecked() ) return;
 
     ui->cbOrder1->setCurrentIndex(k1);
     ui->cbOrder2->setCurrentIndex(k2);
@@ -165,6 +204,8 @@ void SeismicDataSelector::setOrder(int k1, int k2, int k3){
 // smart version
 void SeismicDataSelector::providePoint(int iline, int xline){
 
+   if( ui->pbLock->isChecked() ) return;
+
    if( primarySort()==GatherSortKey::Inline){
         ui->sbInline->setValue(iline);
    }
@@ -172,8 +213,10 @@ void SeismicDataSelector::providePoint(int iline, int xline){
         ui->sbXline->setValue(xline);
    }
    else{
+       setLock(true);
        ui->sbInline->setValue(iline);
        ui->sbXline->setValue(xline);
+       setLock(false);  // calls apply
    }
 }
 
@@ -219,6 +262,8 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
 //std::cout<<"SeismicDataSelector::provideRandomLine"<<std::endl;
 //std::cout<<"#points="<<polyline.size()<<std::endl;
     if( !m_reader ) return;
+
+    if( ui->pbLock->isChecked() ) return;
 
     if( !ui->rbRandomLine->isChecked()) return;
 
@@ -361,7 +406,7 @@ void SeismicDataSelector::changeOrder(){
 
     m_reader->setOrder(key1,ascending1, key2,ascending2, key3,ascending3);
 
-    readGather();
+    apply();
 }
 
 void SeismicDataSelector::on_sbIlineCount_valueChanged(int arg1)
@@ -413,6 +458,8 @@ void SeismicDataSelector::providePerpendicularLine(int iline, int xline){
     // currently only for poststack data!!
     if( !(m_reader->info().mode()==SeismicDatasetInfo::Mode::Poststack) ) return;
 
+    setLock(true);  // avoid multipkle calls to readGather
+
     int order1=ui->cbOrder1->currentIndex();
     int order2=ui->cbOrder2->currentIndex();
 
@@ -445,10 +492,14 @@ void SeismicDataSelector::providePerpendicularLine(int iline, int xline){
 
     }
 
+    setLock(false); // calls apply
+
 }
 
 void SeismicDataSelector::on_tbInline_clicked()
 {
+    setLock(true);
+
     ui->cbOrder1->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending
     ui->cbOrder2->setCurrentIndex(XLINE_ASC_INDEX);   // xline ascending
 
@@ -464,12 +515,15 @@ void SeismicDataSelector::on_tbInline_clicked()
         ui->sbXline->setValue(m_reader->minCrossline());
         ui->sbXlineCount->setValue( 10 );
         ui->cbOrder3->setCurrentIndex(OFFSET_ASC_INDEX);   // offset ascending
-
     }
+
+    setLock(false); // calls apply
 }
 
 void SeismicDataSelector::on_tbXLine_clicked()
 {
+    setLock(true);
+
     ui->cbOrder1->setCurrentIndex(XLINE_ASC_INDEX);   // xline ascending
     ui->cbOrder2->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending
 
@@ -487,5 +541,19 @@ void SeismicDataSelector::on_tbXLine_clicked()
         ui->cbOrder3->setCurrentIndex(OFFSET_ASC_INDEX);
     }
 
+    setLock(false); // calls apply
+}
 
+void SeismicDataSelector::on_pbLock_toggled(bool checked)
+{
+    ui->cbOrder1->setEnabled(!checked);
+    ui->cbOrder2->setEnabled(!checked);
+    ui->cbOrder3->setEnabled(!checked);
+    ui->sbInline->setEnabled(!checked);
+    ui->sbIlineCount->setEnabled(!checked);
+    ui->sbXline->setEnabled(!checked);
+    ui->sbXlineCount->setEnabled(!checked);
+    ui->rbRandomLine->setEnabled(!checked);
+    ui->tbInline->setEnabled(!checked);
+    ui->tbXLine->setEnabled(!checked);
 }

@@ -408,7 +408,7 @@ private:
     QTransform computeGrid2ImageTransform_IlHorizontal()const;
     QTransform computeGrid2ImageTransform_IlVertical()const;
 
-    QSize adjustedToAspectRatio(QSize)const;
+    QSize adjustedToAspectRatio(QSize, bool grow=false)const;
 
 
     GridViewer* m_viewer=nullptr;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>521</width>
-    <height>96</height>
+    <width>580</width>
+    <height>106</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -43,6 +43,39 @@
       <widget class="QSpinBox" name="sbXlineCount"/>
      </item>
      <item>
+      <widget class="QPushButton" name="pbLock">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/icons/images/padlock_open.png</normaloff>
+         <normalon>:/icons/images/padlock_close.png</normalon>:/icons/images/padlock_open.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>32</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -54,13 +87,6 @@
         </size>
        </property>
       </spacer>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="rbRandomLine">
-       <property name="text">
-        <string>Random &amp;Line</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -133,17 +159,11 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QRadioButton" name="rbRandomLine">
+       <property name="text">
+        <string>Rando&amp;m Line</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
     </layout>
    </item>
