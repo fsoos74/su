@@ -192,27 +192,24 @@
     <addaction name="menuImport"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
+    <addaction name="actionCloseProject"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuProcess">
     <property name="title">
-     <string>&amp;Process</string>
+     <string>Process(&amp;Grid)</string>
     </property>
     <addaction name="actionCreateTimeslice"/>
     <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Semblance"/>
     <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_Gradient"/>
-    <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
-    <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="actionFluid_Factor_Grid"/>
-    <addaction name="actionFluid_Factor_Volume"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
+    <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Grid_User_Script"/>
-    <addaction name="actionRun_Volume_Script"/>
    </widget>
    <widget class="QMenu" name="menu_Analyze">
     <property name="title">
@@ -236,9 +233,24 @@
     </property>
     <addaction name="action_About"/>
    </widget>
+   <widget class="QMenu" name="menuProcess_Volume">
+    <property name="title">
+     <string>Process(&amp;Volume)</string>
+    </property>
+    <addaction name="actionVolume_Amplitudes"/>
+    <addaction name="separator"/>
+    <addaction name="actionVolume_Semblance"/>
+    <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
+    <addaction name="actionFluid_Factor_Volume"/>
+    <addaction name="separator"/>
+    <addaction name="actionRun_Volume_Script"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
    <addaction name="menuProcess"/>
+   <addaction name="menuProcess_Volume"/>
    <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -318,7 +330,7 @@
   </action>
   <action name="actionCreateTimeslice">
    <property name="text">
-    <string>&amp;Create Timeslice</string>
+    <string>&amp;Timeslice</string>
    </property>
    <property name="toolTip">
     <string>Create Timeslice</string>
@@ -331,12 +343,12 @@
   </action>
   <action name="actionCompute_Intercept_Gradient">
    <property name="text">
-    <string>Compute &amp;Intercept and Gradient Grids</string>
+    <string>&amp;Intercept and Gradient Grids</string>
    </property>
   </action>
   <action name="actionHorizon_Amplitudes">
    <property name="text">
-    <string>&amp;Horizon Amplitudes</string>
+    <string>Horizon &amp;Amplitudes</string>
    </property>
   </action>
   <action name="actionCrossplot_Grids">
@@ -361,17 +373,17 @@
   </action>
   <action name="actionCompute_Intercept_and_Gradient_Volumes">
    <property name="text">
-    <string>C&amp;ompute Intercept and Gradient Volumes</string>
+    <string>&amp;Intercept and Gradient Volumes</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Grid">
    <property name="text">
-    <string>&amp;Generate Fluid Factor Grid</string>
+    <string>&amp;Fluid Factor Grid</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Volume">
    <property name="text">
-    <string>Generate &amp;Fluid Factor Volume</string>
+    <string>&amp;Fluid Factor Volume</string>
    </property>
   </action>
   <action name="actionImportAttributeGrid">
@@ -426,7 +438,7 @@
   </action>
   <action name="actionRun_Volume_Script">
    <property name="text">
-    <string>Run &amp;Volume Script</string>
+    <string>&amp;Run Volume Script</string>
    </property>
   </action>
   <action name="actionExportSeismic">
@@ -442,6 +454,26 @@
   <action name="actionAxis_Orientation">
    <property name="text">
     <string>Axis &amp;Orientation</string>
+   </property>
+  </action>
+  <action name="actionVolume_Amplitudes">
+   <property name="text">
+    <string>Volume &amp;Amplitudes</string>
+   </property>
+  </action>
+  <action name="actionVolume_Semblance">
+   <property name="text">
+    <string>Volume &amp;Semblance</string>
+   </property>
+  </action>
+  <action name="actionCloseProject">
+   <property name="text">
+    <string>Close Project</string>
+   </property>
+  </action>
+  <action name="actionSecondary_Attribute_Grids">
+   <property name="text">
+    <string>Secondar&amp;y Attribute Grids</string>
    </property>
   </action>
  </widget>

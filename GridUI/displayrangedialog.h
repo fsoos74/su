@@ -23,15 +23,19 @@ public:
 
     double power();
 
+    bool isLocked();
+
 public slots:
 
     void setRange(std::pair<double,double>);
     void setPower( double );
+    void setLocked(bool);
 
 signals:
 
     void rangeChanged( std::pair<double, double>);
     void powerChanged(double);
+    void lockedChanged(bool);
 
 protected:
     // override this to keep return pressed in line edit move up to parent

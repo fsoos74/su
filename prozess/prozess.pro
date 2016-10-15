@@ -37,7 +37,11 @@ SOURCES += prozess.cpp \
     rungridscriptprocess.cpp \
     runvolumescriptprocess.cpp \
     exportseismicprocess.cpp \
-    exportvolumeprocess.cpp
+    exportvolumeprocess.cpp \
+    amplitudevolumeprocess.cpp \
+    semblancevolumeprocess.cpp \
+    semblance.cpp \
+    secondaryattributesprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -58,7 +62,11 @@ HEADERS += prozess.h\
     rungridscriptprocess.h \
     runvolumescriptprocess.h \
     exportseismicprocess.h \
-    exportvolumeprocess.h
+    exportvolumeprocess.h \
+    amplitudevolumeprocess.h \
+    semblancevolumeprocess.h \
+    semblance.h \
+    secondaryattributesprocess.h
 
 unix {
     target.path = /usr/lib

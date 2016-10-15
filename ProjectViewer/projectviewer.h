@@ -71,6 +71,8 @@ private slots:
 
     void on_actionSave_triggered();
 
+    void on_actionCloseProject_triggered();
+
 
     void on_actionCreateTimeslice_triggered();
 
@@ -98,14 +100,22 @@ private slots:
     void on_attributesView_doubleClicked(const QModelIndex &index);
     void on_gridsView_doubleClicked(const QModelIndex &index);
 
+    void on_volumesView_doubleClicked(const QModelIndex &index);
     void runVolumeContextMenu(const QPoint& pos);
 
 
     void on_actionAmplitude_vs_Offset_Plot_triggered();
 
+    void on_actionVolume_Amplitudes_triggered();
+
+    void on_actionVolume_Semblance_triggered();
+
     void on_actionCompute_Intercept_and_Gradient_Volumes_triggered();
 
     void on_actionFluid_Factor_Grid_triggered();
+
+    void on_actionSecondary_Attribute_Grids_triggered();
+
 
     void on_actionFluid_Factor_Volume_triggered();
 

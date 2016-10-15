@@ -312,10 +312,13 @@ void GridViewer::on_displayRangeAct_triggered()
 
         displayRangeDialog->setPower(gridView()->colorTable()->power());
         displayRangeDialog->setRange(gridView()->colorTable()->range());
+        displayRangeDialog->setLocked(gridView()->isColorMappingLocked() );
         connect( displayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
                  gridView()->colorTable(), SLOT(setRange(std::pair<double,double>)) );
         connect( displayRangeDialog, SIGNAL(powerChanged(double)),
                  gridView()->colorTable(), SLOT( setPower(double)) );
+        connect( displayRangeDialog, SIGNAL(lockedChanged(bool)),
+                 gridView(), SLOT(setColorMappingLocked(bool)) );
     }
 
     displayRangeDialog->show();

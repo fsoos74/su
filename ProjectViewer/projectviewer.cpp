@@ -17,6 +17,7 @@
 #include<QProgressDialog>
 #include<QSettings>
 #include<QPointF>
+#include<QDateTime>
 
 #include<gridimportdialog.h>
 #include<gridexportdialog.h>
@@ -59,6 +60,8 @@
 #include <horizonamplitudesdialog.h>
 #include <horizonsemblanceprocess.h>
 #include <horizonsemblancedialog.h>
+#include <semblancevolumeprocess.h>
+#include <semblancevolumedialog.h>
 #include <computeinterceptgradientdialog.h>
 #include <computeinterceptgradientprocess.h>
 #include <interceptgradientvolumedialog.h>
@@ -67,6 +70,10 @@
 #include <fluidfactordialog.h>
 #include <fluidfactorvolumeprocess.h>
 #include <fluidfactorvolumedialog.h>
+#include <secondaryattributesprocess.h>
+#include <secondaryavoattributesdialog.h>
+#include <amplitudevolumedialog.h>
+#include <amplitudevolumeprocess.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
 #include <runvolumescriptdialog.h>
@@ -316,6 +323,27 @@ void ProjectViewer::on_actionOpenProject_triggered()
     m_project=tmp;
 
     setProjectFileName(fileName);
+    updateProjectViews();
+    updateMenu();
+}
+
+
+void ProjectViewer::on_actionCloseProject_triggered()
+{
+    // close all viewers etc, cannot use children because they have 0 parent
+    foreach (QWidget *widget, QApplication::allWidgets()){
+
+        if( widget==this ) continue;
+
+        if(widget->isTopLevel() ){
+            widget->close();
+        }
+    }
+
+    m_project.reset();
+    m_lockfile.reset();
+
+    setProjectFileName(QString());
     updateProjectViews();
     updateMenu();
 }
@@ -777,6 +805,28 @@ void ProjectViewer::on_actionCompute_Intercept_and_Gradient_Volumes_triggered()
     runProcess( new InterceptGradientVolumeProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionVolume_Amplitudes_triggered()
+{
+    AmplitudeVolumeDialog dlg;
+    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setReservedVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new AmplitudeVolumeProcess( m_project, this ), params );
+}
+
+void ProjectViewer::on_actionVolume_Semblance_triggered()
+{
+    SemblanceVolumeDialog dlg;
+    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setReservedVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new SemblanceVolumeProcess( m_project, this ), params );
+}
+
 
 void ProjectViewer::on_actionFluid_Factor_Grid_triggered()
 {
@@ -807,6 +857,25 @@ void ProjectViewer::on_actionFluid_Factor_Volume_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess( new FluidFactorVolumeProcess( m_project, this ), params );
+}
+
+
+void ProjectViewer::on_actionSecondary_Attribute_Grids_triggered()
+{
+    Q_ASSERT(m_project);
+
+    SecondaryAVOAttributesDialog dlg;
+    dlg.setInterceptList( m_project->gridList(GridType::Attribute));
+    dlg.setGradientList( m_project->gridList(GridType::Attribute));
+    dlg.setFluidFactorList( m_project->gridList(GridType::Attribute));
+    dlg.setReservedGrids(m_project->gridList(GridType::Attribute));
+    dlg.setVolumeMode(false);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new SecondaryAttributesProcess( m_project, this ), params );
+
 }
 
 
@@ -1076,6 +1145,13 @@ void ProjectViewer::on_gridsView_doubleClicked(const QModelIndex &idx)
 {
     QString name=ui->gridsView->model()->itemData(idx)[Qt::DisplayRole].toString();
     displayGrid(GridType::Other, name);
+}
+
+void ProjectViewer::on_volumesView_doubleClicked(const QModelIndex &idx)
+{
+    QString name=ui->volumesView->model()->itemData(idx)[Qt::DisplayRole].toString();
+
+    displayVolumeSlice(name);
 }
 
 void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
@@ -1943,7 +2019,16 @@ bool ProjectViewer::saveProject( const QString& fileName){
 }
 
 void ProjectViewer::updateProjectViews(){
-if(!m_project) return;
+
+    if( !m_project ){
+        ui->datasetsView->setModel(0);
+        ui->horizonsView->setModel(0);
+        ui->attributesView->setModel(0);
+        ui->gridsView->setModel(0);
+        ui->volumesView->setModel(0);
+        return;
+    }
+
     QStringListModel* datasetsModel=new QStringListModel( m_project->seismicDatasetList(), this);
     ui->datasetsView->setModel(datasetsModel);
 
@@ -1967,24 +2052,27 @@ if(!m_project) return;
 void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> params)
 {
 
-    const int FINISH_MESSAGE_MILLIS=3000;
-
     Q_ASSERT( process );
 
     try{
 
+    QDateTime start=QDateTime::currentDateTime();
 
-    auto start = std::chrono::steady_clock::now();
+    QString name=process->name();
+
+    statusBar()->showMessage(QString("Started %1 at %2").arg(name).arg(start.time().toString() ) );
 
     if( process->init(params)!=ProjectProcess::ResultCode::Ok ){
 
         QMessageBox::critical(this, process->name(), process->lastError());
         delete process;
+
+        statusBar()->showMessage( QString("Canceled %1 at %2").arg(name).arg(QDateTime::currentDateTime().time().toString()) );
         return;
     }
 
     QProgressDialog* progress=new QProgressDialog(this);        // add destroy on close??
-    progress->setWindowTitle(process->name());
+    progress->setWindowTitle(name);
     connect( process, SIGNAL( currentTask(QString)), progress, SLOT( setLabelText(QString)) );
     connect( process, SIGNAL( started(int)), progress, SLOT(setMaximum(int)) );
     connect( process, SIGNAL( progress(int)), progress, SLOT(setValue(int)) );
@@ -2000,24 +2088,21 @@ void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> 
         QMessageBox::information(this, process->name(), "Process was canceled by user.");
     }
 
-    QString name=process->name();
 
     delete progress;
     delete process;
 
 
     if( code != ProjectProcess::ResultCode::Ok){
+        statusBar()->showMessage( QString("Canceled %1 at %2").arg(name).arg(QDateTime::currentDateTime().time().toString()) );
         return;
     }
 
     updateProjectViews();
 
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<float> diff = end - start;
-    QString message=QString("Process %1 finished after %2 seconds").arg(name).arg(diff.count(), 0, 'g', 3);
-
-    statusBar()->showMessage(message, FINISH_MESSAGE_MILLIS );
-
+    QDateTime end=QDateTime::currentDateTime();
+    qreal duration=0.001*start.msecsTo(end);
+    statusBar()->showMessage(QString("Finished %1 at %2 after %3 seconds").arg(name).arg(end.time().toString()).arg(duration) );
 
     if( params.contains(QString("display-grid"))){
         for( QString gridName : params.values(QString("display-grid"))){
@@ -2079,23 +2164,32 @@ void ProjectViewer::updateMenu(){
     ui->actionExportProject->setEnabled(isProject);
     ui->actionOpenGrid->setEnabled( isProject);
     ui->actionOpenSeismicDataset->setEnabled( isProject);
+    ui->actionCloseProject->setEnabled(isProject);
 
     ui->action_Geometry->setEnabled(isProject);
     ui->actionAxis_Orientation->setEnabled(isProject);
+
     ui->actionCreateTimeslice->setEnabled(isProject);
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
     ui->actionHorizon_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_Gradient->setEnabled(isProject);
-    ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
+    ui->actionSecondary_Attribute_Grids->setEnabled(isProject);
     ui->actionFluid_Factor_Grid->setEnabled(isProject);
-    ui->actionFluid_Factor_Volume->setEnabled(isProject);
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
+
+    ui->actionVolume_Amplitudes->setEnabled(isProject);
+    ui->actionVolume_Semblance->setEnabled(isProject);
+    ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
+    ui->actionFluid_Factor_Volume->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
+
+
 
 
 

@@ -292,8 +292,7 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
         std::shared_ptr<seismic::Gather> gather=reader->read_gather("cdp");
         if( !gather ) break;
 
-        gather=filter.filter(gather);
-
+        // extract this before filter because filter could leave empty gather
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();

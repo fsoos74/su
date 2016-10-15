@@ -254,6 +254,10 @@ public:
         return m_grid;                   //!!!!
     }
 
+    bool isColorMappingLocked(){
+        return m_colorMappingLock;
+    }
+
     bool isFixedAspectRatio()const{
         return m_fixedAspectRatio;
     }
@@ -364,6 +368,7 @@ public slots:
     void setViewerCurrentPoint(SelectionPoint);
     void setIntersectionPoints( QVector<SelectionPoint>);
     void setColorMapping( const std::pair<double,double>& );
+    void setColorMappingLocked(bool);
     void setColors( const QVector<QRgb>&);
     void setNullColor( QColor );
     void setGridToImageTransform( const QTransform&);
@@ -419,6 +424,7 @@ private:
     bool m_fixedAspectRatio=true;
     qreal m_aspectRatio=1.; // w/h
     ColorTable* m_colorTable;           // holds colors and display range
+    bool m_colorMappingLock=false;
     QColor m_nullColor;
     QTransform m_gridToImageTransform;
     QTransform m_imageToGridTransform;
