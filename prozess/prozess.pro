@@ -41,7 +41,8 @@ SOURCES += prozess.cpp \
     amplitudevolumeprocess.cpp \
     semblancevolumeprocess.cpp \
     semblance.cpp \
-    secondaryattributesprocess.cpp
+    secondaryattributesprocess.cpp \
+    secondaryattributevolumesprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -66,7 +67,8 @@ HEADERS += prozess.h\
     amplitudevolumeprocess.h \
     semblancevolumeprocess.h \
     semblance.h \
-    secondaryattributesprocess.h
+    secondaryattributesprocess.h \
+    secondaryattributevolumesprocess.h
 
 unix {
     target.path = /usr/lib

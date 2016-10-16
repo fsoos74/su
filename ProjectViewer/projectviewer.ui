@@ -202,10 +202,8 @@
     <addaction name="actionCreateTimeslice"/>
     <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Semblance"/>
-    <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_Gradient"/>
     <addaction name="actionFluid_Factor_Grid"/>
-    <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
@@ -238,13 +236,13 @@
      <string>Process(&amp;Volume)</string>
     </property>
     <addaction name="actionVolume_Amplitudes"/>
-    <addaction name="separator"/>
     <addaction name="actionVolume_Semblance"/>
+    <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
     <addaction name="actionFluid_Factor_Volume"/>
+    <addaction name="actionSecondary_Attribute_Volumes"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Volume_Script"/>
-    <addaction name="separator"/>
     <addaction name="separator"/>
    </widget>
    <addaction name="menu_File"/>
@@ -468,12 +466,17 @@
   </action>
   <action name="actionCloseProject">
    <property name="text">
-    <string>Close Project</string>
+    <string>&amp;Close Project</string>
    </property>
   </action>
   <action name="actionSecondary_Attribute_Grids">
    <property name="text">
     <string>Secondar&amp;y Attribute Grids</string>
+   </property>
+  </action>
+  <action name="actionSecondary_Attribute_Volumes">
+   <property name="text">
+    <string>Secondar&amp;y Attribute Volumes</string>
    </property>
   </action>
  </widget>

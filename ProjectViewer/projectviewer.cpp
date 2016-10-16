@@ -71,6 +71,7 @@
 #include <fluidfactorvolumeprocess.h>
 #include <fluidfactorvolumedialog.h>
 #include <secondaryattributesprocess.h>
+#include <secondaryattributevolumesprocess.h>
 #include <secondaryavoattributesdialog.h>
 #include <amplitudevolumedialog.h>
 #include <amplitudevolumeprocess.h>
@@ -865,6 +866,7 @@ void ProjectViewer::on_actionSecondary_Attribute_Grids_triggered()
     Q_ASSERT(m_project);
 
     SecondaryAVOAttributesDialog dlg;
+    dlg.setWindowTitle(tr("Secondary Attribute Grids"));
     dlg.setInterceptList( m_project->gridList(GridType::Attribute));
     dlg.setGradientList( m_project->gridList(GridType::Attribute));
     dlg.setFluidFactorList( m_project->gridList(GridType::Attribute));
@@ -878,6 +880,23 @@ void ProjectViewer::on_actionSecondary_Attribute_Grids_triggered()
 
 }
 
+void ProjectViewer::on_actionSecondary_Attribute_Volumes_triggered()
+{
+    Q_ASSERT(m_project);
+
+    SecondaryAVOAttributesDialog dlg;
+    dlg.setWindowTitle(tr("Secondary Attribute Volumes"));
+    dlg.setInterceptList( m_project->volumeList());
+    dlg.setGradientList( m_project->volumeList());
+    dlg.setFluidFactorList( m_project->volumeList());
+    dlg.setReservedGrids(m_project->volumeList());
+    dlg.setVolumeMode(true);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new SecondaryAttributeVolumesProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
 {
@@ -2181,12 +2200,15 @@ void ProjectViewer::updateMenu(){
     ui->actionVolume_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
     ui->actionFluid_Factor_Volume->setEnabled(isProject);
+    ui->actionSecondary_Attribute_Volumes->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
+
 
 
 

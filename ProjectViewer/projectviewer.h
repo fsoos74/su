@@ -138,6 +138,8 @@ private slots:
 
 
 
+    void on_actionSecondary_Attribute_Volumes_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);

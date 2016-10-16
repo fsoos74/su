@@ -52,7 +52,7 @@ QMap<QString,QString> SecondaryAVOAttributesDialog::params(){
         p.insert(QString("fluid-factor"), ui->cbFluidFactor->currentText());
     }
 
-    QString fullGridName=createFullGridName( GridType::Attribute, ui->leOutput->text() );
+    QString fullGridName=(m_volumeMode) ? ui->leOutput->text() : createFullGridName( GridType::Attribute, ui->leOutput->text() );
     p.insert(QString("output"), fullGridName );
 
     return p;
