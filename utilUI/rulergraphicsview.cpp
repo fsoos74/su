@@ -43,6 +43,15 @@ void RulerGraphicsView::setGridMode( RulerGraphicsView::GridMode m ){
     update();
 }
 
+void RulerGraphicsView::setMouseMode(MouseMode m){
+
+    if( m==m_mouseMode ) return;
+
+    m_mouseMode=m;
+
+    emit mouseModeChanged(m);
+}
+
 void RulerGraphicsView::setRulerWidth( int w ){
 
     if( m_RULER_WIDTH==w ) return;
@@ -171,7 +180,7 @@ void RulerGraphicsView::addSelectionPolygonPoint( QPointF p ){
 
 void RulerGraphicsView::mousePressEvent(QMouseEvent* event){
 
-    if( event->modifiers()!=Qt::ShiftModifier) return;
+    if( event->modifiers()!=Qt::ShiftModifier && m_mouseMode!=MouseMode::Select ) return;
 
     if( m_selectionMode==SelectionMode::Polygon){
 
@@ -254,7 +263,8 @@ bool RulerGraphicsView::eventFilter(QObject *obj, QEvent *ev){
 
     if( !(widget==viewport() || widget==m_leftRuler || widget==m_topRuler)) return QObject::eventFilter(obj,ev);
 
-    if (mouseEvent->modifiers() != Qt::ControlModifier && !m_mouseSelection ) return QObject::eventFilter(obj,ev);
+    if ( (mouseEvent->modifiers() != Qt::ControlModifier) && (m_mouseMode!=MouseMode::Zoom) &&
+         !m_mouseSelection ) return QObject::eventFilter(obj,ev);
 
     // zoom
 

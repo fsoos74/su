@@ -35,6 +35,12 @@
         <file>../images/current-point-icon-32x32.png</file>
         <file>../images/padlock_close.png</file>
         <file>../images/padlock_open.png</file>
+        <file>../images/arrow-32x32.png</file>
+        <file>../images/select-32x32.png</file>
+        <file>../images/Zoom.png</file>
+        <file>../images/cross-cursor-24x24.png</file>
+        <file>../images/cross-cursor-select-24x24.png</file>
+        <file>../images/cross-cursor-zoom-24x24.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>

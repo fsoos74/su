@@ -8,6 +8,7 @@ CurveViewerDisplayOptionsDialog::CurveViewerDisplayOptionsDialog(QWidget *parent
     ui->setupUi(this);
 
     connect( ui->sbDatapointSize, SIGNAL(valueChanged(int)), this, SLOT( setDatapointSize(int)) );
+    connect( ui->cbRegressionLines, SIGNAL(toggled(bool)), this, SIGNAL(showRegressionLinesChanged(bool)) );
 }
 
 CurveViewerDisplayOptionsDialog::~CurveViewerDisplayOptionsDialog()

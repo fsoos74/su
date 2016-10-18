@@ -19,7 +19,7 @@
 #include<isolinecomputer.h>
 #include"griddisplayoptionsdialog.h"
 
-
+#include <mousemodeselector.h>
 
 GridViewer::GridViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -59,7 +59,11 @@ GridViewer::GridViewer(QWidget *parent) :
 
     loadSettings();
 
-
+    MouseModeSelector* mm=new MouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), m_gridView, SLOT(setMouseMode(MouseMode)));
+    QToolBar* mouseToolBar=new QToolBar(this);
+    mouseToolBar->insertWidget( ui->zoomInAct, mm);
+    insertToolBar( ui->mainToolBar, mouseToolBar);
 }
 
 GridViewer::~GridViewer()

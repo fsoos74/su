@@ -21,6 +21,7 @@ public slots:
 
 signals:
     void datapointSizeChanged(int);
+    void showRegressionLinesChanged(bool);
 
 private:
     Ui::CurveViewerDisplayOptionsDialog *ui;

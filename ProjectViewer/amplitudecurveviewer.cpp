@@ -19,6 +19,8 @@
 #include<QInputDialog>
 #include<iostream>
 
+#include <mousemodeselector.h>
+
 #include<datapointitem.h>
 
 
@@ -73,6 +75,12 @@ AmplitudeCurveViewer::AmplitudeCurveViewer(QWidget *parent) :
     ui->graphicsView->setMouseTracking(true);
     ui->splitter->setStretchFactor(1,0);
 
+    MouseModeSelector* mm=new MouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
+    QToolBar* mouseToolBar=new QToolBar(this);
+    mouseToolBar->addWidget( mm);
+    insertToolBar( ui->toolBar, mouseToolBar);
+
     loadSettings();
 }
 
@@ -112,6 +120,7 @@ void AmplitudeCurveViewer::setProject( std::shared_ptr<AVOProject> project){
 
 void AmplitudeCurveViewer::setShowRegressionLines(bool on){
 
+    //std::cout<<std::boolalpha<<"show reglines: "<<on<<std::endl;
     if( on==m_showRegressionLines) return;
 
     m_showRegressionLines=on;

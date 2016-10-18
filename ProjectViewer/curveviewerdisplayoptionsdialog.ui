@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>200</width>
+    <width>202</width>
     <height>148</height>
    </rect>
   </property>
@@ -41,6 +41,9 @@
       <widget class="QCheckBox" name="cbRegressionLines">
        <property name="text">
         <string>Show Regression Lines</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

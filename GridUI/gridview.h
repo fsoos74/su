@@ -14,6 +14,9 @@
 
 #include "axxisorientation.h"
 
+#include <mousemode.h>
+
+
 
 //#include<projectdispatcher.h>
 
@@ -336,6 +339,9 @@ public:
 
      ViewLabel* label()const{ return m_label;}
 
+     MouseMode mouseMode()const{
+         return m_mouseMode;
+     }
 
      qreal computeILXLBasedAspectRatio()const;
 
@@ -386,11 +392,13 @@ public slots:
      void zoomBy( qreal );
      void zoomFit();
 
+     void setMouseMode(MouseMode);
 
 signals:
 
      void pointSelected(SelectionPoint);
      void polylineSelected(QVector<QPoint>);
+     void mouseModeChanged(MouseMode);
 
 protected:
 
@@ -444,6 +452,8 @@ private:
     bool                mouseSelection=false;
     QWidget*            mouseSelectionWidget=nullptr;
     QPoint              mouseSelectionStart;
+
+    MouseMode m_mouseMode=MouseMode::Explore;
 };
 
 

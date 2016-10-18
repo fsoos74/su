@@ -29,6 +29,9 @@ class CrossplotViewer;
 #include<range.h>
 #include <crossplot.h>
 
+#include <mousemodeselector.h>
+
+
 class CrossplotViewer : public BaseViewer
 {
     Q_OBJECT

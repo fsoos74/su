@@ -156,6 +156,17 @@ void GatherView::setCursorPosition(SelectionPoint p){
 
 }
 
+void GatherView::setMouseMode(MouseMode m){
+
+    if( m==m_mouseMode ) return;
+
+    m_mouseMode=m;
+
+    setCursor(modeCursor(m_mouseMode));
+
+    emit mouseModeChanged(m_mouseMode);
+}
+
 std::shared_ptr<Grid2D<float> > GatherView::horizon(QString name)const{
 
     // return null pointer if not exists
@@ -468,7 +479,7 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
 
     // trace header
     if( widget==m_gatherLabel && mouseEvent->type()==QEvent::MouseButtonRelease &&
-            mouseEvent->modifiers()==Qt::ShiftModifier){
+            (mouseEvent->modifiers()==Qt::ShiftModifier || m_mouseMode==MouseMode::Select) ){
 
         int trace=mouseEvent->pos().x() / m_pixelPerTrace;
 
@@ -511,7 +522,8 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
         emit leftRulerClicked(secs);
     }
 
-    if (mouseEvent->modifiers() != Qt::ControlModifier && !mouseSelection) return QObject::eventFilter(obj, ev);
+    if (mouseEvent->modifiers() != Qt::ControlModifier && m_mouseMode!=MouseMode::Zoom &&
+            !mouseSelection) return QObject::eventFilter(obj, ev);
 
     // zoom
 

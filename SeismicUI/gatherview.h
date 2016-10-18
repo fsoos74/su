@@ -12,6 +12,7 @@
 #include<gather.h>
 #include<gatherscaler.h>
 #include<grid3d.h>
+#include <mousemode.h>
 
 #include "gathersortkey.h"
 
@@ -22,6 +23,7 @@ class AxxisLabelWidget;
 #include<selectionpoint.h>
 
 #include<grid2d.h>
+
 
 class GatherView : public QScrollArea
 {
@@ -67,6 +69,10 @@ public:
 
     GatherRuler* topRuler()const{
         return m_topRuler;
+    }
+
+    MouseMode moouseMode()const{
+        return m_mouseMode;
     }
 
     AxxisLabelWidget* axxisLabelWidget()const{
@@ -126,6 +132,7 @@ signals:
     void traceClicked( size_t );
     //void traceSelected( size_t );
     void pointSelected( SelectionPoint );
+    void mouseModeChanged( MouseMode);
 
 public slots:
 
@@ -134,6 +141,7 @@ public slots:
     void setIntersectionTraces( QVector<int>);
     void setHighlightedPoints(QVector<SelectionPoint>);
     void setCursorPosition(SelectionPoint);
+    void setMouseMode( MouseMode );
     void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
@@ -197,6 +205,7 @@ private:
     QWidget*            mouseSelectionWidget=nullptr;
     QPoint              mouseSelectionStart;
 
+   MouseMode            m_mouseMode;
 };
 
 

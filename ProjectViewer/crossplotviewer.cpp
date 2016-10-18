@@ -20,6 +20,8 @@
 #include<QGraphicsSceneMouseEvent>
 #include<datapointitem.h>
 
+#include<mousemodeselector.h>
+
 #include <volumedataselectiondialog.h>
 #include <colortabledialog.h>
 
@@ -66,6 +68,12 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
 
 
     m_colorTable->setColors(ColorTable::defaultColors());
+
+    MouseModeSelector* mm=new MouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
+    QToolBar* mouseToolBar=new QToolBar(this);
+    mouseToolBar->addWidget( mm);
+    insertToolBar( ui->toolBar, mouseToolBar);
 
     createDockWidgets();
 

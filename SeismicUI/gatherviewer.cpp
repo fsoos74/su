@@ -20,6 +20,7 @@
 #include<QInputDialog>
 #include <QSettings>
 #include <pointdisplayoptionsdialog.h>
+#include<mousemodeselector.h>
 
 #include<gridviewer.h>
 
@@ -54,6 +55,12 @@ GatherViewer::GatherViewer(QWidget *parent) :
     //setMinimumWidth(ui->mainToolBar->width() + 50);
 
     //loadSettings();
+
+    MouseModeSelector* mm=new MouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
+    QToolBar* mouseToolBar=new QToolBar(this);
+    mouseToolBar->addWidget( mm);
+    insertToolBar( ui->mainToolBar, mouseToolBar);
 
     createDockWidgets();
 

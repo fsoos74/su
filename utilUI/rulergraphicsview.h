@@ -6,6 +6,7 @@
 #include<QRubberBand>
 #include<QPolygonF>
 #include<QPointF>
+#include<mousemode.h>
 
 #include<functional>
 
@@ -119,6 +120,10 @@ public:
         return m_topRuler;
     }
 
+    MouseMode mouseMode()const{
+        return m_mouseMode;
+    }
+
     GridMode gridMode()const{
         return m_gridMode;
     }
@@ -146,6 +151,7 @@ public:
 public slots:
 
     void setGridMode( GridMode );
+    void setMouseMode(MouseMode);
     void setRulerWidth( int );
     void setRulerHeight( int );
     void zoomFitWindow();
@@ -154,6 +160,7 @@ public slots:
     void setSelectionPolygon( QPolygonF );
 
 signals:
+    void mouseModeChanged(MouseMode);
     void mouseOver( QPointF);
 
 protected:
@@ -178,6 +185,7 @@ private:
     GVRuler* m_leftRuler=nullptr;
     GVRuler* m_topRuler=nullptr;
 
+    MouseMode m_mouseMode=MouseMode::Explore;
     GridMode m_gridMode=GridMode::Background;
     SelectionMode m_selectionMode=SelectionMode::None;
 

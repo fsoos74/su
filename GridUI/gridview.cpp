@@ -281,6 +281,19 @@ void GridView::setAspectRatio(qreal r){
     emit aspectRatioChanged( r );
 }
 
+
+
+void GridView::setMouseMode(MouseMode m){
+
+    if( m==m_mouseMode ) return;
+
+    m_mouseMode=m;
+
+    setCursor(modeCursor(m_mouseMode));
+
+    emit mouseModeChanged(m);
+}
+
 void GridView::onColorTableChanged(){
 
     m_label->setImage( grid2image());
@@ -659,7 +672,9 @@ bool GridView::eventFilter(QObject *obj, QEvent *ev){
     }
 
     // select line add point
-    if(widget==m_label && mouseEvent->type()==QEvent::MouseButtonPress && mouseEvent->modifiers()==Qt::ShiftModifier){
+    if(widget==m_label && mouseEvent->type()==QEvent::MouseButtonPress &&
+            (mouseEvent->modifiers()==Qt::ShiftModifier || m_mouseMode==MouseMode::Select) )
+    {
         int x=mouseEvent->x();
         int y=mouseEvent->y();
         QPointF p=imageToGridTransform().map( QPointF(x,y));
@@ -727,7 +742,7 @@ bool GridView::eventFilter(QObject *obj, QEvent *ev){
     }
 
 
-    if (mouseEvent->modifiers() != Qt::ControlModifier && !mouseSelection) return QObject::eventFilter(obj, ev);
+    if ( (mouseEvent->modifiers() != Qt::ControlModifier && m_mouseMode!=MouseMode::Zoom ) && !mouseSelection) return QObject::eventFilter(obj, ev);
 
     // zoom
 

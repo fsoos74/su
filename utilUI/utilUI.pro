@@ -34,7 +34,9 @@ SOURCES += utilui.cpp \
     activetextgraphicsitem.cpp \
     selectionpoint.cpp \
     pointdisplayoptionsdialog.cpp \
-    selectionpointbuffer.cpp
+    selectionpointbuffer.cpp \
+    mousemodeselector.cpp \
+    mousemode.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -48,7 +50,9 @@ HEADERS += utilui.h\
     activetextgraphicsitem.h \
     selectionpoint.h \
     pointdisplayoptionsdialog.h \
-    selectionpointbuffer.h
+    selectionpointbuffer.h \
+    mousemodeselector.h \
+    mousemode.h
 
 unix {
     target.path = /usr/lib
@@ -58,7 +62,8 @@ unix {
 FORMS += \
     linerangeselectiondialog.ui \
     twocombosdialog.ui \
-    pointdisplayoptionsdialog.ui
+    pointdisplayoptionsdialog.ui \
+    mousemodeselector.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
@@ -66,3 +71,11 @@ else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
 
 INCLUDEPATH += $$PWD/../ColorUI
 DEPENDPATH += $$PWD/../ColorUI
+
+RESOURCES += \
+    ../icons.qrc
+
+DISTFILES += \
+    ../images/arrow-32x32.png \
+    ../images/select-32x32.png \
+    ../images/Zoom.png
