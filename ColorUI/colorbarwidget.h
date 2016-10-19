@@ -37,6 +37,14 @@ public:
         return m_range;
     }
 
+    bool isDisplayIndicator()const{
+        return m_displayIndicator;
+    }
+
+    double indicatorValue()const{
+        return m_indicatorValue;
+    }
+
 signals:
 
     void colorTableChanged( ColorTable* );
@@ -44,6 +52,8 @@ signals:
     void labelChanged( QString );
     void stepsChanged(int);
     void rangeChanged(std::pair<double,double>);
+    void displayIndicatorChanged(bool);
+    void indicatorValueChanged(double);
 
 public slots:
 
@@ -53,9 +63,14 @@ public slots:
     void setLabel( const QString&);
     void setSteps(int);
     void setRange(std::pair<double,double>);
+    void setDisplayIndicator(bool);
+    void setIndicatorValue(double);
+
 protected:
 
      void paintEvent( QPaintEvent *);
+
+     void drawIndicator( QPainter&, QPoint );
 
 private slots:
 
@@ -77,6 +92,10 @@ private:
     ColorTable* m_colorTable=nullptr;
     ScaleAlignment m_scaleAlignment=SCALE_LEFT;
     QString m_label;
+
+    bool m_displayIndicator=false;
+    double m_indicatorValue;
+
 };
 
 #endif // COLORBARWIDGET_H

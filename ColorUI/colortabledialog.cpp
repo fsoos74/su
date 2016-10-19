@@ -7,8 +7,12 @@
 #include<QMessageBox>
 #include<QSettings>
 #include<QVariant>
+#include<QSpacerItem>
+#include<QScrollArea>
 #include "xctwriter.h"
 #include "xctreader.h"
+
+#include "colortableimportdialog.h"
 
 #include<iostream>
 
@@ -16,14 +20,27 @@ ColorTableDialog::ColorTableDialog(const QVector<QRgb>& startColors, QWidget* pa
     QDialog(parent), m_startColors(startColors), m_colors( startColors), m_colorTableDir( QDir::homePath())
 {
 
-    QVBoxLayout* mainLayout=new QVBoxLayout;
+    scrollArea=new QScrollArea(this);
+    QWidget* widget=new QWidget;
+    colorButtonsLayout=new QGridLayout;
+    widget->setLayout(colorButtonsLayout);
+    scrollArea->setWidget(widget);
 
-    QLayout* colorButtonLayout=     createAndLayoutColorButtons();
+    QVBoxLayout* mainLayout=new QVBoxLayout;
+    mainLayout->addWidget(scrollArea);
+    createLayoutAndConnectColorButtons();
+
+
     QLayout* colorControlLayout=    createAndLayoutColorControls();
     QLayout* buttonLayout=          createAndLayoutButtons();
 
-    mainLayout->addItem(colorButtonLayout);
+    //mainLayout->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    //mainLayout->addItem(colorButtonLayout);
     mainLayout->addItem(colorControlLayout);
+
+    //mainLayout->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Minimum, QSizePolicy::Expanding));
+
     mainLayout->addItem(buttonLayout);
 
     setLayout(mainLayout);
@@ -56,17 +73,16 @@ void ColorTableDialog::setColor( int idx, const QRgb& color ){
 
 void ColorTableDialog::setColors( const QVector<QRgb>& colors ){
 
-    Q_ASSERT( colors.size()==m_colors.size());
-
     if( m_colors==colors ) return;
+
+    if( colors.empty() ) return;
 
     m_colors=colors;
 
-    for( int i=0; i<colors.size(); i++){
-        setButtonColor(colorButtons[i], colors[i]);
-    }
+    createLayoutAndConnectColorButtons();
 
-    colorToControls( colors[currentColorIndex] );
+    //currentColorIndex=0;
+    //colorToControls(m_colors[currentColorIndex]);
 
     emit colorsChanged(m_colors);
 }
@@ -137,6 +153,17 @@ void ColorTableDialog::onLoad(){
         setColors( colors );
     }
 
+}
+
+void ColorTableDialog::onImport(){
+
+    ColortableImportDialog dlg(this);
+    dlg.setWindowTitle(tr("import Colortable"));
+
+    if( dlg.exec()==QDialog::Accepted){
+
+        setColors(dlg.colors());
+    }
 }
 
 void ColorTableDialog::onSave(){
@@ -315,25 +342,51 @@ void ColorTableDialog::accept()
 
 
 
-QLayout* ColorTableDialog::createAndLayoutColorButtons(){
+void ColorTableDialog::createLayoutAndConnectColorButtons(){
 
-    QGridLayout* colorButtonLayout=new QGridLayout;
-    colorButtons.reserve(N_COLORS);
+    for( QPushButton* button : colorButtons ){
 
-    for( int i=0; i<N_COLORS; i++){
+        if( !button ) continue;
+        colorButtonsLayout->removeWidget(button);
+        delete button;
+    }
+    colorButtons.clear();
+
+    if( m_colors.empty()) return;
+
+    colorButtons.reserve(m_colors.size() );
+
+    QWidget* widget=scrollArea->widget();
+
+    for( int i=0; i<m_colors.size(); i++){
 
         int row=i / COLORS_PER_ROW;
         int column= i % COLORS_PER_ROW;
 
-        QPushButton* button=new QPushButton(this);
+        QPushButton* button=new QPushButton(widget);
         button->setCheckable(true);
         button->setFixedSize(COLOR_BUTTON_WIDTH, COLOR_BUTTON_HEIGHT);
         setButtonColor(button, m_colors[i] );
-        colorButtonLayout->addWidget(button, row, column);
+        colorButtonsLayout->addWidget(button, row, column);
         colorButtons.push_back(button);
+
+        button->installEventFilter(this);
+        connect( button, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
     }
 
-    return colorButtonLayout;
+    colorButtonsLayout->setSpacing(4);
+    colorButtonsLayout->setVerticalSpacing(4);
+
+    for( int i=0; i<COLORS_PER_ROW; i++){
+        colorButtonsLayout->setColumnMinimumWidth( i, COLOR_BUTTON_WIDTH);
+    }
+    for( int i=0; i<=m_colors.size()/COLORS_PER_ROW; i++ ){
+        colorButtonsLayout->setRowMinimumHeight( i, COLOR_BUTTON_HEIGHT );
+    }
+
+    colorButtonsLayout->update();
+
+    widget->setMinimumSize(colorButtonsLayout->sizeHint() );
 }
 
 QLayout* ColorTableDialog::createAndLayoutColorControls(){
@@ -408,10 +461,12 @@ QLayout* ColorTableDialog::createAndLayoutButtons(){
     btCancel=new QPushButton("Cancel", this);
     btLoad=new QPushButton("Load", this);
     btSave=new QPushButton("Save", this);
+    btImport=new QPushButton("Import", this);
 
     QHBoxLayout* buttonLayout=new QHBoxLayout;
 
     buttonLayout->addWidget(btLoad);
+    buttonLayout->addWidget(btImport);
     buttonLayout->addWidget(btSave);
     buttonLayout->addWidget(btReset);
     buttonLayout->addWidget(btFlip);
@@ -425,14 +480,15 @@ QLayout* ColorTableDialog::createAndLayoutButtons(){
 void ColorTableDialog::makeConnections(){
 
 
-    for( int i=0; i<N_COLORS; i++){
+    /*
+     * for( int i=0; i<N_COLORS; i++){
 
         QPushButton* button=colorButtons[i];
 
         button->installEventFilter(this);
         connect( button, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
     }
-
+    */
 
     connect( slRed, SIGNAL( valueChanged(int)), this, SLOT( sliderValueChanged()));
     connect( leRed, SIGNAL( returnPressed()), this, SLOT( lineEditReturnPressed()));
@@ -446,6 +502,7 @@ void ColorTableDialog::makeConnections(){
     connect( btOk, SIGNAL(clicked()), this, SLOT(accept()));
     connect( btCancel, SIGNAL(clicked()), this, SLOT(reject()));
     connect( btLoad, SIGNAL(clicked()), this, SLOT(onLoad()));
+    connect( btImport, SIGNAL(clicked()), this, SLOT(onImport()));
     connect( btSave, SIGNAL(clicked()), this, SLOT(onSave()));
     connect( btReset, SIGNAL(clicked()), this, SLOT(onReset()));
     connect( btFlip, SIGNAL(clicked()), this, SLOT(onFlip()));
@@ -475,7 +532,7 @@ void ColorTableDialog::loadSettings(){
     QSettings settings(COMPANY, "ColorTableDialog");
 
     settings.beginGroup("Dialog");
-        resize(settings.value("size", QSize(600, 400)).toSize());
+        resize(settings.value("size", QSize(800, 500)).toSize());
         move(settings.value("pos", QPoint(200, 200)).toPoint());
     settings.endGroup();
 

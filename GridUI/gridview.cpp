@@ -724,11 +724,12 @@ bool GridView::eventFilter(QObject *obj, QEvent *ev){
         emit mouseOver(iline, xline);
     }
 
-    // click on left ruler, emit line
+    // double click on left ruler, emit line
     if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
 
         int x=0; // leftmost
         int y=verticalScrollBar()->value() + mouseEvent->y();
+
         QPointF p=imageToGridTransform().map( QPointF(x,y));
         int iline=std::round( p.y() );
         int xline=std::round( p.x() );

@@ -14,7 +14,7 @@
 #include<QSpinBox>
 #include<QButtonGroup>
 #include<QRadioButton>
-
+#include<QScrollArea>
 
 class ColorTableDialog : public QDialog
 {
@@ -22,10 +22,10 @@ class ColorTableDialog : public QDialog
 
 public:
 
-    const int N_COLORS=256;
+    //const int N_COLORS=256;
     const int COLORS_PER_ROW=32;
-    const int COLOR_BUTTON_WIDTH=32;
-    const int COLOR_BUTTON_HEIGHT=32;
+    const int COLOR_BUTTON_WIDTH=16;
+    const int COLOR_BUTTON_HEIGHT=16;
 
     ColorTableDialog(const QVector<QRgb>& startColors, QWidget* parent=nullptr);
 
@@ -56,6 +56,7 @@ protected:
 private slots:
 
     void onLoad();
+    void onImport();
     void onSave();
     void onReset();
     void onFlip();
@@ -74,7 +75,7 @@ private:
     void loadSettings();
 
 
-    QLayout* createAndLayoutColorButtons();
+    void createLayoutAndConnectColorButtons();
     QLayout* createAndLayoutColorControls();
     QLayout* createAndLayoutButtons();
     void makeConnections();
@@ -94,10 +95,16 @@ private:
     QPushButton* btFlip;
     QPushButton* btCancel;
     QPushButton* btLoad;
+    QPushButton* btImport;
     QPushButton* btSave;
+
+    QScrollArea* scrollArea;
+    QGridLayout* colorButtonsLayout;
     QVector<QPushButton*> colorButtons;
 
     QString m_colorTableDir;
+
+    int ncolors=256;
 
     int currentColorIndex=0;
 

@@ -34,6 +34,8 @@ GridViewer::GridViewer(QWidget *parent) :
     m_gridView->setBackgroundRole(QPalette::Dark);
     //setCentralWidget(gridView);
 
+    //colorBar->setDisplayIndicator(true);
+
     //connect( m_gridView->label(), SIGNAL( mouseOver(int,int)), this, SLOT( onGridViewMouseOver(int,int)) );
     connect( m_gridView, SIGNAL(mouseOver(int,int)), this, SLOT(onGridViewMouseOver(int,int)) );
 
@@ -212,6 +214,7 @@ double GridViewer::pointTime( int iline, int xline ){
 
     if( !m_grid ) return SelectionPoint::NO_TIME;
 
+    if( !m_grid->bounds().isInside(iline, xline)) return SelectionPoint::NO_TIME;
     double time;
 
     switch( m_timeSource ){
@@ -244,6 +247,9 @@ void GridViewer::onGridViewMouseOver(int i, int j){
     double time=pointTime(i,j);
 
     SelectionPoint sp( i, j, time );
+
+    //double value=(*m_grid)(i,j);
+    //colorBar->setIndicatorValue(value);
 
     statusBar()->showMessage( createStatusMessage( sp ) );
 
@@ -496,8 +502,6 @@ void GridViewer::on_actionConfigure_Colorbar_triggered()
 void GridViewer::onViewPointSelected( SelectionPoint point){
 
     point.time=pointTime( point.iline, point.xline );
-
-    std::cout<<"sending il="<<point.iline<<" xl="<<point.xline<<" time="<<point.time<<std::endl;
 
     sendPoint( point, PointCode::VIEWER_POINT_SELECTED);
 }

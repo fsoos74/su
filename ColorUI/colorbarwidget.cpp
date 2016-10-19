@@ -82,6 +82,28 @@ void ColorBarWidget::setRange(std::pair<double, double> r){
     emit rangeChanged(r);
 }
 
+void ColorBarWidget::setDisplayIndicator(bool on){
+
+    if( on==m_displayIndicator ) return;
+
+    m_displayIndicator=on;
+
+    update();
+
+    emit displayIndicatorChanged(on);
+}
+
+void ColorBarWidget::setIndicatorValue(double x){
+
+    if( x==m_indicatorValue ) return;
+
+    m_indicatorValue=x;
+
+    update();
+
+    emit indicatorValueChanged(x);
+}
+
 template<typename T>
 void constrain( T& value, const T& min, const T& max){
 
@@ -200,8 +222,27 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
 
     }
 
+    if( m_displayIndicator){
+
+        painter.setPen(QPen(Qt::black,0));
+        int y= PAD_Y + ( m_indicatorValue - m_range.first )*size_pix/absRange;
+        y=height()-y;
+        drawIndicator(painter, QPoint(boxX-1, y));
+    }
 }
 
+
+void ColorBarWidget::drawIndicator(QPainter& painter, QPoint p){
+
+    const int INDICATOR_SIZE=4;
+
+    if( p.y()<-INDICATOR_SIZE || p.y()>height()+INDICATOR_SIZE ) return;
+
+    QPolygon poly;
+    poly<<QPoint( 0, 0 )<<QPoint( -INDICATOR_SIZE, - INDICATOR_SIZE)<<QPoint( -INDICATOR_SIZE, INDICATOR_SIZE);
+    poly.translate( p );
+    painter.drawPolygon(poly);
+}
 
 void ColorBarWidget::refreshImage(){
 
