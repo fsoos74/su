@@ -5,6 +5,7 @@
 #include<QFile>
 #include<QTextStream>
 #include<QMessageBox>
+#include<QDoubleValidator>
 #include<iostream>
 
 #include<QProgressDialog>
@@ -17,6 +18,10 @@ ColortableImportDialog::ColortableImportDialog(QWidget *parent) :
     ui(new Ui::ColortableImportDialog)
 {
     ui->setupUi(this);
+
+    QDoubleValidator* validator=new QDoubleValidator(this);
+    ui->cbScaler->setValidator(validator);
+
     connectToUI();
 }
 
@@ -309,7 +314,7 @@ void ColortableImportDialog::scan(){
 
 
     int max=file.bytesAvailable();
-    QProgressDialog* pdlg=new QProgressDialog("Scanning...", "Cancel", 0, max, this);
+    QProgressDialog pdlg("Scanning...", "Cancel", 0, max, this);
     //pdlg->show();
     int i=0;
 
@@ -329,7 +334,10 @@ void ColortableImportDialog::scan(){
         int blue;
         int alpha;
 
-        if( !splitLine(line, red, green, blue, alpha)) continue;
+        if( !splitLine(line, red, green, blue, alpha)){// continue;
+            QMessageBox::warning(this, tr("Scan Horizon File"), QString("Error parsing line %1").arg(i) );
+            return;
+        }
 
         if( red<min_red ) min_red=red;
         if( red>max_red ) max_red=red;
@@ -344,18 +352,18 @@ void ColortableImportDialog::scan(){
         if( alpha>max_alpha ) max_alpha=alpha;
 
 
-        pdlg->setValue(counter);
+        pdlg.setValue(counter);
 
         qApp->processEvents();
 
-        if( pdlg->wasCanceled()){
-            pdlg->setValue(max);
+        if( pdlg.wasCanceled()){
+            pdlg.setValue(max);
             return; // do not update min/max values
         }
 
     }
 
-    pdlg->setValue(max);
+    pdlg.setValue(max);
 
     setRedRange( min_red, max_red);
     setGreenRange( min_green, max_green);
@@ -381,7 +389,7 @@ void ColortableImportDialog::loadColors(){
 
     QTextStream in(&file);
     int max=file.bytesAvailable();
-    QProgressDialog* pdlg=new QProgressDialog("Loading Colors...", "Cancel", 0, max, this);
+    QProgressDialog pdlg("Loading Colors...", "Cancel", 0, max, this);
     int i=0;
 
     while(!in.atEnd()){
@@ -400,22 +408,25 @@ void ColortableImportDialog::loadColors(){
         int blue;
         int alpha;
 
-        if( !splitLine(line, red, green, blue, alpha)) continue;
+        if( !splitLine(line, red, green, blue, alpha)){
+            QMessageBox::warning(this, tr("Import Horizon File"), QString("Error parsing line %1").arg(i) );
+            return;
+        }
 
         cols.append(qRgba(red, green, blue, alpha ));
 
-        pdlg->setValue(counter);
+        pdlg.setValue(counter);
 
         qApp->processEvents();
 
-        if( pdlg->wasCanceled()){
-            pdlg->setValue(max);
+        if( pdlg.wasCanceled()){
+            pdlg.setValue(max);
             return; // do not update min/max values
         }
 
     }
 
-    pdlg->setValue(max);
+    pdlg.setValue(max);
 
     setColors(cols);
 }
@@ -431,30 +442,60 @@ void ColortableImportDialog::on_pbScan_clicked()
     scan();
 }
 
+
+bool ColortableImportDialog::channelFromString(QString str, int& c){
+
+    double scaler=ui->cbScaler->currentText().toDouble();
+
+    bool ok;
+
+    c=0;
+
+    double x=str.toDouble(&ok);
+    if( !ok ) return false;
+    x*=scaler;
+    if( x<0 ) x=0;
+    if( x>255 ) x=255;
+    c=static_cast<int>(x);
+
+    return true;
+}
+
+
 bool ColortableImportDialog::splitLine( const QString& line, int& red, int& green, int& blue, int& alpha){
 
+    // need to cuild separator only once in calling function and check it there
 
-     QRegExp sep("(\\s+)");
+     //QRegExp sep("(\\s+)");
+     QRegExp sep(ui->cbSeparator->currentText() );
+     if( !sep.isValid() ){
+         //QMessageBox::critical(this, tr("Import Colortable"), tr("Invalid separator expression"));
+         std::cout<<"Invalid regexp!!!"<<std::endl;
+         return false;
+     }
 
      QStringList col=line.split(sep, QString::SkipEmptyParts);
+
+     double scaler=ui->cbScaler->currentText().toDouble();
 
      bool ok;
 
      if( redColumn()>col.size() ) return false;
-     red=(redColumn()>0) ? col[redColumn()-1].toInt(&ok) : 0;
-     if( !ok ) return false;
+     if( !channelFromString( col[redColumn()-1], red) ) return false;   // minimum 1, ui
 
      if( greenColumn()>col.size() ) return false;
-     green=(greenColumn()>0) ? col[greenColumn()-1].toInt(&ok) : 0;
-     if( !ok ) return false;
+     if( !channelFromString( col[greenColumn()-1], green) ) return false;   // minimum 1, ui
 
      if( blueColumn()>col.size() ) return false;
-     blue=(blueColumn()>0) ? col[blueColumn()-1].toInt(&ok) : 0;
-     if( !ok ) return false;
+     if( !channelFromString( col[blueColumn()-1], blue) ) return false; // minimum 1, ui
 
      if( alphaColumn()>col.size() ) return false;
-     alpha=(alphaColumn()>0) ? col[alphaColumn()-1].toInt(&ok) : 255;
-     if( !ok ) return false;
+     if( alphaColumn() > 0 ){
+         if( !channelFromString( col[alphaColumn()-1], alpha) ) return false;
+     }
+     else{      // alphaColumn==0, means no alpha, rgb a=255
+         alpha=255;
+     }
 
      return true;
 }

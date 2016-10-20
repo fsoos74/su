@@ -344,6 +344,8 @@ void ColorTableDialog::accept()
 
 void ColorTableDialog::createLayoutAndConnectColorButtons(){
 
+    const int GAP=3;
+
     for( QPushButton* button : colorButtons ){
 
         if( !button ) continue;
@@ -364,8 +366,9 @@ void ColorTableDialog::createLayoutAndConnectColorButtons(){
         int column= i % COLORS_PER_ROW;
 
         QPushButton* button=new QPushButton(widget);
+        //button->setStyleSheet("border:2px solid #000000;");
         button->setCheckable(true);
-        button->setFixedSize(COLOR_BUTTON_WIDTH, COLOR_BUTTON_HEIGHT);
+        button->setFixedSize(COLOR_BUTTON_WIDTH+2*GAP, COLOR_BUTTON_HEIGHT+2*GAP);
         setButtonColor(button, m_colors[i] );
         colorButtonsLayout->addWidget(button, row, column);
         colorButtons.push_back(button);
@@ -374,8 +377,8 @@ void ColorTableDialog::createLayoutAndConnectColorButtons(){
         connect( button, SIGNAL(clicked()), this, SLOT(onColorButtonClicked()));
     }
 
-    colorButtonsLayout->setSpacing(4);
-    colorButtonsLayout->setVerticalSpacing(4);
+    colorButtonsLayout->setSpacing(GAP);
+    colorButtonsLayout->setVerticalSpacing(GAP);
 
     for( int i=0; i<COLORS_PER_ROW; i++){
         colorButtonsLayout->setColumnMinimumWidth( i, COLOR_BUTTON_WIDTH);

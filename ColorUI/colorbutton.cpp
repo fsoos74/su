@@ -26,7 +26,9 @@ void ColorButton::resizeEvent(QResizeEvent *){
 
 void ColorButton::updateIcon(){
 
+
     QPixmap pixmap( size());
+    //QPixmap pixmap( width()-2, height()-2);
     pixmap.fill(m_color);
     m_icon=QIcon( pixmap );
     setIcon(m_icon);

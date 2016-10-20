@@ -97,6 +97,7 @@ protected:
 
 private:
 
+    bool channelFromString(QString str, int& c);
     bool splitLine( const QString& line, int& red, int& green, int& blue, int& alpha);
     void updateLastUsedColumn();
     void connectToUI();
