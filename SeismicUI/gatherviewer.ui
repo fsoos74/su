@@ -66,7 +66,7 @@
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>&amp;Scale</string>
+     <string>S&amp;cale</string>
     </property>
     <addaction name="zoomInAct"/>
     <addaction name="zoomOutAct"/>
@@ -82,6 +82,7 @@
     <addaction name="action_Trace_Options"/>
     <addaction name="actionVolume_Options"/>
     <addaction name="action_Point_Display_Options"/>
+    <addaction name="actionDensity_Color_Table"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -103,7 +104,46 @@
    <addaction name="menu_Window"/>
    <addaction name="menu_Broadcast"/>
   </widget>
+  <widget class="QToolBar" name="mouseToolBar">
+   <property name="windowTitle">
+    <string>Mouse Mode Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="zoomToolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>Zoom Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="zoomInAct"/>
+   <addaction name="zoomOutAct"/>
+  </widget>
   <widget class="QToolBar" name="mainToolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>General Toolbar</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -111,10 +151,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="separator"/>
-   <addaction name="zoomInAct"/>
-   <addaction name="zoomOutAct"/>
    <addaction name="separator"/>
    <addaction name="actionTrace_Scaling"/>
+   <addaction name="actionDensity_Color_Table"/>
    <addaction name="action_Trace_Options"/>
    <addaction name="actionVolume_Options"/>
    <addaction name="action_Point_Display_Options"/>
@@ -126,8 +165,14 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="navigationToolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Navigation Toolbar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -135,6 +180,7 @@
    <attribute name="toolBarBreak">
     <bool>true</bool>
    </attribute>
+   <addaction name="separator"/>
   </widget>
   <action name="exitAct">
    <property name="text">
@@ -293,6 +339,15 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionDensity_Color_Table">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Density &amp;Color Table</string>
    </property>
   </action>
  </widget>

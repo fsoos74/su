@@ -58,17 +58,29 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
     MouseModeSelector* mm=new MouseModeSelector(this);
     connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
-    QToolBar* mouseToolBar=new QToolBar(this);
-    mouseToolBar->addWidget( mm);
-    insertToolBar( ui->mainToolBar, mouseToolBar);
+    //QToolBar* mouseToolBar=new QToolBar(this);
+    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
+    ui->mouseToolBar->addWidget( mm);
+    //insertToolBar( ui->mainToolBar, mouseToolBar);
 
     createDockWidgets();
+
+    populateWindowMenu();
 
     resize( 800, 700);
 }
 
 
+void GatherViewer::populateWindowMenu(){
 
+    ui->menu_Window->addAction(m_densityColorBarDock->toggleViewAction());
+    ui->menu_Window->addAction(m_attributeColorBarDock->toggleViewAction());
+    ui->menu_Window->addSeparator();
+    ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->navigationToolBar->toggleViewAction());
+}
 
 GatherViewer::~GatherViewer()
 {
@@ -356,6 +368,31 @@ void GatherViewer::on_actionTrace_Scaling_triggered()
     m_traceScalingDialog->show();
 }
 
+void GatherViewer::on_actionDensity_Color_Table_triggered()
+{
+    ColorTable* colorTable=gatherView->gatherLabel()->colorTable();
+
+    Q_ASSERT(colorTable);
+
+    QVector<QRgb> oldColors=colorTable->colors();
+
+    ColorTableDialog* dlg=new ColorTableDialog( colorTable->colors() );
+
+    dlg->setWindowTitle(tr("Select Density Color Table"));
+
+    connect( dlg, SIGNAL(colorsChanged(QVector<QRgb>)), colorTable , SLOT(setColors(QVector<QRgb>)) );
+
+    if( dlg->exec()==QDialog::Accepted ){
+        colorTable->setColors(dlg->colors());
+    }
+    else{
+        colorTable->setColors(oldColors);
+    }
+
+    delete dlg;
+}
+
+
 void GatherViewer::on_action_Trace_Options_triggered()
 {
     if( !m_traceDisplayOptionsDialog){
@@ -367,7 +404,8 @@ void GatherViewer::on_action_Trace_Options_triggered()
         m_traceDisplayOptionsDialog->setDisplayWiggles(gatherLabel->isDisplayWiggles());
         m_traceDisplayOptionsDialog->setDisplayVariableArea(gatherLabel->isDisplayVariableArea());
         m_traceDisplayOptionsDialog->setDisplayDensity(gatherLabel->isDisplayDensity());
-        m_traceDisplayOptionsDialog->setColors(gatherLabel->colorTable()->colors() );
+        m_traceDisplayOptionsDialog->setEditColorTableAction(ui->actionDensity_Color_Table);
+        //m_traceDisplayOptionsDialog->setColors(gatherLabel->colorTable()->colors() );
         GatherScaler* scaler=gatherView->gatherScaler();
         m_traceDisplayOptionsDialog->setTraceColor(gatherLabel->traceColor());
         m_traceDisplayOptionsDialog->setTraceOpacity(gatherLabel->traceOpacity());
@@ -499,6 +537,10 @@ void GatherViewer::closeEvent(QCloseEvent *)
     saveSettings();
 
     sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );  // notify other viewers
+
+    // remove intersections from other viewers
+    m_gather=nullptr;
+    updateIntersections();
 }
 
 void GatherViewer::leaveEvent(QEvent *){
@@ -609,10 +651,6 @@ void GatherViewer::createDockWidgets(){
     m_attributeColorBarDock->setWidget(m_attributeColorBarWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_attributeColorBarDock);
     m_attributeColorBarWidget->setColorTable( gatherView->gatherLabel()->volumeColorTable());
-
-
-    ui->menu_Window->addAction(m_densityColorBarDock->toggleViewAction());
-    ui->menu_Window->addAction(m_attributeColorBarDock->toggleViewAction());
 
     m_attributeColorBarDock->close();
     m_densityColorBarDock->close();
@@ -734,3 +772,4 @@ void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
     setBroadcastEnabled(on);
     updateIntersections();
 }
+

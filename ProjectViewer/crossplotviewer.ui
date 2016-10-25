@@ -41,7 +41,7 @@
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
-     <string>&amp;Scale</string>
+     <string>S&amp;cale</string>
     </property>
     <addaction name="actionZoom_In"/>
     <addaction name="actionZoom_Out"/>
@@ -101,17 +101,34 @@
     <addaction name="separator"/>
     <addaction name="menuHistogram"/>
    </widget>
+   <widget class="QMenu" name="menu_Window">
+    <property name="title">
+     <string>Window</string>
+    </property>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Data"/>
    <addaction name="menuTrenss"/>
    <addaction name="menu_Display"/>
+   <addaction name="menu_Window"/>
    <addaction name="menu_Broadcast"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="mouseToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Mouse Mode Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="zoomToolBar">
+   <property name="windowTitle">
+    <string>zoomToolBar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -121,6 +138,17 @@
    </attribute>
    <addaction name="actionZoom_In"/>
    <addaction name="actionZoom_Out"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="windowTitle">
+    <string>General Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
    <addaction name="separator"/>
    <addaction name="actionSelect_By_Inline_Crossline_Ranges"/>
    <addaction name="separator"/>
@@ -145,7 +173,7 @@
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -157,7 +185,7 @@
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -325,7 +353,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Detailed Point Information</string>
+    <string>&amp;Detailed Point Information</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
@@ -340,7 +368,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../SeismicUI/icons.qrc"/>
   <include location="icons.qrc"/>
  </resources>
  <connections>

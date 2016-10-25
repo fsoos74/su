@@ -70,6 +70,9 @@
 #include <fluidfactordialog.h>
 #include <fluidfactorvolumeprocess.h>
 #include <fluidfactorvolumedialog.h>
+#include <trendbasedattributesprocess.h>
+#include <trendbasedattributevolumesprocess.h>
+#include <trendbasedattributesdialog.h>
 #include <secondaryattributesprocess.h>
 #include <secondaryattributevolumesprocess.h>
 #include <secondaryavoattributesdialog.h>
@@ -121,6 +124,15 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    QAction* recentProjectAction = nullptr;
+    for(int i = 0; i < maxRecentProjectCount; ++i){
+        recentProjectAction = new QAction(this);
+        recentProjectAction->setVisible(false);
+        connect(recentProjectAction, SIGNAL(triggered()),this, SLOT(openRecent()));
+        recentProjectActionList.append(recentProjectAction);
+        ui->menu_Recent_Projects->addAction(recentProjectActionList.at(i));
+    }
+
     ui->datasetsView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->datasetsView, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(runDatasetContextMenu(const QPoint&)));
@@ -141,9 +153,14 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
     connect(ui->volumesView, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(runVolumeContextMenu(const QPoint&)));
 
+
     loadSettings();
 
+    updateRecentProjectActionList();  // after loadSettings because list is stored in config file
+
     updateMenu();
+
+
 
 #ifdef USE_KEYLOCK_LICENSE
     const int LICENSE_CHECK_MILLIS=30000;
@@ -157,6 +174,39 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
 #endif
 }
 
+void ProjectViewer::openRecent(){
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (action){
+        openProject(action->data().toString());
+    }
+}
+
+void ProjectViewer::adjustForCurrentProject(const QString &filePath){
+
+    recentProjectFileList.removeAll(filePath);
+    recentProjectFileList.prepend(filePath);
+    while (recentProjectFileList.size() > maxRecentProjectCount ){
+        recentProjectFileList.removeLast();
+    }
+
+    updateRecentProjectActionList();
+}
+
+void ProjectViewer::updateRecentProjectActionList(){
+
+    for (int i = 0; i < maxRecentProjectCount; i++) {
+
+        if( i<recentProjectFileList.size()){
+            QString strippedName = QFileInfo(recentProjectFileList.at(i)).fileName();
+            recentProjectActionList.at(i)->setText(strippedName);
+            recentProjectActionList.at(i)->setData(recentProjectFileList.at(i));
+            recentProjectActionList.at(i)->setVisible(true);
+        }
+        else{
+            recentProjectActionList.at(i)->setVisible(false);
+        }
+     }
+}
 
 ProjectViewer::~ProjectViewer()
 {
@@ -291,6 +341,8 @@ void ProjectViewer::on_actionOpenProject_triggered()
     QString fileName=QFileDialog::getOpenFileName( this, tr("Open Project"), QDir::homePath(), filter);
     if( fileName.isNull()) return;
 
+    openProject(fileName);
+    /*
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("Open Project"),
@@ -326,6 +378,7 @@ void ProjectViewer::on_actionOpenProject_triggered()
     setProjectFileName(fileName);
     updateProjectViews();
     updateMenu();
+    */
 }
 
 
@@ -860,6 +913,47 @@ void ProjectViewer::on_actionFluid_Factor_Volume_triggered()
     runProcess( new FluidFactorVolumeProcess( m_project, this ), params );
 }
 
+
+void ProjectViewer::on_actionTrend_Based_Attribute_Grids_triggered()
+{
+    Q_ASSERT(m_project);
+
+    TrendBasedAttributesDialog dlg;
+    dlg.setWindowTitle(tr("Trend Based Attribute Grids"));
+    dlg.setInterceptList( m_project->gridList(GridType::Attribute));
+    dlg.setGradientList( m_project->gridList(GridType::Attribute));
+    dlg.setReservedGrids(m_project->gridList(GridType::Attribute));
+    dlg.setComputeTrend(true);
+    dlg.setTrendIntercept(0);
+    dlg.setTrendAngle(0);
+    dlg.setVolumeMode(false);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new TrendBasedAttributesProcess( m_project, this ), params );
+}
+
+
+void ProjectViewer::on_actionTrend_Based_Attribute_Volumes_triggered()
+{
+    Q_ASSERT(m_project);
+
+    TrendBasedAttributesDialog dlg;
+    dlg.setWindowTitle(tr("Trend Based Attribute Volumes"));
+    dlg.setInterceptList( m_project->volumeList());
+    dlg.setGradientList( m_project->volumeList());
+    dlg.setReservedGrids(m_project->volumeList());
+    dlg.setComputeTrend(true);
+    dlg.setTrendIntercept(0);
+    dlg.setTrendAngle(0);
+    dlg.setVolumeMode(true);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new TrendBasedAttributeVolumesProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionSecondary_Attribute_Grids_triggered()
 {
@@ -1411,7 +1505,7 @@ void ProjectViewer::displayVolumeSlice( const QString& name){
         connect( viewer, SIGNAL(requestSlice(int)), sliceSelector, SLOT(setTime(int)) );
         connect( sliceSelector, SIGNAL(timeChanged(int)), viewer, SLOT(setFixedTime(int)) );
 
-        viewer->toolBar()->addWidget(sliceSelector);
+        viewer->navigationToolBar()->addWidget(sliceSelector);
         viewer->show();
         viewer->setProject( m_project );  // grant access to grid
 
@@ -1882,7 +1976,8 @@ void ProjectViewer::displaySeismicDatasetSlice(const QString& name){
         connect( viewer, SIGNAL(requestSlice(int)), sliceSelector, SLOT(setTime(int)) );
         connect( sliceSelector, SIGNAL(timeChanged(int)), viewer, SLOT(setFixedTime(int)) );
 
-        viewer->toolBar()->addWidget(sliceSelector);
+        viewer->navigationToolBar()->addWidget(sliceSelector);
+
         viewer->show();
         viewer->setProject( m_project );  // grant access to grid
 
@@ -2016,6 +2111,50 @@ void ProjectViewer::setProjectFileName( const QString& fileName){
     setWindowTitle(QString("AVOProject - \"%1\"").arg(m_projectFileName));
 }
 
+
+bool ProjectViewer::openProject(const QString &fileName){
+
+    QFile file(fileName);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("Open Project"),
+                             tr("Cannot read file %1:\n%2.")
+                             .arg(fileName)
+                             .arg(file.errorString()));
+        return false;
+    }
+
+    std::shared_ptr<AVOProject> tmp(new AVOProject);
+    XPRReader reader(*tmp);
+    if (!reader.read(&file)) {
+        QMessageBox::warning(this, tr("Open Project"),
+                             tr("Parse error in file %1:\n\n%2")
+                             .arg(fileName)
+                             .arg(reader.errorString()));
+        return false;
+
+    }
+
+    // check if project already in use, create lockfile if not
+    // no need to remove stale lockfiles. This is handled by QLockfile
+    std::shared_ptr<QLockFile> lf(new QLockFile(tmp->lockfileName()));
+    if( !lf->tryLock()){
+        QMessageBox::critical(this, tr("Open Project"),
+                              tr("Project already used by another program"));
+        return false;
+    }
+
+    m_lockfile=lf;  // will be unlocked when deleted
+    m_project=tmp;
+
+    setProjectFileName(fileName);
+    updateProjectViews();
+    updateMenu();
+
+    adjustForCurrentProject(fileName);
+
+    return true;
+}
+
 bool ProjectViewer::saveProject( const QString& fileName){
 
     QFile file(fileName);
@@ -2142,8 +2281,12 @@ void ProjectViewer::saveSettings(){
      QSettings settings(COMPANY, "ProjectViewer");
 
      settings.beginGroup("ProjectViewer");
+
        settings.setValue("size", size());
        settings.setValue("position", pos() );
+
+       settings.setValue("recent-files", recentProjectFileList);
+
      settings.endGroup();
 
      settings.sync();
@@ -2155,8 +2298,12 @@ void ProjectViewer::loadSettings(){
     QSettings settings(COMPANY, "ProjectViewer");
 
     settings.beginGroup("ProjectViewer");
+
         resize(settings.value("size", QSize(400, 600)).toSize());
         move(settings.value("pos", QPoint(200, 200)).toPoint());
+
+        recentProjectFileList = settings.value("recent-files").toStringList();
+
     settings.endGroup();
 
 
@@ -2192,14 +2339,16 @@ void ProjectViewer::updateMenu(){
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
     ui->actionHorizon_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_Gradient->setEnabled(isProject);
+    ui->actionTrend_Based_Attribute_Grids->setEnabled(isProject);
     ui->actionSecondary_Attribute_Grids->setEnabled(isProject);
-    ui->actionFluid_Factor_Grid->setEnabled(isProject);
+    //ui->actionFluid_Factor_Grid->setEnabled(isProject);
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
 
     ui->actionVolume_Amplitudes->setEnabled(isProject);
     ui->actionVolume_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
-    ui->actionFluid_Factor_Volume->setEnabled(isProject);
+    //ui->actionFluid_Factor_Volume->setEnabled(isProject);
+    ui->actionTrend_Based_Attribute_Volumes->setEnabled(isProject);
     ui->actionSecondary_Attribute_Volumes->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
@@ -2207,6 +2356,9 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
 }
+
+
+
 
 
 

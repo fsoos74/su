@@ -58,12 +58,18 @@ void TraceDisplayOptionsDialog::setDisplayDensity( bool on){
 }
 
 
-
+/*
 void TraceDisplayOptionsDialog::setColors(QVector<QRgb> cols){
 
     if( cols==m_colors) return;
     m_colors=cols;
     emit colorsChanged(cols);
+}
+*/
+
+void TraceDisplayOptionsDialog::setEditColorTableAction(QAction* action){
+
+    m_editColorTableAction=action;
 }
 
 void TraceDisplayOptionsDialog::setTraceColor(QColor rgb){
@@ -98,6 +104,7 @@ void TraceDisplayOptionsDialog::keyPressEvent(QKeyEvent *ev){
 
 void TraceDisplayOptionsDialog::on_pbColorTable_clicked()
 {
+    /*
     QVector<QRgb> oldColors=m_colors;
 
     ColorTableDialog* dlg=new ColorTableDialog( oldColors);
@@ -114,6 +121,10 @@ void TraceDisplayOptionsDialog::on_pbColorTable_clicked()
     }
 
     delete dlg;
+    */
+    if(m_editColorTableAction){
+        m_editColorTableAction->trigger();
+    }
 }
 
 void TraceDisplayOptionsDialog::on_cbWiggles_toggled(bool checked)

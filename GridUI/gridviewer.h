@@ -59,7 +59,7 @@ public:
         return m_fixedTime;
     }
 
-    QToolBar* toolBar();
+    QToolBar* navigationToolBar();
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
@@ -117,6 +117,8 @@ private slots:
 
 private:
 
+    void populateWindowMenu();
+
     double pointTime( int iline, int xline );
 
     QString createStatusMessage( SelectionPoint);
@@ -125,6 +127,8 @@ private:
 
     void saveSettings();
     void loadSettings();
+
+    void updateIntersectionTimes();
 
     Ui::GridViewer *ui;
     GridView* m_gridView;

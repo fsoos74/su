@@ -138,7 +138,7 @@ private:
     void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
     void drawViewerCurrentPosition( QPainter& painter, SelectionPoint);
     void drawIntersectionTraces( QPainter& painter, const QVector<int>& trc);
-
+    void drawIntersectionTimes( QPainter& painter, const QVector<qreal>& times);
     void updateTimeRange();
     void updatePixmap();
     //void computePixelPerUnits();

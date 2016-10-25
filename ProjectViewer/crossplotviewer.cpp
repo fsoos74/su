@@ -71,13 +71,24 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
 
     MouseModeSelector* mm=new MouseModeSelector(this);
     connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
-    QToolBar* mouseToolBar=new QToolBar(this);
-    mouseToolBar->addWidget( mm);
-    insertToolBar( ui->toolBar, mouseToolBar);
+    //QToolBar* mouseToolBar=new QToolBar(this);
+    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
+    ui->mouseToolBar->addWidget( mm);
+    //insertToolBar( ui->toolBar, mouseToolBar);
 
     createDockWidgets();
+    populateWindowMenu();
 
     loadSettings();
+}
+
+void CrossplotViewer::populateWindowMenu(){
+
+    ui->menu_Window->addAction(m_attributeColorBarDock->toggleViewAction());
+    ui->menu_Window->addSeparator();
+    ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
 }
 
 CrossplotViewer::~CrossplotViewer()
@@ -796,8 +807,6 @@ void CrossplotViewer::createDockWidgets(){
     m_attributeColorBarDock->setWidget(m_attributeColorBarWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_attributeColorBarDock);
     m_attributeColorBarWidget->setColorTable( m_colorTable );
-
-    ui->menu_Display->addAction(m_attributeColorBarDock->toggleViewAction());
 
     m_attributeColorBarDock->close();
 }

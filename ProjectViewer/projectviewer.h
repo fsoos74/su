@@ -39,6 +39,8 @@ signals:
 
 private slots:
 
+    void openRecent();
+
     void on_actionNewProject_triggered();
 
     void on_actionOpenProject_triggered();
@@ -140,6 +142,10 @@ private slots:
 
     void on_actionSecondary_Attribute_Volumes_triggered();
 
+    void on_actionTrend_Based_Attribute_Grids_triggered();
+
+    void on_actionTrend_Based_Attribute_Volumes_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);
@@ -149,7 +155,9 @@ private:
 #ifdef USE_KEYLOCK_LICENSE
     license::LicenseInfo checkLicense();
 #endif
+
     void setProjectFileName( const QString& fileName);
+    bool openProject( const QString& fileName);
     bool saveProject( const QString& fileName);
 
     void displaySeismicDataset( const QString& name);
@@ -183,6 +191,9 @@ private:
     void saveSettings();
     void loadSettings();
 
+    void adjustForCurrentProject(const QString& filePath);
+    void updateRecentProjectActionList();
+
     void updateMenu();
 
     Ui::ProjectViewer *ui;
@@ -193,6 +204,10 @@ private:
     std::shared_ptr<QLockFile> m_lockfile;
 
     std::shared_ptr<PointDispatcher> m_dispatcher;
+
+    QStringList recentProjectFileList;
+    QList<QAction*> recentProjectActionList;
+    const int maxRecentProjectCount=5;
 
 };
 

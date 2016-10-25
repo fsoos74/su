@@ -115,3 +115,19 @@ else:unix: LIBS += -L$$OUT_PWD/../StatisticsUI/ -lStatisticsUI
 INCLUDEPATH += $$PWD/../StatisticsUI
 DEPENDPATH += $$PWD/../StatisticsUI
 
+# added for intersection times
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../SeismicUI/release/ -lSeismicUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../SeismicUI/debug/ -lSeismicUI
+else:unix: LIBS += -L$$OUT_PWD/../SeismicUI/ -lSeismicUI
+
+INCLUDEPATH += $$PWD/../SeismicUI
+DEPENDPATH += $$PWD/../SeismicUI
+
+#added for intersection times
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Seismic/release/ -lSeismic
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Seismic/debug/ -lSeismic
+else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
+
+INCLUDEPATH += $$PWD/../Seismic
+DEPENDPATH += $$PWD/../Seismic
+

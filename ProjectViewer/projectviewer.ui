@@ -184,6 +184,11 @@
      <addaction name="actionExportSeismic"/>
      <addaction name="separator"/>
     </widget>
+    <widget class="QMenu" name="menu_Recent_Projects">
+     <property name="title">
+      <string>&amp;Recent Projects</string>
+     </property>
+    </widget>
     <addaction name="actionNewProject"/>
     <addaction name="menu_Open"/>
     <addaction name="actionSave"/>
@@ -192,6 +197,7 @@
     <addaction name="menuImport"/>
     <addaction name="menuExport"/>
     <addaction name="separator"/>
+    <addaction name="menu_Recent_Projects"/>
     <addaction name="actionCloseProject"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -203,11 +209,12 @@
     <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Semblance"/>
     <addaction name="actionCompute_Intercept_Gradient"/>
-    <addaction name="actionFluid_Factor_Grid"/>
     <addaction name="separator"/>
+    <addaction name="actionTrend_Based_Attribute_Grids"/>
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Grid_User_Script"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_Analyze">
     <property name="title">
@@ -239,7 +246,7 @@
     <addaction name="actionVolume_Semblance"/>
     <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
-    <addaction name="actionFluid_Factor_Volume"/>
+    <addaction name="actionTrend_Based_Attribute_Volumes"/>
     <addaction name="actionSecondary_Attribute_Volumes"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Volume_Script"/>
@@ -477,6 +484,21 @@
   <action name="actionSecondary_Attribute_Volumes">
    <property name="text">
     <string>Secondar&amp;y Attribute Volumes</string>
+   </property>
+  </action>
+  <action name="actionFf">
+   <property name="text">
+    <string>ff</string>
+   </property>
+  </action>
+  <action name="actionTrend_Based_Attribute_Grids">
+   <property name="text">
+    <string>Trend &amp;Based Attribute Grids</string>
+   </property>
+  </action>
+  <action name="actionTrend_Based_Attribute_Volumes">
+   <property name="text">
+    <string>Trend &amp;Based Attribute Volumes</string>
    </property>
   </action>
  </widget>

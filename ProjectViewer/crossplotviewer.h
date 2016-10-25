@@ -136,6 +136,7 @@ private:
     void scanAttribute();
 
     void createDockWidgets();
+    void populateWindowMenu();
 
     void saveSettings();
     void loadSettings();

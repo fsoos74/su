@@ -2,6 +2,7 @@
 #define TRACEDISPLAYOPTIONSDIALOG_H
 
 #include <QDialog>
+#include<QAction>
 
 #include "gatherlabel.h"  // display mode
 
@@ -27,12 +28,16 @@ public:
     QColor traceColor();
     int traceOpacity();
     int densityOpacity();
+    QAction* editColorTableAction()const{
+        return m_editColorTableAction;
+    }
 
 public slots:
+    void setEditColorTableAction(QAction*);
     void setDisplayWiggles( bool );
     void setDisplayVariableArea( bool );
     void setDisplayDensity( bool );
-    void setColors( QVector<QRgb>);
+    //void setColors( QVector<QRgb>);
     void setTraceColor(QColor);
     void setTraceOpacity(int);
     void setDensityOpacity(int);
@@ -41,7 +46,7 @@ signals:
     void displayWigglesChanged( bool );
     void displayVariableAreaChanged( bool );
     void displayDensityChanged( bool );
-    void colorsChanged(QVector<QRgb>);
+    //void colorsChanged(QVector<QRgb>);
     void traceColorChanged(QColor);
     void traceOpacityChanged(int);
     void densityOpacityChanged(int);
@@ -66,7 +71,8 @@ private slots:
 
 private:
     Ui::TraceDisplayOptionsDialog *ui;
-    QVector<QRgb> m_colors;
+    //QVector<QRgb> m_colors;
+    QAction* m_editColorTableAction=nullptr;
 };
 
 #endif // TRACEDISPLAYOPTIONSDIALOG_H

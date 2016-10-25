@@ -78,7 +78,7 @@
    </widget>
    <widget class="QMenu" name="menu_Scale">
     <property name="title">
-     <string>&amp;Scale</string>
+     <string>S&amp;cale</string>
     </property>
     <addaction name="zoomInAct"/>
     <addaction name="zoomOutAct"/>
@@ -93,12 +93,33 @@
     <addaction name="separator"/>
     <addaction name="actionShare_Current_Position"/>
    </widget>
+   <widget class="QMenu" name="menuWindow">
+    <property name="title">
+     <string>Window</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu_Scale"/>
    <addaction name="menuView"/>
+   <addaction name="menuWindow"/>
    <addaction name="menu_Bradcast"/>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="mouseToolBar">
+   <property name="windowTitle">
+    <string>Mouse Mode Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="zoomToolBar">
+   <property name="windowTitle">
+    <string>Zoom Toolbar</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -109,10 +130,9 @@
    <addaction name="zoomInAct"/>
    <addaction name="zoomOutAct"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="mainToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>General Toolbar</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -130,6 +150,17 @@
    <addaction name="action_Dispatch_CDPs"/>
    <addaction name="actionShare_Current_Position"/>
    <addaction name="separator"/>
+  </widget>
+  <widget class="QToolBar" name="navigationToolBar">
+   <property name="windowTitle">
+    <string>Navigation Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="openAct">
    <property name="icon">
@@ -156,7 +187,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -168,7 +199,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../SeismicUI/icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -356,7 +387,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../SeismicUI/icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

@@ -217,6 +217,7 @@ void GatherLabel::paintEvent(QPaintEvent *event){
 
    drawIntersectionTraces( painter, m_view->intersectionTraces() );
 
+   drawIntersectionTimes( painter, m_view->intersectionTimes() );
 
    SelectionPoint sp=m_view->cursorPosition();
    drawViewerCurrentPosition( painter, sp);
@@ -409,6 +410,25 @@ void GatherLabel::drawIntersectionTraces( QPainter& painter, const QVector<int>&
 
         qreal x= t * pixelPerTrace +0.5*pixelPerTrace ; // center
         painter.drawLine( x, 0, x, height());
+    }
+
+    painter.restore();
+
+}
+
+
+void GatherLabel::drawIntersectionTimes( QPainter& painter, const QVector<qreal>& times){
+
+    painter.save();
+
+    painter.setPen( QPen(Qt::blue, 0) );  // make this selectable
+    //painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_Xor );
+    qreal pixelPerSecond=m_view->pixelPerSecond();
+    qreal ft=m_view->ft();
+
+    for( qreal t : times){
+        qreal y= ( t - ft )*pixelPerSecond;
+        painter.drawLine( 0, y, width(), y);
     }
 
     painter.restore();

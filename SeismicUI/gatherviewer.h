@@ -132,11 +132,14 @@ private slots:
 
     void on_action_Dispatch_CDPs_toggled(bool arg1);
 
+    void on_actionDensity_Color_Table_triggered();
+
 private:
 
     void saveSettings();
     void loadSettings();
 
+    void populateWindowMenu();
     void createDockWidgets();
 
     QString createStatusMessage( SelectionPoint);

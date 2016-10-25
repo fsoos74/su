@@ -77,11 +77,21 @@ AmplitudeCurveViewer::AmplitudeCurveViewer(QWidget *parent) :
 
     MouseModeSelector* mm=new MouseModeSelector(this);
     connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
-    QToolBar* mouseToolBar=new QToolBar(this);
-    mouseToolBar->addWidget( mm);
-    insertToolBar( ui->toolBar, mouseToolBar);
+    //QToolBar* mouseToolBar=new QToolBar(this);
+    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
+    ui->mouseToolBar->addWidget( mm);
+    //insertToolBar( ui->toolBar, mouseToolBar);
+
+    populateWindowMenu();
 
     loadSettings();
+}
+
+void AmplitudeCurveViewer::populateWindowMenu(){
+
+    ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
 }
 
 AmplitudeCurveViewer::~AmplitudeCurveViewer()

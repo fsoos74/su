@@ -104,6 +104,8 @@ private:
     void updateTable();
     QVector<QPointF> buildCurve( AmplitudeCurveDefinition );
 
+    void populateWindowMenu();
+
     void loadSettings();
     void saveSettings();
 

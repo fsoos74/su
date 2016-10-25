@@ -19,6 +19,9 @@
 #include<isolinecomputer.h>
 #include"griddisplayoptionsdialog.h"
 
+#include<gatherviewer.h>
+#include<gatherview.h>
+
 #include <mousemodeselector.h>
 
 GridViewer::GridViewer(QWidget *parent) :
@@ -63,9 +66,20 @@ GridViewer::GridViewer(QWidget *parent) :
 
     MouseModeSelector* mm=new MouseModeSelector(this);
     connect( mm, SIGNAL(modeChanged(MouseMode)), m_gridView, SLOT(setMouseMode(MouseMode)));
-    QToolBar* mouseToolBar=new QToolBar(this);
-    mouseToolBar->insertWidget( ui->zoomInAct, mm);
-    insertToolBar( ui->mainToolBar, mouseToolBar);
+    //QToolBar* mouseToolBar=new QToolBar(this);
+    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
+    ui->mouseToolBar->insertWidget( ui->zoomInAct, mm);
+    //insertToolBar( ui->mainToolBar, mouseToolBar);
+
+    populateWindowMenu();
+}
+
+void GridViewer::populateWindowMenu(){
+
+    ui->menuWindow->addAction( ui->mouseToolBar->toggleViewAction());
+    ui->menuWindow->addAction( ui->zoomToolBar->toggleViewAction());
+    ui->menuWindow->addAction( ui->mainToolBar->toggleViewAction());
+    ui->menuWindow->addAction( ui->navigationToolBar->toggleViewAction());
 }
 
 GridViewer::~GridViewer()
@@ -73,8 +87,8 @@ GridViewer::~GridViewer()
     delete ui;
 }
 
-QToolBar* GridViewer::toolBar(){
-    return ui->toolBar;
+QToolBar* GridViewer::navigationToolBar(){
+    return ui->navigationToolBar;
 }
 
 bool GridViewer::orientate(const ProjectGeometry& geom){
@@ -195,6 +209,8 @@ void GridViewer::setFixedTime(int mills){
     if( mills==m_fixedTime ) return;
 
     m_fixedTime=mills;
+
+    updateIntersectionTimes();
 
     emit fixedTimeChanged(mills);
 }
@@ -522,6 +538,10 @@ void GridViewer::closeEvent(QCloseEvent *)
     saveSettings();
 
     sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );  // notify other viewers
+
+    // remove this time slice from other viewers
+    m_timeSource=TimeSource::TIME_NONE;
+    updateIntersectionTimes();
 }
 
 void GridViewer::leaveEvent(QEvent *){
@@ -639,6 +659,38 @@ void GridViewer::loadSettings(){
     settings.endGroup();
 }
 
+
+void GridViewer::updateIntersectionTimes(){
+
+    QVector<qreal> allTimes;
+
+    // find displayed times of time slices
+    for( BaseViewer* v : dispatcher()->viewers() ){
+
+        GridViewer* gv=dynamic_cast<GridViewer*>(v);
+
+        if( !gv || gv->timeSource()!=TimeSource::TIME_FIXED ) continue;
+
+        if( gv->broadcastEnabled()){
+
+            allTimes.push_back(0.001*gv->fixedTime());  // convert millis to seconds
+        }
+
+    }
+
+    // set times in gather viewers
+    for( BaseViewer* v : dispatcher()->viewers() ){
+
+        GatherViewer* gv=dynamic_cast<GatherViewer*>(v);
+
+        if( gv ){
+
+            if( gv->receptionEnabled() ){
+                gv->view()->setIntersectionTimes(allTimes);
+            }
+        }
+    }
+}
 
 
 void GridViewer::on_actionDisplay_Histogram_triggered()

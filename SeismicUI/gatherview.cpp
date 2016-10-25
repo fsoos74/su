@@ -105,6 +105,15 @@ void GatherView::setIntersectionTraces(QVector<int> trc){
 }
 
 
+void GatherView::setIntersectionTimes(QVector<qreal> t){
+
+    if( t==m_intersectionTimes ) return;
+
+    m_intersectionTimes=t;
+
+    m_gatherLabel->update();
+}
+
 void GatherView::setPrimarySortKey(GatherSortKey k){
 
     if( k==m_primarySortKey ) return;

@@ -119,6 +119,10 @@ public:
          return m_intersectionTraces;
      }
 
+     QVector<qreal> intersectionTimes()const{
+         return m_intersectionTimes;
+     }
+
 signals:
 
     void gatherChanged( std::shared_ptr<seismic::Gather>);
@@ -139,6 +143,7 @@ public slots:
     void setGather( std::shared_ptr<seismic::Gather>);
     void setPrimarySortKey(GatherSortKey);
     void setIntersectionTraces( QVector<int>);
+    void setIntersectionTimes( QVector<qreal>);
     void setHighlightedPoints(QVector<SelectionPoint>);
     void setCursorPosition(SelectionPoint);
     void setMouseMode( MouseMode );
@@ -184,6 +189,7 @@ private:
     QMap< QString, int> m_traceLookup;       // key is combination il and xl : "iline_xline"
 
     QVector<int>    m_intersectionTraces;
+    QVector<qreal>  m_intersectionTimes;
     QVector<SelectionPoint> m_highlightedPoints;
     SelectionPoint m_cursorPosition;
 
