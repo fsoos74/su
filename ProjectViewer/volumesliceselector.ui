@@ -40,7 +40,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QSpinBox" name="sbTime">
+    <widget class="ReverseSpinBox" name="sbTime">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
        <horstretch>0</horstretch>
@@ -62,10 +62,20 @@
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
+     <property name="singleStep">
+      <number>1</number>
+     </property>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ReverseSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header location="global">reversespinbox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

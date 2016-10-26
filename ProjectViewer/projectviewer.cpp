@@ -94,6 +94,8 @@
 #include "amplitudecurveviewer.h"
 #include <crossplot.h>
 
+#include <reversespinbox.h>
+
 #include<segywriter.h>
 #include<swsegywriter.h>
 #include<segyreader.h>

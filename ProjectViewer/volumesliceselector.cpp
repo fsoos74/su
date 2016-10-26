@@ -1,13 +1,20 @@
 ﻿#include "volumesliceselector.h"
 #include "ui_volumesliceselector.h"
 
+
+/* using reverse spinbox with internal negative values displayed positive for time.
+ * This allows using cursor/arrow down for moving to greater times and thus deeper.
+ * All calls to spinbox are modified accordingly, i.e. minimum becomes maximum and vice versa.
+ * Spinbox values are allways reversed
+*/
+
 VolumeSliceSelector::VolumeSliceSelector(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::VolumeSliceSelector)
 {
     ui->setupUi(this);
 
-    connect( ui->sbTime, SIGNAL(valueChanged(int)), this, SIGNAL(timeChanged(int)) );
+    connect( ui->sbTime, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)) );
     connect( this, SIGNAL(timeChanged(int)), this, SLOT(apply()) );
     connect(this, SIGNAL(volumeChanged(std::shared_ptr<Grid3D<float> >)), this, SLOT(apply()) );
 }
@@ -20,12 +27,12 @@ VolumeSliceSelector::~VolumeSliceSelector()
 
 int VolumeSliceSelector::time(){
 
-    return ui->sbTime->value();
+    return -ui->sbTime->value();
 }
 
 std::pair<int, int>  VolumeSliceSelector::timeRange(){
 
-    return std::pair<int,int>(ui->sbTime->minimum(), ui->sbTime->maximum());
+    return std::pair<int,int>( -ui->sbTime->maximum(), -ui->sbTime->minimum());
 }
 
 int VolumeSliceSelector::timeStep(){
@@ -40,7 +47,7 @@ QString VolumeSliceSelector::description(){
 
 void VolumeSliceSelector::setTime(int t){
 
-   ui->sbTime->setValue(t); // spinbox will take care of emitting change signal if necessary
+   ui->sbTime->setValue(-t); // spinbox will take care of emitting change signal if necessary
 }
 
 void VolumeSliceSelector::setTimeRange(std::pair<int, int> r){
@@ -49,8 +56,8 @@ void VolumeSliceSelector::setTimeRange(std::pair<int, int> r){
 
     if( r==timeRange()) return;
 
-    ui->sbTime->setMinimum(r.first);
-    ui->sbTime->setMaximum(r.second);
+    ui->sbTime->setMinimum(-r.second);
+    ui->sbTime->setMaximum(-r.first);
 
     emit timeRangeChanged(timeRange());
 }
@@ -92,6 +99,11 @@ void VolumeSliceSelector::setGrid(std::shared_ptr<Grid2D<float> > g){
     emit gridChanged(g);
 }
 
+
+void VolumeSliceSelector::onSpinBoxValueChanged(int value){
+
+    emit timeChanged(-value);
+}
 
 void VolumeSliceSelector::apply(){
 

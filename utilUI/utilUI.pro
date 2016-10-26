@@ -36,7 +36,8 @@ SOURCES += utilui.cpp \
     pointdisplayoptionsdialog.cpp \
     selectionpointbuffer.cpp \
     mousemodeselector.cpp \
-    mousemode.cpp
+    mousemode.cpp \
+    reversespinbox.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -52,7 +53,8 @@ HEADERS += utilui.h\
     pointdisplayoptionsdialog.h \
     selectionpointbuffer.h \
     mousemodeselector.h \
-    mousemode.h
+    mousemode.h \
+    reversespinbox.h
 
 unix {
     target.path = /usr/lib
