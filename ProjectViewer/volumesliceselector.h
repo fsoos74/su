@@ -57,7 +57,6 @@ public slots:
 
 private slots:
 
-    void onSpinBoxValueChanged(int);
     void apply();
 
 private:

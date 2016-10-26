@@ -14,7 +14,7 @@ VolumeSliceSelector::VolumeSliceSelector(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect( ui->sbTime, SIGNAL(valueChanged(int)), this, SLOT(onSpinBoxValueChanged(int)) );
+    connect( ui->sbTime, SIGNAL(valueChanged(int)), this, SIGNAL(timeChanged(int)) );
     connect( this, SIGNAL(timeChanged(int)), this, SLOT(apply()) );
     connect(this, SIGNAL(volumeChanged(std::shared_ptr<Grid3D<float> >)), this, SLOT(apply()) );
 }
@@ -27,12 +27,12 @@ VolumeSliceSelector::~VolumeSliceSelector()
 
 int VolumeSliceSelector::time(){
 
-    return -ui->sbTime->value();
+    return ui->sbTime->value();
 }
 
 std::pair<int, int>  VolumeSliceSelector::timeRange(){
 
-    return std::pair<int,int>( -ui->sbTime->maximum(), -ui->sbTime->minimum());
+    return std::pair<int,int>( ui->sbTime->minimum(), ui->sbTime->maximum());
 }
 
 int VolumeSliceSelector::timeStep(){
@@ -47,7 +47,7 @@ QString VolumeSliceSelector::description(){
 
 void VolumeSliceSelector::setTime(int t){
 
-   ui->sbTime->setValue(-t); // spinbox will take care of emitting change signal if necessary
+   ui->sbTime->setValue(t); // spinbox will take care of emitting change signal if necessary
 }
 
 void VolumeSliceSelector::setTimeRange(std::pair<int, int> r){
@@ -56,8 +56,8 @@ void VolumeSliceSelector::setTimeRange(std::pair<int, int> r){
 
     if( r==timeRange()) return;
 
-    ui->sbTime->setMinimum(-r.second);
-    ui->sbTime->setMaximum(-r.first);
+    ui->sbTime->setMinimum(r.first);
+    ui->sbTime->setMaximum(r.second);
 
     emit timeRangeChanged(timeRange());
 }
@@ -99,11 +99,6 @@ void VolumeSliceSelector::setGrid(std::shared_ptr<Grid2D<float> > g){
     emit gridChanged(g);
 }
 
-
-void VolumeSliceSelector::onSpinBoxValueChanged(int value){
-
-    emit timeChanged(-value);
-}
 
 void VolumeSliceSelector::apply(){
 
