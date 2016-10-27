@@ -17,6 +17,7 @@
 #include "volumedisplayoptionsdialog.h"
 #include "pointdisplayoptionsdialog.h"
 #include "gathersortkey.h"
+#include "sectionscaledialog.h"
 
 #include <selectionpointbuffer.h>
 
@@ -134,6 +135,8 @@ private slots:
 
     void on_actionDensity_Color_Table_triggered();
 
+    void on_actionSet_Scale_triggered();
+
 private:
 
     void saveSettings();
@@ -162,6 +165,8 @@ private:
     std::vector< std::pair< std::string, QString> > m_traceAnnotations;
 
     HeaderDialog* m_TraceHeaderDialog=nullptr;
+
+    SectionScaleDialog* sectionScaleDialog=nullptr;
 
     TraceScalingDialog* m_traceScalingDialog=nullptr;
     TraceDisplayOptionsDialog* m_traceDisplayOptionsDialog=nullptr;

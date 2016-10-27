@@ -58,8 +58,6 @@ GatherView::GatherView( QWidget* parent) : QScrollArea(parent)
 }
 
 
-
-
 void GatherView::setGather( std::shared_ptr<seismic::Gather> g){
 
     if( g==m_gather) return;
@@ -320,6 +318,7 @@ void GatherView::setPixelPerUnits( qreal pixPerTrace, qreal pixPerSecond){
     updateGeometry();
 
 }
+
 
 void GatherView::normalize(){
 

@@ -8,6 +8,7 @@
 #include "segyinputdialog.h"
 #include "segyreader.h"
 #include "headerui.h"
+#include "sectionscaledialog.h"
 #include <header.h>
 #include <headervalue.h>
 #include <selectheaderwordsdialog.h>
@@ -289,6 +290,23 @@ void GatherViewer::onTraceHeaderDialogFinished(){
     gatherView->gatherLabel()->setHighlightTrace(false);
 }
 
+void GatherViewer::on_actionSet_Scale_triggered()
+{
+    if( !sectionScaleDialog){
+        sectionScaleDialog=new SectionScaleDialog(this);
+        sectionScaleDialog->setWindowTitle(tr("Configure Scale"));
+        sectionScaleDialog->setDPIX(gatherView->gatherLabel()->physicalDpiX());
+        sectionScaleDialog->setDPIY(gatherView->gatherLabel()->physicalDpiY());
+        sectionScaleDialog->setPixelPerTrace( gatherView->pixelPerTrace() );
+        sectionScaleDialog->setPixelPerSecond( gatherView->pixelPerSecond() );
+        connect( sectionScaleDialog, SIGNAL(pixelPerTraceChanged(qreal)), gatherView, SLOT(setPixelPerTrace(qreal)) );
+        connect( sectionScaleDialog, SIGNAL(pixelPerSecondChanged(qreal)), gatherView, SLOT(setPixelPerSecond(qreal)) );
+        connect( gatherView, SIGNAL(pixelPerTraceChanged(qreal)), sectionScaleDialog, SLOT(setPixelPerTrace(qreal)) );
+        connect( gatherView, SIGNAL(pixelPerSecondChanged(qreal)), sectionScaleDialog, SLOT(setPixelPerSecond(qreal)) );
+    }
+
+    sectionScaleDialog->show();
+}
 
 void GatherViewer::on_zoomInAct_triggered()
 {
@@ -772,4 +790,6 @@ void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
     setBroadcastEnabled(on);
     updateIntersections();
 }
+
+
 
