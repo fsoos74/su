@@ -206,13 +206,15 @@ void SeismicDataSelector::providePoint(int iline, int xline){
 
    if( ui->pbLock->isChecked() ) return;
 
-   if( primarySort()==GatherSortKey::Inline){
+   bool isPostStack = m_reader->info().mode() == SeismicDatasetInfo::Mode::Poststack;
+
+   if( isPostStack && (primarySort()==GatherSortKey::Inline) ){
         ui->sbInline->setValue(iline);
    }
-   else if( primarySort()==GatherSortKey::Crossline){
+   else if( isPostStack && (primarySort()==GatherSortKey::Crossline) ){
         ui->sbXline->setValue(xline);
    }
-   else{
+   else{        // this is also for gathers
        setLock(true);
        ui->sbInline->setValue(iline);
        ui->sbXline->setValue(xline);
