@@ -29,6 +29,7 @@ private:
 
     QString m_interceptName;
     QString m_gradientName;
+    QString m_qualityName;
     double m_maximumOffset;
     double m_minimumAzimuth;
     double m_maximumAzimuth;
@@ -41,7 +42,7 @@ private:
     Grid3DBounds  m_bounds;
     std::shared_ptr<Grid3D<float> > m_intercept;
     std::shared_ptr<Grid3D<float> > m_gradient;
-
+    std::shared_ptr<Grid3D<float> > m_quality;
 };
 
 #endif // INTERCEPTGRADIENTVOLUMEPROCESS_H

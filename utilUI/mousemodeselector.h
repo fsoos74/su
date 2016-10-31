@@ -2,7 +2,7 @@
 #define MOUSEMODESELECTOR_H
 
 #include <QWidget>
-
+#include <QToolButton>
 #include "mousemode.h"
 
 namespace Ui {
@@ -16,6 +16,10 @@ class MouseModeSelector : public QWidget
 public:
     explicit MouseModeSelector(QWidget *parent = 0);
     ~MouseModeSelector();
+
+    QToolButton* exploreButton();
+    QToolButton* zoomButton();
+    QToolButton* selectButton();
 
     MouseMode mode();
 

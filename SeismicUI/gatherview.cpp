@@ -249,6 +249,8 @@ QStringList GatherView::traceAnnotation( size_t traceNumber )const{
 
 void GatherView::setPixelPerTrace( qreal ppt ){
 
+    if( m_fixedScale) return;
+
     if( ppt==m_pixelPerTrace) return;
 
     if( !m_gather || m_gather->empty() ) return;
@@ -256,11 +258,12 @@ void GatherView::setPixelPerTrace( qreal ppt ){
     qreal oldPPT=m_pixelPerTrace;
 
     int newWidth=ppt*m_gather->size();
-
+/* allow label to become smaller than viewport
     if( newWidth<viewport()->width() ){
         newWidth=viewport()->width();
         ppt=qreal(newWidth)/m_gather->size();
     }
+*/
     m_pixelPerTrace=ppt;
 
     emit( pixelPerTraceChanged(ppt) );
@@ -277,6 +280,8 @@ void GatherView::setPixelPerTrace( qreal ppt ){
 
 void GatherView::setPixelPerSecond( qreal pps ){
 
+    if( m_fixedScale) return;
+
     if( pps==m_pixelPerSecond) return;
 
     qreal secs=seconds();
@@ -286,11 +291,12 @@ void GatherView::setPixelPerSecond( qreal pps ){
     if( secs<=0 ) return;
 
     int newHeight=pps*secs;
+/* allow label to become smaller than viewport
     if( newHeight<viewport()->height()){
         newHeight=viewport()->height();
         pps=qreal( newHeight )/secs;
     }
-
+*/
     m_pixelPerSecond=pps;
 
     emit pixelPerSecondChanged(pps);
@@ -320,6 +326,15 @@ void GatherView::setPixelPerUnits( qreal pixPerTrace, qreal pixPerSecond){
 }
 
 
+void GatherView::setFixedScale(bool on){
+
+    if( on==m_fixedScale) return;
+
+    m_fixedScale=on;
+
+    emit fixedScaleChanged(on);
+}
+
 void GatherView::normalize(){
 
     if( !m_gather || m_gather->empty()) return;
@@ -335,6 +350,8 @@ void GatherView::normalize(){
 
 
 void GatherView::zoom( QRect rect ){
+
+    if( m_fixedScale ) return;
 
     const int ZOOM_PIXEL_LIMIT=6;           // selection of less pixels is considered zoom out
 
@@ -386,16 +403,23 @@ void GatherView::zoom( QRect rect ){
     update();
 }
 
+
+
 void GatherView::zoomBy( qreal factor ){
 
-    //setUpdatesEnabled(false);
 
+    if( m_fixedScale ) return;
+
+/*
     QSize newSize=factor * m_gatherLabel->size();
     if( newSize.width()<viewport()->width()) newSize.setWidth(viewport()->width());
     if( newSize.height()<viewport()->height()) newSize.setHeight( viewport()->height());
 
     m_pixelPerTrace=qreal(newSize.width())/m_gather->size();
     m_pixelPerSecond=qreal(newSize.height())/seconds();
+    emit pixelPerTraceChanged(m_pixelPerTrace);
+    emit pixelPerSecondChanged(m_pixelPerSecond);
+
     m_gatherLabel->setFixedSize( newSize );
     horizontalScrollBar()->setMaximum(newSize.width()-horizontalScrollBar()->pageStep());
     verticalScrollBar()->setMaximum(newSize.height()-verticalScrollBar()->pageStep());
@@ -403,12 +427,16 @@ void GatherView::zoomBy( qreal factor ){
     adjustScrollBar( verticalScrollBar(), factor);
 
     update();
+    */
+    setPixelPerUnits(factor*m_pixelPerTrace, factor*m_pixelPerSecond);
+    adjustScrollBar( horizontalScrollBar(), factor);
+    adjustScrollBar( verticalScrollBar(), factor);
 }
 
 void GatherView::updateLayout(){
 
     m_leftRuler->setGeometry( 0, viewport()->y(), RULER_WIDTH, viewport()->height() );
-    m_topRuler->setGeometry( viewport()->x(), 0, viewport()->width(), RULER_HEIGHT );
+    m_topRuler->setGeometry( viewport()->x(), 0, viewport()->width(), RULER_HEIGHT);
     m_axxisLabelWidget->setGeometry(0, 0, viewport()->x(), viewport()->y());
 }
 
@@ -438,18 +466,70 @@ void GatherView::updateTimeRange(){
     m_lt=lt;
 }
 
+/*
+void GatherView::resizeEvent(QResizeEvent *){
 
-void GatherView::resizeEvent(QResizeEvent *ev){
+    if( ! m_gather || m_gather->empty() ) return;
 
-    int oldlblw=m_gatherLabel->width();
+    int labelWidth=m_gatherLabel->width();
+    int labelHeight=m_gatherLabel->height();
 
-    int oldWidth=ev->oldSize().width();
-    int oldHeight=ev->oldSize().height();
-    int oldX=horizontalScrollBar()->value();
-    int oldY=verticalScrollBar()->value();
-    zoom( QRect(oldX, oldY, oldWidth, oldHeight));
+    if( !m_fixedScale){
+        if( labelWidth<viewport()->width()) labelWidth=viewport()->width();
+        if( labelHeight<viewport()->height()) labelHeight=viewport()->height();
+
+        m_pixelPerTrace=labelWidth/m_gather->size();
+        m_pixelPerSecond=labelHeight/seconds();
+        emit pixelPerTraceChanged(m_pixelPerTrace);
+        emit pixelPerSecondChanged(m_pixelPerSecond);
+
+        m_gatherLabel->setFixedSize(labelWidth, labelHeight);
+    }
+
+    horizontalScrollBar()->setPageStep(viewport()->width());
+    horizontalScrollBar()->setRange(0, labelWidth - viewport()->width());
+    verticalScrollBar()->setPageStep(viewport()->height());
+    verticalScrollBar()->setRange(0,labelHeight-viewport()->height());
+
+
+    m_topRuler->update();
+    m_leftRuler->update();
 
     updateLayout();
+
+}
+
+*/
+
+
+
+void GatherView::resizeEvent(QResizeEvent *ev){
+//
+
+    if( !m_fixedScale){
+        int oldlblw=m_gatherLabel->width();
+        int oldWidth=ev->oldSize().width();
+        int oldHeight=ev->oldSize().height();
+        int oldX=horizontalScrollBar()->value();
+        int oldY=verticalScrollBar()->value();
+        zoom( QRect(oldX, oldY, oldWidth, oldHeight));
+    }
+    else{
+
+        horizontalScrollBar()->setPageStep(viewport()->width());
+        verticalScrollBar()->setPageStep(viewport()->height());
+        horizontalScrollBar()->setRange(0,m_gatherLabel->width()-viewport()->width());
+        verticalScrollBar()->setRange(0,m_gatherLabel->height()-viewport()->height());
+        m_gatherLabel->update();
+        m_leftRuler->update();
+        m_topRuler->update();
+
+    }
+ //
+   // std::cout<<"w="<<gatherLabel()->width()<<std::endl;
+    updateLayout();
+
+   // update();
 }
 
 
@@ -608,4 +688,5 @@ void GatherView::adjustScrollBar(QScrollBar *scrollBar, qreal factor)
 {
     int newValue=int(factor * scrollBar->value()
                      + ((factor - 1) * scrollBar->pageStep()/2));
+    scrollBar->setValue(newValue);
 }

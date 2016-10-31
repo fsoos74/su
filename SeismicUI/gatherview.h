@@ -95,6 +95,10 @@ public:
         return m_pixelPerSecond;
     }
 
+    bool isFixedScale()const{
+        return m_fixedScale;
+    }
+
     qreal ft()const{
         return m_ft;
     }
@@ -129,6 +133,7 @@ signals:
     void primarySortKeyChanged(GatherSortKey);
     void pixelPerTraceChanged(qreal);
     void pixelPerSecondChanged(qreal);
+    void fixedScaleChanged(bool);
     void traceAnnotationFuntionChanged();
     void mouseOver( int traceNo, qreal second);
     void topRulerClicked( int traceNo );
@@ -155,6 +160,7 @@ public slots:
     void setPixelPerTrace( qreal );
     void setPixelPerSecond( qreal );
     void setPixelPerUnits( qreal pixPerTrace, qreal pixPerSecond);
+    void setFixedScale(bool);
     void normalize();
     void zoom(QRect);
     void zoomBy(qreal);
@@ -202,6 +208,7 @@ private:
 
     qreal m_pixelPerTrace=50;
     qreal m_pixelPerSecond=500;
+    bool  m_fixedScale=false;           // whether zooming/resizing of content(label) is possible
 
     qreal m_ft=0;
     qreal m_lt=0;

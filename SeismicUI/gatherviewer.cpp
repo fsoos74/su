@@ -64,6 +64,13 @@ GatherViewer::GatherViewer(QWidget *parent) :
     ui->mouseToolBar->addWidget( mm);
     //insertToolBar( ui->mainToolBar, mouseToolBar);
 
+
+    // deactivate zooming controls if scale is locked
+    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomInAct, SLOT(setDisabled(bool)) );
+    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomOutAct, SLOT(setDisabled(bool)) );
+    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomFitWindowAct, SLOT(setDisabled(bool)) );
+    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->zoomButton(), SLOT(setDisabled(bool)) );
+
     createDockWidgets();
 
     populateWindowMenu();
@@ -299,10 +306,13 @@ void GatherViewer::on_actionSet_Scale_triggered()
         sectionScaleDialog->setDPIY(gatherView->gatherLabel()->physicalDpiY());
         sectionScaleDialog->setPixelPerTrace( gatherView->pixelPerTrace() );
         sectionScaleDialog->setPixelPerSecond( gatherView->pixelPerSecond() );
+        sectionScaleDialog->setLocked(gatherView->isFixedScale());
         connect( sectionScaleDialog, SIGNAL(pixelPerTraceChanged(qreal)), gatherView, SLOT(setPixelPerTrace(qreal)) );
         connect( sectionScaleDialog, SIGNAL(pixelPerSecondChanged(qreal)), gatherView, SLOT(setPixelPerSecond(qreal)) );
+        connect( sectionScaleDialog, SIGNAL(lockedChanged(bool)), gatherView, SLOT(setFixedScale(bool)) );
         connect( gatherView, SIGNAL(pixelPerTraceChanged(qreal)), sectionScaleDialog, SLOT(setPixelPerTrace(qreal)) );
         connect( gatherView, SIGNAL(pixelPerSecondChanged(qreal)), sectionScaleDialog, SLOT(setPixelPerSecond(qreal)) );
+        connect( gatherView, SIGNAL( fixedScaleChanged(bool)), sectionScaleDialog, SLOT(setLocked(bool)) );
     }
 
     sectionScaleDialog->show();

@@ -52,6 +52,9 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::init( const QMap<QStr
     }
     m_gradientName=parameters.value(QString("gradient"));
 
+    if( parameters.contains(QString("quality"))){
+        m_qualityName=parameters.value(QString("quality"));
+    }
 
     if( !parameters.contains(QString("maximum-offset"))){
         setErrorString("Parameters contain no maximum offset!");
@@ -122,6 +125,7 @@ std::cout<<"Volumes: ft"<<m_bounds.ft()<<" lt="<<m_bounds.lt()<<" dt="<<m_bounds
 */
     m_intercept=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));
     m_gradient=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));
+    m_quality=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));      // allways compute quality, just don't save it if not desired
 
     return ResultCode::Ok;
 }
@@ -146,6 +150,7 @@ struct Job{
     Grid3DBounds            bounds;
     Grid3D<float>*          intercept;
     Grid3D<float>*          gradient;
+    Grid3D<float>*          quality;
 };
 
 
@@ -183,17 +188,21 @@ private:
 
                     QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather,
                                                  m_job.startTraceSample + sampleno);
-                    QPointF interceptAndGradient=linearRegression(curve);
+
+                    double q;
+                    QPointF interceptAndGradient=linearRegression(curve, &q);
 
                     // linear regression returns nan if all input values are zero
                     if( std::isnan(interceptAndGradient.x()) || std::isnan(interceptAndGradient.y())){
                         (*m_job.intercept)(iline, xline,sampleno)=m_job.intercept->NULL_VALUE;
                         (*m_job.gradient)(iline, xline,sampleno)=m_job.gradient->NULL_VALUE;
+                        (*m_job.quality)(iline, xline,sampleno)=m_job.quality->NULL_VALUE;
                         continue;
                     }
 
                     (*m_job.intercept)(iline, xline, sampleno)=interceptAndGradient.x();
                     (*m_job.gradient)(iline, xline, sampleno)=interceptAndGradient.y();
+                    (*m_job.quality)(iline, xline, sampleno)=q;
                 }
 
             }
@@ -233,6 +242,7 @@ bool InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int 
 
         job.intercept=m_intercept.get();
         job.gradient=m_gradient.get();
+        job.quality=m_quality.get();
 
         QThreadPool::globalInstance()->start( new Worker(job, &stopped));
 
@@ -339,7 +349,14 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
         return ResultCode::Error;
     }
 
+    if( !m_qualityName.isEmpty() ){    // only save quality if name is specified
 
+        if( !project()->addVolume( m_qualityName, m_quality)){
+            setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_qualityName) );
+            return ResultCode::Error;
+        }
+
+    }
 
     emit finished();
     qApp->processEvents();

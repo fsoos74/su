@@ -6,7 +6,7 @@
 #include<QPainter>
 #include<QScrollBar>
 #include<QMouseEvent>
-
+#include<algorithm>
 #include<iostream>
 
 GatherRuler::GatherRuler(GatherView *parent, Orientation orient) : QWidget(parent), m_view(parent), m_orientation(orient)
@@ -139,7 +139,9 @@ void GatherRuler::drawVertical( QPainter& painter ){
         painter.restore();
     }
 
-    QVector<Tick> ticks=computeTicks( sb->value(), sb->value() + height());// cannot use pageStep because scrollbars are adjusted after all event processing
+    int max=sb->value() + sb->pageStep();
+    if( max > m_view->gatherLabel()->height()) max=m_view->gatherLabel()->height();
+    QVector<Tick> ticks=computeTicks( sb->value(), max );// cannot use pageStep because scrollbars are adjusted after all event processing
 
 
     int x1=width();
@@ -188,9 +190,9 @@ void GatherRuler::drawHorizontal( QPainter& painter ){
     }
 
     int lineDY=painter.fontMetrics().height();
-
-
-    QVector<Tick> ticks=computeTicks( sb->value(), sb->value() + width());// cannot use pageStep because scrollbars are adjusted after all event processing
+    int max=sb->value() + sb->pageStep();
+    if( max > m_view->gatherLabel()->width()) max=m_view->gatherLabel()->width();
+    QVector<Tick> ticks=computeTicks( sb->value(), max );// cannot use pageStep because scrollbars are adjusted after all event processing
 
     int y1=height();
     int y2=y1-1.5*TICK_MARK_SIZE;
@@ -216,7 +218,7 @@ void GatherRuler::drawHorizontal( QPainter& painter ){
 
 
 int GatherRuler::tickIncrement(int size_pix, int size_data, int min_distance)const{
-//std::cout<<"computeTickIncrement: size_data="<<size_data<<" size_pix="<<size_pix<<std::endl;
+
     double pix_per_unit=double(size_pix)/size_data;
     int incr= std::pow(10,std::floor(std::log10(min_distance/pix_per_unit)));
 

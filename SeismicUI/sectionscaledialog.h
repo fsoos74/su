@@ -17,6 +17,9 @@ class SectionScaleDialog : public QDialog
     Q_OBJECT
 
 public:
+
+    enum Unit{ CENTIMETER=0, INCH};
+
     explicit SectionScaleDialog(QWidget *parent = 0);
     ~SectionScaleDialog();
 
@@ -36,17 +39,27 @@ public:
         return m_pixelPerSecond;
     }
 
+    bool isLocked();
+
+    Unit unit()const{
+        return m_unit;
+    }
+
 public slots:
     void setDPIX(qreal);
     void setDPIY(qreal);
     void setPixelPerTrace(qreal);
     void setPixelPerSecond(qreal);
+    void setLocked(bool);
+    void setUnit( Unit );
 
 signals:
     void dpiXChanged(qreal);
     void dpiYChanged(qreal);
     void pixelPerTraceChanged(qreal);
     void pixelPerSecondChanged(qreal);
+    void lockedChanged(bool);
+    void unitChanged( Unit );
 
 protected:
     // override this to keep return pressed in line edit move up to parent
@@ -58,8 +71,12 @@ private slots:
     void pixelPerTraceToControl();
     void pixelPerSecondFromControl();
     void pixelPerSecondToControl();
+    void unitToControl();
+    void unitFromControl();
 
     void apply();
+
+    void on_cbUnit_currentIndexChanged(int index);
 
 private:
     Ui::SectionScaleDialog *ui;
@@ -68,6 +85,7 @@ private:
     qreal m_dpiY=1;
     qreal m_pixelPerTrace=1;
     qreal m_pixelPerSecond=1;
+    Unit m_unit=Unit::INCH;
 };
 
 #endif // SECTIONSCALEDIALOG_H

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>283</width>
-    <height>175</height>
+    <width>290</width>
+    <height>239</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,24 +17,55 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>MM per Trace:</string>
+        <string>Size Unit:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="leMMPerTrace"/>
+      <widget class="QComboBox" name="cbUnit">
+       <property name="currentIndex">
+        <number>1</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Centimeter</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Inch</string>
+        </property>
+       </item>
+      </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>MM per Second:</string>
+        <string>Traces per Unit::</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="leMMPerSecond"/>
+      <widget class="QLineEdit" name="leTracesPerUnit"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Units per Second:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="leUnitsPerSecond"/>
+     </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QCheckBox" name="cbLock">
+       <property name="text">
+        <string>Lock Scales</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -105,6 +136,38 @@
     <hint type="destinationlabel">
      <x>141</x>
      <y>87</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbLock</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leTracesPerUnit</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>144</x>
+     <y>134</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>61</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbLock</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leUnitsPerSecond</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>144</x>
+     <y>134</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>205</x>
+     <y>99</y>
     </hint>
    </hints>
   </connection>

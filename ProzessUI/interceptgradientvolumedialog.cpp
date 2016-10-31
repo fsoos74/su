@@ -24,6 +24,7 @@ InterceptGradientVolumeDialog::InterceptGradientVolumeDialog(QWidget *parent) :
 
     connect( ui->leGradient, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leIntercept, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leQuality, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leWindowStart, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leWindowEnd, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leMaxOffset, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -59,6 +60,10 @@ QMap<QString,QString> InterceptGradientVolumeDialog::params(){
     p.insert( QString("intercept"), ui->leIntercept->text());
 
     p.insert( QString("gradient"), ui->leGradient->text() );
+
+    if( !ui->leQuality->text().isEmpty()){
+        p.insert( QString("quality"), ui->leQuality->text() );
+    }
 
     p.insert( QString("dataset"), ui->cbDataset->currentText());
 
@@ -124,6 +129,17 @@ void InterceptGradientVolumeDialog::updateOkButton(){
         gradientPalette.setColor(QPalette::Text, Qt::red);
     }
     ui->leGradient->setPalette(gradientPalette);
+
+    QPalette qualityPalette;
+    if( reservedVolumes().contains(ui->leQuality->text())){
+        ok=false;
+        qualityPalette.setColor(QPalette::Text, Qt::red);
+    }
+    if( ui->leIntercept->text() == ui->leQuality->text() || ui->leGradient->text()==ui->leQuality->text()){
+        ok=false;
+        qualityPalette.setColor(QPalette::Text, Qt::red);
+    }
+    ui->leQuality->setPalette(qualityPalette);
 
     if( ui->cbTimeWindow->isChecked() ){
         if( ui->leWindowStart->text().isEmpty()){

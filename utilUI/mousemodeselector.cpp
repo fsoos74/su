@@ -15,6 +15,14 @@ MouseModeSelector::~MouseModeSelector()
     delete ui;
 }
 
+QToolButton* MouseModeSelector::zoomButton(){
+    return ui->tbZoom;
+}
+
+QToolButton* MouseModeSelector::selectButton(){
+    return ui->tbSelect;
+}
+
 MouseMode MouseModeSelector::mode(){
 
     if( ui->tbExplore->isChecked() ){

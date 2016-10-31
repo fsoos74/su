@@ -193,9 +193,10 @@ void GatherLabel::paintEvent(QPaintEvent *event){
 
     QRect rect=event->rect();
 
+
     QPoint topLeft=QPoint( m_view->horizontalScrollBar()->value(), m_view->verticalScrollBar()->value());
 
-    if( topLeft!=m_pixmapTopLeft || m_dirty){
+    if( topLeft!=m_pixmapTopLeft || rect.width()>m_pixmap.width() || m_dirty){
         updatePixmap();
     }
 
