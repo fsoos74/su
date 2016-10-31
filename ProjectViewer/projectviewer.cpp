@@ -4,6 +4,7 @@
 #include "seismicdataselector.h"
 #include "seismicsliceselector.h"
 #include "volumesliceselector.h"
+#include "volumerelativesliceselector.h"
 #include "datasetpropertiesdialog.h"
 #include "twocombosdialog.h"
 #include "aboutdialog.h"
@@ -1279,6 +1280,7 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
 
     QMenu menu;
     menu.addAction("display slice");
+    menu.addAction("display horizon relative slice");
     menu.addAction("histogram");
     menu.addSeparator();
     menu.addAction("export");
@@ -1292,6 +1294,9 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
 
     if( selectedAction->text()=="display slice" ){
         displayVolumeSlice( volumeName);
+    }
+    else if(selectedAction->text()=="display horizon relative slice"){
+        displayVolumeRelativeSlice( volumeName);
     }
     else if( selectedAction->text()=="histogram" ){
         displayVolumeHistogram( volumeName);
@@ -1512,6 +1517,53 @@ void ProjectViewer::displayVolumeSlice( const QString& name){
         viewer->setProject( m_project );  // grant access to grid
 
         sliceSelector->setVolume(volume);
+    }
+}
+
+
+void ProjectViewer::displayVolumeRelativeSlice( const QString& name){
+
+    if( m_project->volumeList().contains(name)){
+
+        std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+        if( !volume ) return;
+
+        Grid3DBounds bounds=volume->bounds();
+        int lt=static_cast<int>(1000*bounds.lt());  // convert to msecs
+        int dt=static_cast<int>(1000*bounds.dt());  // convert to msecs
+
+        VolumeRelativeSliceSelector* sliceSelector=new  VolumeRelativeSliceSelector(this);
+
+        sliceSelector->setVolumeName(name);
+
+        sliceSelector->setTimeRange(std::pair<int,int>( -lt, lt));  // best guess for all horizons
+        sliceSelector->setTimeStep(dt);
+        sliceSelector->setTime(0);                                  // start at horizon
+
+        GridViewer* viewer=new GridViewer();
+        GridView* gridView=viewer->gridView();
+        gridView->setInlineOrientation(m_project->inlineOrientation());
+        gridView->setInlineDirection(m_project->inlineDirection());
+        gridView->setCrosslineDirection(m_project->crosslineDirection());
+
+        viewer->setDispatcher(m_dispatcher);
+
+        viewer->setTimeSource(GridViewer::TimeSource::TIME_FIXED);
+
+        connect( sliceSelector, SIGNAL(gridChanged(std::shared_ptr<Grid2D<float>>)),
+                 viewer, SLOT(setGrid(std::shared_ptr<Grid2D<float>>)));
+        connect( sliceSelector, SIGNAL(descriptionChanged(QString)), viewer, SLOT(setWindowTitle(QString)) );
+
+        connect( viewer, SIGNAL(requestSlice(int)), sliceSelector, SLOT(setTime(int)) );
+        connect( sliceSelector, SIGNAL(timeChanged(int)), viewer, SLOT(setFixedTime(int)) );
+
+        viewer->navigationToolBar()->addWidget(sliceSelector);
+        viewer->show();
+        viewer->setProject( m_project );  // grant access to grid
+
+        sliceSelector->setVolume(volume);
+
+        sliceSelector->setProject(m_project);
     }
 
 }

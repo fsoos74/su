@@ -179,6 +179,7 @@ private:
     void runGridContextMenu(GridType, QListView*, const QPoint&);
 
     void displayVolumeSlice( const QString&);
+    void displayVolumeRelativeSlice( const QString&);
     void displayVolumeHistogram( const QString&);
     void renameVolume( const QString&);
     void removeVolume( const QString&);
