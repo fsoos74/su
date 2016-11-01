@@ -37,6 +37,8 @@ public:
         return m_grid;
     }
 
+    double timeAt( int iline, int xline);
+
 signals:
 
     void timeChanged(int);

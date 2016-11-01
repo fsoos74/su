@@ -9,6 +9,7 @@
 #include<QDir>
 
 #include<memory>
+#include<functional>
 #include<grid2d.h>
 #include<gridview.h>
 #include<colortable.h>
@@ -40,7 +41,7 @@ class GridViewer : public BaseViewer
 
 public:
 
-    enum TimeSource{ TIME_NONE, TIME_GRID, TIME_FIXED };
+    enum TimeSource{ TIME_NONE, TIME_GRID, TIME_FIXED, TIME_FUNCTION };
 
     explicit GridViewer(QWidget *parent = 0);
     ~GridViewer();
@@ -66,6 +67,7 @@ public slots:
     void setProject( std::shared_ptr<AVOProject> );
     void setTimeSource(TimeSource);
     void setFixedTime(int);
+    void setTimeFunction(std::function<double(int,int)>);
 
 signals:
     void timeSourceChanged(TimeSource);
@@ -139,6 +141,7 @@ private:
 
     TimeSource m_timeSource=TimeSource::TIME_NONE;
     int m_fixedTime=0;
+    std::function<double(int,int)> m_timeFunction=[](int il, int xl){return 0.0;};
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
     AspectRatioDialog* aspectRatioDialog=nullptr;

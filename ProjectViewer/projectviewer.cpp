@@ -46,6 +46,8 @@
 #include<random>
 #include<limits>
 #include<memory>
+#include<functional>
+using namespace std::placeholders; // for _1, _2 etc.
 
 #include<projectgeometrydialog.h>
 #include<orientationdialog.h>
@@ -1546,9 +1548,12 @@ void ProjectViewer::displayVolumeRelativeSlice( const QString& name){
         gridView->setInlineDirection(m_project->inlineDirection());
         gridView->setCrosslineDirection(m_project->crosslineDirection());
 
+        viewer->setTimeSource(GridViewer::TimeSource::TIME_FUNCTION);
+        viewer->setTimeFunction(std::bind(&VolumeRelativeSliceSelector::timeAt, sliceSelector, _1, _2));
+
+
         viewer->setDispatcher(m_dispatcher);
 
-        viewer->setTimeSource(GridViewer::TimeSource::TIME_FIXED);
 
         connect( sliceSelector, SIGNAL(gridChanged(std::shared_ptr<Grid2D<float>>)),
                  viewer, SLOT(setGrid(std::shared_ptr<Grid2D<float>>)));

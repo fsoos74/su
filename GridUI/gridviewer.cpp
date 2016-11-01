@@ -215,6 +215,9 @@ void GridViewer::setFixedTime(int mills){
     emit fixedTimeChanged(mills);
 }
 
+void GridViewer::setTimeFunction(std::function<double (int, int)> f){
+    m_timeFunction=f;
+}
 
 void GridViewer::setDefaultColorTable(){
 
@@ -246,6 +249,9 @@ double GridViewer::pointTime( int iline, int xline ){
     }
     case TimeSource::TIME_FIXED:
         time=0.001*m_fixedTime;                       // convert to seconds
+        break;
+    case TimeSource::TIME_FUNCTION:
+        time=m_timeFunction(iline, xline);
         break;
     default:
         time=SelectionPoint::NO_TIME;

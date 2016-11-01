@@ -2,6 +2,7 @@
 #include "ui_volumerelativesliceselector.h"
 
 #include<QMessageBox>
+#include<selectionpoint.h>
 
 /* using reverse spinbox with internal negative values displayed positive for time.
  * This allows using cursor/arrow down for moving to greater times and thus deeper.
@@ -25,6 +26,18 @@ VolumeRelativeSliceSelector::~VolumeRelativeSliceSelector()
     delete ui;
 }
 
+double VolumeRelativeSliceSelector::timeAt( int iline, int xline){
+
+    if( !m_horizon ) return SelectionPoint::NO_TIME;
+
+    double t=m_horizon->valueAt(iline, xline);
+    if( t==m_horizon->NULL_VALUE) return SelectionPoint::NO_TIME;
+
+    t+=time();
+    t*=0.001;   // convert to seconds
+
+    return t;
+}
 
 int VolumeRelativeSliceSelector::time(){
 
@@ -44,7 +57,7 @@ int VolumeRelativeSliceSelector::timeStep(){
 QString VolumeRelativeSliceSelector::description(){
 
     QString descr=QString("%1 @%2").arg(m_volumeName).arg(m_horizonName);
-    if(time()>0){
+    if(time()>=0){
         descr+=QString(" +");
     }
     descr+=QString(" %1 ms").arg(time());
