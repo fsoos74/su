@@ -2,8 +2,11 @@
 
 #include "axxisorientation.h"
 #include<iostream>
+#include<QDir>
 
-XPRReader::XPRReader( AVOProject& project) : m_project( project )
+
+XPRReader::XPRReader( AVOProject& project, QString projectFilePath)
+    : m_project( project ), m_projectFilePath(projectFilePath)
 {
 }
 
@@ -21,7 +24,15 @@ bool XPRReader::read(QIODevice *device)
             }
             else{
                 QString projectDirectory=xml.readElementText();
-                //std::cout<<"PROJECT DIR = "<<projectDirectory.toStdString()<<std::endl;
+
+                if( QDir(projectDirectory).isRelative() ){
+
+                    QDir pdir=QFileInfo(m_projectFilePath).absoluteDir();
+
+                    projectDirectory=pdir.absoluteFilePath(projectDirectory);
+                }
+
+
                 try{
                     AVOProject tmp;
                     tmp.setProjectDirectory(projectDirectory);

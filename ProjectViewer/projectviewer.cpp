@@ -2262,7 +2262,7 @@ bool ProjectViewer::openProject(const QString &fileName){
     }
 
     std::shared_ptr<AVOProject> tmp(new AVOProject);
-    XPRReader reader(*tmp);
+    XPRReader reader(*tmp, fileName);
     if (!reader.read(&file)) {
         QMessageBox::warning(this, tr("Open Project"),
                              tr("Parse error in file %1:\n\n%2")

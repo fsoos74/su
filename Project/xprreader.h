@@ -9,7 +9,7 @@ class XPRReader
 {
 public:
 
-    XPRReader(AVOProject&);
+    XPRReader(AVOProject&, QString projectFilePath );
 
     bool read(QIODevice *device);
 
@@ -19,6 +19,8 @@ private:
 
     void readGeometry();
     void readOrientation();
+
+    QString m_projectFilePath;
 
     QXmlStreamReader xml;
     AVOProject& m_project;
