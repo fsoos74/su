@@ -5,6 +5,9 @@
 #include<QPointF>
 #include<cmath>
 
+#define _USE_MATH_DEFINES
+
+
 ProjectGeometry::ProjectGeometry()
 {
 
@@ -61,10 +64,13 @@ bool isValid( const ProjectGeometry& geom){
 // no ready yet, testing
 double ProjectGeometry::inlineAzimuth()const{
 
+    const double DEGREES_TO_RADIANS=57.29577951;        // visual studio sucks
+
     double dx=coordinates(1).x() - coordinates(0).x();
     double dy=coordinates(1).y() - coordinates(0).y();
 
-    return 180.*std::atan2(dx,dy)/M_PI;       // angle[degrees] to y axxis , counter clock wise, change???
+    //return 180.*std::atan2(dx,dy)/std::M_PI;       // angle[degrees] to y axxis , counter clock wise, change???
+    return DEGREES_TO_RADIANS*std::atan2(dx,dy);
 }
 
 bool ProjectGeometry::computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const{

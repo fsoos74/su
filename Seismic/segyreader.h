@@ -8,6 +8,7 @@
 #include<cstdio>
 #include<cstdint>
 #include<memory>
+#include<functional>
 
 #include<segy_header_def.h>
 #include<segy_text_header.h>

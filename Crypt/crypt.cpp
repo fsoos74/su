@@ -3,6 +3,7 @@
 #include<vector>
 #include<map>
 #include<cstdint>
+#include<cstdlib>
 #include<cstring>
 
 Crypt::Crypt()
@@ -13,9 +14,9 @@ Crypt::Crypt()
 namespace crypt{
 
 typedef uint16_t int_t;
-constexpr size_t BLOCK_SIZE=sizeof(int_t)*8;
-constexpr size_t BITS=BLOCK_SIZE;
-constexpr size_t BYTES=sizeof(int_t);
+const size_t BLOCK_SIZE=sizeof(int_t)*8;
+const size_t BITS=BLOCK_SIZE;
+const size_t BYTES=sizeof(int_t);
 
 
 std::map<size_t, size_t> swap_map{

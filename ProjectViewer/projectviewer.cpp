@@ -113,6 +113,7 @@ using namespace std::placeholders; // for _1, _2 etc.
 #ifdef USE_KEYLOCK_LICENSE
 #include<QApplication>
 #include<QTimer>
+#include<crypt.h>
 #include "keylokclass.h"
 #include "keylok.h"
 #endif
@@ -245,6 +246,72 @@ void ProjectViewer::on_checkLicense(){
 
 }
 
+
+license::LicenseInfo ProjectViewer::checkLicense(){
+
+    license::LicenseInfo info;
+    bool validLicense=false;
+
+    std::unique_ptr<CKeylok>  myCKeylok(new CKeylok);
+    validLicense=myCKeylok->CheckForKeyLok();
+
+    if( validLicense ){
+
+        myCKeylok->ReadAuthorization();
+        info.dongleSerialNumber=myCKeylok->GetSerialNumber();
+        info.majorNumber=myCKeylok->ReadMemory(license::MajorNumberAddress);
+        info.minorNumber=myCKeylok->ReadMemory(license::MinorNumberAddress);
+        info.productVersion=myCKeylok->ReadMemory(license::ProductVersionAddress);
+    }
+    else{
+        info.dongleSerialNumber=0;
+        info.majorNumber=0;
+        info.minorNumber=0;
+        info.productVersion=0;
+    }
+
+    if( info.productVersion<1 ){
+        validLicense=false;
+    }
+
+    if( validLicense ){
+
+        myCKeylok->CheckExpiration();
+        switch (myCKeylok->ReturnValue2)
+        {
+        case LEASEEXPIRED:
+            validLicense=false;
+            break;
+        case SYSDATESETBACK:
+            validLicense=false;
+            break;
+        case NOLEASEDATE:
+            validLicense=false;
+            break;
+        case LEASEDATEBAD:
+            validLicense=false;
+            break;
+        case LASTSYSDATECORRUPT:
+            validLicense=false;
+            break;
+        default:
+            unsigned DateRead = myCKeylok->GetExpiration();
+            info.expirationMonth=myCKeylok->GetExpMonth(DateRead);
+            info.expirationDay=myCKeylok->GetExpDay(DateRead);
+            info.expirationYear=myCKeylok->GetExpYear(DateRead);
+            break;
+        }
+    }
+
+    if( !validLicense){
+        seismic::SEGYReader::postReadFunc = crypt::decrypt;
+    }
+
+    return info;
+}
+
+
+/*
 license::LicenseInfo ProjectViewer::checkLicense(){
 
     license::LicenseInfo info;
@@ -306,6 +373,7 @@ license::LicenseInfo ProjectViewer::checkLicense(){
 
     return info;
 }
+*/
 #endif
 
 void ProjectViewer::closeEvent(QCloseEvent *)
@@ -386,6 +454,7 @@ void ProjectViewer::on_actionOpenProject_triggered()
     updateMenu();
     */
 }
+
 
 
 void ProjectViewer::on_actionCloseProject_triggered()
