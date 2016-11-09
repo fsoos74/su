@@ -1,7 +1,6 @@
 #ifndef SEGYREADER_H
 #define SEGYREADER_H
 
-#include<stdexcept>
 /*
 #include<iostream>
 #include<fstream>
@@ -19,6 +18,7 @@
 #include<gather.h>
 #include<segyinfo.h>
 #include<segysampleformat.h>
+#include<segyformaterror.h>
 
 // msvc has no ssize_t!
 #if defined(_MSC_VER)
@@ -38,18 +38,14 @@ public:
 
     using sample_t=float;
 
-    struct FormatError:public std::runtime_error{
-        FormatError( const std::string& msg):runtime_error(msg){}
-    };
-
 
     static_assert( sizeof(sample_t)==4, "Sample_type must be of 4 bytes size" );
 
     SEGYReader( const std::string& name,
                 const SEGYInfo& info,
-              size_t raw_binary_header_size=400,
-              size_t raw_trace_header_size=240,
-              size_t max_samples_per_trace=65535);
+                size_t raw_binary_header_size=400,
+                size_t raw_trace_header_size=240,
+                size_t max_samples_per_trace=65535);
 
     const std::vector<SEGYTextHeader>& textHeaders()const{
         return m_text_headers;
@@ -96,6 +92,9 @@ public:
         return m_raw_trace_header_buf;
     }
 
+    // switch this to crypt::decrypt when in demo mode
+    static std::function<void(void*,size_t)> postReadFunc;
+
 private:
 
     ssize_t bytes_per_trace()const{
@@ -115,6 +114,8 @@ private:
     //std::ifstream                		m_is;
     FILE*                               m_ifile;
     SEGYInfo                            m_info;
+
+    std::function<void(void*, size_t)>  m_postReadFunc;
 
     std::vector<char>                   m_raw_binary_header_buf;
     std::vector<char>                   m_raw_trace_header_buf;

@@ -14,6 +14,9 @@
 
 namespace seismic{
 
+std::function<void(void*,size_t)> SEGYReader::postReadFunc=[](void*, size_t){return;};            // default do nothing
+
+
 void convert_ibm_to_samples(  char* src, Trace::Samples& dest, size_t n, bool chend);
 void convert_ieee_to_samples( char* src, Trace::Samples& dest, size_t n, bool chend);
 void convert_int4_to_samples( char* src, Trace::Samples& dest, size_t n, bool chend);
@@ -70,7 +73,7 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
                 th[def.name]=HeaderValue(HeaderValue::uint_type( u ) );
             }
             else{
-                throw FormatError("SEGY_UINT32 values can only be type plain!");
+                throw SEGYFormatError("SEGY_UINT32 values can only be type plain!");
             }
             break;
         }
@@ -91,12 +94,12 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
                 th[def.name]=HeaderValue(HeaderValue::float_type( f*m_info.scalco() ) );
             }
             else{
-                throw FormatError("SEGY_FLOAT unhandled conv type!");
+                throw SEGYFormatError("SEGY_FLOAT unhandled conv type!");
             }
             break;
         }
         default:
-            throw FormatError("Unsupported type in convert_raw_header!");
+            throw SEGYFormatError("Unsupported type in convert_raw_header!");
             break;
         } // switch
 
@@ -117,9 +120,10 @@ SEGYReader::SEGYReader( const std::string& name,
         m_info(info),
         m_raw_binary_header_buf(raw_binary_header_size),
         m_raw_trace_header_buf(raw_trace_header_size),
-        m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t))
+        m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t)),
+        m_postReadFunc(postReadFunc)
 {
-    if( !m_ifile) throw( FormatError("Open file failed!"));
+    if( !m_ifile) throw( SEGYFormatError("Open file failed!"));
     estimate_filesize();
     read_leading_headers();
     m_trace_count=( m_filesize - m_first_trace_pos ) / bytes_per_trace();
@@ -199,23 +203,26 @@ void SEGYReader::read_leading_headers(){
     SEGYTextHeader text_hdr;
 
     if(fread(&text_hdr[0], text_hdr.size(), 1, m_ifile)!=1){
-        throw(FormatError("Reading mandatory ebcdic header failed!"));
+        throw(SEGYFormatError("Reading mandatory ebcdic header failed!"));
     }
+    m_postReadFunc( &text_hdr[0], text_hdr.size() );
     m_text_headers.push_back(text_hdr);
 
     // read binary header
     if(fread(&m_raw_binary_header_buf[0], m_raw_binary_header_buf.size(), 1, m_ifile)!=1){
-        throw(FormatError("Reading binary header failed!"));
+        throw(SEGYFormatError("Reading binary header failed!"));
     }
+    m_postReadFunc( &m_raw_binary_header_buf[0], m_raw_binary_header_buf.size() );
     convert_binary_header();
 
     // read optional text headers as specified in binary header
     int next=m_binary_header["next"].intValue();
-    if( next<0 ) throw FormatError("variable number of extended textual headers is not implemented yet!");
+    if( next<0 ) throw SEGYFormatError("variable number of extended textual headers is not implemented yet!");
     for( int i=0; i<next; i++){
         if( fread(&text_hdr[0], text_hdr.size(), 1, m_ifile)!=1){
-            throw(FormatError("Reading mandatory ebcdic header failed!"));
+            throw(SEGYFormatError("Reading mandatory ebcdic header failed!"));
         }
+        m_postReadFunc(&text_hdr[0], text_hdr.size());
         m_text_headers.push_back(text_hdr);
     }
 
@@ -229,7 +236,7 @@ void SEGYReader::read_leading_headers(){
 void SEGYReader::seek_trace(const ssize_t& n){
 
     if( n>=m_trace_count ){
-        throw FormatError("Trying to access trace after eof!");
+        throw SEGYFormatError("Trying to access trace after eof!");
     }
     ssize_t pos=m_first_trace_pos + n * bytes_per_trace() ;
     fseek( m_ifile, pos, SEEK_SET);
@@ -242,13 +249,14 @@ void SEGYReader::seek_trace(const ssize_t& n){
 Header SEGYReader::read_trace_header(){
 
     if(!m_is_next_trace_header){
-        throw( FormatError("Attempting to read trace header from illegal position!"));
+        throw( SEGYFormatError("Attempting to read trace header from illegal position!"));
     }
 
 
     if(fread(&m_raw_trace_header_buf[0], m_raw_trace_header_buf.size(), 1, m_ifile)!=1){
-        throw(FormatError("Reading trace header failed!"));
+        throw(SEGYFormatError("Reading trace header failed!"));
     }
+    m_postReadFunc(&m_raw_trace_header_buf[0], m_raw_trace_header_buf.size());
     convert_trace_header();
 
     m_current_position=ftell(m_ifile);
@@ -261,13 +269,15 @@ Header SEGYReader::read_trace_header(){
 void SEGYReader::read_samples(){
 
     if(m_is_next_trace_header){
-        throw( FormatError("Attempting to read samples from illegal position!"));
+        throw( SEGYFormatError("Attempting to read samples from illegal position!"));
     }
 
     ssize_t nbytes=m_bytes_per_sample * m_nt;
     if( fread( &m_raw_samples_buf[0], nbytes, 1, m_ifile )!=1){
-        throw FormatError("Reading samples failed!");
+        throw SEGYFormatError("Reading samples failed!");
     }
+    //don't decrypt samples as they are not encrypted, only  headers are
+    //m_postReadFunc(&m_raw_samples_buf[0], nbytes);
     m_current_position=ftell(m_ifile);
 }
 
@@ -279,7 +289,7 @@ void SEGYReader::convert_raw_samples( Trace& trc){
     case SEGYSampleFormat::INT2: convert_int2_to_samples( &m_raw_samples_buf[0], trc.samples(), m_nt, m_info.isSwap());break;
     case SEGYSampleFormat::INT1: convert_int1_to_samples( &m_raw_samples_buf[0], trc.samples(), m_nt, m_info.isSwap());break;
     case SEGYSampleFormat::FIXP: convert_fixp_to_samples( &m_raw_samples_buf[0], trc.samples(), m_nt, m_info.isSwap());break;
-    default: throw FormatError("Unsupported sample format code!");break;
+    default: throw SEGYFormatError("Unsupported sample format code!");break;
     }
 }
 
@@ -313,7 +323,7 @@ std::shared_ptr<Gather> SEGYReader::read_gather( const std::string& key, const s
 
     Header firstHeader=gather->front().header();
     Header::iterator it=firstHeader.find(key);
-    if( it==firstHeader.end()) throw FormatError("Gather key does not exist!!!");
+    if( it==firstHeader.end()) throw SEGYFormatError("Gather key does not exist!!!");
     HeaderValue keyValue=it->second;
 
     while( m_cur_trace<m_trace_count && gather->size()<max_traces){
@@ -419,7 +429,7 @@ void convert_int1_to_samples( char* rawbuf, Trace::Samples& samples, size_t n, b
 }
 
 void convert_fixp_to_samples( char* rawbuf, Trace::Samples& dest, size_t n, bool chend){
-    throw SEGYReader::FormatError("NOT IMPLEMENTED: convert_fixp_to_samples!");
+    throw SEGYFormatError("NOT IMPLEMENTED: convert_fixp_to_samples!");
 }
 
 }

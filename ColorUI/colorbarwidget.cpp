@@ -82,6 +82,17 @@ void ColorBarWidget::setRange(std::pair<double, double> r){
     emit rangeChanged(r);
 }
 
+void ColorBarWidget::setPrecision(int p){
+
+    if( p==m_precision) return;
+
+    m_precision=p;
+
+    update();
+
+    emit precisionChanged(p);
+}
+
 void ColorBarWidget::setDisplayIndicator(bool on){
 
     if( on==m_displayIndicator ) return;
@@ -133,7 +144,7 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
         if(absRange>10){
             value=std::round(value);
         }
-        coordAndLabel[i]=std::pair<int, QString>( y, QString::number(value));
+        coordAndLabel[i]=std::pair<int, QString>( y, QString::number(value, 'g', m_precision));   // XXX adjust number of digits!!!
     }
 
     // determine maximum text width
@@ -143,11 +154,10 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
         if( width>maxWidth) maxWidth=width;
     }
 
-    // adjust width if too small
-    maxWidth+=BOX_WIDTH + label_size.height() + 10;
-    if( width()<maxWidth){
-        setFixedWidth(maxWidth);
-    }
+    // adjust widget width
+    maxWidth+=BOX_WIDTH + label_size.width() + 20;
+    setFixedWidth(maxWidth);
+
 
     // draw label
     painter.save();

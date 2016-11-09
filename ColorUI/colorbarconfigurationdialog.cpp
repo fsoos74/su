@@ -17,7 +17,8 @@ ColorBarConfigurationDialog::ColorBarConfigurationDialog(QWidget *parent) :
 
     connect( ui->leScaleMinimum, SIGNAL(returnPressed()), this, SLOT(applyRange()));
     connect( ui->leScaleMaximum, SIGNAL(returnPressed()), this, SLOT(applyRange()));
-    connect( ui->sbScaleSteps, SIGNAL(valueChanged(int)), this, SLOT(applySteps()));
+    connect( ui->sbScaleSteps, SIGNAL(valueChanged(int)), this, SIGNAL(scaleStepsChanged(int)) );
+    connect( ui->sbPrecision, SIGNAL(valueChanged(int)), this, SIGNAL(precisionChanged(int)) );
 }
 
 ColorBarConfigurationDialog::~ColorBarConfigurationDialog()
@@ -36,6 +37,9 @@ int ColorBarConfigurationDialog::scaleSteps()const{
     return ui->sbScaleSteps->value();
 }
 
+int ColorBarConfigurationDialog::precision()const{
+    return ui->sbPrecision->value();
+}
 
 void ColorBarConfigurationDialog::setScaleRange(std::pair<double, double> r){
 
@@ -52,15 +56,16 @@ void ColorBarConfigurationDialog::setScaleSteps(int n){
    ui->sbScaleSteps->setValue(n);   // spinbox will only emit event upon change so no special code necessary
 }
 
+void ColorBarConfigurationDialog::setPrecision(int p){
+
+    ui->sbPrecision->setValue(p);
+}
+
 void ColorBarConfigurationDialog::applyRange(){
 
     emit scaleRangeChanged(scaleRange() );
 }
 
-void ColorBarConfigurationDialog::applySteps(){
-
-    emit scaleStepsChanged(scaleSteps());
-}
 
 void ColorBarConfigurationDialog::keyPressEvent(QKeyEvent *ev){
     if( ev->key() == Qt::Key_Return){

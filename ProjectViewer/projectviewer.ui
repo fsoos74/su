@@ -423,7 +423,7 @@
   </action>
   <action name="action_Geometry">
    <property name="text">
-    <string>&amp;Geometry</string>
+    <string>Edit &amp;Geometry</string>
    </property>
   </action>
   <action name="action_About">

@@ -1,6 +1,6 @@
 #include "segysampleformat.h"
 
-#include<stdexcept>
+#include<segyformaterror.h>
 
 namespace seismic{
 
@@ -17,7 +17,7 @@ const QString strFIXP="FIXP";
 QString toQString( SEGYSampleFormat f ){
 
     if( !SampleFormatInfo.contains(f)){
-        throw std::runtime_error("Invalid sample format in toQString( SEGYSampleFormat f )");
+        throw SEGYFormatError("Invalid sample format in toQString( SEGYSampleFormat f )");
     }
 
     return SampleFormatInfo.value(f).name;
@@ -31,14 +31,14 @@ SEGYSampleFormat toSampleFormat( const QString& s){
         }
     }
 
-    throw std::runtime_error("Invalid name in toSampleFormat( const QString& s)");
+    throw SEGYFormatError("Invalid name in toSampleFormat( const QString& s)");
 }
 
 
 std::int16_t toInt(SEGYSampleFormat f){
 
     if( !SampleFormatInfo.contains(f)){
-        throw std::runtime_error("Invalid sample format in toInt(SEGYSampleFormat f)");
+        throw SEGYFormatError("Invalid sample format in toInt(SEGYSampleFormat f)");
     }
 
     return SampleFormatInfo.value(f).code;
@@ -52,14 +52,14 @@ SEGYSampleFormat toSampleFormat(int16_t i){
         }
     }
 
-    throw std::runtime_error("Invalid code in toSampleFormat( int16_t)");
+    throw SEGYFormatError("Invalid code in toSampleFormat( int16_t)");
 }
 
 
 size_t bytesPerSample( SEGYSampleFormat f){
 
     if( !SampleFormatInfo.contains(f)){
-        throw std::runtime_error("Invalid sample format in bytesPerSample( SEGYSampleFormat f)");
+        throw SEGYFormatError("Invalid sample format in bytesPerSample( SEGYSampleFormat f)");
     }
 
     return SampleFormatInfo.value(f).size;

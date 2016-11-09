@@ -58,6 +58,15 @@ bool isValid( const ProjectGeometry& geom){
 }
 
 
+// no ready yet, testing
+double ProjectGeometry::inlineAzimuth()const{
+
+    double dx=coordinates(1).x() - coordinates(0).x();
+    double dy=coordinates(1).y() - coordinates(0).y();
+
+    return 180.*std::atan2(dx,dy)/M_PI;       // angle[degrees] to y axxis , counter clock wise, change???
+}
+
 bool ProjectGeometry::computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const{
 
     const qreal EPS=0.001;

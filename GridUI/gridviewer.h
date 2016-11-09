@@ -119,6 +119,8 @@ private slots:
 
 private:
 
+    void createDockWidgets();
+
     void populateWindowMenu();
 
     double pointTime( int iline, int xline );
@@ -134,7 +136,8 @@ private:
 
     Ui::GridViewer *ui;
     GridView* m_gridView;
-    ColorBarWidget* colorBar;
+    ColorBarWidget* m_colorBar=nullptr;
+    QDockWidget* m_colorBarDock=nullptr;
 
     std::shared_ptr<Grid2D<float> > m_grid;
     std::shared_ptr<AVOProject> m_project;

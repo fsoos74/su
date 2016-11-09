@@ -69,6 +69,24 @@ GridView::GridView(QWidget* parent):QScrollArea(parent),
 GridView::~GridView(){
 }
 
+
+void GridView::setCornerWidget(QWidget * w){
+
+    // this is the parent, ie responsible for cornerwidgets
+    // delete old widget
+    if( m_cornerWidget){
+        m_cornerWidget->deleteLater();
+        m_cornerWidget=nullptr;
+    }
+
+    if( w ){
+        w->setParent(this);
+        m_cornerWidget=w;
+    }
+
+    updateLayout();
+}
+
 void GridView::setGrid( std::shared_ptr<Grid2D<float> > g){
     //if( g==m_grid) return;
 
@@ -555,6 +573,10 @@ void GridView::updateLayout(){
 
     m_leftRuler->setGeometry( 0, viewport()->y(), RULER_WIDTH, viewport()->height() );
     m_topRuler->setGeometry( viewport()->x(), 0, viewport()->width(), RULER_HEIGHT );
+
+    if( m_cornerWidget ){
+        m_cornerWidget->setGeometry(0,0,RULER_WIDTH, RULER_HEIGHT);
+    }
 
     setUpdatesEnabled( true );
 }

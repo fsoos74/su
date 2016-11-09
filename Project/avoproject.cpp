@@ -520,7 +520,16 @@ std::shared_ptr<SeismicDatasetReader> AVOProject::openSeismicDataset(const QStri
     //XDIReader datasetInfoReader(datasetInfo);
     //if( !datasetInfoReader.read(&datasetInfoFile)) return ptr;  // return nullptr on error
 
-    return std::shared_ptr<SeismicDatasetReader>( new SeismicDatasetReader(datasetInfo));
+    std::shared_ptr<SeismicDatasetReader> reader;
+
+    try{
+        reader=std::shared_ptr<SeismicDatasetReader>( new SeismicDatasetReader(datasetInfo));
+    }
+    catch(seismic::SEGYFormatError& err){
+        std::cerr<<"Could not open SEGYReader: "<<err.what()<<std::endl;
+    };
+
+    return reader;
 }
 
 /*

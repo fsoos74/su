@@ -37,6 +37,10 @@ public:
         return m_range;
     }
 
+    int precision()const{
+        return m_precision;
+    }
+
     bool isDisplayIndicator()const{
         return m_displayIndicator;
     }
@@ -52,6 +56,7 @@ signals:
     void labelChanged( QString );
     void stepsChanged(int);
     void rangeChanged(std::pair<double,double>);
+    void precisionChanged(int);
     void displayIndicatorChanged(bool);
     void indicatorValueChanged(double);
 
@@ -63,6 +68,7 @@ public slots:
     void setLabel( const QString&);
     void setSteps(int);
     void setRange(std::pair<double,double>);
+    void setPrecision(int);
     void setDisplayIndicator(bool);
     void setIndicatorValue(double);
 
@@ -86,6 +92,7 @@ private:
      const int PAD_Y=10;
 
     int m_steps=10;
+    int m_precision=4;
     std::pair<double,double> m_range;
     QVector<double> m_ticks;
     QImage m_image;

@@ -29,6 +29,8 @@ public:
 
     bool computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const;
 
+    double inlineAzimuth()const;
+
 private:
 
     static const int N_POINTS=3;

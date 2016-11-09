@@ -20,15 +20,14 @@ public:
 
 public slots:
 
+    void setEditColorTableAction(QAction* action);
     void setRange(std::pair<double,double>);
     void setOpacity( int );
-    void setColors( QVector<QRgb>);
 
 signals:
 
     void rangeChanged( std::pair<double, double>);
     void opacityChanged( int );
-    void colorsChanged( QVector<QRgb>);
 
 protected:
     // override this to keep return pressed in line edit move up to parent
@@ -44,7 +43,7 @@ private slots:
 private:
     Ui::VolumeDisplayOptionsDialog *ui;
 
-    QVector<QRgb> m_colors;
+    QAction* m_editColorTableAction=nullptr;
 };
 
 #endif // VOLUMEDISPLAYOPTIONSDIALOG_H

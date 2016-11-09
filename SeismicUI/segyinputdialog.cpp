@@ -392,7 +392,7 @@ void SegyInputDialog::on_btScan_clicked()
         ui->leMaxXline->setText( QString::number(max_xline.intValue()));
 
     }
-    catch(seismic::SEGYReader::FormatError& err){
+    catch(seismic::SEGYFormatError& err){
         QMessageBox::critical(this, "Scanning SEGY-file", QString("Exception occured:\n")+QString(err.what()));
         destroyReader();
     }
@@ -603,7 +603,7 @@ void SegyInputDialog::onTraceHeaderDialogFinished(){
 
         m_TraceHeaderDialog->setWindowTitle( QString( "Trace Header of \"") + ui->leFilename->text() + QString("\""));
     }
-    catch( seismic::SEGYReader::FormatError& err ){
+    catch( seismic::SEGYFormatError& err ){
         QMessageBox::critical(this, "Scanning SEGY-file", QString("Exception occured:\n")+QString(err.what()));
         destroyReader();
     }
@@ -865,7 +865,7 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
         m_HeaderScanDialog->setModel(model);
         m_HeaderScanDialog->show();
     }
-    catch(seismic::SEGYReader::FormatError& err){
+    catch(seismic::SEGYFormatError& err){
         QMessageBox::critical(this, "Scanning SEGY-file", QString("Exception occured:\n")+QString(err.what()));
         destroyReader();
     }

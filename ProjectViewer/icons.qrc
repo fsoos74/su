@@ -42,6 +42,7 @@
         <file>../images/cross-cursor-select-24x24.png</file>
         <file>../images/cross-cursor-zoom-24x24.png</file>
         <file>../images/select-polygon-32x32.png</file>
+        <file>../images/volume-colortable-icon-32x32.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>

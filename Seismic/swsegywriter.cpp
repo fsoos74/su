@@ -29,7 +29,7 @@ void SWSEGYWriter::process_raw_binary_header(std::vector<char>& buf){
                               [](SEGYHeaderWordDef def){return def.name=="format";}
                               );
     if( fmtdef==info().binaryHeaderDef().end()){
-        throw FormatError("No format given in SWSEGY binary header definition!");
+        throw SEGYFormatError("No format given in SWSEGY binary header definition!");
     }
 
     std::cout<<"Writing "<<fmt<<" to "<<fmtdef->pos-1<<std::endl<<std::flush;

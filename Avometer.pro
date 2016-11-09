@@ -17,5 +17,6 @@ SUBDIRS += \
     GridUI \
     SeismicUI \
     ProzessUI \
-    ProjectViewer
+    ProjectViewer \
+    Crypt
 

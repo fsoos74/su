@@ -421,6 +421,30 @@ void GatherViewer::on_actionDensity_Color_Table_triggered()
 }
 
 
+void GatherViewer::on_actionVolume_Color_Table_triggered()
+{
+    ColorTable* colorTable=gatherView->gatherLabel()->volumeColorTable();
+
+    Q_ASSERT(colorTable);
+
+    QVector<QRgb> oldColors=colorTable->colors();
+
+    ColorTableDialog* dlg=new ColorTableDialog( colorTable->colors() );
+
+    dlg->setWindowTitle(tr("Select Volume Color Table"));
+
+    connect( dlg, SIGNAL(colorsChanged(QVector<QRgb>)), colorTable , SLOT(setColors(QVector<QRgb>)) );
+
+    if( dlg->exec()==QDialog::Accepted ){
+        colorTable->setColors(dlg->colors());
+    }
+    else{
+        colorTable->setColors(oldColors);
+    }
+
+    delete dlg;
+}
+
 void GatherViewer::on_action_Trace_Options_triggered()
 {
     if( !m_traceDisplayOptionsDialog){
@@ -465,6 +489,7 @@ void GatherViewer::on_actionVolume_Options_triggered()
     if( !m_volumeDisplayOptionsDialog){
         m_volumeDisplayOptionsDialog=new VolumeDisplayOptionsDialog(this);
         m_volumeDisplayOptionsDialog->setWindowTitle("Configure Volume Overlay");
+        m_volumeDisplayOptionsDialog->setEditColorTableAction(ui->actionVolume_Color_Table);
         if( gatherView->volume()){
             auto range=gatherView->volume()->valueRange();
             std::pair<double, double> drange(range.first, range.second);
@@ -473,13 +498,10 @@ void GatherViewer::on_actionVolume_Options_triggered()
 
         GatherLabel* gatherLabel=gatherView->gatherLabel();
 
-        m_volumeDisplayOptionsDialog->setColors(gatherLabel->volumeColorTable()->colors() );
         connect( m_volumeDisplayOptionsDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
                  gatherLabel->volumeColorTable(), SLOT(setRange(std::pair<double,double>)) );
         connect( m_volumeDisplayOptionsDialog, SIGNAL(opacityChanged(int)),
                  gatherLabel, SLOT(setVolumeOpacity(int)) );
-        connect( m_volumeDisplayOptionsDialog, SIGNAL( colorsChanged(QVector<QRgb>)),
-                 gatherLabel->volumeColorTable(), SLOT(setColors(QVector<QRgb>)) );
     }
 
     m_volumeDisplayOptionsDialog->show();

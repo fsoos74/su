@@ -337,13 +337,19 @@ public:
         return m_leftRuler;
     }
 
-     ViewLabel* label()const{ return m_label;}
+    QWidget* cornerWidget(){
+        return m_cornerWidget;
+    }
+
+    ViewLabel* label()const{ return m_label;}
 
      MouseMode mouseMode()const{
          return m_mouseMode;
      }
 
      qreal computeILXLBasedAspectRatio()const;
+
+     void setCornerWidget(QWidget*);
 
 signals:
 
@@ -428,6 +434,7 @@ private:
     ViewLabel* m_label=nullptr;
     Ruler* m_leftRuler=nullptr;
     Ruler* m_topRuler=nullptr;
+    QWidget* m_cornerWidget=nullptr;
     std::shared_ptr<Grid2D<float> > m_grid;
     bool m_fixedAspectRatio=true;
     qreal m_aspectRatio=1.; // w/h

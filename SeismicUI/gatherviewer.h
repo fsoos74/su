@@ -137,6 +137,8 @@ private slots:
 
     void on_actionSet_Scale_triggered();
 
+    void on_actionVolume_Color_Table_triggered();
+
 private:
 
     void saveSettings();

@@ -59,7 +59,8 @@ SOURCES += main.cpp\
     edittrenddialog.cpp \
     seismicsliceselector.cpp \
     volumesliceselector.cpp \
-    volumerelativesliceselector.cpp
+    volumerelativesliceselector.cpp \
+    compasswidget.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -82,7 +83,8 @@ HEADERS  += projectviewer.h \
     edittrenddialog.h \
     seismicsliceselector.h \
     volumesliceselector.h \
-    volumerelativesliceselector.h
+    volumerelativesliceselector.h \
+    compasswidget.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -215,6 +217,15 @@ else:unix: LIBS += -L$$OUT_PWD/../utilUI/ -lutilUI
 
 INCLUDEPATH += $$PWD/../utilUI
 DEPENDPATH += $$PWD/../utilUI
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Crypt/release/ -lCrypt
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Crypt/debug/ -lCrypt
+else:unix: LIBS += -L$$OUT_PWD/../Crypt/ -lCrypt
+
+INCLUDEPATH += $$PWD/../Crypt
+DEPENDPATH += $$PWD/../Crypt
+
 
 
 # additional libraries for use of dongle:

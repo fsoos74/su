@@ -17,20 +17,22 @@ public:
 
     std::pair<double, double> scaleRange()const;
     int scaleSteps()const;
+    int precision()const;
 
 public slots:
 
     void setScaleRange(std::pair<double,double>);
     void setScaleSteps( int );
+    void setPrecision(int);
 
 signals:
 
     void scaleRangeChanged( std::pair<double, double>);
     void scaleStepsChanged(int);
+    void precisionChanged(int);
 
 private slots:
     void applyRange();
-    void applySteps();
 
 protected:
     // override this to keep return pressed in line edit move up to parent

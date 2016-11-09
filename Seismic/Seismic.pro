@@ -28,7 +28,8 @@ SOURCES += seismic.cpp \
     xsireader.cpp \
     segywriter.cpp \
     seis_bits.cpp \
-    swsegywriter.cpp
+    swsegywriter.cpp \
+    segyformaterror.cpp
 
 HEADERS += seismic.h\
         seismic_global.h \
@@ -50,7 +51,8 @@ HEADERS += seismic.h\
     xsireader.h \
     segywriter.h \
     seisware_header_def.h \
-    swsegywriter.h
+    swsegywriter.h \
+    segyformaterror.h
 
 unix {
     target.path = /usr/lib

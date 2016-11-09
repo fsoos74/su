@@ -29,22 +29,6 @@
       </property>
      </widget>
     </item>
-    <item>
-     <widget class="ColorBarWidget" name="colorBar" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>100</width>
-        <height>256</height>
-       </size>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -377,12 +361,6 @@
    <class>GridView</class>
    <extends>QWidget</extends>
    <header location="global">gridview.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>ColorBarWidget</class>
-   <extends>QWidget</extends>
-   <header location="global">colorbarwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

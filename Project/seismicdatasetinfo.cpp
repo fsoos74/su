@@ -28,6 +28,7 @@ void SeismicDatasetInfo::makeRelative( const QString& dir){
     }
 }
 
+
 void SeismicDatasetInfo::makeAbsolute( const QString& dir){
 
     // make abolute paths relative to dir
@@ -45,6 +46,7 @@ void SeismicDatasetInfo::makeAbsolute( const QString& dir){
         QString s=QDir(dir).absoluteFilePath(path());
         setPath(s);
     }
+
 }
 
 

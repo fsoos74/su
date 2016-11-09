@@ -33,7 +33,6 @@ GridViewer::GridViewer(QWidget *parent) :
     setAttribute( Qt::WA_DeleteOnClose);
 
     m_gridView = ui->gridView;//new GridView(this);
-    colorBar=ui->colorBar;
     m_gridView->setBackgroundRole(QPalette::Dark);
     //setCentralWidget(gridView);
 
@@ -71,16 +70,33 @@ GridViewer::GridViewer(QWidget *parent) :
     ui->mouseToolBar->insertWidget( ui->zoomInAct, mm);
     //insertToolBar( ui->mainToolBar, mouseToolBar);
 
+    createDockWidgets();
     populateWindowMenu();
 }
 
 void GridViewer::populateWindowMenu(){
 
+    ui->menuWindow->addAction(m_colorBarDock->toggleViewAction());
     ui->menuWindow->addAction( ui->mouseToolBar->toggleViewAction());
     ui->menuWindow->addAction( ui->zoomToolBar->toggleViewAction());
     ui->menuWindow->addAction( ui->mainToolBar->toggleViewAction());
     ui->menuWindow->addAction( ui->navigationToolBar->toggleViewAction());
 }
+
+void GridViewer::createDockWidgets(){
+
+    m_colorBarDock = new QDockWidget(tr("Colorbar"), this);
+    m_colorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_colorBar=new ColorBarWidget(m_colorBarDock);
+    m_colorBar->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
+    m_colorBarDock->setContentsMargins(10, 5, 10, 5);
+    m_colorBarDock->setWidget(m_colorBar);
+    addDockWidget(Qt::RightDockWidgetArea, m_colorBarDock);
+    m_colorBar->setColorTable( gridView()->colorTable() );
+
+    //m_attributeColorBarDock->close();
+}
+
 
 GridViewer::~GridViewer()
 {
@@ -225,8 +241,7 @@ void GridViewer::setDefaultColorTable(){
 
 
     gridView()->colorTable()->setColors(baseColors);
-    colorBar->setColorTable(gridView()->colorTable());
-
+//    m_colorBar->setColorTable(gridView()->colorTable()); // this is done in createdockwidgets, before colorbar object does not exist
 }
 
 double GridViewer::pointTime( int iline, int xline ){
@@ -399,11 +414,11 @@ void GridViewer::on_actionSetup_Contours_triggered()
         isoLineDialog->setLast(range.second);
         isoLineDialog->setLineColor(gridView()->viewLabel()->isoLineColor());
         isoLineDialog->setLineWidth(gridView()->viewLabel()->isoLineWidth());
-        isoLineDialog->setColorBarSteps(colorBar->ticks());
+        isoLineDialog->setColorBarSteps(m_colorBar->ticks());
         connect( isoLineDialog, SIGNAL( lineColorChanged(QColor)), gridView()->label(), SLOT(setIsoLineColor(QColor)));
         connect( isoLineDialog, SIGNAL( lineWidthChanged(int)), gridView()->label(), SLOT( setIsoLineWidth(int)));
         connect( isoLineDialog, SIGNAL( contoursChanged(const QVector<double>&)), gridView(), SLOT( setIsoLineValues( const QVector<double>&) ));
-        connect( colorBar, SIGNAL(ticksChanged( const QVector<double>&)), isoLineDialog, SLOT(setColorBarSteps(QVector<double>)) );
+        connect( m_colorBar, SIGNAL(ticksChanged( const QVector<double>&)), isoLineDialog, SLOT(setColorBarSteps(QVector<double>)) );
     }
 
     isoLineDialog->show();
@@ -504,13 +519,17 @@ void GridViewer::on_actionConfigure_Colorbar_triggered()
     if( !colorBarConfigurationDialog){
         colorBarConfigurationDialog=new ColorBarConfigurationDialog(this);
         colorBarConfigurationDialog->setWindowTitle(tr("Configure Colorbar"));
-        colorBarConfigurationDialog->setScaleRange(ui->colorBar->range());
+        colorBarConfigurationDialog->setScaleRange(m_colorBar->range());
+        colorBarConfigurationDialog->setScaleSteps(m_colorBar->steps());
+        colorBarConfigurationDialog->setPrecision(m_colorBar->precision());
 
-        colorBarConfigurationDialog->setScaleSteps(ui->colorBar->steps());
         connect(colorBarConfigurationDialog, SIGNAL(scaleRangeChanged(std::pair<double,double>)),
-                                                    ui->colorBar, SLOT(setRange(std::pair<double,double>)));
+                                                    m_colorBar, SLOT(setRange(std::pair<double,double>)));
         connect(colorBarConfigurationDialog, SIGNAL(scaleStepsChanged(int)),
-                ui->colorBar, SLOT(setSteps(int)));
+                m_colorBar, SLOT(setSteps(int)));
+
+        connect(colorBarConfigurationDialog, SIGNAL(precisionChanged(int)),
+                m_colorBar, SLOT(setPrecision(int)) );
 
         connect( gridView()->colorTable(), SIGNAL(rangeChanged(std::pair<double,double>)),
                  colorBarConfigurationDialog, SLOT(setScaleRange(std::pair<double,double>) ) );    // update dialog if range is changed
@@ -615,6 +634,7 @@ void GridViewer::saveSettings(){
 
      settings.sync();
 }
+
 
 
 void GridViewer::loadSettings(){

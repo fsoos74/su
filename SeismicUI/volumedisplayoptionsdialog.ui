@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>195</width>
-    <height>211</height>
+    <height>214</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -64,7 +64,7 @@
        </property>
        <property name="icon">
         <iconset resource="../ProjectViewer/icons.qrc">
-         <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
+         <normaloff>:/icons/images/volume-colortable-icon-32x32.png</normaloff>:/icons/images/volume-colortable-icon-32x32.png</iconset>
        </property>
        <property name="iconSize">
         <size>

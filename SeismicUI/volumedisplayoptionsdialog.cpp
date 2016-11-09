@@ -39,6 +39,11 @@ int VolumeDisplayOptionsDialog::opacity(){
     return ui->sbOpacity->value();
 }
 
+void VolumeDisplayOptionsDialog::setEditColorTableAction(QAction* action){
+
+    m_editColorTableAction=action;
+}
+
 void VolumeDisplayOptionsDialog::setRange(std::pair<double, double> r){
 
  if( r==range() ) return;
@@ -55,11 +60,6 @@ void VolumeDisplayOptionsDialog::setOpacity(int o){
     ui->sbOpacity->setValue(o);
 
     emit opacityChanged(o);
-}
-
-void VolumeDisplayOptionsDialog::setColors(QVector<QRgb> cols){
-
-    m_colors=cols;
 }
 
 void VolumeDisplayOptionsDialog::applyRange(){
@@ -79,13 +79,7 @@ void VolumeDisplayOptionsDialog::keyPressEvent(QKeyEvent *ev){
 
 void VolumeDisplayOptionsDialog::on_pbColorTable_clicked()
 {
-    QVector<QRgb> oldColors=m_colors;
-
-    ColorTableDialog dlg( oldColors);
-
-    dlg.setWindowTitle(tr("Select Volume Color Table"));
-    if( dlg.exec()==QDialog::Accepted ){
-        m_colors=dlg.colors();
-        emit colorsChanged(m_colors);
+    if(m_editColorTableAction){
+        m_editColorTableAction->trigger();
     }
 }

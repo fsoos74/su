@@ -22,6 +22,9 @@ void convert_int1_samples( char*  rawbuf, const Trace::Samples& samples, size_t 
 void convert_fixp_samples( char*  rawbuf, const Trace::Samples& samples, size_t n, bool swap);
 
 
+std::function<void(void*, size_t)> SEGYWriter::preWriteFunc=[](void*, size_t){return;}; // do nothing as default
+
+
 void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, const std::vector<SEGYHeaderWordDef>& defs ){
 
     for( auto def : defs ){
@@ -73,7 +76,7 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
                 u=static_cast<std::uint8_t>(value.uintValue());
             }
             else{
-                throw FormatError("SEGY_UINT8 values can only be type plain!");
+                throw SEGYFormatError("SEGY_UINT8 values can only be type plain!");
             }
 
             put_to_raw( &u, &rhdr[0] + def.pos -1 );
@@ -86,7 +89,7 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
                 u=static_cast<std::uint16_t>(value.uintValue());
             }
             else{
-                throw FormatError("SEGY_UINT16 values can only be type plain!");
+                throw SEGYFormatError("SEGY_UINT16 values can only be type plain!");
             }
 
             put_to_raw( &u, &rhdr[0] + def.pos -1, m_info.isSwap() );
@@ -108,14 +111,14 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
                 f=value.floatValue()/m_info.scalco();
             }
             else{
-                throw FormatError("SEGY_IEEE unhandled conversion type!");
+                throw SEGYFormatError("SEGY_IEEE unhandled conversion type!");
             }
 
             put_to_raw( &f, &rhdr[0] + def.pos -1, m_info.isSwap() );
             break;
         }
         default:
-            throw FormatError("Unsupported type in convert_header!");
+            throw SEGYFormatError("Unsupported type in convert_header!");
             break;
         } // switch
 
@@ -139,11 +142,12 @@ SEGYWriter::SEGYWriter( const std::string& name,
         m_binary_header(binaryHeader),
         m_raw_binary_header_buf(raw_binary_header_size),
         m_raw_trace_header_buf(raw_trace_header_size),
-        m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t))
+        m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t)),
+        m_preWriteFunc(preWriteFunc)
 {
     std::cout<<"SEGYWriter::SEGYWriter"<<std::endl<<std::flush;
 
-    if( !m_ofile) throw( FormatError("Open file failed!"));
+    if( !m_ofile) throw( SEGYFormatError("Open file failed!"));
 
     m_bytes_per_sample=bytesPerSample(m_info.sampleFormat());
     m_binary_header["format"]=HeaderValue::makeIntValue( toInt(m_info.sampleFormat()) );
@@ -180,17 +184,19 @@ void SEGYWriter::process_raw_binary_header(std::vector<char> &){
 
 void SEGYWriter::write_leading_headers(){
 
+    m_preWriteFunc( &m_text_header, m_text_header.size() );
     if(fwrite(&m_text_header, m_text_header.size(), 1, m_ofile)!=1){
-        throw(FormatError("Writing mandatory ebcdic header failed!"));
+        throw(SEGYFormatError("Writing mandatory ebcdic header failed!"));
     }
 
     // convert and write binary header
 
     convert_binary_header();
-    process_raw_binary_header( m_raw_binary_header_buf ); // make additional modifications required by non standar segy
+    process_raw_binary_header( m_raw_binary_header_buf ); // make additional modifications required by non standard segy
 
+    m_preWriteFunc( &m_raw_binary_header_buf[0], m_raw_binary_header_buf.size() );
     if(fwrite(&m_raw_binary_header_buf[0], m_raw_binary_header_buf.size(), 1, m_ofile)!=1){
-        throw(FormatError("Writing binary header failed!"));
+        throw(SEGYFormatError("Writing binary header failed!"));
     }
 
     m_cur_trace=0;
@@ -198,8 +204,9 @@ void SEGYWriter::write_leading_headers(){
 
 void SEGYWriter::write_trace_header(){
 
+    m_preWriteFunc( &m_raw_trace_header_buf[0], m_raw_trace_header_buf.size() );
     if(fwrite(&m_raw_trace_header_buf[0], m_raw_trace_header_buf.size(), 1, m_ofile)!=1){
-        throw(FormatError("Writing trace header failed!"));
+        throw(SEGYFormatError("Writing trace header failed!"));
     }
 
 }
@@ -208,8 +215,10 @@ void SEGYWriter::write_trace_header(){
 void SEGYWriter::write_samples(size_t nt){
 
     ssize_t nbytes=m_bytes_per_sample * nt;
+    // don't encrypt samples
+    //m_preWriteFunc(&m_raw_samples_buf[0], nbytes);
     if( fwrite( &m_raw_samples_buf[0], nbytes, 1, m_ofile )!=1){
-        throw FormatError("Writing samples failed!");
+        throw SEGYFormatError("Writing samples failed!");
     }
 }
 
@@ -227,7 +236,7 @@ void SEGYWriter::convert_samples( const Trace& trc){
     //    break;
     //case SEGYSampleFormat::FIXP: convert_fixp_samples( &m_raw_samples_buf[0], trc.samples(), trc.size(), m_info.isSwap());
     //    break;
-    default: throw FormatError("Unsupported sample format code!");break;
+    default: throw SEGYFormatError("Unsupported sample format code!");break;
     }
 }
 
