@@ -18,5 +18,6 @@ SUBDIRS += \
     SeismicUI \
     ProzessUI \
     ProjectViewer \
-    Crypt
+    Crypt \
+    SEGYCrypt
 

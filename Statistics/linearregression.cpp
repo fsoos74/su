@@ -28,7 +28,7 @@ QPointF linearRegression( const QVector<QPointF>& points, double* quality){
 
     }
 
-    if( n==0 ) return QPointF(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );
+    if( n==0 || sum_x==0 ) return QPointF(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );
     //if( n==0 ) return QPointF(std::numeric_limits<double>::max(), std::numeric_limits<double>::max());
 
     double Sxx=sum_x_x - sum_x*sum_x/n;

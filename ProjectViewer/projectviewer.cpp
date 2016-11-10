@@ -90,7 +90,6 @@ using namespace std::placeholders; // for _1, _2 etc.
 
 #include<axxisorientation.h>
 #include<projectgeometry.h>
-
 #include "selectgridtypeandnamedialog.h"
 #include "crossplotgridsinputdialog.h"
 #include "crossplotvolumesinputdialog.h"
@@ -1452,14 +1451,14 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
         gridView->setInlineDirection(m_project->inlineDirection());
         gridView->setCrosslineDirection(m_project->crosslineDirection());
 
-        //* azimuth function not ready yes, once it works also derive inline,crossline orientations
+        /* azimuth function not ready yes, once it works also derive inline,crossline orientations
         CompassWidget* compass=new CompassWidget(this);
         compass->setS1(0.8 * gridView->RULER_HEIGHT);
         double az=m_project->geometry().inlineAzimuth();
         std::cout<<"az="<<az<<std::endl;
         compass->setAzimuth(az);
         gridView->setCornerWidget(compass);
-        //*/
+        */
 
         viewer->show();
 

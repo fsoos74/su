@@ -69,6 +69,12 @@ void HistogramDialog::setData(QVector<double> data){
 
     computeStatistics();
 
+    if( std::isinf(m_dataMin) || std::isnan(m_dataMin) ||
+            std::isinf(m_dataMax) || std::isnan(m_dataMax)){
+        QMessageBox::critical(this, tr("Histogram"), tr("Invalid data"));
+        return;
+    }
+
     updateStatisticsControls();
 
     m_plotMinX=m_dataMin;

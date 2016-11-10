@@ -10,6 +10,14 @@
 #include "keylok.h"
 #endif
 
+
+//#define DEMO
+
+#ifdef DEMO
+#include<segyreader.h>//
+#include<crypt.h>
+#endif
+
 int main(int argc, char *argv[]){
 
     QApplication a(argc, argv);
@@ -20,10 +28,18 @@ int main(int argc, char *argv[]){
         std::unique_ptr<CKeylok>  myCKeylok(new CKeylok);
         if (myCKeylok->CheckForKeyLok() == false)
         {
+
             QMessageBox::warning(0, "AVO-Detect", "No Keylok dongle found!\nRunning in Demo mode...");
             seismic::SEGYReader::postReadFunc = crypt::decrypt;
+
         }
     }
+    #endif
+
+
+    #ifdef DEMO
+    QMessageBox::warning(0, "AVO-Detect", "No Keylok dongle found!\nRunning in Demo mode...");
+    seismic::SEGYReader::postReadFunc = crypt::decrypt;
     #endif
 
     ProjectViewer w;

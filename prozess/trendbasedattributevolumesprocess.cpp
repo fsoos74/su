@@ -127,7 +127,6 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::init( const QMap<Q
 
 ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
 
-
     Grid3DBounds bounds=m_intercept->bounds();      // iall input grids have same bounds, checked on init
     int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
     QVector<QPointF> all;
@@ -249,11 +248,11 @@ void TrendBasedAttributeVolumesProcess::computeTrend(){
             for( int sample=0; sample<bounds.sampleCount(); sample++){
 
                 float intercept=(*m_intercept)(iline, xline, sample );
-                if( intercept == m_intercept->NULL_VALUE) continue;
+                if( intercept == m_intercept->NULL_VALUE ) continue;
 
 
                 float gradient=(*m_gradient)(iline, xline, sample );
-                if( gradient==m_gradient->NULL_VALUE) continue;
+                if( gradient==m_gradient->NULL_VALUE ) continue;
 
 
                 all.push_back( QPointF(intercept, gradient) );

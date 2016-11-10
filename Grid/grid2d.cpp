@@ -42,6 +42,11 @@ std::pair<float, float> valueRange( const Grid2D<float>& grid){
         }
     }
 
+    if( max<min){
+        max=grid.NULL_VALUE;
+        min=grid.NULL_VALUE;
+    }
+
     return std::pair<float, float>(min,max);
 }
 
