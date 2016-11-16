@@ -20,6 +20,7 @@ public:
     ~ProjectGeometryDialog();
 
     ProjectGeometry projectGeometry();
+    bool isUpdateAxes();
     void setProjectGeometry( ProjectGeometry);
     void setProject(std::shared_ptr<AVOProject>);
 

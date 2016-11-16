@@ -118,12 +118,13 @@ private slots:
 
     void on_actionSecondary_Attribute_Grids_triggered();
 
-
     void on_actionFluid_Factor_Volume_triggered();
 
-    void on_action_Geometry_triggered();
 
+    void on_action_Geometry_triggered();
     void on_actionAxis_Orientation_triggered();
+    void on_actionDisplay_Map_triggered();
+
 
     void on_action_About_triggered();
 

@@ -147,3 +147,37 @@ bool ProjectGeometry::computeTransforms(QTransform &transformXYToIlXl, QTransfor
     transformIlXlToXY=transformXYToIlXl.inverted(&ok);
     return ok;
 }
+
+
+void ProjectGeometry::computeAxxisOrientations( AxxisOrientation& inlineOrientation,
+                                               AxxisDirection& inlineDirection, AxxisDirection& crosslineDirection){
+
+    int il1=m_inlineAndCrossline[0].x();
+    int xl1=m_inlineAndCrossline[0].y();
+    int il2=m_inlineAndCrossline[1].x();
+    int xl2=m_inlineAndCrossline[1].y();
+    int il3=m_inlineAndCrossline[2].x();
+    int xl3=m_inlineAndCrossline[2].y();
+
+    Q_ASSERT( il1==il2 );
+
+    qreal x1=m_coords[0].x();
+    qreal y1=m_coords[0].y();
+    qreal x2=m_coords[1].x();
+    qreal y2=m_coords[1].y();
+    qreal x3=m_coords[2].x();
+    qreal y3=m_coords[2].y();
+
+
+    if( std::fabs(x2-x1) > std::fabs(y2-y1) ){  // inlines horizontal, crosslines vertical
+        inlineOrientation=AxxisOrientation::Horizontal;
+        inlineDirection= ( y3 > y1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
+        crosslineDirection= ( x2 > x1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
+    }
+    else{   // inlines vertical, crosslines horizontal
+        inlineOrientation=AxxisOrientation::Vertical;
+        inlineDirection= ( x3 > x1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
+        crosslineDirection= ( y2 > y1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
+    }
+}
+

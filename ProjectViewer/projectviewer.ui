@@ -231,6 +231,8 @@
     </property>
     <addaction name="action_Geometry"/>
     <addaction name="actionAxis_Orientation"/>
+    <addaction name="separator"/>
+    <addaction name="actionDisplay_Map"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -499,6 +501,14 @@
   <action name="actionTrend_Based_Attribute_Volumes">
    <property name="text">
     <string>Trend &amp;Based Attribute Volumes</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Map">
+   <property name="text">
+    <string>Display &amp;Map</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

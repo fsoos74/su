@@ -71,6 +71,10 @@ ProjectGeometry ProjectGeometryDialog::projectGeometry(){
     return geom;
 }
 
+bool ProjectGeometryDialog::isUpdateAxes(){
+    return ui->cbUpdateAxes->isChecked();
+}
+
 void ProjectGeometryDialog::setProjectGeometry( ProjectGeometry geom){
 
     ui->leIline1->setText(QString::number(geom.inlineAndCrossline(0).x()));

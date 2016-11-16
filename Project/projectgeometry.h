@@ -5,6 +5,7 @@
 #include<QPoint>
 #include<QPointF>
 #include<QTransform>
+#include<axxisorientation.h>
 
 // QPoint used for inline(x) and crossline(y)
 
@@ -28,6 +29,8 @@ public:
     void setCoordinates( int, QPointF);
 
     bool computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const;
+
+    void computeAxxisOrientations( AxxisOrientation& inlineOrientation, AxxisDirection& inlineDirection, AxxisDirection& CrosslineDirection);
 
     double inlineAzimuth()const;
 

@@ -50,7 +50,7 @@ public:
         return m_displayLines;
     }
 
-    size_t highlightedTrace()const{
+    int highlightedTrace()const{
         return m_highlightedTrace;
     }
 
@@ -108,7 +108,7 @@ public slots:
     void setDisplayVariableArea(bool);
     void setDisplayLines(bool);
     void setHighlightTrace( bool on=true);
-    void setHighlightedTrace( size_t);
+    void setHighlightedTrace( int );
     void setViewerCurrentTrace(int);
     void updateTraceScaleFactors();
     void updateBuffers();
@@ -170,7 +170,7 @@ private:
 
     QColor m_horizonColor=Qt::red;
     bool m_highlightTrace=false;
-    size_t m_highlightedTrace=0;
+    int m_highlightedTrace=-1;
     int m_viewerCurrentTrace=-1;
 
     QMap<int,int> traceLookup;

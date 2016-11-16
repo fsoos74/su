@@ -9,6 +9,13 @@ QT       -= gui
 TARGET = Crypt
 TEMPLATE = lib
 
+include(../common.pri)
+
+win32{
+    CONFIG +=staticlib
+}
+
+
 DEFINES += CRYPT_LIBRARY
 
 SOURCES += crypt.cpp

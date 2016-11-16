@@ -112,6 +112,9 @@ void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
 
     if( code!=PointCode::VIEWER_POINT_SELECTED) return; // only handle this for now
 
+    if( pt.iline==SelectionPoint::NO_LINE || pt.xline==SelectionPoint::NO_LINE) return;  // only proceed on valid inline and crossline
+                                                                                         // this is for selecting lines on sidelabels
+
     for( QGraphicsItem* item : m_scene->items()){
 
         DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);

@@ -83,7 +83,7 @@ void GatherLabel::setHighlightTrace( bool on){
     updateBuffers();
 }
 
-void GatherLabel::setHighlightedTrace( size_t t){
+void GatherLabel::setHighlightedTrace( int t){
 
     if( t == m_highlightedTrace) return;
 

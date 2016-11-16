@@ -26,6 +26,7 @@ win32{
 }
 
 QT       += core gui
+QT += printsupport
 QT += widgets   # needed for QTransform in projectgeometry
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -60,7 +61,8 @@ SOURCES += main.cpp\
     seismicsliceselector.cpp \
     volumesliceselector.cpp \
     volumerelativesliceselector.cpp \
-    compasswidget.cpp
+    compasswidget.cpp \
+    mapviewer.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -84,7 +86,8 @@ HEADERS  += projectviewer.h \
     seismicsliceselector.h \
     volumesliceselector.h \
     volumerelativesliceselector.h \
-    compasswidget.h
+    compasswidget.h \
+    mapviewer.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -104,7 +107,8 @@ FORMS    += projectviewer.ui \
     edittrenddialog.ui \
     seismicsliceselector.ui \
     volumesliceselector.ui \
-    volumerelativesliceselector.ui
+    volumerelativesliceselector.ui \
+    mapviewer.ui
 
 RESOURCES += \
     icons.qrc

@@ -99,6 +99,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 
 #include <reversespinbox.h>
 
+#include <mapviewer.h>
+
 #include<segywriter.h>
 #include<swsegywriter.h>
 #include<segyreader.h>
@@ -507,8 +509,20 @@ void ProjectViewer::on_action_Geometry_triggered()
     if( dlg.exec()==QDialog::Accepted){
 
         ProjectGeometry geom=dlg.projectGeometry();
-
         m_project->setGeometry(geom);
+
+        if( dlg.isUpdateAxes()){
+
+            AxxisOrientation inlineOrientation;
+            AxxisDirection inlineDirection;
+            AxxisDirection crosslineDirection;
+            geom.computeAxxisOrientations(inlineOrientation, inlineDirection, crosslineDirection);
+
+            m_project->setInlineOrientation(inlineOrientation);
+            m_project->setInlineDirection(inlineDirection);
+            m_project->setCrosslineDirection(crosslineDirection);
+        }
+
     }
 
     //setDirty(true);
@@ -532,6 +546,15 @@ void ProjectViewer::on_actionAxis_Orientation_triggered()
     //setDirty(true);
 }
 
+
+void ProjectViewer::on_actionDisplay_Map_triggered()
+{
+    MapViewer* mviewer=new MapViewer;
+    mviewer->setWindowTitle(QString("Map of project %1").arg(this->windowTitle()));
+    mviewer->show();
+
+    mviewer->setProject(m_project);
+}
 
 void ProjectViewer::importGrid(GridType gridType){
 
@@ -2471,6 +2494,7 @@ void ProjectViewer::updateMenu(){
 
     ui->action_Geometry->setEnabled(isProject);
     ui->actionAxis_Orientation->setEnabled(isProject);
+    ui->actionDisplay_Map->setEnabled(isProject);
 
     ui->actionCreateTimeslice->setEnabled(isProject);
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
