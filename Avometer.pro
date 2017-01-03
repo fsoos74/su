@@ -19,5 +19,6 @@ SUBDIRS += \
     ProzessUI \
     ProjectViewer \
     Crypt \
-    SEGYCrypt
+    SEGYCrypt \
+    Viewer3D
 

@@ -113,11 +113,11 @@ bool GridViewer::orientate(const ProjectGeometry& geom){
 
     // p0: origin, p1: far end 1st inline, p2: far end first xline
 
-    qreal dx10=(geom.coordinates(1).x()-geom.coordinates(0).x());
-    qreal dy10=(geom.coordinates(1).y()-geom.coordinates(0).y());
+    qreal dx10=(geom.coords(1).x()-geom.coords(0).x());
+    qreal dy10=(geom.coords(1).y()-geom.coords(0).y());
 
-    qreal dx20=(geom.coordinates(2).x()-geom.coordinates(0).x());
-    qreal dy20=(geom.coordinates(2).y()-geom.coordinates(0).y());
+    qreal dx20=(geom.coords(2).x()-geom.coords(0).x());
+    qreal dy20=(geom.coords(2).y()-geom.coords(0).y());
 
     AxxisOrientation ilOrientation=(std::fabs(dx10) > std::fabs(dy10))?
                 AxxisOrientation::Horizontal : AxxisOrientation::Vertical;

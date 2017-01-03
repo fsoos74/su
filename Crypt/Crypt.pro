@@ -18,10 +18,12 @@ win32{
 
 DEFINES += CRYPT_LIBRARY
 
-SOURCES += crypt.cpp
+SOURCES += crypt.cpp \
+    cryptfunc.cpp
 
 HEADERS += crypt.h\
-        crypt_global.h
+        crypt_global.h \
+    cryptfunc.h
 
 unix {
     target.path = /usr/lib

@@ -100,6 +100,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <reversespinbox.h>
 
 #include <mapviewer.h>
+#include <volumeviewer.h>
+
 
 #include<segywriter.h>
 #include<swsegywriter.h>
@@ -114,7 +116,7 @@ using namespace std::placeholders; // for _1, _2 etc.
 #ifdef USE_KEYLOCK_LICENSE
 #include<QApplication>
 #include<QTimer>
-#include<crypt.h>
+#include<cryptfunc.h>
 #include "keylokclass.h"
 #include "keylok.h"
 #endif
@@ -550,7 +552,7 @@ void ProjectViewer::on_actionAxis_Orientation_triggered()
 void ProjectViewer::on_actionDisplay_Map_triggered()
 {
     MapViewer* mviewer=new MapViewer;
-    mviewer->setWindowTitle(QString("Map of project %1").arg(this->windowTitle()));
+    mviewer->setWindowTitle(QString("Map of %1").arg(this->windowTitle()));
     mviewer->show();
 
     mviewer->setProject(m_project);
@@ -1361,7 +1363,7 @@ void ProjectViewer::on_volumesView_doubleClicked(const QModelIndex &idx)
 {
     QString name=ui->volumesView->model()->itemData(idx)[Qt::DisplayRole].toString();
 
-    displayVolumeSlice(name);
+    displayVolume3D(name);
 }
 
 void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
@@ -1373,6 +1375,7 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
     QString volumeName=view->model()->itemData(idx)[Qt::DisplayRole].toString();
 
     QMenu menu;
+    menu.addAction("display 3d");
     menu.addAction("display slice");
     menu.addAction("display horizon relative slice");
     menu.addAction("histogram");
@@ -1388,6 +1391,9 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
 
     if( selectedAction->text()=="display slice" ){
         displayVolumeSlice( volumeName);
+    }
+    else if( selectedAction->text()=="display 3d" ){
+        displayVolume3D( volumeName);
     }
     else if(selectedAction->text()=="display horizon relative slice"){
         displayVolumeRelativeSlice( volumeName);
@@ -1577,6 +1583,24 @@ void ProjectViewer::selectAndExportVolume()
     runProcess( new ExportVolumeProcess( m_project, this ), params );
 }
 
+
+void ProjectViewer::displayVolume3D( const QString& name){
+
+    if( m_project->volumeList().contains(name)){
+
+        std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+        if( !volume ) return;
+
+        VolumeViewer* vviewer=new VolumeViewer;
+
+        vviewer->setWindowTitle( QString("Volume Viewer - %1").arg(name) );
+        vviewer->setProject(m_project);
+        vviewer->setDispatcher(m_dispatcher);
+        vviewer->show();
+        // call this after show because otherwise o valid gl context!!!
+        vviewer->setVolume(volume);
+    }
+}
 
 void ProjectViewer::displayVolumeSlice( const QString& name){
 
@@ -2516,12 +2540,8 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
+    ui->action_3D_Viewer->setEnabled(isProject);
 }
-
-
-
-
-
 
 
 

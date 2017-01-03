@@ -24,10 +24,10 @@ bool XPRWriter::writeFile(QIODevice *device){
     xml.writeStartElement("project-geometry");
     for( int i=0; i<3; i++){
 
-        xml.writeTextElement(QString("inline%1").arg(i+1), QString::number(geom.inlineAndCrossline(i).x() ) );
-        xml.writeTextElement(QString("crossline%1").arg(i+1), QString::number( geom.inlineAndCrossline(i).y() ) );
-        xml.writeTextElement(QString("x%1").arg(i+1),QString::number( geom.coordinates(i).x() ) );
-        xml.writeTextElement(QString("y%1").arg(i+1), QString::number( geom.coordinates(i).y() ) );
+        xml.writeTextElement(QString("inline%1").arg(i+1), QString::number(geom.lines(i).x() ) );
+        xml.writeTextElement(QString("crossline%1").arg(i+1), QString::number( geom.lines(i).y() ) );
+        xml.writeTextElement(QString("x%1").arg(i+1),QString::number( geom.coords(i).x() ) );
+        xml.writeTextElement(QString("y%1").arg(i+1), QString::number( geom.coords(i).y() ) );
     }
     xml.writeEndElement();
 

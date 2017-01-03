@@ -29,7 +29,9 @@ SOURCES += gridui.cpp \
     griddisplayoptionsdialog.cpp \
     gridexportdialog.cpp \
     aspectratiodialog.cpp \
-    scaledialog.cpp
+    scaledialog.cpp \
+    griduiutil.cpp \
+    gridselectdialog.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
@@ -42,7 +44,9 @@ HEADERS += gridui.h\
     griddisplayoptionsdialog.h \
     gridexportdialog.h \
     aspectratiodialog.h \
-    scaledialog.h
+    scaledialog.h \
+    griduiutil.h \
+    gridselectdialog.h
 
 unix {
     target.path = /usr/lib
@@ -60,7 +64,8 @@ FORMS += \
     griddisplayoptionsdialog.ui \
     gridexportdialog.ui \
     aspectratiodialog.ui \
-    scaledialog.ui
+    scaledialog.ui \
+    gridselectdialog.ui
 
 
 

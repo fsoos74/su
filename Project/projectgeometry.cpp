@@ -1,102 +1,105 @@
 #include "projectgeometry.h"
 
-#include<QTransform>
-#include<QPoint>
-#include<QPointF>
 #include<cmath>
 
-#define _USE_MATH_DEFINES
+#include<iostream>
 
 
-ProjectGeometry::ProjectGeometry()
-{
+std::pair<QPoint, QPoint> ProjectGeometry::linesRange()const{
 
-}
+    QPoint min(lines(0));
+    QPoint max(lines(0));
 
-void ProjectGeometry::setInlineAndCrossline( int i, QPoint inlineAndCrossline){
+    for( int i=1; i<3; i++){
 
-    Q_ASSERT( i>=0 && i<N_POINTS);
+        int il=lines(i).x();
+        if( il < min.x() ) min.setX(il);
+        if( il > max.x() ) max.setX(il);
 
-    m_inlineAndCrossline[i]=inlineAndCrossline;
-}
+        int xl=lines(i).y();
+        if( xl < min.y() ) min.setY(xl);
+        if( xl > max.y() ) max.setY(xl);
+    }
 
-void ProjectGeometry::setCoordinates( int i, QPointF p){
-
-    Q_ASSERT( i>=0 && i<N_POINTS);
-
-    m_coords[i]=p;
-}
-
-
-bool isApprox(const qreal& x1, const qreal& x2, const qreal& EPS=0.0001){
-
-    return std::fabs(x2-x1)<EPS;
-}
-
-// points are defined as:
-// point1 (0): origin
-// point2 (1): first inline, last crossline
-// point3 (2): first crossline, last inline
-bool isValid( const ProjectGeometry& geom){
-
-/*   this does not work for rotated grids!!!
-    qreal EPS=0.00001;
-
-    if(geom.inlineAndCrossline(0).x()!=geom.inlineAndCrossline(1).x() ||
-            geom.inlineAndCrossline(0).y() >= geom.inlineAndCrossline(1).y() ) return false;
-    if(geom.inlineAndCrossline(0).x()>=geom.inlineAndCrossline(2).x() ||
-            geom.inlineAndCrossline(0).y() != geom.inlineAndCrossline(2).y() ) return false;
-
-    if(isApprox(geom.coordinates(0).x(), geom.coordinates(1).x()) &&
-            isApprox(geom.coordinates(0).x(), geom.coordinates(2).x())) return false;
-
-    if(isApprox(geom.coordinates(0).y(), geom.coordinates(1).y()) &&
-            isApprox(geom.coordinates(0).y(), geom.coordinates(2).y())) return false;
-*/
-
-    QTransform transformXYToIlXl;
-    QTransform transformIlXlToXY;
-
-    return geom.computeTransforms(transformXYToIlXl, transformIlXlToXY);
+    return std::pair<QPoint, QPoint>( min, max);
 }
 
 
-// no ready yet, testing
-double ProjectGeometry::inlineAzimuth()const{
+QRect ProjectGeometry::bboxLines()const{
 
-    const double DEGREES_TO_RADIANS=57.29577951;        // visual studio sucks
+    auto range=linesRange();
 
-    double dx=coordinates(1).x() - coordinates(0).x();
-    double dy=coordinates(1).y() - coordinates(0).y();
+    return QRect( range.first, range.second);
+}
 
-    //return 180.*std::atan2(dx,dy)/std::M_PI;       // angle[degrees] to y axxis , counter clock wise, change???
-    return DEGREES_TO_RADIANS*std::atan2(dx,dy);
+
+std::pair<QPointF, QPointF>  ProjectGeometry::coordsRange()const{
+
+    // compute 4th corner (max il, max xl) : this is p1(min il, min xl) mirrored at line p2-p3
+    const QPointF& P1=coords(0);
+    const QPointF& P2=coords(1);
+    const QPointF& P3=coords(2);
+
+    // line direction vector
+    qreal nx=P3.x() - P2.x();
+    qreal ny=P3.y() - P2.y();
+
+    // make unit vector
+    qreal d=std::sqrt( std::pow(nx, 2) + std::pow(ny,2) );
+    nx/=d;
+    ny/=d;
+
+    // compute intersection point
+    qreal ki=nx*(P1.x() - P2.x()) + ny*(P1.y() - P2.y() );
+    qreal xi=P2.x() + ki*nx;
+    qreal yi=P2.y() + ki*ny;
+
+    // compute mirrored point
+    QPointF P4( 2*xi - P1.x(), 2*yi - P1.y() );
+
+    // find min/max
+    QPointF min(P4);
+    QPointF max(P4);
+
+    for( int i=0; i<3; i++){
+
+        qreal x=coords(i).x();
+        if( x < min.x() ) min.setX(x);
+        if( x > max.x() ) max.setX(x);
+
+        qreal y=coords(i).y();
+        if( y < min.y() ) min.setY(y);
+        if( y > max.y() ) max.setY(y);
+    }
+
+    return std::pair<QPointF, QPointF>( min, max);
+
+}
+
+QRectF ProjectGeometry::bboxCoords()const{
+
+    auto range=coordsRange();
+
+    return QRectF( range.first, range.second);
 }
 
 bool ProjectGeometry::computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const{
 
     const qreal EPS=0.001;
 
-    QPoint inlineAndCrossline1=inlineAndCrossline(0);
-    QPointF coords1=coordinates(0);
-    QPoint inlineAndCrossline2=inlineAndCrossline(1);
-    QPointF coords2=coordinates(1);
-    QPoint inlineAndCrossline3=inlineAndCrossline(2);
-    QPointF coords3=coordinates(2);
+    int il1=lines(0).x();
+    int xl1=lines(0).y();
+    int il2=lines(1).x();
+    int xl2=lines(1).y();
+    int il3=lines(2).x();
+    int xl3=lines(2).y();
 
-    int il1=inlineAndCrossline1.x();
-    int xl1=inlineAndCrossline1.y();
-    int il2=inlineAndCrossline2.x();
-    int xl2=inlineAndCrossline2.y();
-    int il3=inlineAndCrossline3.x();
-    int xl3=inlineAndCrossline3.y();
-
-    int x1=coords1.x();
-    int y1=coords1.y();
-    int x2=coords2.x();
-    int y2=coords2.y();
-    int x3=coords3.x();
-    int y3=coords3.y();
+    qreal x1=coords(0).x();
+    qreal y1=coords(0).y();
+    qreal x2=coords(1).x();
+    qreal y2=coords(1).y();
+    qreal x3=coords(2).x();
+    qreal y3=coords(2).y();
 
     int il21=il2-il1;
     int il31=il3-il1;
@@ -145,39 +148,48 @@ bool ProjectGeometry::computeTransforms(QTransform &transformXYToIlXl, QTransfor
     transformXYToIlXl.setMatrix( m11, m12, 0, m21, m22, 0, dx, dy, 1);
     bool ok=false;
     transformIlXlToXY=transformXYToIlXl.inverted(&ok);
+
     return ok;
 }
 
 
 void ProjectGeometry::computeAxxisOrientations( AxxisOrientation& inlineOrientation,
-                                               AxxisDirection& inlineDirection, AxxisDirection& crosslineDirection){
+                                               AxxisDirection& inlineDirection, AxxisDirection& crosslineDirection)const{
 
-    int il1=m_inlineAndCrossline[0].x();
-    int xl1=m_inlineAndCrossline[0].y();
-    int il2=m_inlineAndCrossline[1].x();
-    int xl2=m_inlineAndCrossline[1].y();
-    int il3=m_inlineAndCrossline[2].x();
-    int xl3=m_inlineAndCrossline[2].y();
+    int il1=lines(0).x();
+    int xl1=lines(0).y();
+    int il2=lines(1).x();
+    int xl2=lines(1).y();
+    int il3=lines(2).x();
+    int xl3=lines(2).y();
 
     Q_ASSERT( il1==il2 );
 
-    qreal x1=m_coords[0].x();
-    qreal y1=m_coords[0].y();
-    qreal x2=m_coords[1].x();
-    qreal y2=m_coords[1].y();
-    qreal x3=m_coords[2].x();
-    qreal y3=m_coords[2].y();
+    qreal x1=coords(0).x();
+    qreal y1=coords(0).y();
+    qreal x2=coords(1).x();
+    qreal y2=coords(1).y();
+    qreal x3=coords(2).x();
+    qreal y3=coords(2).y();
 
 
     if( std::fabs(x2-x1) > std::fabs(y2-y1) ){  // inlines horizontal, crosslines vertical
         inlineOrientation=AxxisOrientation::Horizontal;
-        inlineDirection= ( y3 > y1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
+        inlineDirection= ( y3 > y1 ) ? AxxisDirection::Descending : AxxisDirection::Ascending;          // y origin at bottom
         crosslineDirection= ( x2 > x1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
     }
     else{   // inlines vertical, crosslines horizontal
         inlineOrientation=AxxisOrientation::Vertical;
         inlineDirection= ( x3 > x1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
-        crosslineDirection= ( y2 > y1 ) ? AxxisDirection::Ascending : AxxisDirection::Descending;
+        crosslineDirection= ( y2 > y1 ) ? AxxisDirection::Descending : AxxisDirection::Ascending;       // y origin at bottom
     }
 }
 
+
+bool isValid( const ProjectGeometry& geom){
+
+    QTransform transformXYToIlXl;
+    QTransform transformIlXlToXY;
+
+    return geom.computeTransforms(transformXYToIlXl, transformIlXlToXY);
+}

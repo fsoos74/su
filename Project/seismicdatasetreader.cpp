@@ -71,6 +71,125 @@ int SeismicDatasetReader::maxCrossline(){
 
 }
 
+// new version has P1(min il, min xl), P2(min il, max xl), P3(max il, min xl)
+// if pairs from traces don't exist they will be computed
+bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){
+
+    int il1=minInline();
+    int il2=minInline();
+    int il3=maxInline();
+    int xl1=-1;
+    int xl2=-1;
+    int xl3=-1;
+
+    // min xline for min iline (point1)
+    QSqlQuery queryxl1("xl point1", m_db);
+    queryxl1.prepare(QString("select xline from map where iline==%1 order by 1 asc").arg(QString::number(il1) ) );
+    if( !queryxl1.exec()){
+        return false;
+    }
+    if( !queryxl1.next()) return false;
+    xl1=queryxl1.value("xline").toInt();
+
+    std::cout<<"temp P1 il="<<il1<<" xl="<<xl1<<std::endl;
+
+    // point 1
+    QSqlQuery query1("point1", m_db);
+    query1.prepare(QString("select * from map where iline==%1 and xline==%2 ").arg(QString::number(il1), QString::number(xl1) ) );
+    if( !query1.exec()){
+        return false;
+    }
+    if( !query1.next()) return false;
+
+    qreal x1=query1.value("x").toDouble();
+    qreal y1=query1.value("y").toDouble();
+
+    std::cout<<"temp P1 x="<<x1<<" y="<<y1<<std::endl;
+
+
+    // max xline for min iline (point2)
+    QSqlQuery queryxl2("xl point2", m_db);
+    queryxl2.prepare(QString("select xline from map where iline==%1 order by 1 desc").arg(QString::number(il2) ) );
+    if( !queryxl2.exec()){
+        return false;
+    }
+    if( !queryxl2.next()) return false;
+    xl2=queryxl2.value("xline").toInt();
+
+    std::cout<<"temp P2 il="<<il2<<" xl="<<xl2<<std::endl;
+
+    // point 2
+    QSqlQuery query2("point2", m_db);
+    query2.prepare(QString("select * from map where iline==%1 and xline==%2 ").arg(QString::number(il2), QString::number(xl2) ) );
+    if( !query2.exec()){
+        return false;
+    }
+    if( !query2.next()) return false;
+
+    qreal x2=query2.value("x").toDouble();
+    qreal y2=query2.value("y").toDouble();
+
+    std::cout<<"P2 x="<<x2<<" y="<<y2<<std::endl;
+
+
+    // min xline for max iline (point3)
+    QSqlQuery queryxl3("xl point3", m_db);
+    queryxl3.prepare(QString("select xline from map where iline==%1 order by 1 asc").arg(QString::number(il3) ) );
+    if( !queryxl3.exec()){
+        return false;
+    }
+    if( !queryxl3.next()) return false;
+    xl3=queryxl3.value("xline").toInt();
+
+    std::cout<<"temp P3 il="<<il3<<" xl="<<xl3<<std::endl;
+
+    // point 3
+    QSqlQuery query3("point3", m_db);
+    query3.prepare(QString("select * from map where iline==%1 and xline==%2 ").arg(QString::number(il3), QString::number(xl3) ) );
+    if( !query3.exec()){
+        return false;
+    }
+    if( !query3.next()) return false;
+
+    qreal x3=query3.value("x").toDouble();
+    qreal y3=query3.value("y").toDouble();
+
+    std::cout<<"temp P3 x="<<x3<<" y="<<y3<<std::endl;
+
+
+    ProjectGeometry tmp;
+    tmp.coords(0) = QPointF(x1,y1);
+    tmp.coords(1) = QPointF(x2,y2);
+    tmp.coords(2) = QPointF(x3,y3);
+
+    tmp.lines(0) = QPoint(il1,xl1);
+    tmp.lines(1) = QPoint(il2,xl2);
+    tmp.lines(2) = QPoint(il3,xl3);
+
+    if( !isValid(tmp)) return false;
+
+    // recompute corner coordinates
+    ProjectGeometry g;
+
+    g.lines(0)=QPoint(minInline(), minCrossline());
+    g.lines(1)=QPoint(minInline(), maxCrossline());
+    g.lines(2)=QPoint(maxInline(), minCrossline());
+    QTransform ilxl_to_xy, xy_to_ilxl;
+    tmp.computeTransforms(xy_to_ilxl, ilxl_to_xy);
+
+    for( int i=0; i<3; i++){
+        g.coords(i)=ilxl_to_xy.map(g.lines(i));
+    }
+
+    if( !isValid(g)) return false;
+
+    geom=g;
+
+    return true;
+}
+
+/* latest working version from 11/30/16
+ *
 bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){
 
     int il1=minInline();
@@ -156,13 +275,13 @@ bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){
 
 
     ProjectGeometry g;
-    g.setCoordinates(0, QPointF(x1,y1));
-    g.setCoordinates(1, QPointF(x2,y2));
-    g.setCoordinates(2, QPointF(x3,y3));
+    g.coords(0) = QPointF(x1,y1);
+    g.coords(1) = QPointF(x2,y2);
+    g.coords(2) = QPointF(x3,y3);
 
-    g.setInlineAndCrossline(0, QPoint(il1,xl1));
-    g.setInlineAndCrossline(1, QPoint(il2,xl2));
-    g.setInlineAndCrossline(2, QPoint(il3,xl3));
+    g.lines(0) = QPoint(il1,xl1);
+    g.lines(1) = QPoint(il2,xl2);
+    g.lines(2) = QPoint(il3,xl3);
 
     if( !isValid(g)) return false;
 
@@ -170,6 +289,7 @@ bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){
 
     return true;
 }
+*/
 
 /* last working version, problem: min xline not at min iline asf.
  bool SeismicDatasetReader::extractGeometry(ProjectGeometry& geom){

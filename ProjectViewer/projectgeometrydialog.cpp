@@ -60,13 +60,13 @@ ProjectGeometry ProjectGeometryDialog::projectGeometry(){
 
     ProjectGeometry geom;
 
-    geom.setInlineAndCrossline( 0, QPoint(ui->leIline1->text().toInt(), ui->leXline1->text().toInt()));
-    geom.setInlineAndCrossline( 1, QPoint(ui->leIline2->text().toInt(), ui->leXline2->text().toInt()));
-    geom.setInlineAndCrossline( 2, QPoint(ui->leIline3->text().toInt(), ui->leXline3->text().toInt()));
+    geom.lines( 0 ) = QPoint(ui->leIline1->text().toInt(), ui->leXline1->text().toInt());
+    geom.lines( 1 ) = QPoint(ui->leIline2->text().toInt(), ui->leXline2->text().toInt());
+    geom.lines( 2 ) = QPoint(ui->leIline3->text().toInt(), ui->leXline3->text().toInt());
 
-    geom.setCoordinates( 0, QPoint(ui->leX1->text().toDouble(), ui->leY1->text().toDouble()));
-    geom.setCoordinates( 1, QPoint(ui->leX2->text().toDouble(), ui->leY2->text().toDouble()));
-    geom.setCoordinates( 2, QPoint(ui->leX3->text().toDouble(), ui->leY3->text().toDouble()));
+    geom.coords( 0 ) = QPoint(ui->leX1->text().toDouble(), ui->leY1->text().toDouble());
+    geom.coords( 1 ) = QPoint(ui->leX2->text().toDouble(), ui->leY2->text().toDouble());
+    geom.coords( 2 ) = QPoint(ui->leX3->text().toDouble(), ui->leY3->text().toDouble());
 
     return geom;
 }
@@ -77,19 +77,19 @@ bool ProjectGeometryDialog::isUpdateAxes(){
 
 void ProjectGeometryDialog::setProjectGeometry( ProjectGeometry geom){
 
-    ui->leIline1->setText(QString::number(geom.inlineAndCrossline(0).x()));
-    ui->leXline1->setText(QString::number(geom.inlineAndCrossline(0).y()));
-    ui->leIline2->setText(QString::number(geom.inlineAndCrossline(1).x()));
-    ui->leXline2->setText(QString::number(geom.inlineAndCrossline(1).y()));
-    ui->leIline3->setText(QString::number(geom.inlineAndCrossline(2).x()));
-    ui->leXline3->setText(QString::number(geom.inlineAndCrossline(2).y()));
+    ui->leIline1->setText(QString::number(geom.lines(0).x()));
+    ui->leXline1->setText(QString::number(geom.lines(0).y()));
+    ui->leIline2->setText(QString::number(geom.lines(1).x()));
+    ui->leXline2->setText(QString::number(geom.lines(1).y()));
+    ui->leIline3->setText(QString::number(geom.lines(2).x()));
+    ui->leXline3->setText(QString::number(geom.lines(2).y()));
 
-    ui->leX1->setText(QString::number(geom.coordinates(0).x()));
-    ui->leY1->setText(QString::number(geom.coordinates(0).y()));
-    ui->leX2->setText(QString::number(geom.coordinates(1).x()));
-    ui->leY2->setText(QString::number(geom.coordinates(1).y()));
-    ui->leX3->setText(QString::number(geom.coordinates(2).x()));
-    ui->leY3->setText(QString::number(geom.coordinates(2).y()));
+    ui->leX1->setText(QString::number(geom.coords(0).x()));
+    ui->leY1->setText(QString::number(geom.coords(0).y()));
+    ui->leX2->setText(QString::number(geom.coords(1).x()));
+    ui->leY2->setText(QString::number(geom.coords(1).y()));
+    ui->leX3->setText(QString::number(geom.coords(2).x()));
+    ui->leY3->setText(QString::number(geom.coords(2).y()));
 }
 
 void ProjectGeometryDialog::setProject(std::shared_ptr<AVOProject> prj){

@@ -28,7 +28,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="datasetsTab">
        <attribute name="title">
@@ -224,6 +224,8 @@
     <addaction name="actionCrossplot_Volumes"/>
     <addaction name="separator"/>
     <addaction name="actionAmplitude_vs_Offset_Plot"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuPro_ject">
     <property name="title">
@@ -509,6 +511,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="action_3D_Viewer">
+   <property name="text">
+    <string>&amp;3D Viewer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
    </property>
   </action>
  </widget>

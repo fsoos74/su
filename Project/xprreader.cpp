@@ -98,8 +98,8 @@ void XPRReader::readGeometry(){
                 }
                 double y=xml.readElementText().toDouble();
 
-                geom.setInlineAndCrossline( i, QPoint(il,xl));
-                geom.setCoordinates( i, QPointF(x,y));
+                geom.lines( i ) = QPoint(il,xl);
+                geom.coords( i ) = QPointF(x,y);
             }
 
             xml.skipCurrentElement();

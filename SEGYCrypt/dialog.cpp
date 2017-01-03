@@ -9,7 +9,7 @@
 #include<segyreader.h>
 #include<segywriter.h>
 
-#include<crypt.h>
+#include<cryptfunc.h>
 
 
 Dialog::Dialog(QWidget *parent) :

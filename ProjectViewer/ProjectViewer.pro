@@ -157,6 +157,15 @@ else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
 INCLUDEPATH += $$PWD/../GridUI
 DEPENDPATH += $$PWD/../GridUI
 
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Viewer3D/release/ -lViewer3D
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Viewer3D/debug/ -lViewer3D
+else:unix: LIBS += -L$$OUT_PWD/../Viewer3D/ -lViewer3D
+
+INCLUDEPATH += $$PWD/../Viewer3D
+DEPENDPATH += $$PWD/../Viewer3D
+
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
 else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil

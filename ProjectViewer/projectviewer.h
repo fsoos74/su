@@ -147,6 +147,7 @@ private slots:
 
     void on_actionTrend_Based_Attribute_Volumes_triggered();
 
+
 protected:
 
     void closeEvent(QCloseEvent*);
@@ -179,6 +180,7 @@ private:
     void exportGrid(GridType, QString);
     void runGridContextMenu(GridType, QListView*, const QPoint&);
 
+    void displayVolume3D( const QString& );
     void displayVolumeSlice( const QString&);
     void displayVolumeRelativeSlice( const QString&);
     void displayVolumeHistogram( const QString&);

@@ -5,43 +5,54 @@
 #include<QPoint>
 #include<QPointF>
 #include<QTransform>
+
 #include<axxisorientation.h>
 
-// QPoint used for inline(x) and crossline(y)
 
-class ProjectGeometry
-{
+class ProjectGeometry{
+
 public:
 
-    ProjectGeometry();
+    static const int NPOINTS=3;
 
-    QPoint inlineAndCrossline( int i )const{
-        Q_ASSERT(i>=0 && i<N_POINTS);
-        return m_inlineAndCrossline[i];
+    QPointF coords( int i )const{
+        Q_ASSERT( i>=0 && i<NPOINTS);
+        return m_xy[i];
     }
 
-    QPointF coordinates(int i)const{
-        Q_ASSERT(i>=0 && i<N_POINTS);
-        return m_coords[i];
+    QPointF& coords( int i ){
+        Q_ASSERT( i>=0 && i<NPOINTS);
+        return m_xy[i];
     }
 
-    void setInlineAndCrossline( int, QPoint);
-    void setCoordinates( int, QPointF);
+    QPoint lines( int i )const{
+        Q_ASSERT( i>=0 && i<NPOINTS);
+        return m_ilxl[i];
+    }
+
+    QPoint& lines( int i ){
+        Q_ASSERT( i>=0 && i<NPOINTS);
+        return m_ilxl[i];
+    }
+
+    std::pair<QPoint, QPoint>  linesRange()const;
+    QRect bboxLines()const;
+
+    std::pair<QPointF, QPointF>  coordsRange()const;
+    QRectF bboxCoords()const;
+
 
     bool computeTransforms(QTransform &transformXYToIlXl, QTransform &transformIlXlToXY)const;
 
-    void computeAxxisOrientations( AxxisOrientation& inlineOrientation, AxxisDirection& inlineDirection, AxxisDirection& CrosslineDirection);
-
-    double inlineAzimuth()const;
+    void computeAxxisOrientations( AxxisOrientation& inlineOrientation,
+                                   AxxisDirection& inlineDirection, AxxisDirection& crosslineDirection)const;
 
 private:
-
-    static const int N_POINTS=3;
-    std::array<QPoint, N_POINTS > m_inlineAndCrossline;
-    std::array<QPointF, N_POINTS> m_coords;
+    std::array<QPointF, NPOINTS> m_xy;
+    std::array<QPoint, NPOINTS>  m_ilxl;  // x==il, y==xl
 };
 
-bool isValid( const ProjectGeometry&);
 
+bool isValid( const ProjectGeometry& );
 
 #endif // PROJECTGEOMETRY_H

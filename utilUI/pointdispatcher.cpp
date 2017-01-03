@@ -2,6 +2,7 @@
 
 #include "baseviewer.h"
 
+
 PointDispatcher::PointDispatcher()
 {
 
@@ -54,6 +55,7 @@ void PointDispatcher::addViewer( BaseViewer* viewer ){
     if( m_viewers.contains(viewer)) return;     // don't allow duplicates
 
     m_viewers.insert(viewer);
+
 }
 
 void PointDispatcher::removeViewer( BaseViewer* viewer){

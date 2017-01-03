@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>VolumeViewer</class>
+ <widget class="QMainWindow" name="VolumeViewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>417</width>
+    <height>319</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="ViewWidget" name="openGLWidget"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>417</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Options">
+    <property name="title">
+     <string>Optio&amp;ns</string>
+    </property>
+    <addaction name="action_Volume_Colortable"/>
+    <addaction name="actionVolume_Range"/>
+    <addaction name="separator"/>
+    <addaction name="actionChange_Horizon_Color"/>
+    <addaction name="actionSet_Point_Size"/>
+    <addaction name="separator"/>
+    <addaction name="actionShow_Volume_Outline"/>
+   </widget>
+   <widget class="QMenu" name="menu_Data">
+    <property name="title">
+     <string>&amp;Data</string>
+    </property>
+    <addaction name="action_Add_Slice"/>
+    <addaction name="action_List_Slices"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Horizon"/>
+    <addaction name="actionRemove_Horizon"/>
+   </widget>
+   <widget class="QMenu" name="menu_Broadcast">
+    <property name="title">
+     <string>&amp;Broadcast</string>
+    </property>
+    <addaction name="action_Receive_CDPs"/>
+    <addaction name="action_Dispatch_CDPs"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="action_Front"/>
+    <addaction name="action_Back"/>
+    <addaction name="action_Left"/>
+    <addaction name="action_Right"/>
+    <addaction name="action_Top"/>
+    <addaction name="action_Bottom"/>
+   </widget>
+   <widget class="QMenu" name="menu_Window">
+    <property name="title">
+     <string>&amp;Window</string>
+    </property>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Options"/>
+   <addaction name="menu_Data"/>
+   <addaction name="menu_View"/>
+   <addaction name="menu_Window"/>
+   <addaction name="menu_Broadcast"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+    <string>Main Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Volume_Colortable"/>
+   <addaction name="actionVolume_Range"/>
+   <addaction name="separator"/>
+   <addaction name="action_Receive_CDPs"/>
+   <addaction name="action_Dispatch_CDPs"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_View">
+   <property name="windowTitle">
+    <string>View Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Front"/>
+   <addaction name="action_Back"/>
+   <addaction name="action_Left"/>
+   <addaction name="action_Right"/>
+   <addaction name="action_Top"/>
+   <addaction name="action_Bottom"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar_Navigation">
+   <property name="windowTitle">
+    <string>Navigation Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>true</bool>
+   </attribute>
+  </widget>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="action_openVolume">
+   <property name="text">
+    <string>&amp;Volume</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Volume_Colortable">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/volume-colortable-icon-32x32.png</normaloff>:/icons/images/volume-colortable-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Volume Colortable</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionVolume_Range">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/select-range-icon-32x32.png</normaloff>:/icons/images/select-range-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Volume &amp;Range</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="action_Add_Slice">
+   <property name="text">
+    <string>&amp;Add Slice</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="action_List_Slices">
+   <property name="text">
+    <string>&amp;Remove Slice</string>
+   </property>
+  </action>
+  <action name="action_Receive_CDPs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/receive-icon-32x32.png</normaloff>:/icons/images/receive-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Receive CDPs</string>
+   </property>
+  </action>
+  <action name="action_Dispatch_CDPs">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/send-icon-32x32.png</normaloff>:/icons/images/send-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Dispatch CDPs</string>
+   </property>
+  </action>
+  <action name="actionAdd_Horizon">
+   <property name="text">
+    <string>Add &amp;Horizon</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionRemove_Horizon">
+   <property name="text">
+    <string>R&amp;emove Horizon</string>
+   </property>
+  </action>
+  <action name="actionChange_Horizon_Color">
+   <property name="text">
+    <string>&amp;Change Horizon Color</string>
+   </property>
+  </action>
+  <action name="actionShow_Volume_Outline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Show Volume Outline</string>
+   </property>
+  </action>
+  <action name="action_Front">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/cube-select-front-24x24.png</normaloff>:/images/cube-select-front-24x24.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Front</string>
+   </property>
+  </action>
+  <action name="action_Back">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/cube-select-back-24x24.png</normaloff>:/images/cube-select-back-24x24.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Back</string>
+   </property>
+  </action>
+  <action name="action_Left">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/cube-select-left-24x24.png</normaloff>:/images/cube-select-left-24x24.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Left</string>
+   </property>
+  </action>
+  <action name="action_Right">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/cube-select-right-24x24.png</normaloff>:/images/cube-select-right-24x24.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Right</string>
+   </property>
+  </action>
+  <action name="action_Top">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/cube-select-top-24x24.png</normaloff>:/images/cube-select-top-24x24.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Top</string>
+   </property>
+  </action>
+  <action name="action_Bottom">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/cube-select-bottom-24x24.png</normaloff>:/images/cube-select-bottom-24x24.png</iconset>
+   </property>
+   <property name="text">
+    <string>B&amp;ottom</string>
+   </property>
+  </action>
+  <action name="actionSet_Point_Size">
+   <property name="text">
+    <string>Set &amp;Point Size</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>ViewWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>viewwidget.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionE_xit</sender>
+   <signal>triggered()</signal>
+   <receiver>VolumeViewer</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

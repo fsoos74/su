@@ -13,14 +13,6 @@ public:
 };
 
 
-namespace crypt{
-
-
-CRYPTSHARED_EXPORT void encrypt( void*, size_t);
-
-CRYPTSHARED_EXPORT void decrypt( void*, size_t);
-
-}
 
 
 #endif // CRYPT_H

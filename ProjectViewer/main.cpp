@@ -4,7 +4,7 @@
 
 #ifdef USE_KEYLOCK_LICENSE
 #include<segyreader.h>
-#include<crypt.h>
+#include<cryptfunc.h>
 #include<memory>
 #include "keylokclass.h"
 #include "keylok.h"
@@ -15,7 +15,7 @@
 
 #ifdef DEMO
 #include<segyreader.h>//
-#include<crypt.h>
+#include<cryptfunc.h>
 #endif
 
 int main(int argc, char *argv[]){
