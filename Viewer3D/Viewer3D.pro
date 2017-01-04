@@ -29,7 +29,9 @@ SOURCES += \
     glsceneitem.cpp \
     glscene.cpp \
     glsliceitem.cpp \
-    volumenavigationwidget.cpp
+    volumenavigationwidget.cpp \
+    vic.cpp \
+    vit.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -44,7 +46,9 @@ HEADERS  += \
     glsceneitem.h \
     glscene.h \
     glsliceitem.h \
-    volumenavigationwidget.h
+    volumenavigationwidget.h \
+    vic.h \
+    vit.h
 
 FORMS    += \
     volumeviewer.ui \

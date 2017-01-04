@@ -13,109 +13,74 @@ RenderEngine::RenderEngine()
 RenderEngine::~RenderEngine()
 {
 
-    foreach ( VIT vit, m_vits) {
-        // maybe use vit destructor?
-        vit.arrayBuf.destroy();
-        vit.indexBuf.destroy();
-        if(vit.texture){
-            delete vit.texture;
-        }
+    foreach ( VIC* vic, m_vics) {
+       delete vic;
+    }
+
+    foreach ( VIT* vit, m_vits) {
+       delete vit;
     }
 }
 
 
 void RenderEngine::clear(){
 
-    foreach ( VIT vit, m_vits) {
-        // maybe use vit destructor?
-        vit.arrayBuf.destroy();
-        vit.indexBuf.destroy();
-        if(vit.texture){
-            delete vit.texture;
-        }
-    }
-
-    m_vits.clear();
-
-    foreach ( VIC vic, m_vics) {
-        // maybe use vic destructor?
-        vic.arrayBuf.destroy();
-        vic.indexBuf.destroy();
+    foreach ( VIC* vic, m_vics) {
+       delete vic;
     }
 
     m_vics.clear();
+
+    foreach ( VIT* vit, m_vits) {
+       delete vit;
+    }
+
+    m_vits.clear();
 }
 
-void RenderEngine::addVIT(QVector<VertexDataTexture> vertices, QVector<GLushort> indices, QImage image, GLenum mode){
+void RenderEngine::addVIT(VIT* vit){
 
-    QOpenGLBuffer abuf;
-    abuf.create();
-    abuf.bind();
-    abuf.allocate(vertices.data(), vertices.size() * sizeof(VertexDataTexture));
+    if( !vit ) return;
 
-    QOpenGLBuffer ibuf(QOpenGLBuffer::IndexBuffer);
-    ibuf.create();
-    ibuf.bind();
-    ibuf.allocate(indices.data(), indices.size() * sizeof(GLushort));
-
-    QOpenGLTexture* tex=new QOpenGLTexture(image);
-    tex->setMinificationFilter(QOpenGLTexture::Nearest);
-    tex->setMagnificationFilter(QOpenGLTexture::Linear);
-    tex->setWrapMode(QOpenGLTexture::Repeat);
-
-    VIT vit;
-    vit.arrayBuf=abuf;
-    vit.indexBuf=ibuf;
-    vit.indexCount=indices.size();
-    vit.texture=tex;
-    vit.mode=mode;
     m_vits.append(vit);
 }
 
 
-void RenderEngine::addVIC( QVector<VertexDataColor> vertices, QVector<GLushort> indices, GLenum mode ){
+void RenderEngine::addVIC( VIC* vic){
 
-    QOpenGLBuffer abuf;
-    abuf.create();
-    abuf.bind();
-    abuf.allocate(vertices.data(), vertices.size() * sizeof(VertexDataColor));
+    if( !vic ) return;
 
-    QOpenGLBuffer ibuf(QOpenGLBuffer::IndexBuffer);
-    ibuf.create();
-    ibuf.bind();
-    ibuf.allocate(indices.data(), indices.size() * sizeof(GLushort));
-
-    VIC vic;
-    vic.arrayBuf=abuf;
-    vic.indexBuf=ibuf;
-    vic.indexCount=indices.size();
-    vic.mode=mode;
     m_vics.append(vic);
 }
+
+#include<iostream>
+#include<iomanip>
 
 void RenderEngine::draw(QMatrix4x4 matrix){
 
     m_textureProgram.bind();
     m_textureProgram.setUniformValue("mvp_matrix", matrix);
     m_textureProgram.setUniformValue("texture", 0);
-    foreach(VIT vit, m_vits){
+    foreach(VIT* vit, m_vits){
+        //std::cout<<"drawing vit "<<std::hex<<vit<<" #index="<<vit->indexCount()<<std::endl<<std::flush;
         draw( &m_textureProgram, vit);
     }
 
     m_colorProgram.bind();
     m_colorProgram.setUniformValue("mvp_matrix", matrix);
-    foreach (VIC vic, m_vics) {
+    foreach (VIC* vic, m_vics) {
+        //std::cout<<"drawing vic "<<std::hex<<vic<<std::dec<<" #index="<<vic->indexCount()<<std::endl<<std::flush;
         draw( &m_colorProgram, vic);
     }
 }
 
-void RenderEngine::draw(QOpenGLShaderProgram *program, RenderEngine::VIT vit)
+void RenderEngine::draw(QOpenGLShaderProgram *program, VIT* vit)
 {
 
     // Tell OpenGL which VBOs to use
-    vit.arrayBuf.bind();
-    vit.indexBuf.bind();
-    vit.texture->bind();
+    vit->arrayBuffer().bind();
+    vit->indexBuffer().bind();
+    vit->texture()->bind();
 
     // Offset for position
     quintptr offset = 0;
@@ -123,7 +88,7 @@ void RenderEngine::draw(QOpenGLShaderProgram *program, RenderEngine::VIT vit)
     // Tell OpenGL programmable pipeline how to locate vertex position data
     int vertexLocation = program->attributeLocation("a_position");
     program->enableAttributeArray(vertexLocation);
-    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexDataTexture));
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VIT::Vertex));
 
     // Offset for texture coordinate
     offset += sizeof(QVector3D);
@@ -131,23 +96,23 @@ void RenderEngine::draw(QOpenGLShaderProgram *program, RenderEngine::VIT vit)
     // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
     int texcoordLocation = program->attributeLocation("a_texcoord");
     program->enableAttributeArray(texcoordLocation);
-    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexDataTexture));
+    program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VIT::Vertex));
 
 
 
-    glDrawElements(vit.mode, vit.indexCount, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(vit->mode(), vit->indexCount(), GL_UNSIGNED_SHORT, 0);
 
-    vit.texture->release();
-    vit.indexBuf.release();
-    vit.arrayBuf.release();
+    vit->texture()->release();
+    vit->indexBuffer().release();
+    vit->arrayBuffer().release();
 }
 
-void RenderEngine::draw(QOpenGLShaderProgram *program, RenderEngine::VIC vic)
+void RenderEngine::draw(QOpenGLShaderProgram *program, VIC* vic)
 {
 
     // Tell OpenGL which VBOs to use
-    vic.arrayBuf.bind();
-    vic.indexBuf.bind();
+    vic->arrayBuffer().bind();
+    vic->indexBuffer().bind();
 
     // Offset for position
     quintptr offset = 0;
@@ -155,7 +120,7 @@ void RenderEngine::draw(QOpenGLShaderProgram *program, RenderEngine::VIC vic)
     // Tell OpenGL programmable pipeline how to locate vertex position data
     int vertexLocation = program->attributeLocation("a_position");
     program->enableAttributeArray(vertexLocation);
-    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexDataColor));
+    program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VIC::Vertex));
 
     // Offset for color
     offset += sizeof(QVector3D);
@@ -163,13 +128,13 @@ void RenderEngine::draw(QOpenGLShaderProgram *program, RenderEngine::VIC vic)
     // Tell OpenGL programmable pipeline how to locate vertex color data
     int colorLocation = program->attributeLocation("a_color");
     program->enableAttributeArray(colorLocation);
-    program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexDataColor));
+    program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VIC::Vertex));
 
 
-    glDrawElements( vic.mode, vic.indexCount, GL_UNSIGNED_SHORT, 0);
+    glDrawElements( vic->mode(), vic->indexCount(), GL_UNSIGNED_SHORT, 0);
 
-    vic.indexBuf.release();
-    vic.arrayBuf.release();
+    vic->indexBuffer().release();
+    vic->arrayBuffer().release();
 }
 
 

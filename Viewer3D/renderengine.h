@@ -3,11 +3,12 @@
 
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLTexture>
-#include <QOpenGLBuffer>
-
 #include<QVector>
-#include<vertexdata.h>
+
+#include<vic.h>
+#include<vit.h>
+
+
 
 class RenderEngine : protected QOpenGLFunctions
 {
@@ -17,40 +18,24 @@ public:
     virtual ~RenderEngine();
 
     void clear();
-    void addVIT( QVector<VertexDataTexture> vertices, QVector<GLushort> indices, QImage tex, GLenum mode);
-    void addVIC( QVector<VertexDataColor>, QVector<GLushort> indices, GLenum mode);
+    void addVIT( VIT* vit);
+    void addVIC( VIC* vic);
 
     void draw(QMatrix4x4 matrix);
 
 private:
 
-    // Vertex Index Texture
-    struct VIT{
-        QOpenGLBuffer   arrayBuf;
-        QOpenGLBuffer   indexBuf;
-        unsigned        indexCount=0;
-        QOpenGLTexture* texture=0;
-        GLenum          mode;
-    };
-
-    // Vertex Index Color
-    struct VIC{
-        QOpenGLBuffer   arrayBuf;
-        QOpenGLBuffer   indexBuf;
-        unsigned        indexCount=0;
-        GLenum          mode;
-    };
-
     void initShaders();
 
-    void draw( QOpenGLShaderProgram*, VIT);
-    void draw( QOpenGLShaderProgram*, VIC);
+    void draw( QOpenGLShaderProgram*, VIT*);
+    void draw( QOpenGLShaderProgram*, VIC*);
 
     QOpenGLShaderProgram m_textureProgram;
     QOpenGLShaderProgram m_colorProgram;
 
-    QVector<VIT> m_vits;
-    QVector<VIC> m_vics;
+
+    QVector<VIT*> m_vits;
+    QVector<VIC*> m_vics;
 };
 
 #endif // RENDERENGINE_H

@@ -248,7 +248,7 @@ void VolumeViewer::outlineToView(Grid3DBounds bounds){
 
     QVector3D color{1., 1., 1.};    // rgba
 
-    QVector<VertexDataColor> vertices{
+    QVector<VIC::Vertex> vertices{
         {QVector3D( bounds.crossline1(), 0, bounds.inline1()), color },
         {QVector3D( bounds.crossline1(), 0, bounds.inline2()), color },
         {QVector3D( bounds.crossline2(), 0, bounds.inline2()), color },
@@ -260,7 +260,7 @@ void VolumeViewer::outlineToView(Grid3DBounds bounds){
     };
 
     // points for gl_lines, maybe change to line_strip
-    QVector<GLushort> indices{
+    QVector<VIC::Index> indices{
          0,1, 1,2, 2,3, 3,0,           // top
          4,5, 5,6, 6,7, 7,4,           // bottom
          0,1, 1,5, 5,4, 4,0,           // left
@@ -269,7 +269,7 @@ void VolumeViewer::outlineToView(Grid3DBounds bounds){
          3,7, 7,4, 4,0, 0,3            // front
     };
 
-    ui->openGLWidget->engine()->addVIC(vertices, indices, GL_LINES );
+    ui->openGLWidget->engine()->addVIC(VIC::makeVIC(vertices, indices, GL_LINES) );
 }
 
 void VolumeViewer::sliceToView( const SliceDef& def ){
@@ -296,18 +296,18 @@ void VolumeViewer::inlineSliceToView( int iline ){
         }
     }
 
-    QVector<VertexDataTexture> vertices{
+    QVector<VIT::Vertex> vertices{
         {QVector3D( bounds.crossline1(), 0,  iline), QVector2D( 0, 0)},   // top left
         {QVector3D( bounds.crossline2(), 0, iline), QVector2D( 1, 0)},   // top right
         {QVector3D( bounds.crossline1(), bounds.sampleCount(), iline), QVector2D( 0, 1)},   // bottom left
         {QVector3D( bounds.crossline2(), bounds.sampleCount(), iline), QVector2D( 1, 1)}    // bottom right
     };
 
-    QVector<GLushort> indices{
+    QVector<VIT::Index> indices{
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->engine()->addVIT(vertices, indices, img, GL_TRIANGLE_STRIP);
+    ui->openGLWidget->engine()->addVIT(VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
 }
 
 void VolumeViewer::crosslineSliceToView( int xline ){
@@ -324,18 +324,18 @@ void VolumeViewer::crosslineSliceToView( int xline ){
         }
     }
 
-    QVector<VertexDataTexture> vertices{
+    QVector<VIT::Vertex> vertices{
         {QVector3D( xline, 0,  bounds.inline1()), QVector2D( 0, 0)},   // top left
         {QVector3D( xline, 0, bounds.inline2()), QVector2D( 1, 0)},   // top right
         {QVector3D( xline, bounds.sampleCount(), bounds.inline1()), QVector2D( 0, 1)},   // bottom left
         {QVector3D( xline, bounds.sampleCount(), bounds.inline2()), QVector2D( 1, 1)}    // bottom right
     };
 
-    QVector<GLushort> indices{
+    QVector<VIT::Index> indices{
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->engine()->addVIT(vertices, indices, img, GL_TRIANGLE_STRIP);
+    ui->openGLWidget->engine()->addVIT( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
 }
 
 void VolumeViewer::sampleSliceToView( int sample ){
@@ -352,18 +352,18 @@ void VolumeViewer::sampleSliceToView( int sample ){
         }
     }
 
-    QVector<VertexDataTexture> vertices{
+    QVector<VIT::Vertex> vertices{
         {QVector3D( bounds.crossline1(), sample,  bounds.inline1()), QVector2D( 0, 0)},   // top left
         {QVector3D( bounds.crossline1(), sample, bounds.inline2()), QVector2D( 1, 0)},   // top right
         {QVector3D( bounds.crossline2(), sample, bounds.inline1()), QVector2D( 0, 1)},   // bottom left
         {QVector3D( bounds.crossline2(), sample, bounds.inline2()), QVector2D( 1, 1)}    // bottom right
     };
 
-    QVector<GLushort> indices{
+    QVector<VIT::Index> indices{
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->engine()->addVIT(vertices, indices, img.mirrored(), GL_TRIANGLE_STRIP);
+    ui->openGLWidget->engine()->addVIT( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img.mirrored()) );
 }
 
 void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
@@ -380,7 +380,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
     auto range=valueRange(*hrz);
     QVector3D nullColor{0,0,0};
     QVector3D baseColor{static_cast<float>(hcolor.redF()), static_cast<float>(hcolor.greenF()), static_cast<float>(hcolor.blueF()) };
-    QVector<VertexDataColor> vertices;
+    QVector<VIC::Vertex> vertices;
 
     for( int i=hbounds.i1(); i<=hbounds.i2(); i++){
 
@@ -391,16 +391,16 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
                 int s=vbounds.timeToSample(0.001*t);
                 float x=(t-range.first)/(range.second-range.first);
                 QVector3D color=baseColor*(2.-x)/2;                     // scale color dep on time/depth, deeper->darker
-                vertices.append( VertexDataColor{ QVector3D( j, s, i), color } );
+                vertices.append( VIC::Vertex{ QVector3D( j, s, i), color } );
             }
             else{
-                vertices.append( VertexDataColor{ QVector3D( j, 0, i), nullColor } );
+                vertices.append( VIC::Vertex{ QVector3D( j, 0, i), nullColor } );
             }
             //std::cout<<j<<", "<<s<<", "<<i<<std::endl;
         }
     }
 
-    QVector<GLushort> indices;
+    QVector<VIC::Index> indices;
 
     bool gap=false;
     for( int i=hbounds.i1(); i<hbounds.i2(); i++){  // 1 less
@@ -447,7 +447,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
         std::cout<<idx<<std::endl;
     }
 */
-    ui->openGLWidget->engine()->addVIC(vertices, indices, GL_TRIANGLE_STRIP);
+    ui->openGLWidget->engine()->addVIC( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
 }
 
 
@@ -457,8 +457,8 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
     Grid3DBounds bounds=m_volume->bounds();
 
     QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
-    QVector<VertexDataColor> vertices;
-    QVector<GLushort> indices;
+    QVector<VIC::Vertex> vertices;
+    QVector<VIC::Index> indices;
 
     QVector3D scale=ui->openGLWidget->scale();
     qreal sizeX=SIZE/std::fabs(scale.x());
@@ -484,10 +484,10 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
         qreal zback=z+fac*sizeZ;
 
 
-        vertices.append( VertexDataColor{ QVector3D( xleft, ybottom, zfront), drawColor} );  // 1
-        vertices.append( VertexDataColor{ QVector3D( x, ybottom, zback), drawColor} );       // 2
-        vertices.append( VertexDataColor{ QVector3D( xright, ybottom, zfront), drawColor} ); // 3
-        vertices.append( VertexDataColor{ QVector3D( x, ytop, z), drawColor} );              // 4
+        vertices.append( VIC::Vertex{ QVector3D( xleft, ybottom, zfront), drawColor} );  // 1
+        vertices.append( VIC::Vertex{ QVector3D( x, ybottom, zback), drawColor} );       // 2
+        vertices.append( VIC::Vertex{ QVector3D( xright, ybottom, zfront), drawColor} ); // 3
+        vertices.append( VIC::Vertex{ QVector3D( x, ytop, z), drawColor} );              // 4
 
 
         int j=i*4;              // index of first vertex or this tetraeder
@@ -509,7 +509,7 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
             indices.append(indices.back());
         }
 
-        ui->openGLWidget->engine()->addVIC(vertices, indices, GL_TRIANGLE_STRIP);
+        ui->openGLWidget->engine()->addVIC( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
     }
 }
 
