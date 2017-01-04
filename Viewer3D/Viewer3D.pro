@@ -26,9 +26,6 @@ SOURCES += \
     modaldisplayrangedialog.cpp \
     addslicedialog.cpp \
     slicedef.cpp \
-    glsceneitem.cpp \
-    glscene.cpp \
-    glsliceitem.cpp \
     volumenavigationwidget.cpp \
     vic.cpp \
     vit.cpp \
@@ -45,9 +42,6 @@ HEADERS  += \
     addslicedialog.h \
     slicedef.h \
     vertexdata.h \
-    glsceneitem.h \
-    glscene.h \
-    glsliceitem.h \
     volumenavigationwidget.h \
     vic.h \
     vit.h \

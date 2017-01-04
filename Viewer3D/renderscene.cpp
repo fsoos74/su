@@ -28,14 +28,27 @@ void RenderScene::clear(){
 }
 
 // take ownership of item, i.e. resposible for deleting it
-int RenderScene::add(RenderItem* item){
+RenderScene::ItemID RenderScene::addItem(RenderItem* item){
 
     if( !item ) return -1;
 
-    int key=m_nextKey++;
+    ItemID key=m_nextKey++;
 
     m_items.insert( key, item );
 
     return key;
 }
 
+// deletes the item
+bool RenderScene::removeItem( RenderScene::ItemID id){
+
+    RenderItem* item=m_items.value( id, nullptr );
+
+    if( ! item ) return false;
+
+    delete item;
+
+    m_items.remove(id);
+
+    return true;
+}
