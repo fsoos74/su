@@ -2,7 +2,7 @@
 #define VIT_H
 
 
-#include <QOpenGLFunctions>
+//#include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QOpenGLTexture>
 #include <QVector3D>
@@ -10,9 +10,11 @@
 #include <QVector>
 #include <QImage>
 
+#include <renderitem.h>
+
 
 // Vertex Index Texture
-class VIT : protected QOpenGLFunctions
+class VIT : public RenderItem
 {
 public:
 

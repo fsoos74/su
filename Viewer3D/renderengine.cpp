@@ -4,6 +4,8 @@
 #include <QVector3D>
 #include <GL/glu.h>
 
+#include <renderscene.h>
+
 RenderEngine::RenderEngine()
 {
     initializeOpenGLFunctions();
@@ -13,64 +15,32 @@ RenderEngine::RenderEngine()
 RenderEngine::~RenderEngine()
 {
 
-    foreach ( VIC* vic, m_vics) {
-       delete vic;
-    }
-
-    foreach ( VIT* vit, m_vits) {
-       delete vit;
-    }
-}
-
-
-void RenderEngine::clear(){
-
-    foreach ( VIC* vic, m_vics) {
-       delete vic;
-    }
-
-    m_vics.clear();
-
-    foreach ( VIT* vit, m_vits) {
-       delete vit;
-    }
-
-    m_vits.clear();
-}
-
-void RenderEngine::addVIT(VIT* vit){
-
-    if( !vit ) return;
-
-    m_vits.append(vit);
-}
-
-
-void RenderEngine::addVIC( VIC* vic){
-
-    if( !vic ) return;
-
-    m_vics.append(vic);
 }
 
 #include<iostream>
 #include<iomanip>
 
-void RenderEngine::draw(QMatrix4x4 matrix){
+void RenderEngine::draw(RenderScene* scene, QMatrix4x4 matrix){
 
-    m_textureProgram.bind();
-    m_textureProgram.setUniformValue("mvp_matrix", matrix);
-    m_textureProgram.setUniformValue("texture", 0);
-    foreach(VIT* vit, m_vits){
-        //std::cout<<"drawing vit "<<std::hex<<vit<<" #index="<<vit->indexCount()<<std::endl<<std::flush;
-        draw( &m_textureProgram, vit);
+    m_VITProgram.bind();
+    m_VITProgram.setUniformValue("mvp_matrix", matrix);
+    m_VITProgram.setUniformValue("texture", 0);
+    foreach( RenderItem* item, scene->items() ){
+
+        if( VIT* vit=dynamic_cast<VIT*>(item)){
+            //std::cout<<"drawing vit "<<std::hex<<vit<<" #index="<<vit->indexCount()<<std::endl<<std::flush;
+            draw( &m_VITProgram, vit);
+        }
     }
 
-    m_colorProgram.bind();
-    m_colorProgram.setUniformValue("mvp_matrix", matrix);
-    foreach (VIC* vic, m_vics) {
-        //std::cout<<"drawing vic "<<std::hex<<vic<<std::dec<<" #index="<<vic->indexCount()<<std::endl<<std::flush;
-        draw( &m_colorProgram, vic);
+    m_VICProgram.bind();
+    m_VICProgram.setUniformValue("mvp_matrix", matrix);
+    foreach( RenderItem* item, scene->items() ){
+
+        if( VIC* vic=dynamic_cast<VIC*>(item)){
+            //std::cout<<"drawing vic "<<std::hex<<vic<<std::dec<<" #index="<<vic->indexCount()<<std::endl<<std::flush;
+            draw( &m_VICProgram, vic);
+        }
     }
 }
 
@@ -199,37 +169,37 @@ void RenderEngine::initShaders()
         close();
 */
     // Compile vertex shader
-    if (!m_textureProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexShaderSource))
-        qFatal("Compiling VIT Vertex Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VITProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, textureVertexShaderSource))
+        qFatal("Compiling VIT Vertex Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
     // Compile fragment shader
-    if (!m_textureProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentShaderSource))
-        qFatal("Compiling VIT Fragment Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VITProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, textureFragmentShaderSource))
+        qFatal("Compiling VIT Fragment Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
     // Link shader pipeline
-    if (!m_textureProgram.link())
-        qFatal("Linking VIT Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VITProgram.link())
+        qFatal("Linking VIT Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
     // Bind shader pipeline for use
-    if (!m_textureProgram.bind())
-        qFatal("Binding VIT Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VITProgram.bind())
+        qFatal("Binding VIT Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
 
     // Compile vertex shader
-    if (!m_colorProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, colorVertexShaderSource))
-        qFatal("Compiling VIC Vertex Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VICProgram.addShaderFromSourceCode(QOpenGLShader::Vertex, colorVertexShaderSource))
+        qFatal("Compiling VIC Vertex Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
     // Compile fragment shader
-    if (!m_colorProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, colorFragmentShaderSource))
-        qFatal("Compiling VIC Fragment Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VICProgram.addShaderFromSourceCode(QOpenGLShader::Fragment, colorFragmentShaderSource))
+        qFatal("Compiling VIC Fragment Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
     // Link shader pipeline
-    if (!m_colorProgram.link())
-        qFatal("Linking VIC Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VICProgram.link())
+        qFatal("Linking VIC Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
     // Bind shader pipeline for use
-    if (!m_colorProgram.bind())
-        qFatal("Binding VIC Shader failed: %s", m_textureProgram.log().toStdString().c_str() );
+    if (!m_VICProgram.bind())
+        qFatal("Binding VIC Shader failed: %s", m_VITProgram.log().toStdString().c_str() );
 
 }
 

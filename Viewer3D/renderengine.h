@@ -8,6 +8,7 @@
 #include<vic.h>
 #include<vit.h>
 
+class RenderScene;
 
 
 class RenderEngine : protected QOpenGLFunctions
@@ -17,11 +18,7 @@ public:
     RenderEngine();
     virtual ~RenderEngine();
 
-    void clear();
-    void addVIT( VIT* vit);
-    void addVIC( VIC* vic);
-
-    void draw(QMatrix4x4 matrix);
+    void draw( RenderScene* scene, QMatrix4x4 matrix);
 
 private:
 
@@ -30,12 +27,8 @@ private:
     void draw( QOpenGLShaderProgram*, VIT*);
     void draw( QOpenGLShaderProgram*, VIC*);
 
-    QOpenGLShaderProgram m_textureProgram;
-    QOpenGLShaderProgram m_colorProgram;
-
-
-    QVector<VIT*> m_vits;
-    QVector<VIC*> m_vics;
+    QOpenGLShaderProgram m_VICProgram;
+    QOpenGLShaderProgram m_VITProgram;
 };
 
 #endif // RENDERENGINE_H

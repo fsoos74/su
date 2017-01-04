@@ -146,7 +146,8 @@ void ViewWidget::initializeGL()
 
     //glEnable(GL_CULL_FACE);       // leave this commented, want to see both faces
 
-    renderEngine = new RenderEngine;
+    m_engine = new RenderEngine;
+    m_scene= new RenderScene;
 }
 
 
@@ -185,6 +186,6 @@ void ViewWidget::paintGL()
     matrix.rotate(m_rotation.z(), QVector3D( 0, 0, 1));
     matrix.translate( -m_center);
 
-    renderEngine->draw(projection * matrix);
+    m_engine->draw( m_scene, projection * matrix);
 
 }

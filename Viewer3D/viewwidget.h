@@ -10,7 +10,7 @@
 #include <QVector3D>
 
 #include "renderengine.h"
-
+#include "renderscene.h"
 
 class ViewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -21,7 +21,11 @@ public:
     ~ViewWidget();
 
     RenderEngine* engine()const{
-        return renderEngine;
+        return m_engine;
+    }
+
+    RenderScene* scene()const{
+        return m_scene;
     }
 
     QVector3D center(){
@@ -63,7 +67,8 @@ protected:
 
 private:
 
-    RenderEngine* renderEngine=nullptr;
+    RenderEngine* m_engine=nullptr;
+    RenderScene* m_scene=nullptr;
 
     //QOpenGLShaderProgram textureProgram;
     //QOpenGLShaderProgram colorProgram;

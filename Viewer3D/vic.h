@@ -2,14 +2,15 @@
 #define VIC_H
 
 
-#include <QOpenGLFunctions>
+//#include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QVector3D>
 #include <QVector>
 
+#include<renderitem.h>
 
 // Vertex Index Color
-class VIC : protected QOpenGLFunctions
+class VIC : public RenderItem
 {
 public:
 

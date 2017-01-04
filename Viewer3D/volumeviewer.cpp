@@ -173,10 +173,10 @@ void VolumeViewer::refreshView(){
 
     Q_ASSERT( m_volume);
 
-    RenderEngine* engine=view->engine();
-    Q_ASSERT(engine);
+    RenderScene* scene=view->scene();
+    Q_ASSERT(scene);
 
-    engine->clear();
+    scene->clear();
 
     if( ui->actionShow_Volume_Outline->isChecked()){
         outlineToView( m_volume->bounds());
@@ -269,7 +269,7 @@ void VolumeViewer::outlineToView(Grid3DBounds bounds){
          3,7, 7,4, 4,0, 0,3            // front
     };
 
-    ui->openGLWidget->engine()->addVIC(VIC::makeVIC(vertices, indices, GL_LINES) );
+    ui->openGLWidget->scene()->add(VIC::makeVIC(vertices, indices, GL_LINES) );
 }
 
 void VolumeViewer::sliceToView( const SliceDef& def ){
@@ -307,7 +307,7 @@ void VolumeViewer::inlineSliceToView( int iline ){
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->engine()->addVIT(VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
+    ui->openGLWidget->scene()->add(VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
 }
 
 void VolumeViewer::crosslineSliceToView( int xline ){
@@ -335,7 +335,7 @@ void VolumeViewer::crosslineSliceToView( int xline ){
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->engine()->addVIT( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
+    ui->openGLWidget->scene()->add( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
 }
 
 void VolumeViewer::sampleSliceToView( int sample ){
@@ -363,7 +363,7 @@ void VolumeViewer::sampleSliceToView( int sample ){
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->engine()->addVIT( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img.mirrored()) );
+    ui->openGLWidget->scene()->add( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img.mirrored()) );
 }
 
 void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
@@ -447,7 +447,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
         std::cout<<idx<<std::endl;
     }
 */
-    ui->openGLWidget->engine()->addVIC( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
+    ui->openGLWidget->scene()->add( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
 }
 
 
@@ -509,7 +509,7 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
             indices.append(indices.back());
         }
 
-        ui->openGLWidget->engine()->addVIC( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
+        ui->openGLWidget->scene()->add( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
     }
 }
 
