@@ -110,9 +110,10 @@ void ViewWidget::keyPressEvent(QKeyEvent *e){
     }
     else{   // move
 
-        const qreal xstep=(m_scale.x()) ? 1./ std::fabs(m_scale.x()) : 1;
-        const qreal ystep=(m_scale.y()) ? 1./ std::fabs(m_scale.y()) : 1;
-        const qreal zstep=(m_scale.z()) ? 1./ std::fabs(m_scale.z()) : 1;
+        const qreal step=10.;
+        const qreal xstep=step / m_scale.x();//  ? 1./ std::fabs(m_scale.x()) : 1;
+        const qreal ystep=step / m_scale.y();//(m_scale.y()) ? 1./ std::fabs(m_scale.y()) : 1;
+        const qreal zstep=step / m_scale.z();// ? 1./ std::fabs(m_scale.z()) : 1;
 
         switch( e->key() ){
         case Qt::Key_PageDown: m_position.setZ(m_position.z()+zstep);break;
@@ -138,7 +139,7 @@ void ViewWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    glClearColor(0, 0, 0, 1);
+    glClearColor(0.8, 0.8, 0.8, 1);
 
     //initShaders();
 
@@ -156,8 +157,14 @@ void ViewWidget::resizeGL(int w, int h)
     // Calculate aspect ratio
     qreal aspect = qreal(w) / qreal(h ? h : 1);
 
-    const qreal zNear = 3.0, zFar = 7000000.0, fov = 45.0;
+    //const qreal zNear = 3.0, zFar = 7000000.0, fov = 45.0;
 
+    qreal zNear = 3;
+    qreal zFar = 7000000.0;
+    //if( zNear > zFar) std::swap(zNear, zFar);
+    const qreal fov=45.0;
+
+    std::cout<<"near="<<zNear<<" far="<<zFar<<std::endl;
 
     // Reset projection
     projection.setToIdentity();
@@ -176,15 +183,19 @@ void ViewWidget::paintGL()
     // Calculate model view transformation
     QMatrix4x4 matrix;
 
-    matrix.scale(m_scale ); //1., 0.1, 1. );
-    matrix.translate(m_position);//(0.0, 0.0, -5.0);
+    //matrix.scale(m_scale ); //1., 0.1, 1. );
+    //matrix.translate(m_position);//(0.0, 0.0, -5.0);
+    matrix.translate(m_position*m_scale);//(0.0, 0.0, -5.0);
 
     // rotate around x,y,z axes through volume center
-    matrix.translate( m_center );
+    matrix.translate( m_center*m_scale );
     matrix.rotate(m_rotation.x(), QVector3D( 1, 0, 0));
     matrix.rotate(m_rotation.y(), QVector3D( 0, 1, 0));
     matrix.rotate(m_rotation.z(), QVector3D( 0, 0, 1));
-    matrix.translate( -m_center);
+    matrix.translate( -m_center*m_scale);
+
+    matrix.scale(m_scale ); //1., 0.1, 1. );
+
 
     m_engine->draw( m_scene, projection * matrix);
 

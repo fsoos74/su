@@ -63,6 +63,12 @@ void VolumeViewer::setProject(std::shared_ptr<AVOProject> p){
 
     m_project=p;
 
+    if( m_project ){
+        m_project->geometry().computeTransforms(xy_to_ilxl, ilxl_to_xy);
+    }
+    else{
+        xy_to_ilxl=ilxl_to_xy=QTransform();
+    }
     //update();
 }
 
@@ -178,6 +184,9 @@ void VolumeViewer::refreshView(){
 
     scene->clear();
 
+
+    //directionIndicatorPlanesToView( m_volume->bounds());
+
     if( ui->actionShow_Volume_Outline->isChecked()){
         outlineToView( m_volume->bounds());
     }
@@ -246,17 +255,27 @@ void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
 void VolumeViewer::outlineToView(Grid3DBounds bounds){
 
-    QVector3D color{1., 1., 1.};    // rgba
+    QVector3D color{ 1., 1., 1. };
+
+    QPoint ILXL1(bounds.inline1(), bounds.crossline1());
+    QPoint ILXL2(bounds.inline1(), bounds.crossline2());
+    QPoint ILXL3(bounds.inline2(), bounds.crossline1());
+    QPoint ILXL4(bounds.inline2(), bounds.crossline2());
+
+    QPointF XY1=ilxl_to_xy.map(ILXL1);
+    QPointF XY2=ilxl_to_xy.map(ILXL2);
+    QPointF XY3=ilxl_to_xy.map(ILXL3);
+    QPointF XY4=ilxl_to_xy.map(ILXL4);
 
     QVector<VIC::Vertex> vertices{
-        {QVector3D( bounds.crossline1(), 0, bounds.inline1()), color },
-        {QVector3D( bounds.crossline1(), 0, bounds.inline2()), color },
-        {QVector3D( bounds.crossline2(), 0, bounds.inline2()), color },
-        {QVector3D( bounds.crossline2(), 0, bounds.inline1()), color },
-        {QVector3D( bounds.crossline1(), bounds.sampleCount(), bounds.inline1()), color },
-        {QVector3D( bounds.crossline1(), bounds.sampleCount(), bounds.inline2()), color },
-        {QVector3D( bounds.crossline2(), bounds.sampleCount(), bounds.inline2()), color },
-        {QVector3D( bounds.crossline2(), bounds.sampleCount(), bounds.inline1()), color }
+        {QVector3D( XY1.x(), bounds.ft(), XY1.y()), color },
+        {QVector3D( XY2.x(), bounds.ft(), XY2.y()), color },
+        {QVector3D( XY4.x(), bounds.ft(), XY4.y()), color },
+        {QVector3D( XY3.x(), bounds.ft(), XY3.y()), color },
+        {QVector3D( XY1.x(), bounds.lt(), XY1.y()), color },
+        {QVector3D( XY2.x(), bounds.lt(), XY2.y()), color },
+        {QVector3D( XY4.x(), bounds.lt(), XY4.y()), color },
+        {QVector3D( XY3.x(), bounds.lt(), XY3.y()), color }
     };
 
     // points for gl_lines, maybe change to line_strip
@@ -270,6 +289,71 @@ void VolumeViewer::outlineToView(Grid3DBounds bounds){
     };
 
     ui->openGLWidget->scene()->addItem(VIC::makeVIC(vertices, indices, GL_LINES) );
+}
+
+
+void VolumeViewer::directionIndicatorPlanesToView( Grid3DBounds bounds){
+
+    // add planes of min x=blue, min y=red, min z=green
+    QRect br_ilxl( bounds.inline1(), bounds.crossline1(), bounds.inlineCount(), bounds.crosslineCount() );
+    QRectF br_xy=ilxl_to_xy.mapRect(br_ilxl);
+
+    qreal xmin=br_xy.left();
+    qreal xmax=br_xy.right();
+    qreal zmin=br_xy.top();
+    qreal zmax=br_xy.bottom();
+    qreal ymin=bounds.ft();
+    qreal ymax=bounds.lt();
+
+    std::cout<<"xmin="<<xmin<<" xmax="<<xmax<<std::endl;
+    std::cout<<"ymin="<<ymin<<" ymax="<<ymax<<std::endl;
+    std::cout<<"zmin="<<zmin<<" zmax="<<zmax<<std::endl;
+
+
+    // top (ymin) rectangle
+    {
+        QVector3D color{ 1., 0., 0. };
+        QVector<VIC::Vertex> vertices={
+            {QVector3D( xmin, ymin, zmin ), color },
+            {QVector3D( xmax, ymin, zmin ), color },
+            {QVector3D( xmax, ymin, zmax ), color },
+            {QVector3D( xmin, ymin, zmax ), color }
+        };
+
+        QVector<VIC::Index> indices{ 0, 1, 2, 3};
+
+        ui->openGLWidget->scene()->addItem(VIC::makeVIC(vertices, indices, GL_QUADS) );
+    }
+
+    // front (zmin) rectangle
+    {
+        QVector3D color{ 0., 1., 0. };
+        QVector<VIC::Vertex> vertices={
+            {QVector3D( xmin, ymin, zmin ), color },
+            {QVector3D( xmax, ymin, zmin ), color },
+            {QVector3D( xmax, ymax, zmin ), color },
+            {QVector3D( xmin, ymax, zmin ), color }
+        };
+
+        QVector<VIC::Index> indices{ 0, 1, 2, 3};
+
+        ui->openGLWidget->scene()->addItem(VIC::makeVIC(vertices, indices, GL_QUADS) );
+    }
+
+    // left (xmin) rectangle
+    {
+        QVector3D color{ 0., 0., 1. };
+        QVector<VIC::Vertex> vertices={
+            {QVector3D( xmin, ymin, zmin ), color },
+            {QVector3D( xmin, ymin, zmax ), color },
+            {QVector3D( xmin, ymax, zmax ), color },
+            {QVector3D( xmin, ymax, zmin ), color }
+        };
+
+        QVector<VIC::Index> indices{ 0, 1, 2, 3};
+
+        ui->openGLWidget->scene()->addItem(VIC::makeVIC(vertices, indices, GL_QUADS) );
+    }
 }
 
 void VolumeViewer::sliceToView( const SliceDef& def ){
@@ -296,11 +380,14 @@ void VolumeViewer::inlineSliceToView( int iline ){
         }
     }
 
+    QPointF xy1=ilxl_to_xy.map(QPoint(iline, bounds.crossline1()));
+    QPointF xy2=ilxl_to_xy.map(QPoint(iline, bounds.crossline2()));
+
     QVector<VIT::Vertex> vertices{
-        {QVector3D( bounds.crossline1(), 0,  iline), QVector2D( 0, 0)},   // top left
-        {QVector3D( bounds.crossline2(), 0, iline), QVector2D( 1, 0)},   // top right
-        {QVector3D( bounds.crossline1(), bounds.sampleCount(), iline), QVector2D( 0, 1)},   // bottom left
-        {QVector3D( bounds.crossline2(), bounds.sampleCount(), iline), QVector2D( 1, 1)}    // bottom right
+        {QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector2D( 0, 0)},   // top left
+        {QVector3D( xy2.x(), bounds.ft(), xy2.y()), QVector2D( 1, 0)},   // top right
+        {QVector3D( xy1.x(), bounds.lt(), xy1.y()), QVector2D( 0, 1)},   // bottom left
+        {QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector2D( 1, 1)}    // bottom right
     };
 
     QVector<VIT::Index> indices{
@@ -346,24 +433,38 @@ void VolumeViewer::sampleSliceToView( int sample ){
     Grid3DBounds bounds=volume.bounds();
 
     QImage img(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGB32 );
-    for( int i=0; i<img.width(); i++){
-        for( int j=0; j<img.height(); j++){
-            img.setPixel(i,j,m_colorTable->map(volume(bounds.inline1()+i, bounds.crossline1()+j, sample) ) );
+    for( int il=bounds.inline1(); il<=bounds.inline2(); il++){
+        for( int xl=bounds.crossline1(); xl<=bounds.crossline2(); xl++){
+            int xi=il-bounds.inline1();
+            int yi=xl-bounds.crossline1();
+            img.setPixel( xi, yi, m_colorTable->map(volume(il, xl, sample) ) );
         }
     }
 
+    QPoint ILXL1(bounds.inline1(), bounds.crossline1());
+    QPoint ILXL2(bounds.inline1(), bounds.crossline2());
+    QPoint ILXL3(bounds.inline2(), bounds.crossline1());
+    QPoint ILXL4(bounds.inline2(), bounds.crossline2());
+
+    QPointF XY1=ilxl_to_xy.map(ILXL1);
+    QPointF XY2=ilxl_to_xy.map(ILXL2);
+    QPointF XY3=ilxl_to_xy.map(ILXL3);
+    QPointF XY4=ilxl_to_xy.map(ILXL4);
+
+    qreal time=bounds.sampleToTime(sample);
+
     QVector<VIT::Vertex> vertices{
-        {QVector3D( bounds.crossline1(), sample,  bounds.inline1()), QVector2D( 0, 0)},   // top left
-        {QVector3D( bounds.crossline1(), sample, bounds.inline2()), QVector2D( 1, 0)},   // top right
-        {QVector3D( bounds.crossline2(), sample, bounds.inline1()), QVector2D( 0, 1)},   // bottom left
-        {QVector3D( bounds.crossline2(), sample, bounds.inline2()), QVector2D( 1, 1)}    // bottom right
+        {QVector3D( XY1.x(), time, XY1.y() ), QVector2D( 0, 0)},   // il1 xl1
+        {QVector3D( XY2.x(), time, XY2.y() ), QVector2D( 0, 1)},   // il1 xl2
+        {QVector3D( XY3.x(), time, XY3.y() ), QVector2D( 1, 0)},   // il2 xl1
+        {QVector3D( XY4.x(), time, XY4.y() ), QVector2D( 1, 1)}    // il2 xl2
     };
 
     QVector<VIT::Index> indices{
-         0,  1,  2,  3
+         0,  1,  3,  2
     };
 
-    ui->openGLWidget->scene()->addItem( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img.mirrored()) );
+    ui->openGLWidget->scene()->addItem( VIT::makeVIT(vertices, indices, GL_QUADS, img ) );
 }
 
 void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
@@ -533,7 +634,7 @@ void VolumeViewer::initialVolumeDisplay(){
     int sample=(bounds.sampleCount())/2;
     m_slices.append( SliceDef{SliceType::SAMPLE, sample});
 
-    ui->openGLWidget->setCenter(QVector3D(xline, sample, iline) );
+   // ui->openGLWidget->setCenter(QVector3D(xline, sample, iline) );
 
     defaultPositionAndScale();
     ui->openGLWidget->setRotation(QVector3D(0,0,0));
@@ -676,15 +777,31 @@ void VolumeViewer::defaultPositionAndScale(){
 
     Grid3DBounds bounds=m_volume->bounds();
 
+    QRect br_ilxl( bounds.inline1(), bounds.crossline1(), bounds.inlineCount(), bounds.crosslineCount() );
+    QRectF br_xy=ilxl_to_xy.mapRect(br_ilxl);
+
     // compute scale factor to make lines and times same size
-    qreal yfac=qreal(std::max(bounds.inlineCount(), bounds.crosslineCount()))/bounds.sampleCount();
+    qreal yfac=qreal(std::max(br_xy.width(), br_xy.height()))/(bounds.lt()-bounds.ft());
 
-    qreal dx=0.5*(bounds.crossline1()+bounds.crossline2());
-    qreal dz=(bounds.inline1() + 2*bounds.crosslineCount());
-    qreal dy=0.5*bounds.sampleCount();
+    qreal cx=br_xy.center().x();
+    qreal cz=br_xy.center().y();
+    qreal cy=0.5*(bounds.ft()+bounds.lt());
 
+    qreal w=br_xy.width();
+    qreal h=yfac*(bounds.lt()-bounds.ft());
+
+    /* This is for positive z points towards user, standard
     ui->openGLWidget->setScale(QVector3D(1., -yfac, 1. ) );     // - make y-axis top to bottom!!!
-    ui->openGLWidget->setPosition(QVector3D( -dx, -dy, -dz ) );
+    ui->openGLWidget->setCenter(QVector3D(cx,cy,cz));
+    ui->openGLWidget->setPosition(QVector3D( -cx, - cy,  ( -br_xy.top() - 2*std::sqrt(w*w+h*h) ) ) );
+    */
+
+
+    ui->openGLWidget->setScale(QVector3D(1., -yfac, -1. ) );     // - make y-axis top to bottom, z-axis points backwards
+    ui->openGLWidget->setCenter(QVector3D(cx,cy,cz));
+
+    ui->openGLWidget->setPosition(QVector3D( -cx, - cy,  ( -br_xy.top() + 2*std::sqrt(w*w+h*h) ) ) );
+
 }
 
 void VolumeViewer::on_action_Front_triggered()

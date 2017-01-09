@@ -91,6 +91,8 @@ private:
     void setupNavigationToolBar();
     void populateWindowMenu();
 
+    void directionIndicatorPlanesToView( Grid3DBounds bounds);
+
     void outlineToView( Grid3DBounds bounds );
     void sliceToView( const SliceDef& );
     void inlineSliceToView( int iline );
@@ -106,6 +108,7 @@ private:
 
     std::shared_ptr<Grid3D<float> > m_volume;
     std::shared_ptr<AVOProject> m_project;
+    QTransform ilxl_to_xy, xy_to_ilxl;
     ColorTable* m_colorTable;           // holds colors and display range
     QVector<SliceDef> m_slices;
     QMap<QString, HorizonDef> m_horizons;
