@@ -7,8 +7,8 @@ VIT::VIT():m_arrayBuf(QOpenGLBuffer::VertexBuffer), m_indexBuf(QOpenGLBuffer::In
     m_indexBuf.create();
     m_indexCount=0;
 
-    m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
-    m_texture->setMagnificationFilter(QOpenGLTexture::Linear);
+    m_texture->setMinificationFilter(QOpenGLTexture::Linear);
+    m_texture->setMagnificationFilter(QOpenGLTexture::LinearMipMapLinear);
     m_texture->setWrapMode(QOpenGLTexture::Repeat);
 }
 

@@ -98,7 +98,7 @@ void RenderEngine::draw(QOpenGLShaderProgram *program, VIC* vic)
     // Tell OpenGL programmable pipeline how to locate vertex color data
     int colorLocation = program->attributeLocation("a_color");
     program->enableAttributeArray(colorLocation);
-    program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VIC::Vertex));
+    program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VIC::Vertex));       // was 3 instead 4
 
 
     glDrawElements( vic->mode(), vic->indexCount(), GL_UNSIGNED_SHORT, 0);
@@ -130,7 +130,12 @@ static const char* textureFragmentShaderSource =
     "uniform sampler2D texture;\n"
     "varying vec2 v_texcoord;\n"
     "void main(){\n"
-    "gl_FragColor = texture2D(texture, v_texcoord);\n"
+//    "gl_FragColor = texture2D(texture, v_texcoord);\n"
+// the next 4 lines replace above line because of transparency handling with depth test
+    "vec4 texel = texture2D(texture, v_texcoord);\n"
+    "if(texel.a < 0.5)\n"
+    "       discard;\n"
+    "gl_FragColor = texel;\n"
     "}\n";
 
 static const char *colorVertexShaderSource =

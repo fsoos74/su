@@ -373,10 +373,15 @@ void VolumeViewer::inlineSliceToView( int iline ){
     Grid3D<float>& volume=*m_volume;
     Grid3DBounds bounds=volume.bounds();
 
-    QImage img(bounds.crosslineCount(), bounds.sampleCount(), QImage::Format_RGB32 );
+    QImage img(bounds.crosslineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);// QImage::Format_RGB32 );
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
-            img.setPixel(i,j,m_colorTable->map(volume(iline, bounds.crossline1()+i, j) ) );
+
+            Grid3D<float>::value_type value=volume(iline, bounds.crossline1()+i, j);
+            ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
+            img.setPixel(i,j, color );
+
+            //img.setPixel(i,j,m_colorTable->map(volume(iline, bounds.crossline1()+i, j) ) );
         }
     }
 
@@ -404,25 +409,34 @@ void VolumeViewer::crosslineSliceToView( int xline ){
     Grid3D<float>& volume=*m_volume;
     Grid3DBounds bounds=volume.bounds();
 
-    QImage img(bounds.inlineCount(), bounds.sampleCount(), QImage::Format_RGB32 );
+    QImage img(bounds.inlineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);// QImage::Format_RGB32 );
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
-            img.setPixel(i,j,m_colorTable->map(volume(bounds.inline1()+i, xline, j) ) );
+
+            Grid3D<float>::value_type value=volume(bounds.inline1()+i, xline, j);
+            ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
+            img.setPixel(i,j, color );
+
+            //img.setPixel(i,j,m_colorTable->map(volume(bounds.inline1()+i, xline, j) ) );
         }
     }
 
+    QPointF xy1=ilxl_to_xy.map(QPoint(bounds.inline1(), xline));
+    QPointF xy2=ilxl_to_xy.map(QPoint(bounds.inline2(), xline));
+
     QVector<VIT::Vertex> vertices{
-        {QVector3D( xline, 0,  bounds.inline1()), QVector2D( 0, 0)},   // top left
-        {QVector3D( xline, 0, bounds.inline2()), QVector2D( 1, 0)},   // top right
-        {QVector3D( xline, bounds.sampleCount(), bounds.inline1()), QVector2D( 0, 1)},   // bottom left
-        {QVector3D( xline, bounds.sampleCount(), bounds.inline2()), QVector2D( 1, 1)}    // bottom right
+        {QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector2D( 0, 0)},   // top left
+        {QVector3D( xy2.x(), bounds.ft(), xy2.y()), QVector2D( 1, 0)},   // top right
+        {QVector3D( xy1.x(), bounds.lt(), xy1.y()), QVector2D( 0, 1)},   // bottom left
+        {QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector2D( 1, 1)}    // bottom right
     };
 
     QVector<VIT::Index> indices{
          0,  1,  2,  3
     };
 
-    ui->openGLWidget->scene()->addItem( VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
+    ui->openGLWidget->scene()->addItem(VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
+
 }
 
 void VolumeViewer::sampleSliceToView( int sample ){
@@ -432,12 +446,17 @@ void VolumeViewer::sampleSliceToView( int sample ){
     Grid3D<float>& volume=*m_volume;
     Grid3DBounds bounds=volume.bounds();
 
-    QImage img(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGB32 );
+    QImage img(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGBA8888); //QImage::Format_RGB32 );
     for( int il=bounds.inline1(); il<=bounds.inline2(); il++){
         for( int xl=bounds.crossline1(); xl<=bounds.crossline2(); xl++){
             int xi=il-bounds.inline1();
             int yi=xl-bounds.crossline1();
-            img.setPixel( xi, yi, m_colorTable->map(volume(il, xl, sample) ) );
+
+            Grid3D<float>::value_type value=volume(il, xl, sample);
+            ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
+            img.setPixel(xi, yi, color );
+
+            //img.setPixel( xi, yi, m_colorTable->map(volume(il, xl, sample) ) );
         }
     }
 
@@ -778,13 +797,17 @@ void VolumeViewer::defaultPositionAndScale(){
     Grid3DBounds bounds=m_volume->bounds();
 
     QRect br_ilxl( bounds.inline1(), bounds.crossline1(), bounds.inlineCount(), bounds.crosslineCount() );
+    br_ilxl=br_ilxl.normalized();
     QRectF br_xy=ilxl_to_xy.mapRect(br_ilxl);
+    br_xy=br_xy.normalized();
 
     // compute scale factor to make lines and times same size
     qreal yfac=qreal(std::max(br_xy.width(), br_xy.height()))/(bounds.lt()-bounds.ft());
 
-    qreal cx=br_xy.center().x();
-    qreal cz=br_xy.center().y();
+
+
+    qreal cx=(br_xy.left()+br_xy.right())/2; //br_xy.center().x();
+    qreal cz=(br_xy.top()+br_xy.bottom())/2;//br_xy.center().y();
     qreal cy=0.5*(bounds.ft()+bounds.lt());
 
     qreal w=br_xy.width();
