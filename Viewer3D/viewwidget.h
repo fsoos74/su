@@ -28,20 +28,24 @@ public:
         return m_scene;
     }
 
-    QVector3D center(){
+    QVector3D center()const{
         return m_center;
     }
 
-    QVector3D position(){
+    QVector3D position()const{
         return m_position;
     }
 
-    QVector3D scale(){
+    QVector3D scale()const{
         return m_scale;
     }
 
-    QVector3D rotation(){
+    QVector3D rotation()const{
         return m_rotation;
+    }
+
+    QVector3D dimesions()const{
+        return m_dimensions;
     }
 
 public slots:
@@ -50,12 +54,14 @@ public slots:
     void setPosition( QVector3D );
     void setScale( QVector3D );
     void setRotation( QVector3D );
+    void setDimensions( QVector3D );
 
 signals:
 
     void positionChanged(QVector3D);
     void scaleChanged(QVector3D);
     void rotationChanged(QVector3D);
+    void dimensionsChanged(QVector3D);
 
 protected:
     void mousePressEvent(QMouseEvent*);
@@ -79,6 +85,7 @@ private:
     QVector3D m_position;
     QVector3D m_rotation;
     QVector3D m_scale;
+    QVector3D m_dimensions;      // this is not scaled yet, x and z are true coords, y is in secs
 };
 
 #endif // VIEWWIDGET_H

@@ -805,26 +805,23 @@ void VolumeViewer::defaultPositionAndScale(){
     qreal yfac=qreal(std::max(br_xy.width(), br_xy.height()))/(bounds.lt()-bounds.ft());
 
 
-
     qreal cx=(br_xy.left()+br_xy.right())/2; //br_xy.center().x();
     qreal cz=(br_xy.top()+br_xy.bottom())/2;//br_xy.center().y();
     qreal cy=0.5*(bounds.ft()+bounds.lt());
 
-    qreal w=br_xy.width();
-    qreal h=yfac*(bounds.lt()-bounds.ft());
+    qreal sizeX=br_xy.width();
+    qreal sizeZ=br_xy.height();
+    qreal sizeY=(bounds.lt()-bounds.ft());
 
-    /* This is for positive z points towards user, standard
-    ui->openGLWidget->setScale(QVector3D(1., -yfac, 1. ) );     // - make y-axis top to bottom!!!
+    QVector3D dimensions(sizeX, sizeY, sizeZ);
+
+    qreal maxSize=std::max({sizeX, yfac*sizeY, sizeZ } );
+
     ui->openGLWidget->setCenter(QVector3D(cx,cy,cz));
-    ui->openGLWidget->setPosition(QVector3D( -cx, - cy,  ( -br_xy.top() - 2*std::sqrt(w*w+h*h) ) ) );
-    */
-
-
     ui->openGLWidget->setScale(QVector3D(1., -yfac, -1. ) );     // - make y-axis top to bottom, z-axis points backwards
-    ui->openGLWidget->setCenter(QVector3D(cx,cy,cz));
-
-    ui->openGLWidget->setPosition(QVector3D( -cx, - cy,  ( -br_xy.top() + 2*std::sqrt(w*w+h*h) ) ) );
-
+    ui->openGLWidget->setRotation(QVector3D(0,0,0));
+    ui->openGLWidget->setPosition(QVector3D( 0, 0, -2*maxSize ) );  // 45 deg fov
+    ui->openGLWidget->setDimensions(dimensions);
 }
 
 void VolumeViewer::on_action_Front_triggered()

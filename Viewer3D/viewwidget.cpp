@@ -62,6 +62,19 @@ void ViewWidget::setRotation(QVector3D s){
     update();
 }
 
+void ViewWidget::setDimensions(QVector3D d){
+
+    if(d==m_dimensions) return;
+
+    m_dimensions=d;
+
+    emit dimensionsChanged(d);
+
+    update();
+}
+
+
+
 
 std::ostream& operator<<(std::ostream& os, const QVector3D& v){
 
@@ -110,18 +123,16 @@ void ViewWidget::keyPressEvent(QKeyEvent *e){
     }
     else{   // move
 
-        const qreal step=10.;
-        const qreal xstep=step / m_scale.x();//  ? 1./ std::fabs(m_scale.x()) : 1;
-        const qreal ystep=step / m_scale.y();//(m_scale.y()) ? 1./ std::fabs(m_scale.y()) : 1;
-        const qreal zstep=step / m_scale.z();// ? 1./ std::fabs(m_scale.z()) : 1;
+        const qreal relativeStep=0.01;
+        QVector3D step=relativeStep * m_scale * m_dimensions;
 
         switch( e->key() ){
-        case Qt::Key_PageDown: m_position.setZ(m_position.z()+zstep);break;
-        case Qt::Key_PageUp: m_position.setZ(m_position.z()-zstep);break;
-        case Qt::Key_Up: m_position.setY(m_position.y()-ystep);break;
-        case Qt::Key_Down: m_position.setY(m_position.y()+ystep);break;
-        case Qt::Key_Left: m_position.setX(m_position.x()-xstep);break;
-        case Qt::Key_Right: m_position.setX(m_position.x()+xstep);break;
+        case Qt::Key_PageDown: m_position.setZ(m_position.z()-step.z());break;
+        case Qt::Key_PageUp: m_position.setZ(m_position.z()+step.z());break;
+        case Qt::Key_Up: m_position.setY(m_position.y()-step.y());break;
+        case Qt::Key_Down: m_position.setY(m_position.y()+step.y());break;
+        case Qt::Key_Left: m_position.setX(m_position.x()-step.x());break;
+        case Qt::Key_Right: m_position.setX(m_position.x()+step.x());break;
         }
 
         emit positionChanged(m_position);
@@ -145,6 +156,11 @@ void ViewWidget::initializeGL()
 
     glEnable(GL_DEPTH_TEST);
 
+
+
+    //glEnable(GL_MULTISAMPLE);
+    //glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
+
     // using discard in shader instead of blending to allow depth test
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glEnable(GL_BLEND);
@@ -161,144 +177,59 @@ void ViewWidget::resizeGL(int w, int h)
     // Calculate aspect ratio
     qreal aspect = qreal(w) / qreal(h ? h : 1);
 
-    //const qreal zNear = 3.0, zFar = 7000000.0, fov = 45.0;
+    // in order to avoid objects showing at the wrong depth, i.e. far objects in front of near ones
+    // the znear needs to be as far as possible and the zfar should be as close as possible
+    // compute nearest and farthest possible points
 
-    qreal zNear = 3;
-    qreal zFar = 7000000.0;
-    //if( zNear > zFar) std::swap(zNear, zFar);
+    qreal zNear = 1000;                 // need to compute this
+    qreal zFar = 700000.0;               // should based on volume dimensions
     const qreal fov=45.0;
-
-    std::cout<<"near="<<zNear<<" far="<<zFar<<std::endl;
 
     // Reset projection
     projection.setToIdentity();
 
     // Set perspective projection
     projection.perspective(fov, aspect, zNear, zFar);
-
-
-
-    //update();
 }
 
-/*
-std::ostream& operator<<(std::ostream& os, const QVector3D& v){
 
-    std::cout<<"[ "<<v.x()<<", "<<v.y()<<", "<<v.z()<<" ]";
-    return os;
-}
-*/
-
-/*
-void ViewWidget::paintGL()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Calculate model view transformation
-    QMatrix4x4 matrix;
-
-    std::cout<<"1: "<<m_center<<std::endl;
-
-    //matrix.translate(m_position*m_scale);
-
-    // rotate around x,y,z axes through volume center
-    matrix.translate( m_center );
-
-    std::cout<<"2: "<<m_center*matrix<<std::endl;
-
-    matrix.rotate(m_rotation.x(), QVector3D( 1, 0, 0));
-
-    //std::cout<<"3: "<<m_center*matrix<<std::endl;
-
-    matrix.rotate(m_rotation.y(), QVector3D( 0, 1, 0));
-
-    //std::cout<<"4: "<<m_center*matrix<<std::endl;
-
-    matrix.rotate(m_rotation.z(), QVector3D( 0, 0, 1));
-
-    //std::cout<<"5: "<<m_center*matrix<<std::endl;
-
-    matrix.scale(m_scale );
-
-    std::cout<<"7: "<<m_center*matrix<<std::endl;
-
-    matrix.translate( -m_center);
-
-    std::cout<<"6: "<<m_center*matrix<<std::endl;
-
-
-
-    matrix.translate(m_position);
-
-    std::cout<<"8: "<<m_center*matrix<<std::endl;
-
-    m_engine->draw( m_scene, projection * matrix);
-
-    std::cout<<"9: "<<m_center*projection*matrix<<std::endl;
-
-}
-*/
 
 void ViewWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Calculate model view transformation
-    QMatrix4x4 matrix;
+    //std::cout<<"object center: "<<m_center<<std::endl;
+    //std::cout<<"scale: "<<m_scale<<std::endl;
+    //std::cout<<"rotation: "<<m_rotation<<std::endl;
+
+    // scale, rotate relative to volume center -> (0,0,0)
+    // IMPORTANT: transformations have to be applied in reverse order !!!!
+    QMatrix4x4 object_matrix;
+
+    // rotate around objects x,y,z axis, first z then y then x, see above
+    object_matrix.rotate(m_rotation.x(), QVector3D( 1, 0, 0));
+    object_matrix.rotate(m_rotation.y(), QVector3D( 0, 1, 0));
+    object_matrix.rotate(m_rotation.z(), QVector3D( 0, 0, 1));
+
+    // scale object relative to center
+    object_matrix.scale(m_scale);
+
+    // make volume center the origin for further transformations (above, reverse order!!!)
+    object_matrix.translate( -m_center );
 
 
-    matrix.translate(m_position*m_scale);
+    // this matrix is for the "camera"
+    // right now the camera looks in positive z-direction (or parallel to z-axis)
+    // the camera is located at m_position
 
+    QMatrix4x4 view_matrix;
+    view_matrix.translate(m_position);      // set position to center at beginning in volumeviewer
 
-    // rotate around x,y,z axes through volume center
-    matrix.translate( m_center*m_scale );
-    matrix.rotate(m_rotation.x(), QVector3D( 1, 0, 0));
-    matrix.rotate(m_rotation.y(), QVector3D( 0, 1, 0));
-    matrix.rotate(m_rotation.z(), QVector3D( 0, 0, 1));
-    matrix.translate( -m_center*m_scale);
+    //std::cout<<" --> "<<view_matrix * object_matrix*m_center<<std::endl;
 
+    QMatrix4x4 matrix = projection * view_matrix * object_matrix;
 
-    matrix.scale(m_scale );
-
-
-    m_engine->draw( m_scene, projection * matrix);
-
-}
-
-/*
- * void ViewWidget::paintGL()
-{
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Calculate model view transformation
-    QMatrix4x4 matrix;
-
-    //matrix.scale(m_scale ); //1., 0.1, 1. );
-    //matrix.translate(m_position);//(0.0, 0.0, -5.0);
-    std::cout<<"position: "<<m_position<<std::endl;
-    std::cout<<"scale: "<<m_scale<<std::endl;
-    std::cout<<"pos*scale: "<<m_position*m_scale<<std::endl;
-    std::cout<<"center: "<<m_center<<std::endl;
-    std::cout<<"center*scale: "<<m_center*m_scale<<std::endl;
-
-    matrix.translate(m_position*m_scale);//(0.0, 0.0, -5.0);
-
-    // rotate around x,y,z axes through volume center
-    matrix.translate( m_center*m_scale );
-    matrix.rotate(m_rotation.x(), QVector3D( 1, 0, 0));
-    matrix.rotate(m_rotation.y(), QVector3D( 0, 1, 0));
-    matrix.rotate(m_rotation.z(), QVector3D( 0, 0, 1));
-    matrix.translate( -m_center*m_scale);
-
-
-    matrix.scale(m_scale ); //1., 0.1, 1. );
-
-
-
-    //matrix.translate(m_position);
-
-    m_engine->draw( m_scene, projection * matrix);
+    m_engine->draw( m_scene, matrix);
 
 }
 
-*/
