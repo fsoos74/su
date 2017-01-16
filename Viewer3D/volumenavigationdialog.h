@@ -1,20 +1,20 @@
-#ifndef VOLUMENAVIGATIONWIDGET_H
-#define VOLUMENAVIGATIONWIDGET_H
+#ifndef VOLUMENAVIGATIONDIALOG_H
+#define VOLUMENAVIGATIONDIALOG_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QVector3D>
 
 namespace Ui {
-class VolumeNavigationWidget;
+class VolumeNavigationDialog;
 }
 
-class VolumeNavigationWidget : public QWidget
+class VolumeNavigationDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit VolumeNavigationWidget(QWidget *parent = 0);
-    ~VolumeNavigationWidget();
+    explicit VolumeNavigationDialog(QWidget *parent = 0);
+    ~VolumeNavigationDialog();
 
     QVector3D position();
     QVector3D rotation();
@@ -43,7 +43,7 @@ private slots:
     void scaleEntered();
 
 private:
-    Ui::VolumeNavigationWidget *ui;
+    Ui::VolumeNavigationDialog *ui;
 };
 
 #endif // VOLUMENAVIGATIONWIDGET_H

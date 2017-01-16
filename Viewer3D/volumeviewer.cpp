@@ -9,7 +9,6 @@
 #include<addslicedialog.h>
 
 #include<QToolBar>
-#include<volumenavigationwidget.h>
 
 #include <cmath>
 
@@ -28,7 +27,7 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
-    setupNavigationToolBar();
+    createDockWidgets();
     populateWindowMenu();
 }
 
@@ -37,24 +36,65 @@ VolumeViewer::~VolumeViewer()
     delete ui;
 }
 
-void VolumeViewer::setupNavigationToolBar(){
-    QToolBar* navigationToolBar=ui->toolBar_Navigation;
-    VolumeNavigationWidget* navigation=new VolumeNavigationWidget(this);
-    navigationToolBar->addWidget(navigation);
-    connect( navigation, SIGNAL(positionChanged(QVector3D)), ui->openGLWidget, SLOT(setPosition(QVector3D)) );
-    connect(ui->openGLWidget, SIGNAL(positionChanged(QVector3D)), navigation, SLOT(setPosition(QVector3D)) );
-    connect( navigation, SIGNAL(rotationChanged(QVector3D)), ui->openGLWidget, SLOT(setRotation(QVector3D)) );
-    connect(ui->openGLWidget, SIGNAL(rotationChanged(QVector3D)), navigation, SLOT(setRotation(QVector3D)) );
-    connect( navigation, SIGNAL(scaleChanged(QVector3D)), ui->openGLWidget, SLOT(setScale(QVector3D)) );
-    connect(ui->openGLWidget, SIGNAL(scaleChanged(QVector3D)), navigation, SLOT(setScale(QVector3D)) );
-    //ui->toolBar_Navigation->hide();
-}
 
 void VolumeViewer::populateWindowMenu(){
 
+    ui->menu_Window->addAction( m_volumeColorBarDock->toggleViewAction());
+    ui->menu_Window->addAction( m_navigationControlsDock->toggleViewAction());
+    ui->menu_Window->addSeparator();
     ui->menu_Window->addAction( ui->toolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->toolBar_View->toggleViewAction());
-    ui->menu_Window->addAction( ui->toolBar_Navigation->toggleViewAction());
+}
+
+void VolumeViewer::createDockWidgets(){
+
+    m_volumeColorBarDock = new QDockWidget(tr("Volume Colorbar"), this);
+    m_volumeColorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_volumeColorBarDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar |
+                                      QDockWidget::DockWidgetClosable |
+                                      QDockWidget::DockWidgetMovable |
+                                      QDockWidget::DockWidgetFloatable);
+    m_volumeColorBarWidget=new ColorBarWidget(m_volumeColorBarDock);
+    m_volumeColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
+    m_volumeColorBarDock->setContentsMargins(10, 5, 10, 5);
+    m_volumeColorBarDock->setWidget(m_volumeColorBarWidget);
+    addDockWidget(Qt::RightDockWidgetArea, m_volumeColorBarDock);
+    m_volumeColorBarWidget->setColorTable( m_colorTable );
+    //m_volumeColorBarWidget->setLabel("Volume Amplitudes");
+    m_volumeColorBarDock->close();
+
+    m_navigationControlsDock = new QDockWidget(tr("Navigation Controls"), this);
+    m_navigationControlsDock->setAllowedAreas(Qt::LeftDockWidgetArea);
+    m_navigationControlsDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar |
+                                      QDockWidget::DockWidgetClosable |
+                                      QDockWidget::DockWidgetMovable |
+                                      QDockWidget::DockWidgetFloatable);
+    m_navigationControls=new Navigation3DControls(m_navigationControlsDock);
+    m_navigationControlsDock->setWidget(m_navigationControls);
+    addDockWidget(Qt::LeftDockWidgetArea, m_navigationControlsDock);
+    Navigation3DControls* controls = m_navigationControls;
+
+    connect( controls, SIGNAL(moveLeft()), ui->openGLWidget, SLOT(moveXNeg()) );
+    connect( controls, SIGNAL(moveRight()), ui->openGLWidget, SLOT(moveXPos()) );
+    connect( controls, SIGNAL(moveUp()), ui->openGLWidget, SLOT(moveYNeg()) );
+    connect( controls, SIGNAL(moveDown()), ui->openGLWidget, SLOT(moveYPos()) );
+    connect( controls, SIGNAL(moveBack()), ui->openGLWidget, SLOT(moveZPos()) );
+    connect( controls, SIGNAL(moveFront()), ui->openGLWidget, SLOT(moveZNeg()) );
+
+    connect( controls, SIGNAL(rotateXNeg()), ui->openGLWidget, SLOT(rotateXNeg()) );
+    connect( controls, SIGNAL(rotateXPos()), ui->openGLWidget, SLOT(rotateXPos()) );
+    connect( controls, SIGNAL(rotateYNeg()), ui->openGLWidget, SLOT(rotateYNeg()) );
+    connect( controls, SIGNAL(rotateYPos()), ui->openGLWidget, SLOT(rotateYPos()) );
+    connect( controls, SIGNAL(rotateZNeg()), ui->openGLWidget, SLOT(rotateZNeg()) );
+    connect( controls, SIGNAL(rotateZPos()), ui->openGLWidget, SLOT(rotateZPos()) );
+
+    connect( controls, SIGNAL(scaleXNeg()), ui->openGLWidget, SLOT(scaleXNeg()) );
+    connect( controls, SIGNAL(scaleXPos()), ui->openGLWidget, SLOT(scaleXPos()) );
+    connect( controls, SIGNAL(scaleYNeg()), ui->openGLWidget, SLOT(scaleYNeg()) );
+    connect( controls, SIGNAL(scaleYPos()), ui->openGLWidget, SLOT(scaleYPos()) );
+    connect( controls, SIGNAL(scaleZNeg()), ui->openGLWidget, SLOT(scaleZNeg()) );
+    connect( controls, SIGNAL(scaleZPos()), ui->openGLWidget, SLOT(scaleZPos()) );
+
 }
 
 void VolumeViewer::setProject(std::shared_ptr<AVOProject> p){
@@ -180,6 +220,7 @@ void VolumeViewer::refreshView(){
     Q_ASSERT( m_volume);
 
     RenderScene* scene=view->scene();
+    //if( !scene ) return;
     Q_ASSERT(scene);
 
     scene->clear();
@@ -869,4 +910,23 @@ void VolumeViewer::on_actionSet_Point_Size_triggered()
     if( !ok ) return;
 
     setHighlightedPointSize(s);
+}
+
+void VolumeViewer::on_action_Navigation_Dialog_triggered()
+{
+    if( !m_navigationDialog ){
+
+        m_navigationDialog=new VolumeNavigationDialog(this);
+        m_navigationDialog->setWindowTitle(tr("Volume Navigation"));
+
+        VolumeNavigationDialog* navigation=m_navigationDialog;
+        connect( navigation, SIGNAL(positionChanged(QVector3D)), ui->openGLWidget, SLOT(setPosition(QVector3D)) );
+        connect(ui->openGLWidget, SIGNAL(positionChanged(QVector3D)), navigation, SLOT(setPosition(QVector3D)) );
+        connect( navigation, SIGNAL(rotationChanged(QVector3D)), ui->openGLWidget, SLOT(setRotation(QVector3D)) );
+        connect(ui->openGLWidget, SIGNAL(rotationChanged(QVector3D)), navigation, SLOT(setRotation(QVector3D)) );
+        connect( navigation, SIGNAL(scaleChanged(QVector3D)), ui->openGLWidget, SLOT(setScale(QVector3D)) );
+        connect(ui->openGLWidget, SIGNAL(scaleChanged(QVector3D)), navigation, SLOT(setScale(QVector3D)) );
+    }
+
+    m_navigationDialog->show();
 }

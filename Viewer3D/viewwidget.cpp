@@ -6,7 +6,8 @@
 #include<iostream>
 
 ViewWidget::ViewWidget(QWidget *parent) :
-    QOpenGLWidget(parent), m_position(0.0, 0.0, -5.0), m_rotation(0.,0.,0.), m_scale(1.,1.,1.)
+    QOpenGLWidget(parent), m_position(0.0, 0.0, -5.0), m_rotation(0.,0.,0.), m_scale(1.,1.,1.),
+    m_relativeStepSize(0.01)
 {
     setFocus();
 }
@@ -19,6 +20,17 @@ ViewWidget::~ViewWidget()
 
     doneCurrent();
 }
+
+/*
+void ViewWidget::setScene(RenderScene * s){
+
+    if( s==m_scene ) return;
+
+    m_scene=s;
+
+    update();
+}
+*/
 
 void ViewWidget::setCenter(QVector3D p){
 
@@ -74,13 +86,158 @@ void ViewWidget::setDimensions(QVector3D d){
 }
 
 
+void ViewWidget::setRelativeStepSize(qreal s){
+
+    // no update required -> no check for equal
+    m_relativeStepSize=s;
+}
 
 
-std::ostream& operator<<(std::ostream& os, const QVector3D& v){
+void ViewWidget::moveXPos( ){
 
-    os<<"[ "<<v.x()<<", "<<v.y()<<", "<<v.z()<<" ]";
+    QVector3D pos=position();
+    qreal step = m_relativeStepSize * m_scale.x() * m_dimensions.x();
+    pos.setX( pos.x() + step );
+    setPosition(pos);
+}
 
-    return os;
+void ViewWidget::moveXNeg( ){
+
+    QVector3D pos=position();
+    qreal step = m_relativeStepSize * m_scale.x() * m_dimensions.x();
+    pos.setX( pos.x() - step );
+    setPosition(pos);
+}
+
+void ViewWidget::moveYPos( ){
+
+    QVector3D pos=position();
+    qreal step = m_relativeStepSize * m_scale.y() * m_dimensions.y();
+    pos.setY( pos.y() + step );
+    setPosition(pos);
+}
+
+void ViewWidget::moveYNeg( ){
+
+    QVector3D pos=position();
+    qreal step = m_relativeStepSize * m_scale.y() * m_dimensions.y();
+    pos.setY( pos.y() - step );
+    setPosition(pos);
+}
+
+void ViewWidget::moveZPos( ){
+
+    QVector3D pos=position();
+    qreal step = m_relativeStepSize * m_scale.z() * m_dimensions.z();
+    pos.setZ( pos.z() + step );
+    setPosition(pos);
+}
+
+void ViewWidget::moveZNeg( ){
+
+    QVector3D pos=position();
+    qreal step = m_relativeStepSize * m_scale.z() * m_dimensions.z();
+    pos.setZ( pos.z() - step );
+    setPosition(pos);
+}
+
+
+void ViewWidget::setRotationStep(qreal s){
+
+    // no update required -> no check for equal
+    m_rotationStep=s;
+}
+
+void ViewWidget::rotateXPos( ){
+
+    QVector3D rot=rotation();
+    rot.setX( rot.x() + m_rotationStep );
+    setRotation(rot);
+}
+
+void ViewWidget::rotateXNeg( ){
+
+    QVector3D rot=rotation();
+    rot.setX( rot.x() - m_rotationStep );
+    setRotation(rot);
+}
+
+void ViewWidget::rotateYPos(  ){
+
+    QVector3D rot=rotation();
+    rot.setY( rot.y() + m_rotationStep );
+    setRotation(rot);
+}
+
+void ViewWidget::rotateYNeg(  ){
+
+    QVector3D rot=rotation();
+    rot.setY( rot.y() - m_rotationStep );
+    setRotation(rot);
+}
+
+void ViewWidget::rotateZPos(  ){
+
+    QVector3D rot=rotation();
+    rot.setZ( rot.z() + m_rotationStep );
+    setRotation(rot);
+}
+
+void ViewWidget::rotateZNeg( ){
+
+    QVector3D rot=rotation();
+    rot.setZ( rot.z() - m_rotationStep );
+    setRotation(rot);
+}
+
+
+void ViewWidget::setScaleFactor(qreal f){
+
+    // no update required -> no check for equal
+    m_scaleFactor=f;
+}
+
+void ViewWidget::scaleXPos(  ){
+
+    QVector3D s=scale();
+    s.setX( m_scale.x() * m_scaleFactor );
+    setScale(s);
+}
+
+void ViewWidget::scaleXNeg( ){
+
+    QVector3D s=scale();
+    s.setX( s.x() / m_scaleFactor );
+    setScale(s);
+}
+
+void ViewWidget::scaleYPos( ){
+
+    QVector3D s=scale();
+    s.setY( s.y() * m_scaleFactor );
+    setScale(s);
+}
+
+void ViewWidget::scaleYNeg( ){
+
+    QVector3D s=scale();
+    s.setY( s.y() / m_scaleFactor );
+    setScale(s);
+}
+
+
+void ViewWidget::scaleZPos( ){
+
+    QVector3D s=scale();
+    s.setZ( s.z() * m_scaleFactor );
+    setScale(s);
+}
+
+void ViewWidget::scaleZNeg( ){
+
+    QVector3D s=scale();
+    s.setZ( s.z() / m_scaleFactor );
+    setScale(s);
 }
 
 
@@ -92,58 +249,44 @@ void ViewWidget::keyPressEvent(QKeyEvent *e){
 
     if( e->modifiers()==Qt::ControlModifier ){  // zoom
 
-        const qreal growFactor=1.25;
-        const qreal shrinkFactor=0.8;
-
         switch( e->key() ){
-        case Qt::Key_PageDown: m_scale.setZ(m_scale.z()*growFactor);break;
-        case Qt::Key_PageUp: m_scale.setZ(m_scale.z()*shrinkFactor);break;
-        case Qt::Key_Up: m_scale.setY(m_scale.y()*growFactor);break;
-        case Qt::Key_Down: m_scale.setY(m_scale.y()*shrinkFactor);break;
-        case Qt::Key_Left: m_scale.setX(m_scale.x()*shrinkFactor);break;
-        case Qt::Key_Right: m_scale.setX(m_scale.x()*growFactor);break;
+        case Qt::Key_PageDown:  scaleZPos(); break;
+        case Qt::Key_PageUp:    scaleZNeg(); break;
+        case Qt::Key_Up:        scaleYPos(); break;
+        case Qt::Key_Down:      scaleYNeg(); break;
+        case Qt::Key_Left:      scaleXNeg(); break;
+        case Qt::Key_Right:     scaleXPos(); break;
         }
 
         emit scaleChanged(m_scale);
     }
     else if( e->modifiers()==Qt::ShiftModifier){    // rotate
 
-        const qreal step=1;
-
         switch( e->key() ){
-        case Qt::Key_PageDown: m_rotation.setZ(m_rotation.z()+step);break;
-        case Qt::Key_PageUp: m_rotation.setZ(m_rotation.z()-step);break;
-        case Qt::Key_Up: m_rotation.setY(m_rotation.y()-step);break;
-        case Qt::Key_Down: m_rotation.setY(m_rotation.y()+step);break;
-        case Qt::Key_Left: m_rotation.setX(m_rotation.x()-step);break;
-        case Qt::Key_Right: m_rotation.setX(m_rotation.x()+step);break;
+        case Qt::Key_PageDown:  rotateZNeg(); break;
+        case Qt::Key_PageUp:    rotateZPos(); break;
+        case Qt::Key_Up:        rotateYPos(); break;
+        case Qt::Key_Down:      rotateYNeg(); break;
+        case Qt::Key_Left:      rotateXNeg(); break;
+        case Qt::Key_Right:     rotateXPos(); break;
         }
 
         emit rotationChanged(m_rotation);
     }
     else{   // move
 
-        const qreal relativeStep=0.01;
-        QVector3D step=relativeStep * m_scale * m_dimensions;
-
         switch( e->key() ){
-        case Qt::Key_PageDown: m_position.setZ(m_position.z()-step.z());break;
-        case Qt::Key_PageUp: m_position.setZ(m_position.z()+step.z());break;
-        case Qt::Key_Up: m_position.setY(m_position.y()-step.y());break;
-        case Qt::Key_Down: m_position.setY(m_position.y()+step.y());break;
-        case Qt::Key_Left: m_position.setX(m_position.x()-step.x());break;
-        case Qt::Key_Right: m_position.setX(m_position.x()+step.x());break;
+        case Qt::Key_PageDown:  moveZNeg(); break;
+        case Qt::Key_PageUp:    moveZPos(); break;
+        case Qt::Key_Up:        moveYNeg(); break;
+        case Qt::Key_Down:      moveYPos(); break;
+        case Qt::Key_Left:      moveXNeg(); break;
+        case Qt::Key_Right:     moveXPos(); break;
         }
 
         emit positionChanged(m_position);
     }
 
-    std::cout<<"position= "<<m_position<<std::endl;
-    std::cout<<"rotation= "<<m_rotation<<std::endl;
-    std::cout<<"scale= "<<m_scale<<std::endl;
-
-
-    update();
 }
 
 void ViewWidget::initializeGL()

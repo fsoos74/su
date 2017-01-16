@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QVector>
 #include <QMap>
+#include <QDockWidget>
 #include <memory>
 
 #include<baseviewer.h>
@@ -12,6 +13,9 @@
 #include<colortable.h>
 #include<selectionpoint.h>
 #include <slicedef.h>
+#include <navigation3dcontrols.h>
+#include <colorbarwidget.h>
+#include <volumenavigationdialog.h>
 
 namespace Ui {
 class VolumeViewer;
@@ -81,6 +85,8 @@ private slots:
 
     void on_actionSet_Point_Size_triggered();
 
+    void on_action_Navigation_Dialog_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -88,7 +94,7 @@ protected:
 
 private:
 
-    void setupNavigationToolBar();
+    void createDockWidgets();
     void populateWindowMenu();
 
     void directionIndicatorPlanesToView( Grid3DBounds bounds);
@@ -106,12 +112,22 @@ private:
 
     Ui::VolumeViewer *ui;
 
+    ColorBarWidget* m_volumeColorBarWidget=nullptr;
+    QDockWidget* m_volumeColorBarDock=nullptr;
+    Navigation3DControls* m_navigationControls=nullptr;
+    QDockWidget* m_navigationControlsDock=nullptr;
+
+    VolumeNavigationDialog* m_navigationDialog=nullptr;
+
     std::shared_ptr<Grid3D<float> > m_volume;
     std::shared_ptr<AVOProject> m_project;
     QTransform ilxl_to_xy, xy_to_ilxl;
     ColorTable* m_colorTable;           // holds colors and display range
+
+    //QVector<SliceDef> m_slices;
     QVector<SliceDef> m_slices;
     QMap<QString, HorizonDef> m_horizons;
+
     QVector<SelectionPoint> m_highlightedPoints;
     qreal m_highlightedPointSize=2;
     QColor m_highlightedPointColor=Qt::red;

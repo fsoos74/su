@@ -26,11 +26,12 @@ SOURCES += \
     modaldisplayrangedialog.cpp \
     addslicedialog.cpp \
     slicedef.cpp \
-    volumenavigationwidget.cpp \
     vic.cpp \
     vit.cpp \
     renderitem.cpp \
-    renderscene.cpp
+    renderscene.cpp \
+    navigation3dcontrols.cpp \
+    volumenavigationdialog.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -42,17 +43,19 @@ HEADERS  += \
     addslicedialog.h \
     slicedef.h \
     vertexdata.h \
-    volumenavigationwidget.h \
     vic.h \
     vit.h \
     renderitem.h \
-    renderscene.h
+    renderscene.h \
+    navigation3dcontrols.h \
+    volumenavigationdialog.h
 
 FORMS    += \
     volumeviewer.ui \
     modaldisplayrangedialog.ui \
     addslicedialog.ui \
-    volumenavigationwidget.ui
+    navigation3dcontrols.ui \
+    volumenavigationdialog.ui
 
 RESOURCES += \
     shaders.qrc

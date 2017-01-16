@@ -29,7 +29,7 @@ public:
 
     }
 
-    const int steps()const{
+    int steps()const{
         return m_steps;
     }
 

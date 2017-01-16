@@ -48,13 +48,50 @@ public:
         return m_dimensions;
     }
 
+    qreal relativeStepSize()const{
+        return m_relativeStepSize;
+    }
+
+    qreal rotationStep()const{
+        return m_rotationStep;
+    }
+
+    qreal scaleFactor()const{
+        return m_scaleFactor;
+    }
+
 public slots:
 
+    //void setScene( RenderScene* );
     void setCenter( QVector3D );
     void setPosition( QVector3D );
     void setScale( QVector3D );
     void setRotation( QVector3D );
     void setDimensions( QVector3D );
+
+    void setRelativeStepSize( qreal );
+    void moveXPos();
+    void moveXNeg();
+    void moveYPos();
+    void moveYNeg();
+    void moveZPos();
+    void moveZNeg();
+
+    void setRotationStep( qreal );
+    void rotateXPos();
+    void rotateXNeg();
+    void rotateYPos();
+    void rotateYNeg();
+    void rotateZPos();
+    void rotateZNeg();
+
+    void setScaleFactor( qreal );
+    void scaleXPos();
+    void scaleXNeg();
+    void scaleYPos();
+    void scaleYNeg();
+    void scaleZPos();
+    void scaleZNeg();
 
 signals:
 
@@ -86,6 +123,10 @@ private:
     QVector3D m_rotation;
     QVector3D m_scale;
     QVector3D m_dimensions;      // this is not scaled yet, x and z are true coords, y is in secs
+
+    qreal m_relativeStepSize=1;
+    qreal m_rotationStep=1;
+    qreal m_scaleFactor=1.2;
 };
 
 #endif // VIEWWIDGET_H

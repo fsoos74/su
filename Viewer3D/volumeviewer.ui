@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>417</width>
+    <width>637</width>
     <height>319</height>
    </rect>
   </property>
@@ -16,7 +16,14 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="ViewWidget" name="openGLWidget"/>
+     <widget class="ViewWidget" name="openGLWidget">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -25,7 +32,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>417</width>
+     <width>637</width>
      <height>28</height>
     </rect>
    </property>
@@ -75,6 +82,9 @@
     <addaction name="action_Right"/>
     <addaction name="action_Top"/>
     <addaction name="action_Bottom"/>
+    <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="action_Navigation_Dialog"/>
    </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
@@ -127,17 +137,7 @@
    <addaction name="action_Right"/>
    <addaction name="action_Top"/>
    <addaction name="action_Bottom"/>
-  </widget>
-  <widget class="QToolBar" name="toolBar_Navigation">
-   <property name="windowTitle">
-    <string>Navigation Toolbar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>true</bool>
-   </attribute>
+   <addaction name="separator"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -311,6 +311,11 @@
   <action name="actionSet_Point_Size">
    <property name="text">
     <string>Set &amp;Point Size</string>
+   </property>
+  </action>
+  <action name="action_Navigation_Dialog">
+   <property name="text">
+    <string> Navigation Dialog</string>
    </property>
   </action>
  </widget>

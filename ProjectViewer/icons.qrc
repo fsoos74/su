@@ -43,6 +43,12 @@
         <file>../images/cross-cursor-zoom-24x24.png</file>
         <file>../images/select-polygon-32x32.png</file>
         <file>../images/volume-colortable-icon-32x32.png</file>
+        <file>../images/move-back_32x32.png</file>
+        <file>../images/move-down_32x32.png</file>
+        <file>../images/move-front_32x32.png</file>
+        <file>../images/move-left_32x32.png</file>
+        <file>../images/move-right_32x32.png</file>
+        <file>../images/move-up_32x32.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>
@@ -54,5 +60,11 @@
         <file>../images/cube-select-left-24x24.png</file>
         <file>../images/cube-select-right-24x24.png</file>
         <file>../images/cube-select-top-24x24.png</file>
+        <file>../images/grow-x_32x32.png</file>
+        <file>../images/grow-y_32x32.png</file>
+        <file>../images/grow-z_32x32.png</file>
+        <file>../images/shrink-x_32x32.png</file>
+        <file>../images/shrink-y_32x32.png</file>
+        <file>../images/shrink-z_32x32.png</file>
     </qresource>
 </RCC>

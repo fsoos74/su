@@ -5,7 +5,7 @@
 #include<vit.h>
 
 
-RenderScene::RenderScene()
+RenderScene::RenderScene(QObject* parent): QObject(parent)
 {
 
 }
@@ -20,11 +20,15 @@ RenderScene::~RenderScene(){
 
 void RenderScene::clear(){
 
+    if( m_items.empty() ) return;
+
     foreach ( RenderItem* item, m_items) {
        delete item;
     }
 
     m_items.clear();
+
+    emit changed();
 }
 
 // take ownership of item, i.e. resposible for deleting it
@@ -35,6 +39,8 @@ RenderScene::ItemID RenderScene::addItem(RenderItem* item){
     ItemID key=m_nextKey++;
 
     m_items.insert( key, item );
+
+    emit changed();
 
     return key;
 }
@@ -49,6 +55,8 @@ bool RenderScene::removeItem( RenderScene::ItemID id){
     delete item;
 
     m_items.remove(id);
+
+    emit changed();
 
     return true;
 }

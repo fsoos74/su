@@ -1,18 +1,21 @@
 #ifndef RENDERSCENE_H
 #define RENDERSCENE_H
 
+#include <QObject>
 #include<QList>
 #include<QMap>
 #include <renderitem.h>
 
 
-class RenderScene
+class RenderScene : public QObject
 {
+    Q_OBJECT
+
 public:
 
     typedef int ItemID;
 
-    RenderScene();
+    RenderScene( QObject* parent=nullptr);
     ~RenderScene();
 
     void clear();
@@ -21,6 +24,9 @@ public:
     inline RenderItem* getItem( ItemID );
 
     inline QList<RenderItem*> items()const;
+
+signals:
+    void changed();
 
 private:
 

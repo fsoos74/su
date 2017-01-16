@@ -1,13 +1,14 @@
-#include "volumenavigationwidget.h"
-#include "ui_volumenavigationwidget.h"
+#include "volumenavigationdialog.h"
+#include "ui_volumenavigationdialog.h"
 
 #include<QDoubleValidator>
 #include <QKeyEvent>
 
+#include <QVector3D>
 
-VolumeNavigationWidget::VolumeNavigationWidget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::VolumeNavigationWidget)
+VolumeNavigationDialog::VolumeNavigationDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::VolumeNavigationDialog)
 {
     ui->setupUi(this);
 
@@ -37,13 +38,14 @@ VolumeNavigationWidget::VolumeNavigationWidget(QWidget *parent) :
     connect( ui->leScaleZ, SIGNAL(returnPressed()), this, SLOT(scaleEntered()));
 }
 
-VolumeNavigationWidget::~VolumeNavigationWidget()
+
+VolumeNavigationDialog::~VolumeNavigationDialog()
 {
     delete ui;
 }
 
 
-QVector3D VolumeNavigationWidget::position(){
+QVector3D VolumeNavigationDialog::position(){
 
     return QVector3D(
                 ui->lePositionX->text().toDouble(),
@@ -52,7 +54,7 @@ QVector3D VolumeNavigationWidget::position(){
     );
 }
 
-QVector3D VolumeNavigationWidget::rotation(){
+QVector3D VolumeNavigationDialog::rotation(){
 
     return QVector3D(
                 ui->leRotationX->text().toDouble(),
@@ -61,7 +63,7 @@ QVector3D VolumeNavigationWidget::rotation(){
     );
 }
 
-QVector3D VolumeNavigationWidget::scale(){
+QVector3D VolumeNavigationDialog::scale(){
 
     return QVector3D(
                 ui->leScaleX->text().toDouble(),
@@ -71,7 +73,7 @@ QVector3D VolumeNavigationWidget::scale(){
 }
 
 
-void VolumeNavigationWidget::setPosition(QVector3D p){
+void VolumeNavigationDialog::setPosition(QVector3D p){
 
     if( p==position()) return;
 
@@ -82,7 +84,7 @@ void VolumeNavigationWidget::setPosition(QVector3D p){
     emit positionChanged(position());
 }
 
-void VolumeNavigationWidget::setRotation(QVector3D p){
+void VolumeNavigationDialog::setRotation(QVector3D p){
 
     if( p==rotation()) return;
 
@@ -93,7 +95,7 @@ void VolumeNavigationWidget::setRotation(QVector3D p){
     emit rotationChanged(rotation());
 }
 
-void VolumeNavigationWidget::setScale(QVector3D p){
+void VolumeNavigationDialog::setScale(QVector3D p){
 
     if( p==scale()) return;
 
@@ -104,22 +106,22 @@ void VolumeNavigationWidget::setScale(QVector3D p){
     emit scaleChanged(scale());
 }
 
-void VolumeNavigationWidget::positionEntered(){
+void VolumeNavigationDialog::positionEntered(){
 
     emit positionChanged(position());
 }
 
-void VolumeNavigationWidget::rotationEntered(){
+void VolumeNavigationDialog::rotationEntered(){
 
     emit rotationChanged(rotation());
 }
 
-void VolumeNavigationWidget::scaleEntered(){
+void VolumeNavigationDialog::scaleEntered(){
 
     emit scaleChanged(scale());
 }
 
-void VolumeNavigationWidget::keyPressEvent(QKeyEvent *ev){
+void VolumeNavigationDialog::keyPressEvent(QKeyEvent *ev){
     if( ev->key() == Qt::Key_Return){
         ev->accept();
     }
