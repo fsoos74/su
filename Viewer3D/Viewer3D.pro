@@ -85,6 +85,13 @@ else:unix: LIBS += -L$$OUT_PWD/../Grid/ -lGrid
 INCLUDEPATH += $$PWD/../Grid
 DEPENDPATH += $$PWD/../Grid
 
+#need this for displayrangedialog
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../GridUI/release/ -lGridUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../GridUI/debug/ -lGridUI
+else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
+
+INCLUDEPATH += $$PWD/../GridUI
+DEPENDPATH += $$PWD/../GridUI
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Project/debug/ -lProject

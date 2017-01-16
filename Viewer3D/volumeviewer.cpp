@@ -135,14 +135,8 @@ void VolumeViewer::setHighlightedPoints(QVector<SelectionPoint> rpoints){
     refreshView();
 }
 
-
-void VolumeViewer::clear(){
-
-    m_slices.clear();
-    m_horizons.clear();
-    m_highlightedPoints.clear();
-
-    refreshView();
+void VolumeViewer::setColorMappingLocked(bool on){
+    m_colorMappingLock=on;
 }
 
 void VolumeViewer::setHighlightedPointColor(QColor color){
@@ -159,6 +153,16 @@ void VolumeViewer::setHighlightedPointSize(qreal s){
     if( s==m_highlightedPointSize) return;
 
     m_highlightedPointSize=s;
+
+    refreshView();
+}
+
+
+void VolumeViewer::clear(){
+
+    m_slices.clear();
+    m_horizons.clear();
+    m_highlightedPoints.clear();
 
     refreshView();
 }
@@ -722,6 +726,25 @@ void VolumeViewer::on_action_Volume_Colortable_triggered()
 
 void VolumeViewer::on_actionVolume_Range_triggered()
 {
+
+    if(!displayRangeDialog){
+
+        displayRangeDialog=new DisplayRangeDialog(this);
+
+        displayRangeDialog->setPower( m_colorTable->power());
+        displayRangeDialog->setRange( m_colorTable->range());
+        displayRangeDialog->setLocked( isColorMappingLocked() );
+        connect( displayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
+                 m_colorTable, SLOT(setRange(std::pair<double,double>)) );
+        connect( displayRangeDialog, SIGNAL(powerChanged(double)),
+                 m_colorTable, SLOT( setPower(double)) );
+        connect( displayRangeDialog, SIGNAL(lockedChanged(bool)),
+                 this, SLOT(setColorMappingLocked(bool)) );
+    }
+
+    displayRangeDialog->show();
+
+/*
     ModalDisplayRangeDialog dlg;
     dlg.setWindowTitle(tr("Edit Volume Range"));
     dlg.setMinimum(m_colorTable->range().first);
@@ -734,6 +757,8 @@ void VolumeViewer::on_actionVolume_Range_triggered()
         m_colorTable->setPower(dlg.power());
         refreshView();
     }
+    */
+
 }
 
 void VolumeViewer::on_action_Add_Slice_triggered()

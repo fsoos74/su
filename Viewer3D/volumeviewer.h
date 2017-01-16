@@ -16,6 +16,7 @@
 #include <navigation3dcontrols.h>
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
+#include <displayrangedialog.h>
 
 namespace Ui {
 class VolumeViewer;
@@ -37,6 +38,10 @@ public:
     explicit VolumeViewer(QWidget *parent = 0);
     ~VolumeViewer();
 
+    bool isColorMappingLocked(){
+        return m_colorMappingLock;
+    }
+
 public slots:
 
     void setVolume( std::shared_ptr<Grid3D<float> >);
@@ -52,6 +57,8 @@ public slots:
 
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
+
+    void setColorMappingLocked(bool);
 
 private slots:
 
@@ -114,6 +121,8 @@ private:
 
     Ui::VolumeViewer *ui;
 
+    DisplayRangeDialog* displayRangeDialog=nullptr;
+
     ColorBarWidget* m_volumeColorBarWidget=nullptr;
     QDockWidget* m_volumeColorBarDock=nullptr;
     Navigation3DControls* m_navigationControls=nullptr;
@@ -133,6 +142,8 @@ private:
     QVector<SelectionPoint> m_highlightedPoints;
     qreal m_highlightedPointSize=2;
     QColor m_highlightedPointColor=Qt::red;
+
+    bool m_colorMappingLock=false;
 };
 
 #endif // VOLUMEVIEWER_H
