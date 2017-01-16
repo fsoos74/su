@@ -87,6 +87,8 @@ private slots:
 
     void on_action_Navigation_Dialog_triggered();
 
+    void on_actionHistogram_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );

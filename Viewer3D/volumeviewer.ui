@@ -117,6 +117,7 @@
    </attribute>
    <addaction name="action_Volume_Colortable"/>
    <addaction name="actionVolume_Range"/>
+   <addaction name="actionHistogram"/>
    <addaction name="separator"/>
    <addaction name="action_Receive_CDPs"/>
    <addaction name="action_Dispatch_CDPs"/>
@@ -315,7 +316,16 @@
   </action>
   <action name="action_Navigation_Dialog">
    <property name="text">
-    <string> Navigation Dialog</string>
+    <string> &amp;Navigation Dialog</string>
+   </property>
+  </action>
+  <action name="actionHistogram">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/histogram-icon-32x32.png</normaloff>:/icons/images/histogram-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Histogram</string>
    </property>
   </action>
  </widget>

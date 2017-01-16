@@ -99,3 +99,18 @@ else:unix: LIBS += -L$$OUT_PWD/../utilUI/ -lutilUI
 
 INCLUDEPATH += $$PWD/../utilUI
 DEPENDPATH += $$PWD/../utilUI
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Statistics/release/ -lStatistics
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Statistics/debug/ -lStatistics
+else:unix: LIBS += -L$$OUT_PWD/../Statistics/ -lStatistics
+
+INCLUDEPATH += $$PWD/../Statistics
+DEPENDPATH += $$PWD/../Statistics
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/release/ -lStatisticsUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/debug/ -lStatisticsUI
+else:unix: LIBS += -L$$OUT_PWD/../StatisticsUI/ -lStatisticsUI
+
+INCLUDEPATH += $$PWD/../StatisticsUI
+DEPENDPATH += $$PWD/../StatisticsUI

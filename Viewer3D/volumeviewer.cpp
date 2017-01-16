@@ -7,6 +7,7 @@
 #include<QMessageBox>
 #include<QColorDialog>
 #include<addslicedialog.h>
+#include<histogramdialog.h>
 
 #include<QToolBar>
 
@@ -929,4 +930,22 @@ void VolumeViewer::on_action_Navigation_Dialog_triggered()
     }
 
     m_navigationDialog->show();
+}
+
+void VolumeViewer::on_actionHistogram_triggered()
+{
+    if( ! m_volume ) return;
+
+    QVector<double> data;
+    for( auto it=m_volume->values().cbegin(); it!=m_volume->values().cend(); ++it){
+        if( *it==m_volume->NULL_VALUE) continue;
+        data.push_back(*it);
+     }
+
+    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
+                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
+    viewer->setColorTable(m_colorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
+    viewer->show();
 }
