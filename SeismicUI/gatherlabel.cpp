@@ -777,6 +777,8 @@ void GatherLabel::updateVolumePixmap(){
     const ColorTable* colorTable=volumeColorTable();
 
     QImage image( gather.size(), volume.bounds().sampleCount(), QImage::Format_ARGB32);
+    image.fill(qRgba(0,0,0,0));     // make transparent
+
     int a=255;
     if( m_view->volume()){
         int opacity=volumeOpacity();
