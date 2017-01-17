@@ -84,12 +84,12 @@
     <addaction name="action_Bottom"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="action_Navigation_Dialog"/>
    </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
      <string>&amp;Window</string>
     </property>
+    <addaction name="actionNavigation_Dialog"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Options"/>
@@ -326,6 +326,17 @@
    </property>
    <property name="text">
     <string>Histogram</string>
+   </property>
+  </action>
+  <action name="actionNavigation_Dialog">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Navigation Dialog</string>
    </property>
   </action>
  </widget>

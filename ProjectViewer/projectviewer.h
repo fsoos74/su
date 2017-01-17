@@ -148,6 +148,8 @@ private slots:
     void on_actionTrend_Based_Attribute_Volumes_triggered();
 
 
+    void on_action_Crop_Volume_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);

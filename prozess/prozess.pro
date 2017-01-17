@@ -44,7 +44,8 @@ SOURCES += prozess.cpp \
     secondaryattributesprocess.cpp \
     secondaryattributevolumesprocess.cpp \
     trendbasedattributesprocess.cpp \
-    trendbasedattributevolumesprocess.cpp
+    trendbasedattributevolumesprocess.cpp \
+    cropvolumeprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -72,7 +73,8 @@ HEADERS += prozess.h\
     secondaryattributesprocess.h \
     secondaryattributevolumesprocess.h \
     trendbasedattributesprocess.h \
-    trendbasedattributevolumesprocess.h
+    trendbasedattributevolumesprocess.h \
+    cropvolumeprocess.h
 
 unix {
     target.path = /usr/lib

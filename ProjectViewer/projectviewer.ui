@@ -246,6 +246,8 @@
     <property name="title">
      <string>Process(&amp;Volume)</string>
     </property>
+    <addaction name="action_Crop_Volume"/>
+    <addaction name="separator"/>
     <addaction name="actionVolume_Amplitudes"/>
     <addaction name="actionVolume_Semblance"/>
     <addaction name="separator"/>
@@ -519,6 +521,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+3</string>
+   </property>
+  </action>
+  <action name="action_Crop_Volume">
+   <property name="text">
+    <string>&amp;Crop Volume</string>
    </property>
   </action>
  </widget>

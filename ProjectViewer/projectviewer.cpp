@@ -80,6 +80,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <secondaryattributesprocess.h>
 #include <secondaryattributevolumesprocess.h>
 #include <secondaryavoattributesdialog.h>
+#include <cropvolumedialog.h>
+#include <cropvolumeprocess.h>
 #include <amplitudevolumedialog.h>
 #include <amplitudevolumeprocess.h>
 #include <gridrunuserscriptdialog.h>
@@ -956,6 +958,30 @@ void ProjectViewer::on_actionCompute_Intercept_and_Gradient_Volumes_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess( new InterceptGradientVolumeProcess( m_project, this ), params );
+}
+
+void ProjectViewer::on_action_Crop_Volume_triggered()
+{
+    Q_ASSERT( m_project );
+
+    CropVolumeDialog dlg;
+    dlg.setWindowTitle(tr("Crop Volume"));
+
+    dlg.setInputVolumes(m_project->volumeList());
+
+    ProjectGeometry geom=m_project->geometry();
+    QPoint min=geom.linesRange().first;
+    QPoint max=geom.linesRange().second;
+
+    dlg.setInlineRange( min.x(), max.x() );
+    dlg.setCrosslineRange( min.y(), max.y() );
+
+    dlg.setTimeRange( 0, 99999 );
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new CropVolumeProcess( m_project, this ), params );
 }
 
 void ProjectViewer::on_actionVolume_Amplitudes_triggered()
@@ -2529,6 +2555,7 @@ void ProjectViewer::updateMenu(){
     //ui->actionFluid_Factor_Grid->setEnabled(isProject);
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
 
+    ui->action_Crop_Volume->setEnabled(isProject);
     ui->actionVolume_Amplitudes->setEnabled(isProject);
     ui->actionVolume_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
@@ -2542,14 +2569,5 @@ void ProjectViewer::updateMenu(){
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 }
-
-
-
-
-
-
-
-
-
 
 

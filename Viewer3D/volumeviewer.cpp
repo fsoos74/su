@@ -24,9 +24,12 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     m_colorTable->setColors(ColorTable::defaultColors());
 
     connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(refreshView()) );
+    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
+    connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Volume_Outline, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
+
 
     createDockWidgets();
     populateWindowMenu();
@@ -938,6 +941,7 @@ void VolumeViewer::on_actionSet_Point_Size_triggered()
     setHighlightedPointSize(s);
 }
 
+/*
 void VolumeViewer::on_action_Navigation_Dialog_triggered()
 {
     if( !m_navigationDialog ){
@@ -956,6 +960,7 @@ void VolumeViewer::on_action_Navigation_Dialog_triggered()
 
     m_navigationDialog->show();
 }
+*/
 
 void VolumeViewer::on_actionHistogram_triggered()
 {
@@ -973,4 +978,25 @@ void VolumeViewer::on_actionHistogram_triggered()
     viewer->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
     viewer->setColorTable(m_colorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
+}
+
+
+void VolumeViewer::on_actionNavigation_Dialog_triggered()
+{
+
+    if( !m_navigationDialog ){
+
+        m_navigationDialog=new VolumeNavigationDialog(this);
+        m_navigationDialog->setWindowTitle(tr("Volume Navigation"));
+
+        VolumeNavigationDialog* navigation=m_navigationDialog;
+        connect( navigation, SIGNAL(positionChanged(QVector3D)), ui->openGLWidget, SLOT(setPosition(QVector3D)) );
+        connect(ui->openGLWidget, SIGNAL(positionChanged(QVector3D)), navigation, SLOT(setPosition(QVector3D)) );
+        connect( navigation, SIGNAL(rotationChanged(QVector3D)), ui->openGLWidget, SLOT(setRotation(QVector3D)) );
+        connect(ui->openGLWidget, SIGNAL(rotationChanged(QVector3D)), navigation, SLOT(setRotation(QVector3D)) );
+        connect( navigation, SIGNAL(scaleChanged(QVector3D)), ui->openGLWidget, SLOT(setScale(QVector3D)) );
+        connect(ui->openGLWidget, SIGNAL(scaleChanged(QVector3D)), navigation, SLOT(setScale(QVector3D)) );
+    }
+
+    m_navigationDialog->show();
 }

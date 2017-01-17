@@ -92,9 +92,11 @@ private slots:
 
     void on_actionSet_Point_Size_triggered();
 
-    void on_action_Navigation_Dialog_triggered();
+    //void on_action_Navigation_Dialog_triggered();
 
     void on_actionHistogram_triggered();
+
+    void on_actionNavigation_Dialog_triggered();
 
 protected:
 

@@ -32,6 +32,8 @@ signals:
     void rotationChanged(QVector3D);
     void scaleChanged(QVector3D);
 
+    void visibilityChanged(bool);
+
 protected:
     // override this to keep return pressed in line edit move up to parent
     void keyPressEvent(QKeyEvent* event);
