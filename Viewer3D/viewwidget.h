@@ -8,6 +8,7 @@
 #include <QOpenGLShaderProgram>
 #include <QVector2D>
 #include <QVector3D>
+#include <QColor>
 
 #include "renderengine.h"
 #include "renderscene.h"
@@ -60,6 +61,11 @@ public:
         return m_scaleFactor;
     }
 
+    QColor backgroundColor()const{
+        return m_backgroundColor;
+    }
+
+
 public slots:
 
     //void setScene( RenderScene* );
@@ -92,6 +98,8 @@ public slots:
     void scaleYNeg();
     void scaleZPos();
     void scaleZNeg();
+
+    void setBackgroundColor( QColor );
 
 signals:
 
@@ -127,6 +135,8 @@ private:
     qreal m_relativeStepSize=1;
     qreal m_rotationStep=1;
     qreal m_scaleFactor=1.2;
+
+    QColor m_backgroundColor=Qt::lightGray;
 };
 
 #endif // VIEWWIDGET_H

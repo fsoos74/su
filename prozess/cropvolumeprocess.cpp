@@ -109,11 +109,11 @@ ProjectProcess::ResultCode CropVolumeProcess::init( const QMap<QString, QString>
 
     int nt=1 + ( lt - ft )/dt;
 
-
+/*
     std::cout<<"il1="<<il1<<" il2="<<il2<<std::endl;
     std::cout<<"xl1="<<xl1<<" xl2="<<xl2<<std::endl;
     std::cout<<"nt="<<nt<<" dt="<<dt<<" ft="<<ft<<std::endl;
-
+*/
     Grid3DBounds outputBounds( il1, il2, xl1, xl2, nt, ft, dt );
 
     m_volume=std::shared_ptr<Grid3D<float> >( new Grid3D<float>(outputBounds));

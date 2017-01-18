@@ -3,7 +3,7 @@
 
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
-#include<QVector>
+#include <QVector>
 
 #include<vic.h>
 #include<vit.h>

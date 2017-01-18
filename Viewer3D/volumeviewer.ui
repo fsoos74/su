@@ -52,6 +52,8 @@
     <addaction name="actionChange_Horizon_Color"/>
     <addaction name="actionSet_Point_Size"/>
     <addaction name="separator"/>
+    <addaction name="action_Background_Color"/>
+    <addaction name="separator"/>
     <addaction name="actionShow_Volume_Outline"/>
    </widget>
    <widget class="QMenu" name="menu_Data">
@@ -241,7 +243,7 @@
   </action>
   <action name="actionChange_Horizon_Color">
    <property name="text">
-    <string>&amp;Change Horizon Color</string>
+    <string>Change &amp;Horizon Color</string>
    </property>
   </action>
   <action name="actionShow_Volume_Outline">
@@ -336,7 +338,12 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Navigation Dialog</string>
+    <string>&amp;Navigation Dialog</string>
+   </property>
+  </action>
+  <action name="action_Background_Color">
+   <property name="text">
+    <string>Change &amp;Background Color</string>
    </property>
   </action>
  </widget>

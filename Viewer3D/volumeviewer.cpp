@@ -8,6 +8,8 @@
 #include<QColorDialog>
 #include<addslicedialog.h>
 #include<histogramdialog.h>
+#include<QColorDialog>
+
 
 #include<QToolBar>
 
@@ -999,4 +1001,16 @@ void VolumeViewer::on_actionNavigation_Dialog_triggered()
     }
 
     m_navigationDialog->show();
+}
+
+void VolumeViewer::on_action_Background_Color_triggered()
+{
+    QColor c = QColorDialog::getColor( ui->openGLWidget->backgroundColor(),
+                                       this,
+                                       tr("Set Background Color")
+                                       );
+
+    if( ! c.isValid() ) return;
+
+    ui->openGLWidget->setBackgroundColor(c);
 }

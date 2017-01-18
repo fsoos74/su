@@ -98,6 +98,8 @@ private slots:
 
     void on_actionNavigation_Dialog_triggered();
 
+    void on_action_Background_Color_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );

@@ -241,6 +241,16 @@ void ViewWidget::scaleZNeg( ){
 }
 
 
+void ViewWidget::setBackgroundColor(QColor c){
+
+    if( c==m_backgroundColor ) return;
+
+    m_backgroundColor = c;
+
+    update();
+}
+
+
 void ViewWidget::mousePressEvent(QMouseEvent *){
     setFocus();
 }
@@ -293,7 +303,7 @@ void ViewWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    glClearColor(0.8, 0.8, 0.8, 1);
+    //glClearColor(0.8, 0.8, 0.8, 1);
 
     //initShaders();
 
@@ -339,6 +349,10 @@ void ViewWidget::resizeGL(int w, int h)
 
 void ViewWidget::paintGL()
 {
+
+    // set background color
+    glClearColor( m_backgroundColor.redF(), m_backgroundColor.greenF(), m_backgroundColor.blueF(), 1);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //std::cout<<"object center: "<<m_center<<std::endl;
@@ -375,4 +389,3 @@ void ViewWidget::paintGL()
     m_engine->draw( m_scene, matrix);
 
 }
-
