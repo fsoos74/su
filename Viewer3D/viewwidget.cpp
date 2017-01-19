@@ -201,6 +201,7 @@ void ViewWidget::scaleXPos(  ){
 
     QVector3D s=scale();
     s.setX( m_scale.x() * m_scaleFactor );
+    if( m_tieXZScales ) s.setZ( s.z() * m_scaleFactor );
     setScale(s);
 }
 
@@ -208,6 +209,7 @@ void ViewWidget::scaleXNeg( ){
 
     QVector3D s=scale();
     s.setX( s.x() / m_scaleFactor );
+    if( m_tieXZScales ) s.setZ( s.z() / m_scaleFactor );
     setScale(s);
 }
 
@@ -230,6 +232,7 @@ void ViewWidget::scaleZPos( ){
 
     QVector3D s=scale();
     s.setZ( s.z() * m_scaleFactor );
+    if( m_tieXZScales ) s.setX( s.x() * m_scaleFactor );
     setScale(s);
 }
 
@@ -237,9 +240,19 @@ void ViewWidget::scaleZNeg( ){
 
     QVector3D s=scale();
     s.setZ( s.z() / m_scaleFactor );
+    if( m_tieXZScales ) s.setX( s.x() / m_scaleFactor );
     setScale(s);
 }
 
+
+void ViewWidget::setTieXZScales(bool on){
+
+    if( on==m_tieXZScales) return;
+
+    m_tieXZScales=on;
+
+    emit tieXZScalesChanged(on);
+}
 
 void ViewWidget::setBackgroundColor(QColor c){
 

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>86</width>
+    <width>98</width>
     <height>324</height>
    </rect>
   </property>
@@ -20,6 +20,66 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="1">
+    <widget class="QToolButton" name="tbMoveFront">
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normalon>:/icons/images/move-front_32x32.png</normalon>
+      </iconset>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QToolButton" name="tbScaleXPos">
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normalon>:/images/grow-x_32x32.png</normalon>
+      </iconset>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QToolButton" name="tbScaleYPos">
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normalon>:/images/grow-y_32x32.png</normalon>
+      </iconset>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QToolButton" name="tbScaleZPos">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normalon>:/images/grow-z_32x32.png</normalon>
+      </iconset>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QToolButton" name="tbMoveLeft">
      <property name="text">
@@ -35,15 +95,25 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QToolButton" name="tbMoveRight">
+   <item row="2" column="0">
+    <widget class="QToolButton" name="tbMoveBack">
      <property name="text">
       <string>...</string>
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/icons/images/move-right_32x32.png</normalon>
+       <normalon>:/icons/images/move-back_32x32.png</normalon>
       </iconset>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QToolButton" name="tbRotateXNeg">
+     <property name="text">
+      <string>Rx-</string>
      </property>
      <property name="autoRepeat">
       <bool>true</bool>
@@ -80,60 +150,15 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QToolButton" name="tbMoveBack">
+   <item row="6" column="0">
+    <widget class="QToolButton" name="tbScaleXNeg">
      <property name="text">
       <string>...</string>
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/icons/images/move-back_32x32.png</normalon>
+       <normalon>:/images/shrink-x_32x32.png</normalon>
       </iconset>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QToolButton" name="tbMoveFront">
-     <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/icons/images/move-front_32x32.png</normalon>
-      </iconset>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QToolButton" name="tbRotateXNeg">
-     <property name="text">
-      <string>Rx-</string>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QToolButton" name="tbRotateXPos">
-     <property name="text">
-      <string>Rx+</string>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QToolButton" name="tbRotateYNeg">
-     <property name="text">
-      <string>Ry-</string>
      </property>
      <property name="autoRepeat">
       <bool>true</bool>
@@ -150,10 +175,20 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
-    <widget class="QToolButton" name="tbRotateZNeg">
+   <item row="4" column="0">
+    <widget class="QToolButton" name="tbRotateYNeg">
      <property name="text">
-      <string>Rz-</string>
+      <string>Ry-</string>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QToolButton" name="tbRotateXPos">
+     <property name="text">
+      <string>Rx+</string>
      </property>
      <property name="autoRepeat">
       <bool>true</bool>
@@ -170,30 +205,10 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QToolButton" name="tbScaleXNeg">
+   <item row="5" column="0">
+    <widget class="QToolButton" name="tbRotateZNeg">
      <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/images/shrink-x_32x32.png</normalon>
-      </iconset>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QToolButton" name="tbScaleXPos">
-     <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/images/grow-x_32x32.png</normalon>
-      </iconset>
+      <string>Rz-</string>
      </property>
      <property name="autoRepeat">
       <bool>true</bool>
@@ -201,36 +216,6 @@
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="QToolButton" name="tbScaleYNeg">
-     <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/images/shrink-y_32x32.png</normalon>
-      </iconset>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QToolButton" name="tbScaleYPos">
-     <property name="text">
-      <string>...</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/images/grow-y_32x32.png</normalon>
-      </iconset>
-     </property>
-     <property name="autoRepeat">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
     <widget class="QToolButton" name="tbScaleZNeg">
      <property name="text">
       <string>...</string>
@@ -245,14 +230,29 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
-    <widget class="QToolButton" name="tbScaleZPos">
+   <item row="8" column="0">
+    <widget class="QToolButton" name="tbScaleYNeg">
      <property name="text">
-      <string/>
+      <string>...</string>
      </property>
      <property name="icon">
       <iconset>
-       <normalon>:/images/grow-z_32x32.png</normalon>
+       <normalon>:/images/shrink-y_32x32.png</normalon>
+      </iconset>
+     </property>
+     <property name="autoRepeat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QToolButton" name="tbMoveRight">
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normalon>:/icons/images/move-right_32x32.png</normalon>
       </iconset>
      </property>
      <property name="autoRepeat">

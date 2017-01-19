@@ -86,6 +86,7 @@
     <addaction name="action_Bottom"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
+    <addaction name="actionTie_Scales"/>
    </widget>
    <widget class="QMenu" name="menu_Window">
     <property name="title">
@@ -344,6 +345,17 @@
   <action name="action_Background_Color">
    <property name="text">
     <string>Change &amp;Background Color</string>
+   </property>
+  </action>
+  <action name="actionTie_Scales">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Tie x-z-scales</string>
    </property>
   </action>
  </widget>

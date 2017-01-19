@@ -32,6 +32,8 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
+    ui->openGLWidget->setTieXZScales( ui->actionTie_Scales->isChecked());
+    connect( ui->actionTie_Scales, SIGNAL(toggled(bool)), ui->openGLWidget, SLOT(setTieXZScales(bool)) );
 
     createDockWidgets();
     populateWindowMenu();

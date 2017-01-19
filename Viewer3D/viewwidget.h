@@ -61,6 +61,10 @@ public:
         return m_scaleFactor;
     }
 
+    bool isTieXYScales()const{
+        return m_tieXZScales;
+    }
+
     QColor backgroundColor()const{
         return m_backgroundColor;
     }
@@ -99,6 +103,8 @@ public slots:
     void scaleZPos();
     void scaleZNeg();
 
+    void setTieXZScales(bool);
+
     void setBackgroundColor( QColor );
 
 signals:
@@ -107,6 +113,7 @@ signals:
     void scaleChanged(QVector3D);
     void rotationChanged(QVector3D);
     void dimensionsChanged(QVector3D);
+    void tieXZScalesChanged(bool);
 
 protected:
     void mousePressEvent(QMouseEvent*);
@@ -126,11 +133,12 @@ private:
 
     QMatrix4x4 projection;
 
-    QVector3D m_center;
-    QVector3D m_position;
-    QVector3D m_rotation;
-    QVector3D m_scale;
-    QVector3D m_dimensions;      // this is not scaled yet, x and z are true coords, y is in secs
+    QVector3D   m_center;
+    QVector3D   m_position;
+    QVector3D   m_rotation;
+    QVector3D   m_scale;
+    QVector3D   m_dimensions;      // this is not scaled yet, x and z are true coords, y is in secs
+    bool        m_tieXZScales;
 
     qreal m_relativeStepSize=1;
     qreal m_rotationStep=1;
