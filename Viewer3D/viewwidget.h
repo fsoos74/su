@@ -142,7 +142,7 @@ private:
 
     qreal m_relativeStepSize=1;
     qreal m_rotationStep=1;
-    qreal m_scaleFactor=1.2;
+    qreal m_scaleFactor=1.1;
 
     QColor m_backgroundColor=Qt::lightGray;
 };

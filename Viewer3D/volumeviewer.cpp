@@ -181,14 +181,28 @@ void VolumeViewer::addSlice(SliceDef def){
 
     // check if valid
     Grid3DBounds bounds= m_volume->bounds();
+    // only put status message instead of modal dialog because possible multiple viewers!!!
     switch(def.type){
-    case SliceType::INLINE: if( !bounds.isInside(def.value, bounds.crossline1())) return;
+    case SliceType::INLINE: if( def.value<bounds.inline1() || def.value>bounds.inline2() ){
+                                statusBar()->showMessage(QString("Could not add inline %1").
+                                                         arg(def.value), 5000);
+                                return;
+                            }
                             break;
 
-    case SliceType::CROSSLINE: if( !bounds.isInside( bounds.inline1(), def.value)) return;
+    case SliceType::CROSSLINE: if( def.value<bounds.crossline1() || def.value>bounds.crossline2() ){
+                                statusBar()->showMessage(QString("Could not add crossline %1").
+                                                         arg(def.value), 5000);
+                                return;
+                            }
                             break;
 
-    case SliceType::SAMPLE: if( !bounds.isInside( bounds.inline1(), bounds.crossline1(), def.value) ) return;
+    case SliceType::SAMPLE: if( def.value<0 || def.value>=bounds.sampleCount() ){
+                                statusBar()->showMessage(QString("Could not add slice at %1 milliseconds / sample %2").
+                                            arg(static_cast<long>(1000*bounds.sampleToTime(def.value))).
+                                            arg(def.value), 5000);
+                              return;
+                            }
                             break;
     default:
         qFatal("Invalid SliceType");
@@ -230,6 +244,8 @@ void VolumeViewer::refreshView(){
     Q_ASSERT(view);
 
     Q_ASSERT( m_volume);
+
+    ui->openGLWidget->makeCurrent(); // need this to access currect VBOs
 
     RenderScene* scene=view->scene();
     //if( !scene ) return;
@@ -1001,6 +1017,10 @@ void VolumeViewer::on_actionNavigation_Dialog_triggered()
         connect( navigation, SIGNAL(scaleChanged(QVector3D)), ui->openGLWidget, SLOT(setScale(QVector3D)) );
         connect(ui->openGLWidget, SIGNAL(scaleChanged(QVector3D)), navigation, SLOT(setScale(QVector3D)) );
     }
+
+    m_navigationDialog->setPosition( ui->openGLWidget->position() );
+    m_navigationDialog->setRotation( ui->openGLWidget->rotation() );
+    m_navigationDialog->setScale( ui->openGLWidget->scale() );
 
     m_navigationDialog->show();
 }
