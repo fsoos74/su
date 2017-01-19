@@ -70,6 +70,7 @@ private:
     void colorToControls( const QRgb& color );
     void setCurrentColorIndex( int );
     void setButtonColor( QPushButton* button, const QRgb& rgb );
+    void chooseColor( int );
 
     void saveSettings();
     void loadSettings();

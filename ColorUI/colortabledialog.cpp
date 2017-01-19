@@ -14,6 +14,8 @@
 
 #include "colortableimportdialog.h"
 
+#include <QColorDialog>
+
 #include<iostream>
 
 ColorTableDialog::ColorTableDialog(const QVector<QRgb>& startColors, QWidget* parent) :
@@ -250,6 +252,12 @@ bool ColorTableDialog::eventFilter(QObject *obj, QEvent *event)
 {
     for( int i=0; i<colorButtons.size(); i++){
 
+        if( obj == colorButtons[i] && event->type() == QEvent::MouseButtonDblClick ){
+
+            chooseColor(i);
+            return true;
+        }
+
         if (obj == colorButtons[i] && event->type() == QEvent::MouseButtonPress) {
 
             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
@@ -332,6 +340,14 @@ void ColorTableDialog::setButtonColor( QPushButton* button, const QRgb& rgb ){
     pixmap.fill(rgb);
     QIcon icon(pixmap);
     button->setIcon(icon);
+}
+
+void ColorTableDialog::chooseColor(int idx){
+
+    QColor c = QColorDialog::getColor( m_colors.at(idx), this, QString("Select Color %1").arg(idx) );
+    if( !c.isValid() ) return;
+
+    setColor( idx, qRgb(c.red(), c.green(), c.blue()) );
 }
 
 void ColorTableDialog::accept()
