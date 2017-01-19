@@ -571,19 +571,24 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
     QVector3D baseColor{static_cast<float>(hcolor.redF()), static_cast<float>(hcolor.greenF()), static_cast<float>(hcolor.blueF()) };
     QVector<VIC::Vertex> vertices;
 
-    for( int i=hbounds.i1(); i<=hbounds.i2(); i++){
+    for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
 
-        for( int j=hbounds.j1(); j<=hbounds.j2(); j++){
+        for( int xline=hbounds.j1(); xline<=hbounds.j2(); xline++){
 
-            float t=(*hrz)(i,j);  // horizon is in millis
-            if(t!=hrz->NULL_VALUE){
-                int s=vbounds.timeToSample(0.001*t);
-                float x=(t-range.first)/(range.second-range.first);
-                QVector3D color=baseColor*(2.-x)/2;                     // scale color dep on time/depth, deeper->darker
-                vertices.append( VIC::Vertex{ QVector3D( j, s, i), color } );
+            float tms=(*hrz)(iline, xline);  // horizon is in millis
+            QPointF xy=ilxl_to_xy.map(QPoint(iline, xline));
+
+            if(tms!=hrz->NULL_VALUE){
+                // scale colour according to relative depth, deeper->darker
+                float x=(tms-range.first)/(range.second-range.first);
+                QVector3D color=baseColor*(2.-x)/2;
+
+                qreal t = 0.001*tms;        // convert time to seconds
+
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
             }
             else{
-                vertices.append( VIC::Vertex{ QVector3D( j, 0, i), nullColor } );
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), 0, xy.y() ), nullColor } );
             }
             //std::cout<<j<<", "<<s<<", "<<i<<std::endl;
         }
