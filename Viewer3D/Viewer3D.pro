@@ -31,7 +31,8 @@ SOURCES += \
     renderitem.cpp \
     renderscene.cpp \
     navigation3dcontrols.cpp \
-    volumenavigationdialog.cpp
+    volumenavigationdialog.cpp \
+    editslicesdialog.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -48,14 +49,16 @@ HEADERS  += \
     renderitem.h \
     renderscene.h \
     navigation3dcontrols.h \
-    volumenavigationdialog.h
+    volumenavigationdialog.h \
+    editslicesdialog.h
 
 FORMS    += \
     volumeviewer.ui \
     modaldisplayrangedialog.ui \
     addslicedialog.ui \
     navigation3dcontrols.ui \
-    volumenavigationdialog.ui
+    volumenavigationdialog.ui \
+    editslicesdialog.ui
 
 RESOURCES += \
     shaders.qrc

@@ -182,6 +182,8 @@ private:
     QPixmap m_pixmap;
     QPoint m_pixmapTopLeft;
     bool m_dirty=true;               // this specifies whether the buffer was changed and not painted yet
+
+    QPixmap m_densityPlotFS;    // full size background pixmap of density plot
 };
 
 #endif // GATHERLABEL_H

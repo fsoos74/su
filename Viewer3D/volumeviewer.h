@@ -17,6 +17,8 @@
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
 #include <displayrangedialog.h>
+#include <editslicesdialog.h>
+
 
 namespace Ui {
 class VolumeViewer;
@@ -42,6 +44,10 @@ public:
         return m_colorMappingLock;
     }
 
+    QVector<SliceDef> slices()const{
+        return m_slices;
+    }
+
 public slots:
 
     void setVolume( std::shared_ptr<Grid3D<float> >);
@@ -59,6 +65,11 @@ public slots:
     void setHighlightedPointSize(qreal);
 
     void setColorMappingLocked(bool);
+
+signals:
+
+    void sliceAdded(SliceDef);
+    void sliceRemoved(SliceDef);
 
 private slots:
 
@@ -100,6 +111,9 @@ private slots:
 
     void on_action_Background_Color_triggered();
 
+    void on_actionEdit_Slices_triggered();
+
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -126,7 +140,7 @@ private:
     Ui::VolumeViewer *ui;
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
-
+    EditSlicesDialog* editSlicesDialog = nullptr;
     ColorBarWidget* m_volumeColorBarWidget=nullptr;
     QDockWidget* m_volumeColorBarDock=nullptr;
     Navigation3DControls* m_navigationControls=nullptr;

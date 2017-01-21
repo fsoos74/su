@@ -60,6 +60,7 @@
     <property name="title">
      <string>&amp;Data</string>
     </property>
+    <addaction name="actionEdit_Slices"/>
     <addaction name="action_Add_Slice"/>
     <addaction name="action_List_Slices"/>
     <addaction name="separator"/>
@@ -355,7 +356,15 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Tie x-z-scales</string>
+    <string>Tie &amp;x-z-scales</string>
+   </property>
+  </action>
+  <action name="actionEdit_Slices">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>E&amp;dit Slices</string>
    </property>
   </action>
  </widget>

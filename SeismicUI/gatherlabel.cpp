@@ -197,6 +197,7 @@ void GatherLabel::paintEvent(QPaintEvent *event){
     QPoint topLeft=QPoint( m_view->horizontalScrollBar()->value(), m_view->verticalScrollBar()->value());
 
     if( topLeft!=m_pixmapTopLeft || rect.width()>m_pixmap.width() || m_dirty){
+
         updatePixmap();
     }
 
@@ -456,6 +457,60 @@ void GatherLabel::drawHorizontalLines(QPainter& painter, const QRect& rect){
 
 }
 
+/*
+// copies part of src
+// the copied portion is as if src were first scaled to painterSize and then destRect was copied
+QPixmap copyScaled( QPixmap src, QSize painterSize, int destX, int destY, int destW, int destH  ){
+
+    std::cout<<"-----------------------------------------------"<<std::endl;
+    std::cout<<"painterSize w="<<painterSize.width()<<" h="<<painterSize.height();
+    std::cout<<"src(pm): w="<<src.width()<<" h="<<src.height()<<std::endl;
+    std::cout<<" dest: x="<<destX<<" y="<<destX<<" w="<<destW<<" h="<<destH<<std::endl;
+
+    qreal relX=qreal(destX)/painterSize.width();
+    qreal relY=qreal(destY)/painterSize.height();
+    qreal relW=qreal(destW)/painterSize.width();
+    qreal relH=qreal(destH)/painterSize.height();
+
+    std::cout<<"rel X="<<relX<<" Y="<<relY<<" W="<<relW<<" H="<<relH<<std::endl;
+
+    qreal srcXf=relX*src.width();
+    int srcX=static_cast<int>( std::floor(srcXf));
+    qreal srcYf=relY*src.height();
+    int srcY=static_cast<int>( std::floor(srcYf));
+    qreal srcWf=relW*src.width();
+    int srcW=static_cast<int>( std::ceil(srcWf));
+    qreal srcHf=relH*src.height();
+    int srcH=static_cast<int>( std::ceil(srcHf));
+
+    std::cout<<"src X="<<srcX<<" Y="<<srcY<<" W="<<srcW<<" H="<<srcH<<std::endl;
+    std::cout<<"srcF X="<<srcXf<<" Y="<<srcYf<<" W="<<srcWf<<" H="<<srcHf<<std::endl;
+
+    QPixmap tmp=src.copy( srcX, srcY, srcW, srcH );
+
+    qreal facX=qreal(painterSize.width())/src.width();
+    qreal facY=qreal(painterSize.height())/src.height();
+
+    qreal relXf=(srcXf-srcX)/srcWf;
+    std::cout<<"facX="<<facX<<" facY="<<facY<<std::endl;
+
+    int scaledW=static_cast<int>(std::ceil((srcW+1)*facX));
+    int scaledH=static_cast<int>(std::ceil(srcH*facY));
+
+    // this is where the error is
+    qreal scaledX = ( srcXf - srcX ) *srcW ;//scaledW/srcW;
+    qreal scaledY = (1 - ( srcYf - srcY) ) * scaledH/srcH;
+    std::cout<<"scaled X="<<scaledX<<" Y="<<scaledY<<" W="<<scaledW<<" H="<<scaledH<<std::endl;
+
+    QPixmap scaled=tmp.scaled( scaledW, scaledH, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    return scaled.copy( scaledX, scaledY, destW, destH );
+
+}
+
+
+
+// new version avoids large pixmap
 void GatherLabel::updatePixmap(){
 
     const int MAX_PIXMAP_WIDTH=32767;
@@ -464,7 +519,131 @@ void GatherLabel::updatePixmap(){
      Q_ASSERT( m_view );
 
     QPoint topLeft=QPoint( m_view->horizontalScrollBar()->value(), m_view->verticalScrollBar()->value());
-     m_pixmapTopLeft=topLeft;
+    m_pixmapTopLeft=topLeft;
+
+    if( m_pixmap.isNull() || m_pixmap.size()!=m_view->viewport()->size()){
+        m_pixmap=QPixmap( m_view->viewport()->size());
+    }
+
+     m_pixmap.fill(Qt::white);
+
+    if( !m_view->gather() || m_view->gather()->size()<1) return;
+
+
+    QPainter painter(&m_pixmap);
+
+    painter.translate( -m_pixmapTopLeft.x(), -m_pixmapTopLeft.y());
+
+    // draw density if required
+    if( m_density){
+
+        painter.setOpacity(qreal(densityOpacity())/100);
+
+        QPixmap scaledImagePixmap=copyScaled( m_densityPlot, size(),
+                                                  m_pixmapTopLeft.x(), m_pixmapTopLeft.y(),
+                                                  m_pixmap.width(), m_pixmap.height() );
+        painter.drawPixmap( m_pixmapTopLeft, scaledImagePixmap );
+
+        painter.setOpacity(1);
+
+        // draw highlighted trace, XXX need to move this to end !!!
+        if( m_highlightTrace){
+            QPen thePen( Qt::red, 0);
+            painter.setPen(thePen);
+            qreal x=(m_highlightedTrace+0.5)*m_view->pixelPerTrace();
+            painter.drawLine( x, 0, x, m_pixmap.height());
+        }
+    }
+
+    // draw volume overlay if required
+    if(m_view->volume() &&  width()<MAX_PIXMAP_WIDTH && height()<MAX_PIXMAP_HEIGHT){
+        const Grid3D<float>& volume=*(m_view->volume());
+        const seismic::Trace& trace=m_view->gather()->front();
+
+        double ft=volume.bounds().ft();
+        double lt=volume.bounds().lt();
+
+        double timeRatio=(lt-ft)/(trace.lt()-trace.ft());
+        int h=timeRatio*height(); // XXX
+        double deltaTime=ft - trace.ft();
+        int y=deltaTime*m_view->pixelPerSecond();
+
+        QPixmap scaledVolumePixmap=m_volumePixmap.scaled( QSize( width(), h), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        painter.setOpacity(qreal(volumeOpacity())/100);
+        painter.drawPixmap( 0, y, scaledVolumePixmap );             // XXXX
+        painter.setOpacity(1);
+    }
+
+    const seismic::Gather& gather=*m_view->gather();
+
+    size_t x1=static_cast<size_t>(m_view->horizontalScrollBar()->value());
+    size_t x2=x1 + static_cast<size_t>(m_view->viewport()->width());
+    size_t firstTrace=x1/m_view->pixelPerTrace();
+    if( firstTrace>0) firstTrace--;
+    size_t lastTrace=x2/m_view->pixelPerTrace() + 1;
+    if(lastTrace>=gather.size()) lastTrace=gather.size()-1;
+
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    qreal pixelPerTrace=m_view->pixelPerTrace();
+    qreal pixelPerSecond=m_view->pixelPerSecond();
+    qreal ft=m_view->ft();
+
+    QPen thePen(traceColor(),0);
+    QBrush theBrush(traceColor());
+
+    painter.setOpacity(qreal(traceOpacity())/100);
+
+    for( seismic::Gather::size_type idx=firstTrace; idx<= lastTrace; idx++){
+
+        const seismic::Trace& trc=gather[idx];
+
+        qreal x=(idx+0.5)*pixelPerTrace;
+
+        if( m_highlightTrace && idx==m_highlightedTrace ){
+            thePen.setColor(Qt::red);
+            theBrush.setColor(Qt::red);
+        }
+        else{
+            thePen.setColor(traceColor());
+            theBrush.setColor(traceColor());
+        }
+
+        painter.save();
+
+        painter.translate( x, (trc.ft()-ft)*pixelPerSecond);
+        painter.scale( pixelPerTrace/2 * traceScaleFactors[idx], pixelPerSecond * trc.dt() );
+        if( m_variableArea){
+            painter.fillPath( m_traceVariableAreaPaths[idx], theBrush);
+        }
+        if( m_wiggles){
+            painter.strokePath(m_traceWigglePaths[idx], thePen);
+        }
+
+        painter.restore();
+
+    }
+
+    painter.setOpacity(1);
+   m_dirty=true;
+
+        //setUpdatesEnabled(true)
+}
+*/
+
+
+
+// original version with temporary  big scaled pixmap
+// this is inefficient and limits the maximum zoom but worked well
+void GatherLabel::updatePixmap(){
+
+    const int MAX_PIXMAP_WIDTH=32767;
+    const int MAX_PIXMAP_HEIGHT=32767;
+
+     Q_ASSERT( m_view );
+
+    QPoint topLeft=QPoint( m_view->horizontalScrollBar()->value(), m_view->verticalScrollBar()->value());
+    m_pixmapTopLeft=topLeft;
 
     if( m_pixmap.isNull() || m_pixmap.size()!=m_view->viewport()->size()){
         m_pixmap=QPixmap( m_view->viewport()->size());
@@ -485,9 +664,10 @@ void GatherLabel::updatePixmap(){
         painter.setOpacity(qreal(densityOpacity())/100);
 
         if( width()<MAX_PIXMAP_WIDTH && height()<MAX_PIXMAP_HEIGHT){     // could be null if maximum size is exceeded
-            QPixmap scaledImagePixmap=m_densityPlot.scaled( size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-            painter.drawPixmap( 0, 0, scaledImagePixmap );
-         }
+            //QPixmap scaledImagePixmap=m_densityPlot.scaled( size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            //painter.drawPixmap( 0, 0, scaledImagePixmap );
+            painter.drawPixmap(0, 0, m_densityPlotFS);  // XXX
+        }
         else{
             painter.fillRect( QRect(0,0,width(),height()), QBrush( Qt::gray, Qt::SolidPattern) );
         }
@@ -577,6 +757,7 @@ void GatherLabel::updatePixmap(){
         //setUpdatesEnabled(true)
 }
 
+
 /* ORIGINAL
 void GatherLabel::paintEvent(QPaintEvent *event){
 
@@ -643,6 +824,7 @@ void GatherLabel::paintEvent(QPaintEvent *event){
 void GatherLabel::resizeEvent(QResizeEvent *){
 
     m_dirty=true;       // need to update pixmap
+    m_densityPlotFS=m_densityPlot.scaled(  size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);  // XXX
     update();
 }
 
@@ -763,6 +945,8 @@ void GatherLabel::updateDensityPlot(){
     }
 
     m_densityPlot=QPixmap::fromImage(image);
+
+    m_densityPlotFS=m_densityPlot.scaled(  size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);  // XXX
 
 }
 

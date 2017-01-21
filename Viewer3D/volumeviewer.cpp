@@ -209,12 +209,14 @@ void VolumeViewer::addSlice(SliceDef def){
     }
 
     m_slices.append(def);
+    emit sliceAdded(def);
     refreshView();
 }
 
 void VolumeViewer::removeSlice( SliceDef def ){
 
     m_slices.removeAll(def);
+    emit sliceRemoved(def);
     refreshView();
 }
 
@@ -294,7 +296,7 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
     }
 
     case PointCode::VIEWER_TIME_SELECTED:{
-        int sample=point.time/m_volume->bounds().dt();              // convert from seconds
+        int sample=m_volume->bounds().timeToSample(point.time);// convert from seconds
         addSlice( SliceDef{SliceType::SAMPLE, sample} );
         refreshView();
         break;
@@ -1040,4 +1042,24 @@ void VolumeViewer::on_action_Background_Color_triggered()
     if( ! c.isValid() ) return;
 
     ui->openGLWidget->setBackgroundColor(c);
+}
+
+void VolumeViewer::on_actionEdit_Slices_triggered()
+{
+    if( !editSlicesDialog ){
+
+        editSlicesDialog = new EditSlicesDialog( this );
+        /*
+        editSlicesDialog->setBounds( m_volume->bounds() );
+        foreach( SliceDef s, m_slices ){
+            editSlicesDialog->addSlice(s);
+        }
+        connect( this, SIGNAL(sliceAdded(SliceDef)), editSlicesDialog, SLOT(addSlice(SliceDef)) );
+        connect( this, SIGNAL(sliceRemoved(SliceDef)), editSlicesDialog, SLOT(removeSlice(SliceDef)) );
+        connect( editSlicesDialog, SIGNAL(sliceAdded(SliceDef)), this, SLOT(addSlice(SliceDef)) );
+        connect( editSlicesDialog, SIGNAL(sliceRemoved(SliceDef)), this, SLOT(removeSlice(SliceDef)) );
+        */
+    }
+
+    editSlicesDialog->show();
 }
