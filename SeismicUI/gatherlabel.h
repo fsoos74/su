@@ -179,11 +179,12 @@ private:
     QVector<QPainterPath> m_traceVariableAreaPaths;
     QPixmap m_densityPlot;
     QPixmap m_volumePixmap;
-    QPixmap m_pixmap;
-    QPoint m_pixmapTopLeft;
+    QPixmap m_pixmap;                // background pixmap of actual visible content
+    QPoint m_pixmapTopLeft;          // top left coords (pixel) of content in background pixmap
     bool m_dirty=true;               // this specifies whether the buffer was changed and not painted yet
 
-    QPixmap m_densityPlotFS;    // full size background pixmap of density plot
+    //QPixmap m_densityPlotFS;    // full size background pixmap of density plot
+    //QPixmap m_volumePlotFS;     // full size background pixmap for volume, covers only actual volume
 };
 
 #endif // GATHERLABEL_H
