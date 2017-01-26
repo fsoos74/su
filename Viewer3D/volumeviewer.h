@@ -13,11 +13,14 @@
 #include<colortable.h>
 #include<selectionpoint.h>
 #include <slicedef.h>
+#include <horizondef.h>
 #include <navigation3dcontrols.h>
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
 #include <displayrangedialog.h>
 #include <editslicesdialog.h>
+#include <edithorizonsdialog.h>
+#include <horizonmanager.h>
 
 
 namespace Ui {
@@ -30,12 +33,10 @@ class VolumeViewer : public BaseViewer
 
 public:
 
-    struct HorizonDef{
-        QString                         name;
+    struct HorizonData{
+        HorizonDef def;
         std::shared_ptr<Grid2D<float>>  horizon;
-        QColor                          color;
     };
-
 
     explicit VolumeViewer(QWidget *parent = 0);
     ~VolumeViewer();
@@ -58,8 +59,8 @@ public slots:
     void addSlice( SliceDef );
     void removeSlice( SliceDef );
 
-    void addHorizon( HorizonDef );
-    void removeHorizon( QString );
+    void addHorizon();
+   // void removeHorizon( QString );
 
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
@@ -70,6 +71,7 @@ signals:
 
     void sliceAdded(SliceDef);
     void sliceRemoved(SliceDef);
+    void horizonsChanged( );
 
 private slots:
 
@@ -83,11 +85,7 @@ private slots:
 
     void on_action_List_Slices_triggered();
 
-    void on_actionAdd_Horizon_triggered();
-
-    void on_actionRemove_Horizon_triggered();
-
-    void on_actionChange_Horizon_Color_triggered();
+  //  void on_actionAdd_Horizon_triggered();
 
     void on_action_Front_triggered();
 
@@ -114,6 +112,10 @@ private slots:
     void on_actionEdit_Slices_triggered();
 
 
+    void on_actionEdit_Horizons_triggered();
+
+    void on_action_Open_Volume_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -131,6 +133,7 @@ private:
     void inlineSliceToView( int iline );
     void crosslineSliceToView( int xline );
     void sampleSliceToView( int sample );
+    void horizonToView(Grid2D<float>* hrz);
     void horizonToView(Grid2D<float>* hrz, QColor);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
 
@@ -141,6 +144,7 @@ private:
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
     EditSlicesDialog* editSlicesDialog = nullptr;
+    EditHorizonsDialog* editHorizonsDialog=nullptr;
     ColorBarWidget* m_volumeColorBarWidget=nullptr;
     QDockWidget* m_volumeColorBarDock=nullptr;
     Navigation3DControls* m_navigationControls=nullptr;
@@ -155,7 +159,10 @@ private:
 
     //QVector<SliceDef> m_slices;
     QVector<SliceDef> m_slices;
-    QMap<QString, HorizonDef> m_horizons;
+
+    HorizonManager* m_horizonManager;
+    //QVector< std::shared_ptr<Grid2D<float> > > m_horizons;
+    //QVector< HorizonDef > m_horizonDefs;
 
     QVector<SelectionPoint> m_highlightedPoints;
     qreal m_highlightedPointSize=2;

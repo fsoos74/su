@@ -32,7 +32,9 @@ SOURCES += \
     renderscene.cpp \
     navigation3dcontrols.cpp \
     volumenavigationdialog.cpp \
-    editslicesdialog.cpp
+    editslicesdialog.cpp \
+    edithorizonsdialog.cpp \
+    horizonmanager.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -50,7 +52,10 @@ HEADERS  += \
     renderscene.h \
     navigation3dcontrols.h \
     volumenavigationdialog.h \
-    editslicesdialog.h
+    editslicesdialog.h \
+    edithorizonsdialog.h \
+    horizondef.h \
+    horizonmanager.h
 
 FORMS    += \
     volumeviewer.ui \
@@ -58,7 +63,8 @@ FORMS    += \
     addslicedialog.ui \
     navigation3dcontrols.ui \
     volumenavigationdialog.ui \
-    editslicesdialog.ui
+    editslicesdialog.ui \
+    edithorizonsdialog.ui
 
 RESOURCES += \
     shaders.qrc

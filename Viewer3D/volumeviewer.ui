@@ -40,6 +40,8 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="action_Open_Volume"/>
+    <addaction name="separator"/>
     <addaction name="actionE_xit"/>
    </widget>
    <widget class="QMenu" name="menu_Options">
@@ -49,7 +51,6 @@
     <addaction name="action_Volume_Colortable"/>
     <addaction name="actionVolume_Range"/>
     <addaction name="separator"/>
-    <addaction name="actionChange_Horizon_Color"/>
     <addaction name="actionSet_Point_Size"/>
     <addaction name="separator"/>
     <addaction name="action_Background_Color"/>
@@ -65,8 +66,7 @@
     <addaction name="action_List_Slices"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_Horizon"/>
-    <addaction name="actionRemove_Horizon"/>
+    <addaction name="actionEdit_Horizons"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -365,6 +365,19 @@
    </property>
    <property name="text">
     <string>E&amp;dit Slices</string>
+   </property>
+  </action>
+  <action name="actionEdit_Horizons">
+   <property name="text">
+    <string>Ed&amp;it Horizons</string>
+   </property>
+  </action>
+  <action name="action_Open_Volume">
+   <property name="text">
+    <string>&amp;Open Volume</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

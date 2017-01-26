@@ -9,7 +9,7 @@
 #include<addslicedialog.h>
 #include<histogramdialog.h>
 #include<QColorDialog>
-
+#include<QInputDialog>
 
 #include<QToolBar>
 
@@ -19,7 +19,8 @@
 VolumeViewer::VolumeViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::VolumeViewer),
-    m_colorTable(new ColorTable(this))
+    m_colorTable(new ColorTable(this)),
+    m_horizonManager(new HorizonManager(this))
 {
     ui->setupUi(this);
 
@@ -34,6 +35,9 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
 
     ui->openGLWidget->setTieXZScales( ui->actionTie_Scales->isChecked());
     connect( ui->actionTie_Scales, SIGNAL(toggled(bool)), ui->openGLWidget, SLOT(setTieXZScales(bool)) );
+
+    connect( m_horizonManager, SIGNAL( horizonsChanged()), this, SLOT(refreshView()) );
+    connect( m_horizonManager, SIGNAL(paramsChanged(QString)), this, SLOT(refreshView()) );
 
     createDockWidgets();
     populateWindowMenu();
@@ -124,14 +128,20 @@ void VolumeViewer::setVolume( std::shared_ptr<Grid3D<float> > volume){
 
     if( volume==m_volume) return;
 
+    std::shared_ptr<Grid3D<float>> old = m_volume;  // keep this for geometry comparison
+
     m_volume=volume;
 
     if( m_volume ){
 
         m_colorTable->setRange(m_volume->valueRange());
 
-        initialVolumeDisplay();
-
+        if( !old || !volume || old->bounds() !=volume->bounds()){
+            initialVolumeDisplay();
+        }
+        else{
+            refreshView();
+        }
     }
 }
 
@@ -168,7 +178,7 @@ void VolumeViewer::setHighlightedPointSize(qreal s){
 void VolumeViewer::clear(){
 
     m_slices.clear();
-    m_horizons.clear();
+    m_horizonManager->clear();
     m_highlightedPoints.clear();
 
     refreshView();
@@ -220,25 +230,23 @@ void VolumeViewer::removeSlice( SliceDef def ){
     refreshView();
 }
 
-void VolumeViewer::addHorizon(VolumeViewer::HorizonDef def){
+/*
+void VolumeViewer::addHorizon( HorizonDef def){
 
-    if( m_horizons.contains(def.name)) return;      // no duplicates
+    // prevent duplicats
+    foreach( HorizonDef mdef, m_horizons){
+        if( def.name == mdef.name) return;
+    }
 
     if( !def.horizon ) return;                      // no null horizons
 
-    m_horizons.insert(def.name, def );
+    m_horizons.append( def );
+
+    emit horizonsChanged();
 
     refreshView();
 }
-
-void VolumeViewer::removeHorizon(QString name){
-
-    m_horizons.remove(name);
-
-    refreshView();
-
-    std::cout<<"Removed horizon "<<name.toStdString()<<std::endl;
-}
+*/
 
 void VolumeViewer::refreshView(){
 
@@ -266,9 +274,19 @@ void VolumeViewer::refreshView(){
         sliceToView(slice);
     }
 
-    foreach( HorizonDef hdef, m_horizons.values() ){
-        if( hdef.horizon ){
-            horizonToView(hdef.horizon.get(), hdef.color);
+    foreach( QString hname, m_horizonManager->names() ){
+
+        HorizonDef hdef = m_horizonManager->params(hname);
+        Grid2D<float>* h = m_horizonManager->horizon(hname);
+
+        if( h ){
+
+            if( hdef.useColor ){
+                horizonToView(h, hdef.color);
+            }
+            else{
+                horizonToView(h );
+            }
         }
     }
 
@@ -375,11 +393,6 @@ void VolumeViewer::directionIndicatorPlanesToView( Grid3DBounds bounds){
     qreal zmax=br_xy.bottom();
     qreal ymin=bounds.ft();
     qreal ymax=bounds.lt();
-
-    std::cout<<"xmin="<<xmin<<" xmax="<<xmax<<std::endl;
-    std::cout<<"ymin="<<ymin<<" ymax="<<ymax<<std::endl;
-    std::cout<<"zmin="<<zmin<<" zmax="<<zmax<<std::endl;
-
 
     // top (ymin) rectangle
     {
@@ -557,7 +570,9 @@ void VolumeViewer::sampleSliceToView( int sample ){
     ui->openGLWidget->scene()->addItem( VIT::makeVIT(vertices, indices, GL_QUADS, img ) );
 }
 
-void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
+
+// project volume on horizon
+void VolumeViewer::horizonToView(Grid2D<float>* hrz){
 
     Q_ASSERT( m_volume );
     Q_ASSERT( hrz );
@@ -570,7 +585,6 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
 
     auto range=valueRange(*hrz);
     QVector3D nullColor{0,0,0};
-    QVector3D baseColor{static_cast<float>(hcolor.redF()), static_cast<float>(hcolor.greenF()), static_cast<float>(hcolor.blueF()) };
     QVector<VIC::Vertex> vertices;
 
     for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
@@ -583,16 +597,24 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
             if(tms!=hrz->NULL_VALUE){
                 // scale colour according to relative depth, deeper->darker
                 float x=(tms-range.first)/(range.second-range.first);
-                QVector3D color=baseColor*(2.-x)/2;
-
                 qreal t = 0.001*tms;        // convert time to seconds
+
+                QVector3D color = nullColor;
+
+                float value = m_volume->value(iline, xline, t);
+
+                if( value != m_volume->NULL_VALUE ){
+
+                    QColor c = m_colorTable->map(value);
+                    color = QVector3D{static_cast<float>(c.redF()), static_cast<float>(c.greenF()), static_cast<float>(c.blueF()) };
+                }
 
                 vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
             }
             else{
                 vertices.append( VIC::Vertex{ QVector3D( xy.x(), 0, xy.y() ), nullColor } );
             }
-            //std::cout<<j<<", "<<s<<", "<<i<<std::endl;
+
         }
     }
 
@@ -638,11 +660,99 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
             gap=true;
         }
     }
-/*
-    foreach (int idx, indices) {
-        std::cout<<idx<<std::endl;
+
+    ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
+}
+
+
+void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
+
+    Q_ASSERT( m_volume );
+    Q_ASSERT( hrz );
+
+    Grid3D<float>& volume=*m_volume;
+    Grid3DBounds vbounds=volume.bounds();
+
+    Grid2DBounds hbounds=hrz->bounds();
+
+    auto range=valueRange(*hrz);
+    QVector3D nullColor{0,0,0};
+    QVector3D baseColor{static_cast<float>(hcolor.redF()), static_cast<float>(hcolor.greenF()), static_cast<float>(hcolor.blueF()) };
+    QVector<VIC::Vertex> vertices;
+
+    for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
+
+        for( int xline=hbounds.j1(); xline<=hbounds.j2(); xline++){
+
+            float tms=(*hrz)(iline, xline);  // horizon is in millis
+            QPointF xy=ilxl_to_xy.map(QPoint(iline, xline));
+
+            if(tms!=hrz->NULL_VALUE){
+                // scale colour according to relative depth, deeper->darker
+                float x=(tms-range.first)/(range.second-range.first);
+                qreal t = 0.001*tms;        // convert time to seconds
+
+                QVector3D color = nullColor;
+
+                float value = m_volume->value(iline, xline, t);
+
+                if( value != m_volume->NULL_VALUE ){
+
+                    color = baseColor*(2.-x)/2;
+                }
+
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
+            }
+            else{
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), 0, xy.y() ), nullColor } );
+            }
+
+        }
     }
-*/
+
+    QVector<VIC::Index> indices;
+
+    bool gap=false;
+    for( int i=hbounds.i1(); i<hbounds.i2(); i++){  // 1 less
+
+        for( int j=hbounds.j1(); j<=hbounds.j2(); j++){
+
+            int l=(i-hbounds.i1())*hbounds.width()+j-hbounds.j1();
+            if( (*hrz)(i,j)!=hrz->NULL_VALUE){ //ignore null values
+                if( gap ){
+                    indices.append(l);
+                    gap=false;
+                }
+                indices.append(l);
+            }
+            else{
+                if(!gap && !indices.empty()){
+                    indices.append(indices.back());
+                    gap=true;
+                }
+            }
+
+            int r=l+hbounds.width();
+            if( (*hrz)(i+1,j)!=hrz->NULL_VALUE){ //ignore null values
+                if( gap ){
+                    indices.append(r);
+                    gap=false;
+                }
+                indices.append(r);
+            }
+            else{
+                if(!gap && !indices.empty()){
+                    indices.append(indices.back());
+                    gap=true;
+                }
+            }
+        }
+        if(!gap){
+            indices.append(indices.back()); // duplicate point marks end of part
+            gap=true;
+        }
+    }
+
     ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
 }
 
@@ -826,8 +936,8 @@ void VolumeViewer::on_action_List_Slices_triggered()
     removeSlice( m_slices.at(idx) );
 }
 
-void VolumeViewer::on_actionAdd_Horizon_triggered()
-{
+
+void VolumeViewer::addHorizon(){
 
     static const QVector<QColor> HorizonColors{Qt::darkRed, Qt::darkGreen, Qt::darkBlue,
                 Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow,
@@ -837,14 +947,24 @@ void VolumeViewer::on_actionAdd_Horizon_triggered()
 
     if( !m_project ) return;
 
+    QStringList notLoaded;
+    foreach( QString name, m_project->gridList(GridType::Horizon) ){
+
+        if( ! m_horizonManager->contains( name )) notLoaded.append(name);
+    }
+
+    // nothing left to load
+    if( notLoaded.isEmpty() ) return;
+
     bool ok=false;
     QString gridName=QInputDialog::getItem(this, "Open Horizon", "Please select a horizon:",
-                                           m_project->gridList(GridType::Horizon), 0, false, &ok);
+                                           /*m_project->gridList(GridType::Horizon)*/ notLoaded, 0, false, &ok);
     if( !gridName.isEmpty() && ok ){
 
-        if( m_horizons.contains(gridName)){
-            QMessageBox::information(this, tr("Add Horizon"), QString("Horizon \"%1\" is already loaded!").arg(gridName));
-            return;
+
+        if( m_horizonManager->contains( gridName) ){
+                QMessageBox::information(this, tr("Add Horizon"), QString("Horizon \"%1\" is already loaded!").arg(gridName));
+                return;
         }
 
         std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Horizon, gridName );
@@ -853,37 +973,11 @@ void VolumeViewer::on_actionAdd_Horizon_triggered()
             return;
         }
 
-        HorizonDef def{gridName, grid, HorizonColors.at(m_horizons.size()%HorizonColors.size()) };
+        HorizonDef def{ false, HorizonColors.at(m_horizonManager->size()%HorizonColors.size()) };
 
-        addHorizon(def);
+        m_horizonManager->add(gridName, def, grid );
     }
-}
 
-void VolumeViewer::on_actionRemove_Horizon_triggered()
-{
-    bool ok=false;
-
-    QString horizon=QInputDialog::getItem(this, tr("Remove Horizon"), tr("Select Horizon"), m_horizons.keys(), 0, false, &ok);
-    if( horizon.isEmpty() || !ok ) return;
-
-    removeHorizon( horizon );
-}
-
-void VolumeViewer::on_actionChange_Horizon_Color_triggered()
-{
-    bool ok=false;
-
-    QString horizon=QInputDialog::getItem(this, tr("Remove Horizon"), tr("Select Horizon"), m_horizons.keys(), 0, false, &ok);
-    if( horizon.isEmpty() || !ok ) return;
-
-    HorizonDef def=m_horizons.value(horizon);
-
-    QColor color=QColorDialog::getColor(def.color, this, QString("Select Horizon Color \"%1\"").arg(horizon));
-    if( color.isValid()){
-        def.color=color;
-        m_horizons[horizon].color=color;
-        refreshView();
-    }
 }
 
 
@@ -1062,4 +1156,40 @@ void VolumeViewer::on_actionEdit_Slices_triggered()
     }
 
     editSlicesDialog->show();
+}
+
+
+void VolumeViewer::on_actionEdit_Horizons_triggered()
+{
+    if( !editHorizonsDialog ){
+
+        editHorizonsDialog=new EditHorizonsDialog( this );
+
+        editHorizonsDialog->setHorizonManager(m_horizonManager);    // dialog and manager have this as parent
+
+        editHorizonsDialog->setWindowTitle(tr("Edit Horizons"));
+
+        connect( editHorizonsDialog, SIGNAL(addHorizonRequested()), this, SLOT(addHorizon()) );
+    }
+
+    editHorizonsDialog->show();
+}
+
+void VolumeViewer::on_action_Open_Volume_triggered()
+{
+    if( !m_project )return;
+
+    bool ok=false;
+    QString name=QInputDialog::getItem( this, tr("Open Volume"), tr("Select Volume"),
+                                        m_project->volumeList(), 0, false, &ok);
+
+    if( !ok || name.isNull() ) return;
+
+    std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+    if( !volume ){
+        QMessageBox::critical(this, tr("Open Volume"), tr("Loading Volume failed!"));
+        return;
+    }
+
+    setVolume(volume);
 }
