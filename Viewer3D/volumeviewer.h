@@ -59,9 +59,6 @@ public slots:
     void addSlice( SliceDef );
     void removeSlice( SliceDef );
 
-    void addHorizon();
-   // void removeHorizon( QString );
-
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
 
@@ -85,8 +82,6 @@ private slots:
 
     void on_action_List_Slices_triggered();
 
-  //  void on_actionAdd_Horizon_triggered();
-
     void on_action_Front_triggered();
 
     void on_action_Back_triggered();
@@ -100,8 +95,6 @@ private slots:
     void on_action_Bottom_triggered();
 
     void on_actionSet_Point_Size_triggered();
-
-    //void on_action_Navigation_Dialog_triggered();
 
     void on_actionHistogram_triggered();
 
@@ -161,8 +154,6 @@ private:
     QVector<SliceDef> m_slices;
 
     HorizonManager* m_horizonManager;
-    //QVector< std::shared_ptr<Grid2D<float> > > m_horizons;
-    //QVector< HorizonDef > m_horizonDefs;
 
     QVector<SelectionPoint> m_highlightedPoints;
     qreal m_highlightedPointSize=2;

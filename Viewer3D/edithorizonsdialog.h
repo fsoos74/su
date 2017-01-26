@@ -9,6 +9,11 @@
 
 #include <horizonmanager.h>
 
+#include <avoproject.h>
+
+#include <memory>
+
+
 namespace Ui {
 class EditHorizonsDialog;
 }
@@ -22,10 +27,7 @@ public:
     ~EditHorizonsDialog();
 
     void setHorizonManager( HorizonManager* );
-
-signals:
-
-    void addHorizonRequested();
+    void setProject( std::shared_ptr<AVOProject>);
 
 public slots:
 
@@ -36,6 +38,8 @@ private slots:
 
     void on_pbRemove_clicked();
 
+    void on_pbAdd_clicked();
+
     void updateParams();
 
     void on_cbColor_clicked();
@@ -45,13 +49,13 @@ private slots:
     void horizonParamsToControls( QString );
     void horizonParamsFromControls( QString );
 
+
+
 private:
     Ui::EditHorizonsDialog *ui;
 
-
-
-
     HorizonManager* horizonManager=nullptr;
+    std::shared_ptr<AVOProject> m_project;
 };
 
 #endif // EDITHORIZONSDIALOG_H

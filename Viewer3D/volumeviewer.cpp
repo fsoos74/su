@@ -134,7 +134,9 @@ void VolumeViewer::setVolume( std::shared_ptr<Grid3D<float> > volume){
 
     if( m_volume ){
 
-        m_colorTable->setRange(m_volume->valueRange());
+        if( !isColorMappingLocked() ){
+            m_colorTable->setRange(m_volume->valueRange());
+        }
 
         if( !old || !volume || old->bounds() !=volume->bounds()){
             initialVolumeDisplay();
@@ -577,13 +579,13 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz){
     Q_ASSERT( m_volume );
     Q_ASSERT( hrz );
 
-    Grid3D<float>& volume=*m_volume;
-    Grid3DBounds vbounds=volume.bounds();
+    //Grid3D<float>& volume=*m_volume;
+    //Grid3DBounds vbounds=volume.bounds();
 
     Grid2DBounds hbounds=hrz->bounds();
 
 
-    auto range=valueRange(*hrz);
+    //auto range=valueRange(*hrz);
     QVector3D nullColor{0,0,0};
     QVector<VIC::Vertex> vertices;
 
@@ -596,7 +598,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz){
 
             if(tms!=hrz->NULL_VALUE){
                 // scale colour according to relative depth, deeper->darker
-                float x=(tms-range.first)/(range.second-range.first);
+                //float x=(tms-range.first)/(range.second-range.first);
                 qreal t = 0.001*tms;        // convert time to seconds
 
                 QVector3D color = nullColor;
@@ -670,8 +672,8 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
     Q_ASSERT( m_volume );
     Q_ASSERT( hrz );
 
-    Grid3D<float>& volume=*m_volume;
-    Grid3DBounds vbounds=volume.bounds();
+    //Grid3D<float>& volume=*m_volume;
+    //Grid3DBounds vbounds=volume.bounds();
 
     Grid2DBounds hbounds=hrz->bounds();
 
@@ -880,6 +882,10 @@ void VolumeViewer::on_actionVolume_Range_triggered()
                  m_colorTable, SLOT( setPower(double)) );
         connect( displayRangeDialog, SIGNAL(lockedChanged(bool)),
                  this, SLOT(setColorMappingLocked(bool)) );
+        connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
+                 displayRangeDialog, SLOT(setRange(std::pair<double,double>)) );
+        connect( m_colorTable, SIGNAL(powerChanged(double)),
+                 displayRangeDialog, SLOT(setPower(double)) );
     }
 
     displayRangeDialog->show();
@@ -936,7 +942,7 @@ void VolumeViewer::on_action_List_Slices_triggered()
     removeSlice( m_slices.at(idx) );
 }
 
-
+/*
 void VolumeViewer::addHorizon(){
 
     static const QVector<QColor> HorizonColors{Qt::darkRed, Qt::darkGreen, Qt::darkBlue,
@@ -958,7 +964,7 @@ void VolumeViewer::addHorizon(){
 
     bool ok=false;
     QString gridName=QInputDialog::getItem(this, "Open Horizon", "Please select a horizon:",
-                                           /*m_project->gridList(GridType::Horizon)*/ notLoaded, 0, false, &ok);
+                                           notLoaded, 0, false, &ok);
     if( !gridName.isEmpty() && ok ){
 
 
@@ -979,7 +985,7 @@ void VolumeViewer::addHorizon(){
     }
 
 }
-
+*/
 
 void VolumeViewer::defaultPositionAndScale(){
 
@@ -1167,9 +1173,9 @@ void VolumeViewer::on_actionEdit_Horizons_triggered()
 
         editHorizonsDialog->setHorizonManager(m_horizonManager);    // dialog and manager have this as parent
 
-        editHorizonsDialog->setWindowTitle(tr("Edit Horizons"));
+        editHorizonsDialog->setProject( m_project );
 
-        connect( editHorizonsDialog, SIGNAL(addHorizonRequested()), this, SLOT(addHorizon()) );
+        editHorizonsDialog->setWindowTitle(tr("Edit Horizons"));
     }
 
     editHorizonsDialog->show();

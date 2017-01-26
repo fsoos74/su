@@ -1,7 +1,5 @@
 #include "horizonmanager.h"
 
-#include<iostream>
-
 
 HorizonManager::HorizonManager(QObject *parent) : QObject(parent)
 {
@@ -31,15 +29,11 @@ void HorizonManager::remove( QString name){
 
 void HorizonManager::setParams( QString name, HorizonDef def ){
 
-    std::cout<<"HorizonManager::setParams name="<<name.toStdString()<<std::endl;
     if( ! m_horizonDefs.contains(name) ) return;
 
-    std::cout<<"HorizonManager::setParams 2"<<std::endl;
     if( m_horizonDefs.value(name) == def ) return;
 
-    std::cout<<"HorizonManager::setParams 3"<<std::endl;
     m_horizonDefs.insert( name, def);   // insert replaces existing values
 
-    std::cout<<"HorizonManager::setParams 4"<<std::endl;
     emit paramsChanged(name);
 }
