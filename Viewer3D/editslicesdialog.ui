@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>293</width>
-    <height>215</height>
+    <width>408</width>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,20 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="cbName"/>
+        <widget class="QComboBox" name="cbName">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_2">
@@ -34,6 +47,9 @@
           <string>Type:</string>
          </property>
         </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="cbType"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
@@ -44,9 +60,6 @@
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="sbValue"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="QComboBox" name="cbType"/>
        </item>
       </layout>
      </item>
@@ -70,12 +83,18 @@
          <property name="text">
           <string>Add</string>
          </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pbDelete">
          <property name="text">
-          <string>Delete</string>
+          <string>Remove</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
@@ -128,6 +147,9 @@
       <widget class="QPushButton" name="pbClose">
        <property name="text">
         <string>Close</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

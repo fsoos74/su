@@ -1,6 +1,8 @@
 #include "editslicesdialog.h"
 #include "ui_editslicesdialog.h"
 
+#include<iostream>
+
 EditSlicesDialog::EditSlicesDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EditSlicesDialog)
@@ -11,64 +13,168 @@ EditSlicesDialog::EditSlicesDialog(QWidget *parent) :
     ui->cbType->addItem(toQString(SliceType::CROSSLINE));
     ui->cbType->addItem(toQString(SliceType::SAMPLE));
 
-    connect( ui->cbName, SIGNAL(currentIndexChanged(int)), this, SLOT(sliceToControls(int)) );
+    connect( ui->cbType, SIGNAL(currentIndexChanged(int)), this, SLOT(sliceControlsChanged()) );
+    connect( ui->sbValue, SIGNAL(valueChanged(int)), this, SLOT(sliceControlsChanged()) );
 }
 
 EditSlicesDialog::~EditSlicesDialog()
 {
     delete ui;
 }
-/*
-void EditSlicesDialog::setViewer( VolumeViewer* viewer){
 
-    m_viewer=viewer;
+
+void EditSlicesDialog::setSliceModel(SliceModel * model){
+
+    if( model == m_sliceModel ) return;
+
+    m_sliceModel=model;
 
     ui->cbName->clear();
 
-    if( !viewer ) return;
-}
+    if( !m_sliceModel )  return;
 
-void EditSlicesDialog::addSlice(SliceDef s){
+    connect( m_sliceModel, SIGNAL(changed()), this, SLOT(modelChanged()));
 
-    m_slices.append(s);
-    QString name=QString("%1 %2").arg(toQString(s.type)).arg(s.value);
-    ui->cbName->addItem(name);
-    emit sliceAdded(s);
-}
-
-
-void EditSlicesDialog::removeSlice(SliceDef s){
-
-    int idx=m_slices.indexOf(s);
-    if( idx<0 ) return;
-
-    m_slices.remove(idx);
-    ui->cbName->removeItem(idx);    // slices and names in sync
-    emit sliceRemoved(s);
-}
-
-*/
-void EditSlicesDialog::sliceToControls(int i){
-/*
-    if( !m_viewer) return;
-
-    SliceDef s=m_viewer->slices().at(i);
-
-    ui->cbName->setCurrentIndex(i);
-
-    int idx=ui->cbType->findText(toQString(s.type));
-    if( idx<0 ) return;
-
-    ui->cbType->setCurrentIndex(idx);
-
-    switch( s.type ){
-
-    case SliceType::INLINE: ui->sbValue->setRange(m_bounds.inline1(), m_bounds.inline2()); break;
-    case SliceType::CROSSLINE: ui->sbValue->setRange(m_bounds.crossline1(), m_bounds.crossline2()); break;
-    case SliceType::SAMPLE: ui->sbValue->setRange(0, m_bounds.sampleCount()); break;
+    foreach( QString name, m_sliceModel->names()){
+        ui->cbName->addItem(name);
     }
 
-    ui->sbValue->setValue(s.value);
-    */
+    ui->cbName->setCurrentIndex(0);
 }
 
+
+void EditSlicesDialog::modelChanged(){
+
+    if( !m_sliceModel ) return;
+
+    QString name = ui->cbName->currentText();
+    SliceDef current=sliceFromControls(name);
+
+    wait_controls=true;
+
+    ui->cbName->clear();
+    QStringList names;
+    foreach( QString s, m_sliceModel->names()){
+        names.append(s);
+    }
+    ui->cbName->addItems(names);
+
+    wait_controls=false;
+
+    if( names.contains(name)){
+        ui->cbName->setCurrentText(name);
+    }
+    else{
+        ui->cbName->setCurrentIndex(0);
+    }
+    /*
+    if( m_sliceModel->contains(name)){
+
+        SliceDef tmp=m_sliceModel->slice(name);
+        if( tmp == current ) return;
+        sliceToControls(name, tmp);
+    }
+    else{
+        ui->cbName->setCurrentIndex(0); // invalid slice
+    }
+*/
+}
+
+
+void EditSlicesDialog::setBounds(Grid3DBounds bounds){
+
+    m_bounds=bounds;
+}
+
+void EditSlicesDialog::setCurrentSlice(QString name){
+
+    // this will trigger update of controls via currentIndexChanged
+    ui->cbName->setCurrentText(name);
+}
+
+
+void EditSlicesDialog::sliceControlsChanged(){
+
+    // update of controls in progress, dont update until all controls are set to the new values
+    if( wait_controls) return;
+
+    QString name=ui->cbName->currentText();
+    SliceDef slice=sliceFromControls(name);
+
+    m_sliceModel->setSlice(name, slice);
+}
+
+void EditSlicesDialog::sliceToControls( QString name, SliceDef slice ){
+
+
+    // prevent signals of controls before all params are set
+    wait_controls=true;
+
+    // update value range according to slice type and volume bounds
+    int min=0;
+    int max=100;
+    switch(slice.type){
+    case SliceType::INLINE: min=m_bounds.inline1(); max=m_bounds.inline2(); break;
+    case SliceType::CROSSLINE: min=m_bounds.crossline1(); max=m_bounds.crossline2(); break;
+    case SliceType::SAMPLE: min=0; max=m_bounds.sampleCount()-1; break;
+    }   
+    ui->sbValue->setRange(min, max);
+
+
+    ui->cbType->setCurrentText(toQString(slice.type));
+
+    // adjust slice to volume bounds
+    if( slice.value<min) slice.value=min;
+    else if(slice.value>max) slice.value=max;
+
+    ui->sbValue->setValue(slice.value);
+
+    // value changes of controls can trigger signals again
+    wait_controls=false;
+
+    std::cout<<"slice to controls: name="<<name.toStdString()<<" type="<<toQString(slice.type).toStdString()<<" value="<<slice.value<<std::endl;
+
+}
+
+SliceDef EditSlicesDialog::sliceFromControls( QString name){
+
+    SliceDef slice;
+
+    slice.type = toSliceType(ui->cbType->currentText());
+    slice.value = ui->sbValue->value();
+
+    return slice;
+}
+
+
+
+void EditSlicesDialog::on_pbAdd_clicked()
+{
+    static int nextId=0;
+    QString name=QString("Slice %1").arg(++nextId);
+
+    // duplicate current slice
+    SliceDef def;
+    def.type=toSliceType(ui->cbType->currentText());
+    def.value = ui->sbValue->value();
+
+    m_sliceModel->addSlice(name, def);
+}
+
+void EditSlicesDialog::on_pbDelete_clicked()
+{
+    QString name=ui->cbName->currentText();
+    m_sliceModel->removeSlice(name);
+}
+
+void EditSlicesDialog::on_cbName_currentIndexChanged(const QString& name)
+{
+
+    if(wait_controls) return;
+
+    Q_ASSERT( m_sliceModel->contains(name));
+
+    SliceDef slice=m_sliceModel->slice(name);
+
+    sliceToControls(name, slice);
+}

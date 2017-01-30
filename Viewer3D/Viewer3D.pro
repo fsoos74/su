@@ -34,7 +34,8 @@ SOURCES += \
     volumenavigationdialog.cpp \
     editslicesdialog.cpp \
     edithorizonsdialog.cpp \
-    horizonmanager.cpp
+    horizonmanager.cpp \
+    slicemodel.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -54,8 +55,10 @@ HEADERS  += \
     volumenavigationdialog.h \
     editslicesdialog.h \
     edithorizonsdialog.h \
-    horizondef.h \
-    horizonmanager.h
+    horizonmanager.h \
+    horizonparameters.h \
+    sliceparameters.h \
+    slicemodel.h
 
 FORMS    += \
     volumeviewer.ui \
