@@ -3,7 +3,7 @@
 
 #include<QString>
 
-enum class SliceType{ INLINE, CROSSLINE, SAMPLE };
+enum class SliceType{ INLINE, CROSSLINE, TIME };
 
 QString toQString(SliceType);
 SliceType toSliceType(QString);

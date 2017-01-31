@@ -20,7 +20,8 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::VolumeViewer),
     m_colorTable(new ColorTable(this)),
-    m_horizonManager(new HorizonManager(this))
+    m_horizonManager(new HorizonManager(this)),
+    m_sliceModel(new SliceModel(this))
 {
     ui->setupUi(this);
 
@@ -38,6 +39,9 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
 
     connect( m_horizonManager, SIGNAL( horizonsChanged()), this, SLOT(refreshView()) );
     connect( m_horizonManager, SIGNAL(paramsChanged(QString)), this, SLOT(refreshView()) );
+
+    connect( m_sliceModel, SIGNAL(changed()), this, SLOT(refreshView()) );
+
 
     createDockWidgets();
     populateWindowMenu();
@@ -179,17 +183,18 @@ void VolumeViewer::setHighlightedPointSize(qreal s){
 
 void VolumeViewer::clear(){
 
-    m_slices.clear();
+    m_sliceModel->clear();
+    //if( editSlicesDialog) editSlicesDialog->clear();
     m_horizonManager->clear();
     m_highlightedPoints.clear();
 
     refreshView();
 }
 
-
+/*
 void VolumeViewer::addSlice(SliceDef def){
 
-    if( m_slices.contains(def) ) return;            // no duplicates
+    if( m_slices->contains(def) ) return;            // no duplicates
 
     // check if valid
     Grid3DBounds bounds= m_volume->bounds();
@@ -231,9 +236,9 @@ void VolumeViewer::removeSlice( SliceDef def ){
     emit sliceRemoved(def);
     refreshView();
 }
-
+*/
 /*
-void VolumeViewer::addHorizon( HorizonDef def){
+void VolumeViewer::addHorizon( HorizonParameters def){
 
     // prevent duplicats
     foreach( HorizonDef mdef, m_horizons){
@@ -272,13 +277,13 @@ void VolumeViewer::refreshView(){
         outlineToView( m_volume->bounds());
     }
 
-    foreach( SliceDef slice, m_slices){
-        sliceToView(slice);
+    foreach( QString name, m_sliceModel->names()){
+        sliceToView( m_sliceModel->slice(name));
     }
 
     foreach( QString hname, m_horizonManager->names() ){
 
-        HorizonDef hdef = m_horizonManager->params(hname);
+        HorizonParameters hdef = m_horizonManager->params(hname);
         Grid2D<float>* h = m_horizonManager->horizon(hname);
 
         if( h ){
@@ -301,24 +306,27 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
 
     Q_ASSERT(m_volume);
 
+    static int n=0;
+
     switch( code ){
 
     case PointCode::VIEWER_POINT_SELECTED:{
 
         if( point.iline!=SelectionPoint::NO_LINE){
-            addSlice( SliceDef{SliceType::INLINE, point.iline} );
+            QString name=QString("I_%1_%2").arg(++n).arg(point.iline);
+            m_sliceModel->addSlice( name, SliceDef{SliceType::INLINE, point.iline} );
         }
         if( point.xline!=SelectionPoint::NO_LINE){
-            addSlice( SliceDef{SliceType::CROSSLINE, point.xline} );
+            QString name=QString("X_%1_%2").arg(++n).arg(point.xline);
+            m_sliceModel->addSlice( name, SliceDef{SliceType::CROSSLINE, point.xline} );
         }
-        refreshView();
         break;
     }
 
     case PointCode::VIEWER_TIME_SELECTED:{
-        int sample=m_volume->bounds().timeToSample(point.time);// convert from seconds
-        addSlice( SliceDef{SliceType::SAMPLE, sample} );
-        refreshView();
+        int msec=static_cast<int>(1000*point.time);
+        QString name=QString("T_%1_%2").arg(++n).arg(msec);
+        m_sliceModel->addSlice( name, SliceDef{SliceType::TIME, msec} );
         break;
     }
     default:{               // nop
@@ -327,6 +335,7 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
     }
 
     }
+
 }
 
 void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
@@ -447,7 +456,7 @@ void VolumeViewer::sliceToView( const SliceDef& def ){
     switch(def.type){
     case SliceType::INLINE: inlineSliceToView(def.value);break;
     case SliceType::CROSSLINE: crosslineSliceToView(def.value); break;
-    case SliceType::SAMPLE: sampleSliceToView(def.value); break;
+    case SliceType::TIME: timeSliceToView(def.value); break;
     default: qFatal("Invalid SliceType!!!");
     }
 }
@@ -458,6 +467,8 @@ void VolumeViewer::inlineSliceToView( int iline ){
 
     Grid3D<float>& volume=*m_volume;
     Grid3DBounds bounds=volume.bounds();
+
+    if( iline<bounds.inline1() || iline>bounds.inline2()) return;
 
     QImage img(bounds.crosslineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);// QImage::Format_RGB32 );
     for( int i=0; i<img.width(); i++){
@@ -495,6 +506,8 @@ void VolumeViewer::crosslineSliceToView( int xline ){
     Grid3D<float>& volume=*m_volume;
     Grid3DBounds bounds=volume.bounds();
 
+    if( xline<bounds.crossline1() || xline>bounds.crossline2()) return;
+
     QImage img(bounds.inlineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);// QImage::Format_RGB32 );
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
@@ -525,12 +538,16 @@ void VolumeViewer::crosslineSliceToView( int xline ){
 
 }
 
-void VolumeViewer::sampleSliceToView( int sample ){
+void VolumeViewer::timeSliceToView( int msec ){
 
     Q_ASSERT( m_volume);
 
     Grid3D<float>& volume=*m_volume;
     Grid3DBounds bounds=volume.bounds();
+
+    qreal time=0.001*msec;
+
+    if( time<bounds.ft() || time>bounds.lt()  ) return;
 
     QImage img(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGBA8888); //QImage::Format_RGB32 );
     for( int il=bounds.inline1(); il<=bounds.inline2(); il++){
@@ -538,7 +555,7 @@ void VolumeViewer::sampleSliceToView( int sample ){
             int xi=il-bounds.inline1();
             int yi=xl-bounds.crossline1();
 
-            Grid3D<float>::value_type value=volume(il, xl, sample);
+            Grid3D<float>::value_type value=volume.value(il, xl, time);
             ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(xi, yi, color );
 
@@ -556,7 +573,6 @@ void VolumeViewer::sampleSliceToView( int sample ){
     QPointF XY3=ilxl_to_xy.map(ILXL3);
     QPointF XY4=ilxl_to_xy.map(ILXL4);
 
-    qreal time=bounds.sampleToTime(sample);
 
     QVector<VIT::Vertex> vertices{
         {QVector3D( XY1.x(), time, XY1.y() ), QVector2D( 0, 0)},   // il1 xl1
@@ -826,20 +842,20 @@ void VolumeViewer::initialVolumeDisplay(){
 
     Q_ASSERT( m_volume );
 
-    m_slices.clear();
+    m_sliceModel->clear();
 
     Grid3DBounds bounds=m_volume->bounds();
 
 
 
     int iline=(bounds.inline1()+bounds.inline2())/2;
-    m_slices.append( SliceDef{SliceType::INLINE, iline});
+    m_sliceModel->addSlice( QString("Inline Slice"), SliceDef{SliceType::INLINE, iline});
 
     int xline=(bounds.crossline1()+bounds.crossline2())/2;
-    m_slices.append( SliceDef{SliceType::CROSSLINE, xline});
+    m_sliceModel->addSlice( QString("Crossline Slice"), SliceDef{SliceType::CROSSLINE, xline});
 
-    int sample=(bounds.sampleCount())/2;
-    m_slices.append( SliceDef{SliceType::SAMPLE, sample});
+    int msec=static_cast<int>(1000*(bounds.ft() + bounds.lt() )/2);
+    m_sliceModel->addSlice( QString("Time Slice"), SliceDef{SliceType::TIME, msec});
 
    // ui->openGLWidget->setCenter(QVector3D(xline, sample, iline) );
 
@@ -907,6 +923,7 @@ void VolumeViewer::on_actionVolume_Range_triggered()
 
 }
 
+/*
 void VolumeViewer::on_action_Add_Slice_triggered()
 {
 
@@ -921,7 +938,8 @@ void VolumeViewer::on_action_Add_Slice_triggered()
         refreshView();
     }
 }
-
+*/
+/*
 void VolumeViewer::on_action_List_Slices_triggered()
 {
     QStringList slices;
@@ -941,7 +959,7 @@ void VolumeViewer::on_action_List_Slices_triggered()
 
     removeSlice( m_slices.at(idx) );
 }
-
+*/
 /*
 void VolumeViewer::addHorizon(){
 
@@ -979,7 +997,7 @@ void VolumeViewer::addHorizon(){
             return;
         }
 
-        HorizonDef def{ false, HorizonColors.at(m_horizonManager->size()%HorizonColors.size()) };
+        HorizonParameters def{ false, HorizonColors.at(m_horizonManager->size()%HorizonColors.size()) };
 
         m_horizonManager->add(gridName, def, grid );
     }
@@ -1149,16 +1167,11 @@ void VolumeViewer::on_actionEdit_Slices_triggered()
     if( !editSlicesDialog ){
 
         editSlicesDialog = new EditSlicesDialog( this );
-        /*
+
         editSlicesDialog->setBounds( m_volume->bounds() );
-        foreach( SliceDef s, m_slices ){
-            editSlicesDialog->addSlice(s);
-        }
-        connect( this, SIGNAL(sliceAdded(SliceDef)), editSlicesDialog, SLOT(addSlice(SliceDef)) );
-        connect( this, SIGNAL(sliceRemoved(SliceDef)), editSlicesDialog, SLOT(removeSlice(SliceDef)) );
-        connect( editSlicesDialog, SIGNAL(sliceAdded(SliceDef)), this, SLOT(addSlice(SliceDef)) );
-        connect( editSlicesDialog, SIGNAL(sliceRemoved(SliceDef)), this, SLOT(removeSlice(SliceDef)) );
-        */
+        editSlicesDialog->setWindowTitle(tr("Edit Slices"));
+
+        editSlicesDialog->setSliceModel(m_sliceModel);
     }
 
     editSlicesDialog->show();

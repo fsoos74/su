@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QMap>
-#include <horizondef.h>
+#include <horizonparameters.h>
 #include <grid2d.h>
 
 #include <memory>
@@ -20,7 +20,7 @@ public:
 
     void clear(){
         m_horizons.clear();
-        m_horizonDefs.clear();
+        m_HorizonParameterss.clear();
     }
 
     int size(){
@@ -31,8 +31,8 @@ public:
         return m_horizons.contains(name);
     }
 
-    HorizonDef params(QString name){
-        return m_horizonDefs.value(name);
+    HorizonParameters params(QString name){
+        return m_HorizonParameterss.value(name);
     }
 
     Grid2D<float>* horizon(QString name){
@@ -46,13 +46,13 @@ signals:
 
 public slots:
 
-    void add( QString, HorizonDef, std::shared_ptr<Grid2D<float>>);
+    void add( QString, HorizonParameters, std::shared_ptr<Grid2D<float>>);
     void remove( QString );
-    void setParams( QString, HorizonDef );
+    void setParams( QString, HorizonParameters );
 
 private:
 
-    QMap<QString, HorizonDef> m_horizonDefs;
+    QMap<QString, HorizonParameters> m_HorizonParameterss;
     QMap<QString, std::shared_ptr<Grid2D<float> > >  m_horizons;
 };
 

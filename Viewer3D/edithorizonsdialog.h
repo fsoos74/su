@@ -5,7 +5,7 @@
 
 #include <QVector>
 
-#include <horizondef.h>
+#include <horizonparameters.h>
 
 #include <horizonmanager.h>
 
@@ -40,12 +40,11 @@ private slots:
 
     void on_pbAdd_clicked();
 
-    void updateParams();
-
     void on_cbColor_clicked();
 
     void on_cbHorizon_currentIndexChanged(const QString &arg1);
 
+    void updateParams();
     void horizonParamsToControls( QString );
     void horizonParamsFromControls( QString );
 

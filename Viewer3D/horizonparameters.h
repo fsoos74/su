@@ -7,14 +7,14 @@
 #include <QColor>
 
 
-struct HorizonDef
+struct HorizonParameters
 {
     bool                            useColor;
     QColor                          color;
 };
 
 
-inline bool operator==(const HorizonDef& def1, const HorizonDef& def2){
+inline bool operator==(const HorizonParameters& def1, const HorizonParameters& def2){
 
     return def1.useColor == def2.useColor &&
             def1.color == def2.color ;

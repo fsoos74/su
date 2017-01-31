@@ -14,7 +14,7 @@ AddSliceDialog::AddSliceDialog(QWidget *parent) :
 
     ui->cbType->addItem(toQString(SliceType::INLINE));
     ui->cbType->addItem(toQString(SliceType::CROSSLINE));
-    ui->cbType->addItem(toQString(SliceType::SAMPLE));
+    ui->cbType->addItem(toQString(SliceType::TIME));
 }
 
 AddSliceDialog::~AddSliceDialog()

@@ -13,7 +13,7 @@
 #include<colortable.h>
 #include<selectionpoint.h>
 #include <slicedef.h>
-#include <horizondef.h>
+#include <horizonparameters.h>
 #include <navigation3dcontrols.h>
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
@@ -21,6 +21,7 @@
 #include <editslicesdialog.h>
 #include <edithorizonsdialog.h>
 #include <horizonmanager.h>
+#include <slicemodel.h>
 
 
 namespace Ui {
@@ -34,7 +35,7 @@ class VolumeViewer : public BaseViewer
 public:
 
     struct HorizonData{
-        HorizonDef def;
+        HorizonParameters def;
         std::shared_ptr<Grid2D<float>>  horizon;
     };
 
@@ -45,19 +46,12 @@ public:
         return m_colorMappingLock;
     }
 
-    QVector<SliceDef> slices()const{
-        return m_slices;
-    }
-
 public slots:
 
     void setVolume( std::shared_ptr<Grid3D<float> >);
     void setProject( std::shared_ptr<AVOProject> );
     void setHighlightedPoints(QVector<SelectionPoint> rpoints);
     void clear();
-
-    void addSlice( SliceDef );
-    void removeSlice( SliceDef );
 
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
@@ -77,10 +71,6 @@ private slots:
     void on_action_Volume_Colortable_triggered();
 
     void on_actionVolume_Range_triggered();
-
-    void on_action_Add_Slice_triggered();
-
-    void on_action_List_Slices_triggered();
 
     void on_action_Front_triggered();
 
@@ -125,7 +115,7 @@ private:
     void sliceToView( const SliceDef& );
     void inlineSliceToView( int iline );
     void crosslineSliceToView( int xline );
-    void sampleSliceToView( int sample );
+    void timeSliceToView( int msec);
     void horizonToView(Grid2D<float>* hrz);
     void horizonToView(Grid2D<float>* hrz, QColor);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
@@ -150,10 +140,8 @@ private:
     QTransform ilxl_to_xy, xy_to_ilxl;
     ColorTable* m_colorTable;           // holds colors and display range
 
-    //QVector<SliceDef> m_slices;
-    QVector<SliceDef> m_slices;
-
     HorizonManager* m_horizonManager;
+    SliceModel* m_sliceModel;
 
     QVector<SelectionPoint> m_highlightedPoints;
     qreal m_highlightedPointSize=2;

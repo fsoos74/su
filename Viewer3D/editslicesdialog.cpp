@@ -11,7 +11,7 @@ EditSlicesDialog::EditSlicesDialog(QWidget *parent) :
 
     ui->cbType->addItem(toQString(SliceType::INLINE));
     ui->cbType->addItem(toQString(SliceType::CROSSLINE));
-    ui->cbType->addItem(toQString(SliceType::SAMPLE));
+    ui->cbType->addItem(toQString(SliceType::TIME));
 
     connect( ui->cbType, SIGNAL(currentIndexChanged(int)), this, SLOT(sliceControlsChanged()) );
     connect( ui->sbValue, SIGNAL(valueChanged(int)), this, SLOT(sliceControlsChanged()) );
@@ -103,13 +103,15 @@ void EditSlicesDialog::sliceToControls( QString name, SliceDef slice ){
     // update value range according to slice type and volume bounds
     int min=0;
     int max=100;
+    int inc=1;
     switch(slice.type){
-    case SliceType::INLINE: min=m_bounds.inline1(); max=m_bounds.inline2(); break;
-    case SliceType::CROSSLINE: min=m_bounds.crossline1(); max=m_bounds.crossline2(); break;
-    case SliceType::SAMPLE: min=0; max=m_bounds.sampleCount()-1; break;
+    case SliceType::INLINE: min=m_bounds.inline1(); max=m_bounds.inline2(); inc=1; break;
+    case SliceType::CROSSLINE: min=m_bounds.crossline1(); max=m_bounds.crossline2(); inc=1; break;
+    case SliceType::TIME: min=static_cast<int>(1000*m_bounds.ft()); max=static_cast<int>(1000*m_bounds.lt());
+                            inc=static_cast<int>(1000*m_bounds.dt());break;
     }   
     ui->sbValue->setRange(min, max);
-
+    ui->sbValue->setSingleStep(inc);
 
     ui->cbType->setCurrentText(toQString(slice.type));
 

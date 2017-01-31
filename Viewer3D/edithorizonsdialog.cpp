@@ -92,7 +92,7 @@ void EditHorizonsDialog::horizonParamsToControls( QString name ){
 
     if( !horizonManager->contains(name)) return;
 
-    HorizonDef def=horizonManager->params(name);
+    HorizonParameters def=horizonManager->params(name);
 
     ui->cbUseColor->setChecked( def.useColor );
     ui->cbColor->setColor(def.color);
@@ -103,7 +103,7 @@ void EditHorizonsDialog::horizonParamsFromControls( QString name){
     if( !horizonManager ) return;
 
     // name and pointer are not updated!!!
-    HorizonDef def;
+    HorizonParameters def;
     def.useColor = ui->cbUseColor->isChecked();
     def.color = ui->cbColor->color();
 
@@ -169,7 +169,7 @@ void EditHorizonsDialog::on_pbAdd_clicked()
             return;
         }
 
-        HorizonDef def{ false, HorizonColors.at(horizonManager->size()%HorizonColors.size()) };
+        HorizonParameters def{ false, HorizonColors.at(horizonManager->size()%HorizonColors.size()) };
 
         horizonManager->add(gridName, def, grid );
     }

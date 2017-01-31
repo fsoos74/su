@@ -62,8 +62,6 @@
      <string>&amp;Data</string>
     </property>
     <addaction name="actionEdit_Slices"/>
-    <addaction name="action_Add_Slice"/>
-    <addaction name="action_List_Slices"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionEdit_Horizons"/>
@@ -185,6 +183,9 @@
    </property>
   </action>
   <action name="action_Add_Slice">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Add Slice</string>
    </property>
@@ -193,6 +194,9 @@
    </property>
   </action>
   <action name="action_List_Slices">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Remove Slice</string>
    </property>
@@ -361,15 +365,21 @@
   </action>
   <action name="actionEdit_Slices">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>E&amp;dit Slices</string>
+    <string>&amp;Slices</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionEdit_Horizons">
    <property name="text">
-    <string>Horizons</string>
+    <string>&amp;Horizons</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="action_Open_Volume">
