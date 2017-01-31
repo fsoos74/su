@@ -61,23 +61,13 @@ void EditSlicesDialog::modelChanged(){
 
     wait_controls=false;
 
+    // if exists make same slice current as before
     if( names.contains(name)){
         ui->cbName->setCurrentText(name);
     }
     else{
         ui->cbName->setCurrentIndex(0);
     }
-    /*
-    if( m_sliceModel->contains(name)){
-
-        SliceDef tmp=m_sliceModel->slice(name);
-        if( tmp == current ) return;
-        sliceToControls(name, tmp);
-    }
-    else{
-        ui->cbName->setCurrentIndex(0); // invalid slice
-    }
-*/
 }
 
 
@@ -159,6 +149,9 @@ void EditSlicesDialog::on_pbAdd_clicked()
     def.value = ui->sbValue->value();
 
     m_sliceModel->addSlice(name, def);
+
+    // make new slice the current
+    ui->cbName->setCurrentText(name);
 }
 
 void EditSlicesDialog::on_pbDelete_clicked()
