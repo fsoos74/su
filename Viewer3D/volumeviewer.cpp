@@ -6,7 +6,6 @@
 #include<QInputDialog>
 #include<QMessageBox>
 #include<QColorDialog>
-#include<addslicedialog.h>
 #include<histogramdialog.h>
 #include<QColorDialog>
 #include<QInputDialog>
@@ -15,12 +14,13 @@
 
 #include <cmath>
 
+#include<horizondef.h>
 
 VolumeViewer::VolumeViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::VolumeViewer),
     m_colorTable(new ColorTable(this)),
-    m_horizonManager(new HorizonManager(this)),
+     m_horizonModel(new HorizonModel(this)),
     m_sliceModel(new SliceModel(this))
 {
     ui->setupUi(this);
@@ -37,9 +37,7 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     ui->openGLWidget->setTieXZScales( ui->actionTie_Scales->isChecked());
     connect( ui->actionTie_Scales, SIGNAL(toggled(bool)), ui->openGLWidget, SLOT(setTieXZScales(bool)) );
 
-    connect( m_horizonManager, SIGNAL( horizonsChanged()), this, SLOT(refreshView()) );
-    connect( m_horizonManager, SIGNAL(paramsChanged(QString)), this, SLOT(refreshView()) );
-
+    connect( m_horizonModel, SIGNAL(changed()), this, SLOT(refreshView()) );
     connect( m_sliceModel, SIGNAL(changed()), this, SLOT(refreshView()) );
 
 
@@ -184,76 +182,12 @@ void VolumeViewer::setHighlightedPointSize(qreal s){
 void VolumeViewer::clear(){
 
     m_sliceModel->clear();
-    //if( editSlicesDialog) editSlicesDialog->clear();
-    m_horizonManager->clear();
+    m_horizonModel->clear();
     m_highlightedPoints.clear();
 
     refreshView();
 }
 
-/*
-void VolumeViewer::addSlice(SliceDef def){
-
-    if( m_slices->contains(def) ) return;            // no duplicates
-
-    // check if valid
-    Grid3DBounds bounds= m_volume->bounds();
-    // only put status message instead of modal dialog because possible multiple viewers!!!
-    switch(def.type){
-    case SliceType::INLINE: if( def.value<bounds.inline1() || def.value>bounds.inline2() ){
-                                statusBar()->showMessage(QString("Could not add inline %1").
-                                                         arg(def.value), 5000);
-                                return;
-                            }
-                            break;
-
-    case SliceType::CROSSLINE: if( def.value<bounds.crossline1() || def.value>bounds.crossline2() ){
-                                statusBar()->showMessage(QString("Could not add crossline %1").
-                                                         arg(def.value), 5000);
-                                return;
-                            }
-                            break;
-
-    case SliceType::SAMPLE: if( def.value<0 || def.value>=bounds.sampleCount() ){
-                                statusBar()->showMessage(QString("Could not add slice at %1 milliseconds / sample %2").
-                                            arg(static_cast<long>(1000*bounds.sampleToTime(def.value))).
-                                            arg(def.value), 5000);
-                              return;
-                            }
-                            break;
-    default:
-        qFatal("Invalid SliceType");
-    }
-
-    m_slices.append(def);
-    emit sliceAdded(def);
-    refreshView();
-}
-
-void VolumeViewer::removeSlice( SliceDef def ){
-
-    m_slices.removeAll(def);
-    emit sliceRemoved(def);
-    refreshView();
-}
-*/
-/*
-void VolumeViewer::addHorizon( HorizonParameters def){
-
-    // prevent duplicats
-    foreach( HorizonDef mdef, m_horizons){
-        if( def.name == mdef.name) return;
-    }
-
-    if( !def.horizon ) return;                      // no null horizons
-
-    m_horizons.append( def );
-
-    emit horizonsChanged();
-
-    refreshView();
-}
-*/
 
 void VolumeViewer::refreshView(){
 
@@ -281,18 +215,18 @@ void VolumeViewer::refreshView(){
         sliceToView( m_sliceModel->slice(name));
     }
 
-    foreach( QString hname, m_horizonManager->names() ){
+    foreach( QString hname, m_horizonModel->names() ){
 
-        HorizonParameters hdef = m_horizonManager->params(hname);
-        Grid2D<float>* h = m_horizonManager->horizon(hname);
+        HorizonDef hdef=m_horizonModel->item(hname);
+        Grid2D<float>* h = hdef.horizon.get();
 
         if( h ){
 
             if( hdef.useColor ){
-                horizonToView(h, hdef.color);
+                horizonToView(h, hdef.color, hdef.delay);
             }
             else{
-                horizonToView(h );
+                horizonToView(h, hdef.delay );
             }
         }
     }
@@ -312,21 +246,18 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
 
     case PointCode::VIEWER_POINT_SELECTED:{
 
-        if( point.iline!=SelectionPoint::NO_LINE){
-            QString name=QString("I_%1_%2").arg(++n).arg(point.iline);
-            m_sliceModel->addSlice( name, SliceDef{SliceType::INLINE, point.iline} );
+       if( point.iline!=SelectionPoint::NO_LINE){
+            m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::INLINE, point.iline} );
         }
         if( point.xline!=SelectionPoint::NO_LINE){
-            QString name=QString("X_%1_%2").arg(++n).arg(point.xline);
-            m_sliceModel->addSlice( name, SliceDef{SliceType::CROSSLINE, point.xline} );
+            m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::CROSSLINE, point.xline} );
         }
         break;
     }
 
     case PointCode::VIEWER_TIME_SELECTED:{
         int msec=static_cast<int>(1000*point.time);
-        QString name=QString("T_%1_%2").arg(++n).arg(msec);
-        m_sliceModel->addSlice( name, SliceDef{SliceType::TIME, msec} );
+        m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::TIME, msec} );
         break;
     }
     default:{               // nop
@@ -590,13 +521,10 @@ void VolumeViewer::timeSliceToView( int msec ){
 
 
 // project volume on horizon
-void VolumeViewer::horizonToView(Grid2D<float>* hrz){
+void VolumeViewer::horizonToView(Grid2D<float>* hrz, int delayMSec){
 
     Q_ASSERT( m_volume );
     Q_ASSERT( hrz );
-
-    //Grid3D<float>& volume=*m_volume;
-    //Grid3DBounds vbounds=volume.bounds();
 
     Grid2DBounds hbounds=hrz->bounds();
 
@@ -615,7 +543,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz){
             if(tms!=hrz->NULL_VALUE){
                 // scale colour according to relative depth, deeper->darker
                 //float x=(tms-range.first)/(range.second-range.first);
-                qreal t = 0.001*tms;        // convert time to seconds
+                qreal t = 0.001*(delayMSec+tms);        // convert time to seconds
 
                 QVector3D color = nullColor;
 
@@ -683,7 +611,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz){
 }
 
 
-void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
+void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, int delayMSec){
 
     Q_ASSERT( m_volume );
     Q_ASSERT( hrz );
@@ -708,7 +636,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor){
             if(tms!=hrz->NULL_VALUE){
                 // scale colour according to relative depth, deeper->darker
                 float x=(tms-range.first)/(range.second-range.first);
-                qreal t = 0.001*tms;        // convert time to seconds
+                qreal t = 0.001*(delayMSec+tms);        // convert time to seconds
 
                 QVector3D color = nullColor;
 
@@ -846,16 +774,14 @@ void VolumeViewer::initialVolumeDisplay(){
 
     Grid3DBounds bounds=m_volume->bounds();
 
-
-
     int iline=(bounds.inline1()+bounds.inline2())/2;
-    m_sliceModel->addSlice( QString("Inline Slice"), SliceDef{SliceType::INLINE, iline});
+    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::INLINE, iline});
 
     int xline=(bounds.crossline1()+bounds.crossline2())/2;
-    m_sliceModel->addSlice( QString("Crossline Slice"), SliceDef{SliceType::CROSSLINE, xline});
+    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::CROSSLINE, xline});
 
     int msec=static_cast<int>(1000*(bounds.ft() + bounds.lt() )/2);
-    m_sliceModel->addSlice( QString("Time Slice"), SliceDef{SliceType::TIME, msec});
+    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::TIME, msec});
 
    // ui->openGLWidget->setCenter(QVector3D(xline, sample, iline) );
 
@@ -1184,7 +1110,7 @@ void VolumeViewer::on_actionEdit_Horizons_triggered()
 
         editHorizonsDialog=new EditHorizonsDialog( this );
 
-        editHorizonsDialog->setHorizonManager(m_horizonManager);    // dialog and manager have this as parent
+        editHorizonsDialog->setHorizonModel(m_horizonModel);    // dialog and manager have this as parent
 
         editHorizonsDialog->setProject( m_project );
 

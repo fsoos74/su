@@ -24,7 +24,6 @@ SOURCES += \
     viewer3d.cpp \
     volumeviewer.cpp \
     modaldisplayrangedialog.cpp \
-    addslicedialog.cpp \
     slicedef.cpp \
     vic.cpp \
     vit.cpp \
@@ -34,8 +33,8 @@ SOURCES += \
     volumenavigationdialog.cpp \
     editslicesdialog.cpp \
     edithorizonsdialog.cpp \
-    horizonmanager.cpp \
-    slicemodel.cpp
+    slicemodel.cpp \
+    horizonmodel.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -44,7 +43,6 @@ HEADERS  += \
     viewer3d_global.h \
     volumeviewer.h \
     modaldisplayrangedialog.h \
-    addslicedialog.h \
     slicedef.h \
     vertexdata.h \
     vic.h \
@@ -55,15 +53,14 @@ HEADERS  += \
     volumenavigationdialog.h \
     editslicesdialog.h \
     edithorizonsdialog.h \
-    horizonmanager.h \
-    horizonparameters.h \
     sliceparameters.h \
-    slicemodel.h
+    slicemodel.h \
+    horizondef.h \
+    horizonmodel.h
 
 FORMS    += \
     volumeviewer.ui \
     modaldisplayrangedialog.ui \
-    addslicedialog.ui \
     navigation3dcontrols.ui \
     volumenavigationdialog.ui \
     editslicesdialog.ui \

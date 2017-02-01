@@ -25,11 +25,6 @@ public:
 
     void setBounds( Grid3DBounds );
 
-signals:
-
-    void sliceAdded( QString, SliceDef);
-    void sliceRemoved( QString );
-    void sliceChanged( QString, SliceDef );
 
 public slots:
 

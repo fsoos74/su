@@ -3,14 +3,11 @@
 
 #include <QDialog>
 
-#include <QVector>
-
-#include <horizonparameters.h>
-
-#include <horizonmanager.h>
+#include <horizonmodel.h>
 
 #include <avoproject.h>
 
+#include <grid2d.h>
 #include <memory>
 
 
@@ -26,35 +23,40 @@ public:
     explicit EditHorizonsDialog(QWidget *parent = 0);
     ~EditHorizonsDialog();
 
-    void setHorizonManager( HorizonManager* );
     void setProject( std::shared_ptr<AVOProject>);
 
 public slots:
 
-    void refreshControls();
-    void horizonChanged(QString);
+    void setHorizonModel( HorizonModel* );
+    void setCurrentHorizon( QString );
 
 private slots:
+
+    void modelChanged();
+
+    void horizonControlsChanged();
 
     void on_pbRemove_clicked();
 
     void on_pbAdd_clicked();
 
-    void on_cbColor_clicked();
-
     void on_cbHorizon_currentIndexChanged(const QString &arg1);
 
-    void updateParams();
-    void horizonParamsToControls( QString );
-    void horizonParamsFromControls( QString );
-
-
+    void on_cbColor_clicked();
 
 private:
+
+    void horizonToControls( QString, HorizonDef );
+    HorizonDef horizonFromControls( QString );
+
+
     Ui::EditHorizonsDialog *ui;
 
-    HorizonManager* horizonManager=nullptr;
+    HorizonModel* m_horizonModel=nullptr;
     std::shared_ptr<AVOProject> m_project;
+
+    bool wait_controls=false;
+    std::shared_ptr<Grid2D<float>> m_currentHorizonControl;
 };
 
 #endif // EDITHORIZONSDIALOG_H

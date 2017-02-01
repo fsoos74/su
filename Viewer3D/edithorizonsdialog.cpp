@@ -11,31 +11,14 @@ EditHorizonsDialog::EditHorizonsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect( ui->cbColor, SIGNAL(colorChanged(QColor)), this, SLOT(updateParams()) );
-    connect( ui->cbUseColor, SIGNAL(toggled(bool)), this, SLOT(updateParams()) );
+    connect( ui->cbColor, SIGNAL(colorChanged(QColor)), this, SLOT(horizonControlsChanged()) );
+    connect( ui->cbUseColor, SIGNAL(toggled(bool)), this, SLOT(horizonControlsChanged()) );
+    connect( ui->sbDelay, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
 }
 
 EditHorizonsDialog::~EditHorizonsDialog()
 {
     delete ui;
-}
-
-void EditHorizonsDialog::setHorizonManager(HorizonManager * mgr){
-
-    if( horizonManager){
-
-    }
-
-    horizonManager = mgr;
-
-    if( horizonManager){
-
-        connect( horizonManager, SIGNAL(horizonsChanged()), this, SLOT(refreshControls() )  );
-        connect( horizonManager, SIGNAL(paramsChanged(QString)), this, SLOT(horizonChanged(QString) ) );
-    }
-
-    refreshControls();
-
 }
 
 
@@ -45,91 +28,128 @@ void EditHorizonsDialog::setProject(std::shared_ptr<AVOProject> project){
 }
 
 
-void EditHorizonsDialog::on_pbRemove_clicked()
-{
+void EditHorizonsDialog::setHorizonModel(HorizonModel * model){
 
-    QString name = ui->cbHorizon->currentText();
-    horizonManager->remove(name);
-}
+    if( model == m_horizonModel ) return;
 
-
-void EditHorizonsDialog::refreshControls(){
-
-    QString name=ui->cbHorizon->currentText();
+    m_horizonModel=model;
 
     ui->cbHorizon->clear();
 
-    if( !horizonManager) return;
+    if( !m_horizonModel )  return;
 
-    QStringList names;
-    foreach( QString name, horizonManager->names()){
-        names.append(name);
+    connect( m_horizonModel, SIGNAL(changed()), this, SLOT(modelChanged()));
+
+    foreach( QString name, m_horizonModel->names()){
+        ui->cbHorizon->addItem(name);
     }
 
-    ui->cbHorizon->addItems(names);
+    ui->cbHorizon->setCurrentIndex(0);
+}
+
+
+void EditHorizonsDialog::setCurrentHorizon(QString name){
+
+    if( !m_horizonModel || !m_horizonModel->contains(name)) return;
+
+    // this will trigger update of controls via currentIndexChanged
     ui->cbHorizon->setCurrentText(name);
 }
 
 
-void EditHorizonsDialog::horizonChanged(QString name){
+void EditHorizonsDialog::modelChanged(){
 
-    if( name != ui->cbHorizon->currentText() ) return;
+    if( !m_horizonModel ) return;
 
-    horizonParamsFromControls(name);
+    QString name = ui->cbHorizon->currentText();
+    HorizonDef current=horizonFromControls(name);
+
+    wait_controls=true;
+
+    ui->cbHorizon->clear();
+    QStringList names;
+    foreach( QString s, m_horizonModel->names()){
+        names.append(s);
+    }
+    ui->cbHorizon->addItems(names);
+
+    wait_controls=false;
+
+    // if exists make same horizon current as before
+    if( names.contains(name)){
+        ui->cbHorizon->setCurrentText(name);
+    }
+    else{
+        ui->cbHorizon->setCurrentIndex(0);
+    }
 }
 
-void EditHorizonsDialog::updateParams(){
 
-    if( !horizonManager ) return;
+void EditHorizonsDialog::horizonControlsChanged(){
+
+    // update of controls in progress, dont update until all controls are set to the new values
+    if( wait_controls) return;
 
     QString name=ui->cbHorizon->currentText();
-    horizonParamsFromControls(name);
+    HorizonDef horizon=horizonFromControls(name);
+
+    // keep grid, no need to store it elsewhere
+    if( m_horizonModel->contains(name)){
+        horizon.horizon = m_horizonModel->item(name).horizon;
+    }
+
+    m_horizonModel->setItem(name, horizon);
 }
 
-void EditHorizonsDialog::horizonParamsToControls( QString name ){
+void EditHorizonsDialog::horizonToControls( QString name, HorizonDef horizon ){
 
-    if( !horizonManager ) return;
 
-    if( !horizonManager->contains(name)) return;
+    // prevent signals of controls before all params are set
+    wait_controls=true;
 
-    HorizonParameters def=horizonManager->params(name);
+    // update value range according to slice type and volume bounds
 
-    ui->cbUseColor->setChecked( def.useColor );
-    ui->cbColor->setColor(def.color);
+    m_currentHorizonControl = horizon.horizon;  // keep
+
+    ui->cbUseColor->setChecked(horizon.useColor);
+    ui->cbColor->setColor(horizon.color);
+    ui->sbDelay->setValue(horizon.delay);
+
+    // value changes of controls can trigger signals again
+    wait_controls=false;
 }
 
-void EditHorizonsDialog::horizonParamsFromControls( QString name){
+HorizonDef EditHorizonsDialog::horizonFromControls( QString name){
 
-    if( !horizonManager ) return;
+    HorizonDef def;
 
-    // name and pointer are not updated!!!
-    HorizonParameters def;
-    def.useColor = ui->cbUseColor->isChecked();
-    def.color = ui->cbColor->color();
+    def.horizon=m_currentHorizonControl;
+    def.useColor=ui->cbUseColor->isChecked();
+    def.color=ui->cbColor->color();
+    def.delay=ui->sbDelay->value();
 
-    horizonManager->setParams(name, def);
-
+    return def;
 }
 
 
 
-void EditHorizonsDialog::on_cbColor_clicked()
+void EditHorizonsDialog::on_pbRemove_clicked()
 {
 
-    const QColor color = QColorDialog::getColor( ui->cbColor->color(), this, "Select Horizon Color");
-
-    if (! color.isValid()) return;
-
-    ui->cbColor->setColor(color);
-
-    updateParams();
+    QString name = ui->cbHorizon->currentText();
+    m_horizonModel->removeItem(name);
 }
 
-
-void EditHorizonsDialog::on_cbHorizon_currentIndexChanged(const QString &arg1)
+void EditHorizonsDialog::on_cbHorizon_currentIndexChanged(const QString &name)
 {
 
-    horizonParamsToControls(arg1);
+    if(wait_controls) return;
+
+    Q_ASSERT( m_horizonModel->contains(name));
+
+    HorizonDef def=m_horizonModel->item(name);
+
+    horizonToControls(name, def);
 }
 
 void EditHorizonsDialog::on_pbAdd_clicked()
@@ -145,7 +165,7 @@ void EditHorizonsDialog::on_pbAdd_clicked()
     QStringList notLoaded;
     foreach( QString name, m_project->gridList(GridType::Horizon) ){
 
-        if( ! horizonManager->contains( name )) notLoaded.append(name);
+        if( ! m_horizonModel->contains( name )) notLoaded.append(name);
     }
 
     // nothing left to load
@@ -156,21 +176,25 @@ void EditHorizonsDialog::on_pbAdd_clicked()
                                            notLoaded, 0, false, &ok);
     if( !gridName.isEmpty() && ok ){
 
-
-        if( horizonManager->contains( gridName) ){
-                QMessageBox::information(this, tr("Add Horizon"),
-                                         QString("Horizon \"%1\" is already loaded!").arg(gridName));
-                return;
-        }
-
         std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Horizon, gridName );
         if( !grid ){
             QMessageBox::critical(this, tr("Add Horizon"), QString("Loading horizon \"%1\" failed!"). arg(gridName) );
             return;
         }
 
-        HorizonParameters def{ false, HorizonColors.at(horizonManager->size()%HorizonColors.size()) };
+        HorizonDef def{ grid, false, HorizonColors.at(m_horizonModel->size()%HorizonColors.size()), 0 };
 
-        horizonManager->add(gridName, def, grid );
+        m_horizonModel->addItem(gridName, def);
+
+        setCurrentHorizon(gridName);
+    }
+}
+
+void EditHorizonsDialog::on_cbColor_clicked()
+{
+    QColor color=QColorDialog::getColor( ui->cbColor->color(), this, tr("Select a Color"));
+
+    if( color.isValid()){
+        ui->cbColor->setColor(color);
     }
 }

@@ -27,6 +27,9 @@ public:
         return m_slices.value(name);
     }
 
+
+    QString generateName();
+
 signals:
     void changed();
 

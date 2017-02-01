@@ -1,6 +1,7 @@
 #include "editslicesdialog.h"
 #include "ui_editslicesdialog.h"
 
+#include <QMessageBox>
 #include<iostream>
 
 EditSlicesDialog::EditSlicesDialog(QWidget *parent) :
@@ -142,8 +143,13 @@ SliceDef EditSlicesDialog::sliceFromControls( QString name){
 
 void EditSlicesDialog::on_pbAdd_clicked()
 {
-    static int nextId=0;
-    QString name=QString("Slice %1").arg(++nextId);
+    QString name=m_sliceModel->generateName();
+
+    if( name.isEmpty()){
+
+        QMessageBox::critical(this, tr("Add Slice"), tr("Maximum number of slices exceeded!"));
+        return;
+    }
 
     // duplicate current slice
     SliceDef def;

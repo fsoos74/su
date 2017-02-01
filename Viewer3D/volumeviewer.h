@@ -13,14 +13,13 @@
 #include<colortable.h>
 #include<selectionpoint.h>
 #include <slicedef.h>
-#include <horizonparameters.h>
 #include <navigation3dcontrols.h>
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
 #include <displayrangedialog.h>
 #include <editslicesdialog.h>
 #include <edithorizonsdialog.h>
-#include <horizonmanager.h>
+#include <horizonmodel.h>
 #include <slicemodel.h>
 
 
@@ -33,11 +32,6 @@ class VolumeViewer : public BaseViewer
     Q_OBJECT
 
 public:
-
-    struct HorizonData{
-        HorizonParameters def;
-        std::shared_ptr<Grid2D<float>>  horizon;
-    };
 
     explicit VolumeViewer(QWidget *parent = 0);
     ~VolumeViewer();
@@ -116,8 +110,8 @@ private:
     void inlineSliceToView( int iline );
     void crosslineSliceToView( int xline );
     void timeSliceToView( int msec);
-    void horizonToView(Grid2D<float>* hrz);
-    void horizonToView(Grid2D<float>* hrz, QColor);
+    void horizonToView(Grid2D<float>* hrz, int delayMSec=0);
+    void horizonToView(Grid2D<float>* hrz, QColor, int delayMSec=0);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
 
     void initialVolumeDisplay();
@@ -140,7 +134,7 @@ private:
     QTransform ilxl_to_xy, xy_to_ilxl;
     ColorTable* m_colorTable;           // holds colors and display range
 
-    HorizonManager* m_horizonManager;
+    HorizonModel* m_horizonModel;
     SliceModel* m_sliceModel;
 
     QVector<SelectionPoint> m_highlightedPoints;
