@@ -13,7 +13,8 @@
 #include<QToolBar>
 
 #include <cmath>
-
+#include <algorithm>
+#include <random>
 #include<horizondef.h>
 
 VolumeViewer::VolumeViewer(QWidget *parent) :
@@ -40,6 +41,9 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     connect( m_horizonModel, SIGNAL(changed()), this, SLOT(refreshView()) );
     connect( m_sliceModel, SIGNAL(changed()), this, SLOT(refreshView()) );
 
+
+    // need this to scale highlighted points accordingly
+    connect( ui->openGLWidget, SIGNAL(scaleChanged(QVector3D)), this, SLOT(refreshView()) );
 
     createDockWidgets();
     populateWindowMenu();
@@ -270,14 +274,23 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
 void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
     if( code==CODE_SINGLE_POINTS){
-/*
-        QVector<SelectionPoint> rpoints;
-        rpoints.reserve(points.size());
-        for( SelectionPoint p : points){
-            rpoints.push_back(QPoint(p.iline, p.xline));
+
+        if( points.size()<m_maxHighlightedPoints){
+            setHighlightedPoints(points);
         }
-*/
-        setHighlightedPoints(points);
+        else{
+            // randomly selected max points
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(points.begin(), points.end(), g);
+
+            QVector<SelectionPoint> tmp;
+            tmp.reserve(m_maxHighlightedPoints);
+            std::copy( points.begin(), points.begin()+m_maxHighlightedPoints, std::back_inserter(tmp) );
+            setHighlightedPoints(tmp);
+
+            statusBar()->showMessage( QString("Highlighted Points limited to %1").arg(m_maxHighlightedPoints), 3000);
+        }
     }
 
 }
@@ -701,6 +714,8 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, int delayMSe
 }
 
 
+
+
 void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qreal SIZE){
 
     Q_ASSERT( m_volume );
@@ -709,6 +724,9 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
     QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
     QVector<VIC::Vertex> vertices;
     QVector<VIC::Index> indices;
+
+
+    // reserve to accelerate
 
     QVector3D scale=ui->openGLWidget->scale();
     qreal sizeX=SIZE/std::fabs(scale.x());
@@ -719,7 +737,8 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
 
         const SelectionPoint& point=points[i];
 
-        QVector3D p( point.xline, bounds.timeToSample(point.time), point.iline );
+        QPointF xy=ilxl_to_xy.map(QPoint(point.iline, point.xline));
+        QVector3D p( xy.x(), point.time, xy.y() );
 
         qreal fac=sqrt(3.)/3;//sqrt(2.)/2;
 
@@ -762,7 +781,6 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
         ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
     }
 }
-
 
 void VolumeViewer::initialVolumeDisplay(){
 
@@ -1004,7 +1022,7 @@ void VolumeViewer::on_actionSet_Point_Size_triggered()
 {
     bool ok=false;
 
-    int s=QInputDialog::getInt( this, tr("Set Point Size"), tr("Point Size:"), m_highlightedPointSize, 1, 99, 1, &ok );
+    int s=QInputDialog::getInt( this, tr("Set Point Size"), tr("Point Size:"), m_highlightedPointSize, 10, 1000, 10, &ok );
     if( !ok ) return;
 
     setHighlightedPointSize(s);
@@ -1135,4 +1153,36 @@ void VolumeViewer::on_action_Open_Volume_triggered()
     }
 
     setVolume(volume);
+
+    setWindowTitle( name );
+}
+
+void VolumeViewer::on_actionReset_Highlighted_Points_triggered()
+{
+    QVector<SelectionPoint> empty;
+
+    setHighlightedPoints(empty);
+}
+
+void VolumeViewer::on_actionLimit_Highlighted_Points_triggered()
+{
+    bool ok=false;
+
+    int max=QInputDialog::getInt(this, tr("Limit Highlighted Points"), tr("Maximum Number:"),
+                                 m_maxHighlightedPoints, 0, 1000000, 1000, &ok);
+
+    if( !ok ) return;
+
+    // only applies to next reception, clear highlighted points if present
+    m_maxHighlightedPoints=max;
+    ui->actionReset_Highlighted_Points->trigger();
+}
+
+void VolumeViewer::on_actionSet_Point_Color_triggered()
+{
+    QColor color=QColorDialog::getColor( m_highlightedPointColor, this, tr("Set Point Color") );
+
+    if( !color.isValid()) return;
+
+    setHighlightedPointColor(color);
 }

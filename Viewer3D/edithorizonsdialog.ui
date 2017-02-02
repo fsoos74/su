@@ -92,7 +92,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Delay:</string>
+             <string>Delay [ms]:</string>
             </property>
            </widget>
           </item>

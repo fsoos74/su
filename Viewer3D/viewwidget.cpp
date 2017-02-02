@@ -10,6 +10,7 @@ ViewWidget::ViewWidget(QWidget *parent) :
     m_relativeStepSize(0.01)
 {
     setFocus();
+
 }
 
 ViewWidget::~ViewWidget()
@@ -281,7 +282,7 @@ void ViewWidget::keyPressEvent(QKeyEvent *e){
         case Qt::Key_Right:     scaleXPos(); break;
         }
 
-        emit scaleChanged(m_scale);
+        //emit scaleChanged(m_scale);
     }
     else if( e->modifiers()==Qt::ShiftModifier){    // rotate
 

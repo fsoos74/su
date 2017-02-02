@@ -93,6 +93,12 @@ private slots:
 
     void on_action_Open_Volume_triggered();
 
+    void on_actionReset_Highlighted_Points_triggered();
+
+    void on_actionLimit_Highlighted_Points_triggered();
+
+    void on_actionSet_Point_Color_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -138,7 +144,8 @@ private:
     SliceModel* m_sliceModel;
 
     QVector<SelectionPoint> m_highlightedPoints;
-    qreal m_highlightedPointSize=2;
+    int m_maxHighlightedPoints=1000;
+    qreal m_highlightedPointSize=50;                    // meters
     QColor m_highlightedPointColor=Qt::red;
 
     bool m_colorMappingLock=false;
