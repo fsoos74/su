@@ -240,8 +240,6 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
 
     Q_ASSERT(m_volume);
 
-    static int n=0;
-
     switch( code ){
 
     case PointCode::VIEWER_POINT_SELECTED:{

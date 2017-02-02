@@ -8,12 +8,10 @@ SliceModel::SliceModel(QObject *parent) : QObject(parent)
 
 QString SliceModel::generateName(){
 
-    const int maxID=999;
+    static int nextID=0;
 
-    for( int id=1; id<maxID; id++ ){
-        QString name=QString("Slice #%1").arg(id);
-        if( !m_slices.contains(name)) return name;
-    }
+    QString name=QString("Slice %1").arg(++nextID);
+    if( !m_slices.contains(name)) return name;
 
     qWarning("IDs exhausted in SliceModel::generateName");
 

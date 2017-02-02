@@ -46,7 +46,7 @@ private slots:
 private:
 
     void sliceToControls( QString, SliceDef );
-    SliceDef sliceFromControls( QString );
+    SliceDef sliceFromControls();
 
     Ui::EditSlicesDialog *ui;
 
