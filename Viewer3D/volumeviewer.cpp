@@ -32,6 +32,7 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
     connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Volume_Outline, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
+    connect( ui->actionShow_Compass, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
@@ -182,6 +183,32 @@ void VolumeViewer::setHighlightedPointSize(qreal s){
     refreshView();
 }
 
+void VolumeViewer::setCompassColor(QColor c){
+
+    if( c==m_compassColor ) return;
+
+    m_compassColor=c;
+
+    refreshView();
+}
+
+void VolumeViewer::setCompassSize(qreal s){
+
+    if( s==m_compassSize ) return;
+
+    m_compassSize=s;
+
+    refreshView();
+}
+
+void VolumeViewer::setOutlineColor(QColor c){
+
+    if( c==m_outlineColor ) return;
+
+    m_outlineColor=c;
+
+    refreshView();
+}
 
 void VolumeViewer::clear(){
 
@@ -212,7 +239,7 @@ void VolumeViewer::refreshView(){
     //directionIndicatorPlanesToView( m_volume->bounds());
 
     if( ui->actionShow_Volume_Outline->isChecked()){
-        outlineToView( m_volume->bounds());
+        outlineToView( m_volume->bounds(), m_outlineColor);
     }
 
     foreach( QString name, m_sliceModel->names()){
@@ -236,6 +263,23 @@ void VolumeViewer::refreshView(){
     }
 
     pointsToView( m_highlightedPoints, m_highlightedPointColor, m_highlightedPointSize );
+
+
+    if( ui->actionShow_Compass->isChecked()){
+        // draw compasses on every corner at top and bottom of outline cube
+        Grid3DBounds bounds=m_volume->bounds();
+        QVector<QPoint> compassPoints{ QPoint{ bounds.inline1(), bounds.crossline1() },
+                                       QPoint{ bounds.inline1(), bounds.crossline2() },
+                                       QPoint{ bounds.inline2(), bounds.crossline1() },
+                                       QPoint{ bounds.inline2(), bounds.crossline2() } };
+        foreach( QPoint ilxl, compassPoints){
+            QPointF xy=ilxl_to_xy.map(ilxl);
+            compassToView( QVector3D{static_cast<float>(xy.x()), static_cast<float>(bounds.ft()), static_cast<float>(xy.y())},
+                           m_compassSize, m_compassColor );
+            compassToView( QVector3D{static_cast<float>(xy.x()), static_cast<float>(bounds.lt()), static_cast<float>(xy.y())},
+                           m_compassSize, m_compassColor );
+        }
+    }
 
     ui->openGLWidget->update();
 }
@@ -295,9 +339,9 @@ void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
 }
 
-void VolumeViewer::outlineToView(Grid3DBounds bounds){
+void VolumeViewer::outlineToView(Grid3DBounds bounds, QColor color){
 
-    QVector3D color{ 1., 1., 1. };
+    QVector3D vcolor{ static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF() ) };
 
     QPoint ILXL1(bounds.inline1(), bounds.crossline1());
     QPoint ILXL2(bounds.inline1(), bounds.crossline2());
@@ -310,14 +354,14 @@ void VolumeViewer::outlineToView(Grid3DBounds bounds){
     QPointF XY4=ilxl_to_xy.map(ILXL4);
 
     QVector<VIC::Vertex> vertices{
-        {QVector3D( XY1.x(), bounds.ft(), XY1.y()), color },
-        {QVector3D( XY2.x(), bounds.ft(), XY2.y()), color },
-        {QVector3D( XY4.x(), bounds.ft(), XY4.y()), color },
-        {QVector3D( XY3.x(), bounds.ft(), XY3.y()), color },
-        {QVector3D( XY1.x(), bounds.lt(), XY1.y()), color },
-        {QVector3D( XY2.x(), bounds.lt(), XY2.y()), color },
-        {QVector3D( XY4.x(), bounds.lt(), XY4.y()), color },
-        {QVector3D( XY3.x(), bounds.lt(), XY3.y()), color }
+        {QVector3D( XY1.x(), bounds.ft(), XY1.y()), vcolor },
+        {QVector3D( XY2.x(), bounds.ft(), XY2.y()), vcolor },
+        {QVector3D( XY4.x(), bounds.ft(), XY4.y()), vcolor },
+        {QVector3D( XY3.x(), bounds.ft(), XY3.y()), vcolor },
+        {QVector3D( XY1.x(), bounds.lt(), XY1.y()), vcolor },
+        {QVector3D( XY2.x(), bounds.lt(), XY2.y()), vcolor },
+        {QVector3D( XY4.x(), bounds.lt(), XY4.y()), vcolor },
+        {QVector3D( XY3.x(), bounds.lt(), XY3.y()), vcolor }
     };
 
     // points for gl_lines, maybe change to line_strip
@@ -719,7 +763,6 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, int delayMSe
 void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qreal SIZE){
 
     Q_ASSERT( m_volume );
-    Grid3DBounds bounds=m_volume->bounds();
 
     QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
     QVector<VIC::Vertex> vertices;
@@ -781,6 +824,32 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
         ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
     }
 }
+
+
+void VolumeViewer::compassToView( QVector3D pos, qreal SIZE, QColor color){
+
+    QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
+    QVector<VIC::Vertex> vertices;
+    QVector<VIC::Index> indices;
+
+    QVector3D scale=ui->openGLWidget->scale();
+    qreal sizeX=SIZE/std::fabs(scale.x());
+    //qreal sizeY=SIZE/std::fabs(scale.y());
+    qreal sizeZ=SIZE/std::fabs(scale.z());
+
+    sizeX/=5;   // arrow narrower then long
+
+    vertices.append( VIC::Vertex{ QVector3D( pos.x(), pos.y(), pos.z()+sizeZ/2), drawColor} );
+    vertices.append( VIC::Vertex{ QVector3D( pos.x()-sizeX/2, pos.y(), pos.z()-sizeZ/2), drawColor} );
+    vertices.append( VIC::Vertex{ QVector3D( pos.x()+sizeX/2, pos.y(), pos.z()-sizeZ/2), drawColor} );
+
+    indices.append(0);
+    indices.append(1);
+    indices.append(2);
+
+    ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLES) );
+}
+
 
 void VolumeViewer::initialVolumeDisplay(){
 
@@ -1154,7 +1223,7 @@ void VolumeViewer::on_action_Open_Volume_triggered()
 
     setVolume(volume);
 
-    setWindowTitle( name );
+    setWindowTitle( QString("Volume Viewer - %1").arg(name ));
 }
 
 void VolumeViewer::on_actionReset_Highlighted_Points_triggered()
@@ -1185,4 +1254,32 @@ void VolumeViewer::on_actionSet_Point_Color_triggered()
     if( !color.isValid()) return;
 
     setHighlightedPointColor(color);
+}
+
+void VolumeViewer::on_actionSet_Compass_Size_triggered()
+{
+    bool ok=false;
+
+    int s=QInputDialog::getInt( this, tr("Set Compass Size"), tr("Compass Size:"), m_compassSize, 100, 100000, 100, &ok );
+    if( !ok ) return;
+
+    setCompassSize(s);
+}
+
+void VolumeViewer::on_actionSet_Compass_Color_triggered()
+{
+    QColor color=QColorDialog::getColor( m_compassColor, this, tr("Set Compass Color") );
+
+    if( !color.isValid()) return;
+
+    setCompassColor(color);
+}
+
+void VolumeViewer::on_actionSet_Outline_Color_triggered()
+{
+    QColor color=QColorDialog::getColor( m_outlineColor, this, tr("Set Outline Color") );
+
+    if( !color.isValid()) return;
+
+    setOutlineColor(color);
 }

@@ -50,14 +50,20 @@ public slots:
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
 
+    void setCompassColor( QColor );
+    void setCompassSize( qreal );
+
+    void setOutlineColor( QColor );
+
     void setColorMappingLocked(bool);
 
 signals:
 
+    /*
     void sliceAdded(SliceDef);
     void sliceRemoved(SliceDef);
     void horizonsChanged( );
-
+    */
 private slots:
 
     void refreshView();
@@ -99,6 +105,12 @@ private slots:
 
     void on_actionSet_Point_Color_triggered();
 
+    void on_actionSet_Compass_Size_triggered();
+
+    void on_actionSet_Compass_Color_triggered();
+
+    void on_actionSet_Outline_Color_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -111,7 +123,7 @@ private:
 
     void directionIndicatorPlanesToView( Grid3DBounds bounds);
 
-    void outlineToView( Grid3DBounds bounds );
+    void outlineToView( Grid3DBounds bounds, QColor );
     void sliceToView( const SliceDef& );
     void inlineSliceToView( int iline );
     void crosslineSliceToView( int xline );
@@ -119,7 +131,7 @@ private:
     void horizonToView(Grid2D<float>* hrz, int delayMSec=0);
     void horizonToView(Grid2D<float>* hrz, QColor, int delayMSec=0);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
-
+    void compassToView( QVector3D pos, qreal SIZE, QColor color);
     void initialVolumeDisplay();
     void defaultPositionAndScale();
 
@@ -147,6 +159,11 @@ private:
     int m_maxHighlightedPoints=1000;
     qreal m_highlightedPointSize=50;                    // meters
     QColor m_highlightedPointColor=Qt::red;
+
+    QColor m_compassColor=Qt::black;
+    qreal m_compassSize=1000;
+
+    QColor m_outlineColor=Qt::white;
 
     bool m_colorMappingLock=false;
 };
