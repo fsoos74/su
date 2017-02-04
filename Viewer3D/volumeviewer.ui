@@ -62,8 +62,12 @@
     <addaction name="actionShow_Volume_Outline"/>
     <addaction name="actionSet_Outline_Color"/>
     <addaction name="separator"/>
-    <addaction name="action_Background_Color"/>
+    <addaction name="actionShow_Labels"/>
+    <addaction name="actionSet_Label_size"/>
+    <addaction name="actionSet_Label_Color"/>
     <addaction name="separator"/>
+    <addaction name="separator"/>
+    <addaction name="action_Background_Color"/>
    </widget>
    <widget class="QMenu" name="menu_Data">
     <property name="title">
@@ -424,22 +428,43 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Compass</string>
+    <string>&amp;Show Compass</string>
    </property>
   </action>
   <action name="actionSet_Compass_Size">
    <property name="text">
-    <string>Set Compass Size</string>
+    <string>S&amp;et Compass Size</string>
    </property>
   </action>
   <action name="actionSet_Compass_Color">
    <property name="text">
-    <string>Set Compass Color</string>
+    <string>Set Co&amp;mpass Color</string>
    </property>
   </action>
   <action name="actionSet_Outline_Color">
    <property name="text">
-    <string>Set Outline Color</string>
+    <string>Set O&amp;utline Color</string>
+   </property>
+  </action>
+  <action name="actionShow_Labels">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Labels</string>
+   </property>
+  </action>
+  <action name="actionSet_Label_size">
+   <property name="text">
+    <string>Set Label Size</string>
+   </property>
+  </action>
+  <action name="actionSet_Label_Color">
+   <property name="text">
+    <string>Set Label Color</string>
    </property>
   </action>
  </widget>

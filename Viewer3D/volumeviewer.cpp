@@ -9,7 +9,8 @@
 #include<histogramdialog.h>
 #include<QColorDialog>
 #include<QInputDialog>
-
+#include <QPainter>
+#include <QImage>
 #include<QToolBar>
 
 #include <cmath>
@@ -33,6 +34,7 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Volume_Outline, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Compass, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
+    connect( ui->actionShow_Labels, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
@@ -201,6 +203,24 @@ void VolumeViewer::setCompassSize(qreal s){
     refreshView();
 }
 
+void VolumeViewer::setLabelColor(QColor c){
+
+    if( c==m_labelColor ) return;
+
+    m_labelColor=c;
+
+    refreshView();
+}
+
+void VolumeViewer::setLabelSize(qreal s){
+
+    if( s==m_labelSize ) return;
+
+    m_labelSize=s;
+
+    refreshView();
+}
+
 void VolumeViewer::setOutlineColor(QColor c){
 
     if( c==m_outlineColor ) return;
@@ -235,17 +255,50 @@ void VolumeViewer::refreshView(){
 
     scene->clear();
 
-
-    //directionIndicatorPlanesToView( m_volume->bounds());
-
+    // volume outline
     if( ui->actionShow_Volume_Outline->isChecked()){
         outlineToView( m_volume->bounds(), m_outlineColor);
     }
 
+    // outline labels
+    if( ui->actionShow_Labels->isChecked()){
+        Grid3DBounds bounds=m_volume->bounds();
+        QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline1() ) );
+        QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline2() ) );
+        QPointF xy3=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline2() ) );
+        QPointF xy4=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline1() ) );
+        QString str12=QString("iline %1").arg(bounds.inline1());
+        QString str23=QString("xline %1").arg(bounds.crossline2());
+        QString str34=QString("iline %1").arg(bounds.inline2());
+        QString str41=QString("xline %1").arg(bounds.crossline1());
+
+        textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
+                    str12, Qt::AlignBottom);
+        textToView( QVector3D( xy1.x(), bounds.lt(), xy1.y()), QVector3D( xy2.x(), bounds.lt(), xy2.y()),
+                    str12, Qt::AlignTop);
+
+        textToView( QVector3D( xy2.x(), bounds.ft(), xy2.y()), QVector3D( xy3.x(), bounds.ft(), xy3.y()),
+                    str23, Qt::AlignBottom);
+        textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy3.x(), bounds.lt(), xy3.y()),
+                            str23, Qt::AlignTop);
+
+        textToView( QVector3D( xy3.x(), bounds.ft(), xy3.y()), QVector3D( xy4.x(), bounds.ft(), xy4.y()),
+                    str34, Qt::AlignBottom);
+        textToView( QVector3D( xy3.x(), bounds.lt(), xy3.y()), QVector3D( xy4.x(), bounds.lt(), xy4.y()),
+                    str34, Qt::AlignTop);
+
+        textToView( QVector3D( xy4.x(), bounds.ft(), xy4.y()), QVector3D( xy1.x(), bounds.ft(), xy1.y()),
+                    str41, Qt::AlignBottom);
+        textToView( QVector3D( xy4.x(), bounds.lt(), xy4.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
+                    str41, Qt::AlignTop);
+    }
+
+    // slices
     foreach( QString name, m_sliceModel->names()){
         sliceToView( m_sliceModel->slice(name));
     }
 
+    // horizons
     foreach( QString hname, m_horizonModel->names() ){
 
         HorizonDef hdef=m_horizonModel->item(hname);
@@ -262,9 +315,11 @@ void VolumeViewer::refreshView(){
         }
     }
 
+    // highlighted points
     pointsToView( m_highlightedPoints, m_highlightedPointColor, m_highlightedPointSize );
 
 
+    // compasses / north indicators
     if( ui->actionShow_Compass->isChecked()){
         // draw compasses on every corner at top and bottom of outline cube
         Grid3DBounds bounds=m_volume->bounds();
@@ -837,7 +892,7 @@ void VolumeViewer::compassToView( QVector3D pos, qreal SIZE, QColor color){
     //qreal sizeY=SIZE/std::fabs(scale.y());
     qreal sizeZ=SIZE/std::fabs(scale.z());
 
-    sizeX/=5;   // arrow narrower then long
+    sizeX/=5;   // arrow narrower than long
 
     vertices.append( VIC::Vertex{ QVector3D( pos.x(), pos.y(), pos.z()+sizeZ/2), drawColor} );
     vertices.append( VIC::Vertex{ QVector3D( pos.x()-sizeX/2, pos.y(), pos.z()-sizeZ/2), drawColor} );
@@ -850,6 +905,133 @@ void VolumeViewer::compassToView( QVector3D pos, qreal SIZE, QColor color){
     ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLES) );
 }
 
+
+// x and z scales should be equal
+// y of point 1 and point 2 are assumed to be equal, text will be drawn parallel to the y axxis
+void VolumeViewer::textToView( QVector3D pos1, QVector3D pos2, QString text, Qt::Alignment valign ){
+
+    const qreal relativeSize=m_labelSize;
+    const QColor color=m_labelColor;
+
+    QFont font("Helvetica [Cronyx]", 16);
+    QFontMetrics metrics(font);
+
+    QRect rect = metrics.tightBoundingRect(text);
+    //std::cout<<"rect: x="<<rect.x()<<" y="<<rect.y()<<" w="<<rect.width()<<" h="<<rect.height()<<std::endl;
+
+    QImage img(rect.x() + rect.width(), rect.height(), QImage::Format_RGBA8888);
+
+    img.fill(qRgba(0,0,0,0));   // make image transparent
+
+    QPainter painter(&img);
+    painter.setFont(font);
+    painter.setPen(color);
+    painter.drawText( 0, -rect.y(), text);
+
+    QVector3D scale=ui->openGLWidget->scale();
+    qreal horizontalSize=qreal(relativeSize * rect.width() ) / std::fabs(scale.x());
+    qreal verticalSize=qreal(relativeSize * rect.height() ) / std::fabs(scale.y());
+
+    // find center
+    QVector3D pos=(pos1 + pos2 ) / 2;
+
+    // adjust y coordinate to alignment
+    // vertically default alignment is bottom, i.e. text is above pos
+    qreal y=pos.y()-verticalSize;
+    if( valign & Qt::AlignVCenter ){
+        y+=verticalSize/2;
+    }
+    else if( valign & Qt::AlignTop ){
+        y+= verticalSize;
+    }
+    pos.setY(y);
+
+    qreal dx=pos2.x() - pos1.x();
+    qreal dz=pos2.z() - pos1.z();
+    qreal d= std::sqrt(dx*dx + dz*dz);
+    qreal ux=dx/d;
+    qreal uz=dz/d;
+
+    QVector<VIT::Vertex> vertices{
+        {QVector3D( pos.x()-ux*horizontalSize/2, pos.y(), pos.z()-uz*horizontalSize/2), QVector2D( 0, 0)},   // top left
+        {QVector3D( pos.x() + ux*horizontalSize/2, pos.y(), pos.z()+uz*horizontalSize/2 ), QVector2D( 1, 0)},   // top right
+        {QVector3D( pos.x() + ux*horizontalSize/2,  pos.y()+verticalSize, pos.z()+uz*horizontalSize/2 ), QVector2D( 1, 1)},    // bottom right
+        {QVector3D( pos.x()-ux*horizontalSize/2, pos.y()+verticalSize, pos.z()-uz*horizontalSize/2 ), QVector2D( 0, 1)}   // bottom left
+    };
+
+    QVector<VIT::Index> indices{
+         0,  1,  2,  3
+    };
+
+    ui->openGLWidget->scene()->addItem(VIT::makeVIT(vertices, indices, GL_QUADS, img ) );
+}
+
+/*
+ * // x and z scales should be equal
+void VolumeViewer::textToView( QVector3D pos, QString text, Qt::Alignment align ){
+
+    std::cout<<"text= "<<text.toStdString()<<std::endl;
+
+    QFont font("Helvetica [Cronyx]", 20);
+    QFontMetrics metrics(font);
+
+    QRect rect = metrics.tightBoundingRect(text);
+
+    std::cout<<"rect: x="<<rect.x()<<" y="<<rect.y()<<" w="<<rect.width()<<" h="<<rect.height()<<std::endl;
+
+    QImage img(rect.x() + rect.width(), rect.height(), QImage::Format_RGBA8888);
+
+    img.fill(qRgba(0,0,0,0));
+    //QPixmap pixmap=QPixmap::fromImage(img);
+
+    QPainter painter(&img);
+    //painter.begin(&pixmap);
+    painter.setFont(font);
+    painter.setPen(Qt::black);
+    painter.drawText( 0, -rect.y(), text);
+
+    const qreal fac = 20;
+
+    QVector3D scale=ui->openGLWidget->scale();
+    qreal sizeX=qreal(fac * rect.width())/std::fabs(scale.x());
+    qreal sizeY=qreal(fac * rect.height())/std::fabs(scale.y());
+
+
+    // horizontally first charecter starts at pos , default is align left
+    qreal x=pos.x();
+    if( align & Qt::AlignHCenter ){
+        x-= sizeX/2;
+    }
+    else if( align & Qt::AlignRight ){
+        x-= sizeX;
+    }
+    pos.setX(x);
+
+    // vertically default alignment is bottom, i.e. text is above pos
+    qreal y=pos.y()-sizeY;
+    if( align & Qt::AlignVCenter ){
+        y+=sizeY/2;
+    }
+    else if( align & Qt::AlignTop ){
+        y+= sizeY;
+    }
+    pos.setY(y);
+
+    QVector<VIT::Vertex> vertices{
+        {QVector3D( pos.x(), pos.y(), pos.z()), QVector2D( 0, 0)},   // top left
+        {QVector3D( pos.x() + sizeX, pos.y(), pos.z() ), QVector2D( 1, 0)},   // top right
+        {QVector3D( pos.x()+sizeX,  pos.y()+sizeY, pos.z() ), QVector2D( 1, 1)},    // bottom right
+        {QVector3D( pos.x(), pos.y()+sizeY, pos.z() ), QVector2D( 0, 1)}   // bottom left
+    };
+
+    QVector<VIT::Index> indices{
+         0,  1,  2,  3
+    };
+
+    ui->openGLWidget->scene()->addItem(VIT::makeVIT(vertices, indices, GL_QUADS, img ) );
+
+}
+*/
 
 void VolumeViewer::initialVolumeDisplay(){
 
@@ -1282,4 +1464,23 @@ void VolumeViewer::on_actionSet_Outline_Color_triggered()
     if( !color.isValid()) return;
 
     setOutlineColor(color);
+}
+
+void VolumeViewer::on_actionSet_Label_size_triggered()
+{
+    bool ok=false;
+
+    int s=QInputDialog::getInt( this, tr("Set Label Size"), tr("Label Size:"), m_labelSize, 1, 1000, 1, &ok );
+    if( !ok ) return;
+
+    setLabelSize(s);
+}
+
+void VolumeViewer::on_actionSet_Label_Color_triggered()
+{
+    QColor color=QColorDialog::getColor( m_labelColor, this, tr("Set Label Color") );
+
+    if( !color.isValid()) return;
+
+    setLabelColor(color);
 }

@@ -53,6 +53,9 @@ public slots:
     void setCompassColor( QColor );
     void setCompassSize( qreal );
 
+    void setLabelColor( QColor );
+    void setLabelSize( qreal );
+
     void setOutlineColor( QColor );
 
     void setColorMappingLocked(bool);
@@ -111,6 +114,10 @@ private slots:
 
     void on_actionSet_Outline_Color_triggered();
 
+    void on_actionSet_Label_size_triggered();
+
+    void on_actionSet_Label_Color_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -132,6 +139,7 @@ private:
     void horizonToView(Grid2D<float>* hrz, QColor, int delayMSec=0);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
     void compassToView( QVector3D pos, qreal SIZE, QColor color);
+    void textToView( QVector3D pos1, QVector3D pos2, QString text,  Qt::Alignment valign=Qt::AlignVCenter );
     void initialVolumeDisplay();
     void defaultPositionAndScale();
 
@@ -162,6 +170,9 @@ private:
 
     QColor m_compassColor=Qt::black;
     qreal m_compassSize=1000;
+
+    QColor m_labelColor=Qt::black;
+    qreal m_labelSize=15;
 
     QColor m_outlineColor=Qt::white;
 
