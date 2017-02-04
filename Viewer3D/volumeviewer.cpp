@@ -255,48 +255,69 @@ void VolumeViewer::refreshView(){
 
     scene->clear();
 
+    Grid3DBounds bounds=m_volume->bounds();
+    QVector<int> ilines;
+    QVector<int> xlines;
+
     // volume outline
     if( ui->actionShow_Volume_Outline->isChecked()){
-        outlineToView( m_volume->bounds(), m_outlineColor);
-    }
+        outlineToView( bounds, m_outlineColor);
 
-    // outline labels
-    if( ui->actionShow_Labels->isChecked()){
-        Grid3DBounds bounds=m_volume->bounds();
-        QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline1() ) );
-        QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline2() ) );
-        QPointF xy3=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline2() ) );
-        QPointF xy4=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline1() ) );
-        QString str12=QString("iline %1").arg(bounds.inline1());
-        QString str23=QString("xline %1").arg(bounds.crossline2());
-        QString str34=QString("iline %1").arg(bounds.inline2());
-        QString str41=QString("xline %1").arg(bounds.crossline1());
-
-        textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
-                    str12, Qt::AlignBottom);
-        textToView( QVector3D( xy1.x(), bounds.lt(), xy1.y()), QVector3D( xy2.x(), bounds.lt(), xy2.y()),
-                    str12, Qt::AlignTop);
-
-        textToView( QVector3D( xy2.x(), bounds.ft(), xy2.y()), QVector3D( xy3.x(), bounds.ft(), xy3.y()),
-                    str23, Qt::AlignBottom);
-        textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy3.x(), bounds.lt(), xy3.y()),
-                            str23, Qt::AlignTop);
-
-        textToView( QVector3D( xy3.x(), bounds.ft(), xy3.y()), QVector3D( xy4.x(), bounds.ft(), xy4.y()),
-                    str34, Qt::AlignBottom);
-        textToView( QVector3D( xy3.x(), bounds.lt(), xy3.y()), QVector3D( xy4.x(), bounds.lt(), xy4.y()),
-                    str34, Qt::AlignTop);
-
-        textToView( QVector3D( xy4.x(), bounds.ft(), xy4.y()), QVector3D( xy1.x(), bounds.ft(), xy1.y()),
-                    str41, Qt::AlignBottom);
-        textToView( QVector3D( xy4.x(), bounds.lt(), xy4.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
-                    str41, Qt::AlignTop);
+        // add min/max inline and crossline to labels if outline is drawn
+        ilines<<bounds.inline1();
+        ilines<<bounds.inline2();
+        xlines<<bounds.crossline1();
+        xlines<<bounds.crossline2();
     }
 
     // slices
     foreach( QString name, m_sliceModel->names()){
-        sliceToView( m_sliceModel->slice(name));
+        SliceDef slice=m_sliceModel->slice(name);
+        sliceToView(slice);
+        // add slice to label list
+        if( slice.type==SliceType::INLINE) ilines<<slice.value;
+        else if( slice.type==SliceType::CROSSLINE) xlines<<slice.value;
     }
+
+
+
+    // outline + slice labels
+    if( ui->actionShow_Labels->isChecked()){
+
+        int topMS=1000*bounds.ft();
+        int bottomMS=1000*bounds.lt();
+
+        // inlines
+        foreach( int iline, ilines){
+
+            QPointF xy1=ilxl_to_xy.map( QPoint(iline, bounds.crossline1() ) );
+            QPointF xy2=ilxl_to_xy.map( QPoint(iline, bounds.crossline2() ) );
+            QString strTop=QString("iline %1 @%2ms").arg(iline).arg(topMS);
+            QString strBottom=QString("iline %1 @%2ms").arg(iline).arg(bottomMS);
+            textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
+                        strTop, Qt::AlignBottom);
+            textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
+                        strBottom, Qt::AlignTop);
+
+        }
+
+
+        // crosslines
+        foreach( int xline, xlines){
+
+            QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), xline ) );
+            QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline2(), xline ) );
+            QString strTop=QString("xline %1 @%2ms").arg(xline).arg(topMS);
+            QString strBottom=QString("xline %1 @%2ms").arg(xline).arg(bottomMS);
+            textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
+                        strTop, Qt::AlignBottom);
+            textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
+                        strBottom, Qt::AlignTop);
+
+        }
+
+    }
+
 
     // horizons
     foreach( QString hname, m_horizonModel->names() ){
