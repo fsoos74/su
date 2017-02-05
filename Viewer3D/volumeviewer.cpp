@@ -258,16 +258,18 @@ void VolumeViewer::refreshView(){
     Grid3DBounds bounds=m_volume->bounds();
     QVector<int> ilines;
     QVector<int> xlines;
-
+    QVector<int> msecs;
     // volume outline
     if( ui->actionShow_Volume_Outline->isChecked()){
         outlineToView( bounds, m_outlineColor);
 
-        // add min/max inline and crossline to labels if outline is drawn
+        // add min/max inline and crossline and time to labels if outline is drawn
         ilines<<bounds.inline1();
         ilines<<bounds.inline2();
         xlines<<bounds.crossline1();
         xlines<<bounds.crossline2();
+        msecs<<static_cast<int>(1000*bounds.ft());
+        msecs<<static_cast<int>(1000*bounds.lt());
     }
 
     // slices
@@ -275,8 +277,11 @@ void VolumeViewer::refreshView(){
         SliceDef slice=m_sliceModel->slice(name);
         sliceToView(slice);
         // add slice to label list
-        if( slice.type==SliceType::INLINE) ilines<<slice.value;
-        else if( slice.type==SliceType::CROSSLINE) xlines<<slice.value;
+        switch(slice.type){
+            case SliceType::INLINE: ilines<<slice.value;break;
+            case SliceType::CROSSLINE: xlines<<slice.value;break;
+            case SliceType::TIME: msecs<<slice.value;break;
+        }
     }
 
 
@@ -292,13 +297,11 @@ void VolumeViewer::refreshView(){
 
             QPointF xy1=ilxl_to_xy.map( QPoint(iline, bounds.crossline1() ) );
             QPointF xy2=ilxl_to_xy.map( QPoint(iline, bounds.crossline2() ) );
-            QString strTop=QString("iline %1 @%2ms").arg(iline).arg(topMS);
-            QString strBottom=QString("iline %1 @%2ms").arg(iline).arg(bottomMS);
+            QString str=QString("iline %1").arg(iline);
             textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
-                        strTop, Qt::AlignBottom);
+                        str, Qt::AlignHCenter|Qt::AlignBottom);
             textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
-                        strBottom, Qt::AlignTop);
-
+                        str, Qt::AlignHCenter|Qt::AlignTop);
         }
 
 
@@ -307,15 +310,26 @@ void VolumeViewer::refreshView(){
 
             QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), xline ) );
             QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline2(), xline ) );
-            QString strTop=QString("xline %1 @%2ms").arg(xline).arg(topMS);
-            QString strBottom=QString("xline %1 @%2ms").arg(xline).arg(bottomMS);
+            QString str=QString("xline %1").arg(xline);
             textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
-                        strTop, Qt::AlignBottom);
+                        str, Qt::AlignHCenter|Qt::AlignBottom);
             textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
-                        strBottom, Qt::AlignTop);
-
+                        str, Qt::AlignHCenter|Qt::AlignTop);
         }
 
+        // times / msecs
+        QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline1() ) );
+        QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline2() ) );
+        QPointF xy3=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline2() ) );
+        QPointF xy4=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline1() ) );
+        foreach( int msec, msecs){
+            qreal t=0.001*msec;
+            QString str=QString("%1 ms").arg(msec);
+            textToView( QVector3D( xy1.x(), t, xy1.y()), QVector3D( xy3.x(), t, xy3.y()), str, Qt::AlignLeft | Qt::AlignVCenter);
+            textToView( QVector3D( xy2.x(), t, xy2.y()), QVector3D( xy4.x(), t, xy4.y()), str, Qt::AlignLeft | Qt::AlignVCenter);
+            textToView( QVector3D( xy3.x(), t, xy3.y()), QVector3D( xy1.x(), t, xy1.y()), str, Qt::AlignLeft | Qt::AlignVCenter);
+            textToView( QVector3D( xy4.x(), t, xy4.y()), QVector3D( xy2.x(), t, xy2.y()), str, Qt::AlignLeft | Qt::AlignVCenter);
+        }
     }
 
 
@@ -929,7 +943,7 @@ void VolumeViewer::compassToView( QVector3D pos, qreal SIZE, QColor color){
 
 // x and z scales should be equal
 // y of point 1 and point 2 are assumed to be equal, text will be drawn parallel to the y axxis
-void VolumeViewer::textToView( QVector3D pos1, QVector3D pos2, QString text, Qt::Alignment valign ){
+void VolumeViewer::textToView( QVector3D pos1, QVector3D pos2, QString text, Qt::Alignment align ){
 
     const qreal relativeSize=m_labelSize;
     const QColor color=m_labelColor;
@@ -955,94 +969,50 @@ void VolumeViewer::textToView( QVector3D pos1, QVector3D pos2, QString text, Qt:
 
     // find center
     QVector3D pos=(pos1 + pos2 ) / 2;
-
-    // adjust y coordinate to alignment
-    // vertically default alignment is bottom, i.e. text is above pos
-    qreal y=pos.y()-verticalSize;
-    if( valign & Qt::AlignVCenter ){
-        y+=verticalSize/2;
-    }
-    else if( valign & Qt::AlignTop ){
-        y+= verticalSize;
-    }
-    pos.setY(y);
-
     qreal dx=pos2.x() - pos1.x();
     qreal dz=pos2.z() - pos1.z();
     qreal d= std::sqrt(dx*dx + dz*dz);
     qreal ux=dx/d;
     qreal uz=dz/d;
 
-    QVector<VIT::Vertex> vertices{
-        {QVector3D( pos.x()-ux*horizontalSize/2, pos.y(), pos.z()-uz*horizontalSize/2), QVector2D( 0, 0)},   // top left
-        {QVector3D( pos.x() + ux*horizontalSize/2, pos.y(), pos.z()+uz*horizontalSize/2 ), QVector2D( 1, 0)},   // top right
-        {QVector3D( pos.x() + ux*horizontalSize/2,  pos.y()+verticalSize, pos.z()+uz*horizontalSize/2 ), QVector2D( 1, 1)},    // bottom right
-        {QVector3D( pos.x()-ux*horizontalSize/2, pos.y()+verticalSize, pos.z()-uz*horizontalSize/2 ), QVector2D( 0, 1)}   // bottom left
-    };
-
-    QVector<VIT::Index> indices{
-         0,  1,  2,  3
-    };
-
-    ui->openGLWidget->scene()->addItem(VIT::makeVIT(vertices, indices, GL_QUADS, img ) );
-}
-
-/*
- * // x and z scales should be equal
-void VolumeViewer::textToView( QVector3D pos, QString text, Qt::Alignment align ){
-
-    std::cout<<"text= "<<text.toStdString()<<std::endl;
-
-    QFont font("Helvetica [Cronyx]", 20);
-    QFontMetrics metrics(font);
-
-    QRect rect = metrics.tightBoundingRect(text);
-
-    std::cout<<"rect: x="<<rect.x()<<" y="<<rect.y()<<" w="<<rect.width()<<" h="<<rect.height()<<std::endl;
-
-    QImage img(rect.x() + rect.width(), rect.height(), QImage::Format_RGBA8888);
-
-    img.fill(qRgba(0,0,0,0));
-    //QPixmap pixmap=QPixmap::fromImage(img);
-
-    QPainter painter(&img);
-    //painter.begin(&pixmap);
-    painter.setFont(font);
-    painter.setPen(Qt::black);
-    painter.drawText( 0, -rect.y(), text);
-
-    const qreal fac = 20;
-
-    QVector3D scale=ui->openGLWidget->scale();
-    qreal sizeX=qreal(fac * rect.width())/std::fabs(scale.x());
-    qreal sizeY=qreal(fac * rect.height())/std::fabs(scale.y());
-
-
-    // horizontally first charecter starts at pos , default is align left
-    qreal x=pos.x();
-    if( align & Qt::AlignHCenter ){
-        x-= sizeX/2;
-    }
-    else if( align & Qt::AlignRight ){
-        x-= sizeX;
-    }
-    pos.setX(x);
-
+    // adjust y coordinate to alignment
     // vertically default alignment is bottom, i.e. text is above pos
-    qreal y=pos.y()-sizeY;
+    qreal y=pos.y()-verticalSize;
     if( align & Qt::AlignVCenter ){
-        y+=sizeY/2;
+        y+=verticalSize/2;
     }
     else if( align & Qt::AlignTop ){
-        y+= sizeY;
+        y+= verticalSize;
     }
     pos.setY(y);
 
+    qreal x1=0,z1=0;
+    qreal x2=0,z2=0;
+    // adjust horizontal coords (x,z) to alignment
+    if( align & Qt::AlignHCenter){
+        x1=pos.x()-ux*horizontalSize/2;
+        z1=pos.z()-uz*horizontalSize/2;
+        x2=pos.x() + ux*horizontalSize/2;
+        z2=pos.z()+uz*horizontalSize/2;
+    }
+    else if( align & Qt::AlignLeft){
+        x1=pos2.x();
+        z1=pos2.z();
+        x2=pos2.x() + ux*horizontalSize;
+        z2=pos2.z() + uz*horizontalSize;
+    }
+    else if( align & Qt::AlignRight){
+        x1=pos1.x() - ux*horizontalSize;
+        z1=pos1.z() - uz*horizontalSize;
+        x2=pos1.x();
+        z2=pos1.z();
+    }
+
     QVector<VIT::Vertex> vertices{
-        {QVector3D( pos.x(), pos.y(), pos.z()), QVector2D( 0, 0)},   // top left
-        {QVector3D( pos.x() + sizeX, pos.y(), pos.z() ), QVector2D( 1, 0)},   // top right
-        {QVector3D( pos.x()+sizeX,  pos.y()+sizeY, pos.z() ), QVector2D( 1, 1)},    // bottom right
-        {QVector3D( pos.x(), pos.y()+sizeY, pos.z() ), QVector2D( 0, 1)}   // bottom left
+        {QVector3D( x1, pos.y(), z1), QVector2D( 0, 0)},   // top left
+        {QVector3D( x2, pos.y(), z2 ), QVector2D( 1, 0)},   // top right
+        {QVector3D( x2,  pos.y()+verticalSize, z2 ), QVector2D( 1, 1)},    // bottom right
+        {QVector3D( x1, pos.y()+verticalSize, z1 ), QVector2D( 0, 1)}   // bottom left
     };
 
     QVector<VIT::Index> indices{
@@ -1050,9 +1020,8 @@ void VolumeViewer::textToView( QVector3D pos, QString text, Qt::Alignment align 
     };
 
     ui->openGLWidget->scene()->addItem(VIT::makeVIT(vertices, indices, GL_QUADS, img ) );
-
 }
-*/
+
 
 void VolumeViewer::initialVolumeDisplay(){
 
