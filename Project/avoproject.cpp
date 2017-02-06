@@ -27,7 +27,8 @@
 #include<chrono>
 
 
-GridType string2GridType( const QString& str){
+//GridType string2GridType( const QString& str){
+GridType toGridType( const QString& str){
 
    for( auto type : GridTypesAndNames.keys()){
        if( str == GridTypesAndNames.value(type) ){
@@ -38,7 +39,8 @@ GridType string2GridType( const QString& str){
    throw std::runtime_error("Invalid grid name in string2GridType");
 }
 
-QString gridType2String( GridType t ){
+//QString gridType2String( GridType t ){
+QString toQString( GridType t ){
 
     for( auto type : GridTypesAndNames.keys()){
         if( t == type ){
@@ -53,7 +55,7 @@ const QString GridTypeAndNameDelimeter = "::";
 
 QString createFullGridName( GridType type, QString name){
 
-    return gridType2String(type) + GridTypeAndNameDelimeter + name;
+    return toQString(type) + GridTypeAndNameDelimeter + name;
 }
 
 std::pair<GridType, QString> splitFullGridName(const QString& fullName){
@@ -63,7 +65,7 @@ std::pair<GridType, QString> splitFullGridName(const QString& fullName){
         throw std::runtime_error("Invalid name string in splitFullGridName");
     }
 
-    return std::pair<GridType, QString>( string2GridType(parts[0]), parts[1]);
+    return std::pair<GridType, QString>( toGridType(parts[0]), parts[1]);
 
 }
 
@@ -716,7 +718,7 @@ void AVOProject::setupGrids(){
 
 QString AVOProject::gridDirectory( GridType t)const{
 
-    QString sectionName = gridType2String( t );
+    QString sectionName = toQString( t );
 
     return m_gridDirectory + QDir::separator() + sectionName;
 }

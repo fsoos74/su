@@ -27,8 +27,9 @@ GridRunUserScriptDialog::GridRunUserScriptDialog(QWidget *parent) :
 
     connect( ui->leResultGrid, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
 
-    connect( ui->teScript, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->teScript, SIGNAL(textChanged()), this, SLOT(updateOkButton()) );
 
+    connect( ui->cbType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateInputGrids()) );
 
     updateInputGridControls();
 
@@ -40,16 +41,26 @@ GridRunUserScriptDialog::~GridRunUserScriptDialog()
     delete ui;
 }
 
-void GridRunUserScriptDialog::setInputGrids( const QStringList& l){
+void GridRunUserScriptDialog::setInputGrids( QString type, const QStringList& l){
 
-    if( l==m_inputGrids) return;
+    if( !m_inputGrids.contains(type)){
+        ui->cbType->addItem(type);
+    }
 
-    m_inputGrids=l;
+    m_inputGrids.insert(type, l);
+
+    if( type == ui->cbType->currentText()){
+        updateInputGrids();
+    }
+
+}
+
+void GridRunUserScriptDialog::updateInputGrids(){
 
     for( QComboBox* cb : inputCB){
         if( cb ){
             cb->clear();
-            cb->addItems(m_inputGrids);
+            cb->addItems(m_inputGrids.value(ui->cbType->currentText()));
         }
     }
 
@@ -60,10 +71,11 @@ QMap<QString,QString> GridRunUserScriptDialog::params(){
 
     QMap<QString, QString> p;
 
-    QString fullGridName=createFullGridName( GridType::Attribute,
-                                             ui->leResultGrid->text() );
+    //QString fullGridName=createFullGridName( GridType::Attribute, ui->leResultGrid->text() );
 
-    p.insert( QString("result"), fullGridName);
+    p.insert( QString("type"), ui->cbType->currentText() );
+
+    p.insert( QString("result"), ui->leResultGrid->text() );
 
     p.insert( QString("n_input_grids"), QString::number(ui->sbInputGrids->value()));
     for( int i=0; i<ui->sbInputGrids->value(); i++){
@@ -83,13 +95,15 @@ void GridRunUserScriptDialog::updateInputGridControls(){
         delete ui->wdInputGrids->layout();
     }
 
+    QString type=ui->cbType->currentText();
+
     QGridLayout* layout=new QGridLayout(ui->wdInputGrids);
     for( int i=0; i<ui->sbInputGrids->value(); i++){
 
         if( !inputCB[i]){
             QComboBox* cb=new QComboBox( this );
             cb->clear();
-            cb->addItems(m_inputGrids);
+            cb->addItems(m_inputGrids.value(type));
             inputCB[i]=cb;
         }
 
@@ -110,8 +124,9 @@ void GridRunUserScriptDialog::updateOkButton(){
         ok=false;
     }
 
+    QString type=ui->cbType->currentText();
     QPalette palette;
-    if( m_inputGrids.contains(ui->leResultGrid->text())){
+    if( m_inputGrids.contains(type) && m_inputGrids.value(type).contains(ui->leResultGrid->text())){
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }

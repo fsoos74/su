@@ -8,9 +8,9 @@ CrossplotGridsInputDialog::CrossplotGridsInputDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QStringList types;
-    types<<gridType2String(GridType::Attribute);
-    types<<gridType2String(GridType::Horizon);
-    types<<gridType2String(GridType::Other);
+    types<<toQString(GridType::Attribute);
+    types<<toQString(GridType::Horizon);
+    types<<toQString(GridType::Other);
     ui->cbXType->insertItems(0, types);
     ui->cbYType->insertItems(0, types);
     ui->cbAttributeType->insertItems(0, types);
@@ -29,7 +29,7 @@ CrossplotGridsInputDialog::~CrossplotGridsInputDialog()
 
 GridType CrossplotGridsInputDialog::xType(){
 
-    return string2GridType(ui->cbXType->currentText());
+    return toGridType(ui->cbXType->currentText());
 }
 
 QString CrossplotGridsInputDialog::xName(){
@@ -39,7 +39,7 @@ QString CrossplotGridsInputDialog::xName(){
 
 GridType CrossplotGridsInputDialog::yType(){
 
-    return string2GridType(ui->cbYType->currentText());
+    return toGridType(ui->cbYType->currentText());
 }
 
 QString CrossplotGridsInputDialog::yName(){
@@ -49,7 +49,7 @@ QString CrossplotGridsInputDialog::yName(){
 
 GridType CrossplotGridsInputDialog::attributeType(){
 
-    return string2GridType(ui->cbAttributeType->currentText());
+    return toGridType(ui->cbAttributeType->currentText());
 }
 
 QString CrossplotGridsInputDialog::attributeName(){
@@ -111,12 +111,12 @@ void CrossplotGridsInputDialog::updateCombos(){
 
 void CrossplotGridsInputDialog::updateXCombo(){
 
-    setComboNames(string2GridType(ui->cbXType->currentText()), ui->cbXName );
+    setComboNames(toGridType(ui->cbXType->currentText()), ui->cbXName );
 }
 
 void CrossplotGridsInputDialog::updateYCombo(){
 
-    setComboNames(string2GridType(ui->cbYType->currentText()), ui->cbYName );
+    setComboNames(toGridType(ui->cbYType->currentText()), ui->cbYName );
 }
 
 void CrossplotGridsInputDialog::updateHorizonCombo(){
@@ -128,5 +128,5 @@ void CrossplotGridsInputDialog::updateHorizonCombo(){
 
 void CrossplotGridsInputDialog::updateAttributeCombo(){
 
-    setComboNames(string2GridType(ui->cbAttributeType->currentText()), ui->cbAttributeName );
+    setComboNames(toGridType(ui->cbAttributeType->currentText()), ui->cbAttributeName );
 }

@@ -23,6 +23,8 @@ public:
 
 private:
 
+    GridType m_gridType;
+
     QString m_gridName;
     std::shared_ptr<Grid2D<float> > m_grid;
 

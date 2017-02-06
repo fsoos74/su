@@ -25,6 +25,12 @@ RunGridScriptProcess::RunGridScriptProcess( std::shared_ptr<AVOProject> project,
 ProjectProcess::ResultCode RunGridScriptProcess::init( const QMap<QString, QString>& parameters ){
 
 
+    if( !parameters.contains(QString("type"))){
+        setErrorString("Parameters contain no output grid type!");
+        return ResultCode::Error;
+    }
+    m_gridType = toGridType(parameters.value(QString("type") ) );
+
     if( !parameters.contains(QString("result"))){
         setErrorString("Parameters contain no output grid!");
         return ResultCode::Error;
@@ -56,7 +62,7 @@ ProjectProcess::ResultCode RunGridScriptProcess::init( const QMap<QString, QStri
 
     //load input grids
     for( int i=0; i<m_inputGridName.size(); i++){
-        auto pg=project()->loadGrid( GridType::Attribute, m_inputGridName[i]);
+        auto pg=project()->loadGrid( m_gridType, m_inputGridName[i]);
         if( !pg ){
             setErrorString("Loading grid failed!");
             return ResultCode::Error;
@@ -87,13 +93,13 @@ ProjectProcess::ResultCode RunGridScriptProcess::init( const QMap<QString, QStri
     }
 
 
-
+/*
     std::cout<<"Run Grid Process Params:"<<std::endl;
     std::cout<<"result: "<<m_gridName.toStdString()<<std::endl;
     for(int i=0; i<m_inputGridName.size(); i++){
         std::cout<<"input grid "<<i+1<<": "<<m_inputGridName[i].toStdString()<<std::endl;
     }
-
+*/
     return ResultCode::Ok;
 }
 
@@ -295,8 +301,8 @@ ProjectProcess::ResultCode RunGridScriptProcess::run(){
     emit started(1);
     emit progress(0);
     qApp->processEvents();
-    std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
-    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid)){
+    //std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
+    if( !project()->addGrid( m_gridType, m_gridName, m_grid)){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gridName) );
         return ResultCode::Error;
     }

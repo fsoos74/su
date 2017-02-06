@@ -286,7 +286,7 @@ void VolumeViewer::refreshView(){
 
 
 
-    // outline + slice labels
+    // labels
     if( ui->actionShow_Labels->isChecked()){
 
         int topMS=1000*bounds.ft();
@@ -330,6 +330,7 @@ void VolumeViewer::refreshView(){
             textToView( QVector3D( xy3.x(), t, xy3.y()), QVector3D( xy1.x(), t, xy1.y()), str, Qt::AlignLeft | Qt::AlignVCenter);
             textToView( QVector3D( xy4.x(), t, xy4.y()), QVector3D( xy2.x(), t, xy2.y()), str, Qt::AlignLeft | Qt::AlignVCenter);
         }
+
     }
 
 

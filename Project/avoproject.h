@@ -40,8 +40,10 @@ static const QMap<GridType, QString> GridTypesAndNames{
     {GridType::Other, "Other"}
 };
 
-GridType string2GridType( const QString& );
-QString gridType2String( GridType );
+//GridType string2GridType( const QString& );
+//QString gridType2String( GridType );
+GridType toGridType(const QString& );
+QString toQString( GridType );
 
 QString createFullGridName( GridType, QString );
 std::pair<GridType, QString> splitFullGridName(const QString&);

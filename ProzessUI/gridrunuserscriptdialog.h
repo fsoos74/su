@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QGridLayout>
+#include <QMap>
 
 namespace Ui {
 class GridRunUserScriptDialog;
@@ -21,9 +22,10 @@ public:
     QMap<QString,QString> params();
 
 public slots:
-    void setInputGrids( const QStringList&);
+    void setInputGrids( QString, const QStringList&);
 
 private slots:
+    void updateInputGrids();
     void updateInputGridControls();
     void updateOkButton();
 
@@ -34,7 +36,7 @@ private slots:
 private:
     Ui::GridRunUserScriptDialog *ui;
 
-    QStringList m_inputGrids;
+    QMap<QString, QStringList> m_inputGrids;
 
     QVector<QComboBox*> inputCB;
 };

@@ -562,7 +562,7 @@ void ProjectViewer::on_actionDisplay_Map_triggered()
 
 void ProjectViewer::importGrid(GridType gridType){
 
-    QString gridTypeString=gridType2String(gridType);
+    QString gridTypeString=toQString(gridType);
     bool ok=false;
     QString gridName=QInputDialog::getText(this, QString("Import %1").arg(gridTypeString),
                                            "Name:", QLineEdit::Normal, "new", &ok);
@@ -680,7 +680,7 @@ void ProjectViewer::exportSeismicDataset( QString name ){
 
 void ProjectViewer::selectAndExportGrid(GridType gridType)
 {
-    QString gridTypeString=gridType2String(gridType);
+    QString gridTypeString=toQString(gridType);
 
     bool ok;
     QString gridName = QInputDialog::getItem(this, QString("Export %1 Grid").arg(gridTypeString),
@@ -694,7 +694,7 @@ void ProjectViewer::selectAndExportGrid(GridType gridType)
 
 void ProjectViewer::exportGrid( GridType gridType, QString gridName){
 
-    QString gridTypeString=gridType2String(gridType);
+    QString gridTypeString=toQString(gridType);
 
     std::shared_ptr<Grid2D<float>> grid=m_project->loadGrid(gridType, gridName);
 
@@ -1123,7 +1123,11 @@ void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
 
      GridRunUserScriptDialog dlg;
      dlg.setWindowTitle(tr("Run User Script"));
-     dlg.setInputGrids( m_project->gridList(GridType::Attribute));
+
+     dlg.setInputGrids( toQString(GridType::Attribute), m_project->gridList(GridType::Attribute));
+     dlg.setInputGrids( toQString(GridType::Horizon), m_project->gridList(GridType::Horizon));
+     dlg.setInputGrids( toQString(GridType::Other), m_project->gridList(GridType::Other));
+
      if( dlg.exec()!=QDialog::Accepted) return;
      QMap<QString,QString> params=dlg.params();
 
@@ -1494,7 +1498,7 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
         GridViewer* viewer=new GridViewer; //don't make this parent because projectviewer should be able to be displayed over gridviewer
 
         viewer->setGrid(grid);
-        QString typeName=gridType2String(t);
+        QString typeName=toQString(t);
         viewer->setWindowTitle(QString("Grid %1 - %2").arg(typeName, name) );
 
         if( t==GridType::Horizon ){    // the samples of time horizons are millis
@@ -1541,7 +1545,7 @@ void ProjectViewer::displayGridHistogram( GridType t, const QString& name){
 
         HistogramDialog* viewer=new HistogramDialog; //don't make this parent because projectviewer should be able to be displayed over gridviewer
         viewer->setData( data );
-        QString typeName=gridType2String(t);
+        QString typeName= toQString(t);
         viewer->setWindowTitle(QString("Histogram of Grid %1 - %2").arg(typeName, name) );  
 
         viewer->show();
@@ -1555,7 +1559,7 @@ void ProjectViewer::renameGrid( GridType t, const QString& name){
     if( m_project->gridList(t).contains(name)){
         bool ok=false;
 
-        QString typeName=gridType2String(t);
+        QString typeName=toQString(t);
         QString newName=QInputDialog::getText(this, QString("Rename %1 \"%2\"").arg(typeName, name), "New Name:", QLineEdit::Normal, name, &ok);
 
         if( newName.isNull() || !ok) return;
@@ -1580,7 +1584,7 @@ void ProjectViewer::removeGrid( GridType t, const QString& name){
     if( m_project->gridList(t).contains(name)){
         //if( !m_project->gridList().contains(name) ) return;
 
-        QString typeName=gridType2String(t);
+        QString typeName=toQString(t);
 
         if( QMessageBox::question(this, QString("Remove %1").arg(typeName),
                  QString("Are you sure you want to remove %1 grid %2?").arg(typeName,name), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
