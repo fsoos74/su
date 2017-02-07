@@ -213,6 +213,7 @@
     <addaction name="actionTrend_Based_Attribute_Grids"/>
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
+    <addaction name="actionConvert_Grid"/>
     <addaction name="actionRun_Grid_User_Script"/>
     <addaction name="separator"/>
    </widget>
@@ -526,6 +527,11 @@
   <action name="action_Crop_Volume">
    <property name="text">
     <string>&amp;Crop Volume</string>
+   </property>
+  </action>
+  <action name="actionConvert_Grid">
+   <property name="text">
+    <string>Convert Grid</string>
    </property>
   </action>
  </widget>

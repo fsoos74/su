@@ -36,7 +36,8 @@ SOURCES += prozessui.cpp \
     semblancevolumedialog.cpp \
     secondaryavoattributesdialog.cpp \
     trendbasedattributesdialog.cpp \
-    cropvolumedialog.cpp
+    cropvolumedialog.cpp \
+    convertgriddialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -56,7 +57,8 @@ HEADERS += prozessui.h\
     semblancevolumedialog.h \
     secondaryavoattributesdialog.h \
     trendbasedattributesdialog.h \
-    cropvolumedialog.h
+    cropvolumedialog.h \
+    convertgriddialog.h
 
 unix {
     target.path = /usr/lib
@@ -79,7 +81,8 @@ FORMS += \
     semblancevolumedialog.ui \
     secondaryavoattributesdialog.ui \
     trendbasedattributesdialog.ui \
-    cropvolumedialog.ui
+    cropvolumedialog.ui \
+    convertgriddialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

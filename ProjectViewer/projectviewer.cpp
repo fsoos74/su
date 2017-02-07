@@ -84,6 +84,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <cropvolumeprocess.h>
 #include <amplitudevolumedialog.h>
 #include <amplitudevolumeprocess.h>
+#include <convertgriddialog.h>
+#include <convertgridprocess.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
 #include <runvolumescriptdialog.h>
@@ -1115,6 +1117,25 @@ void ProjectViewer::on_actionSecondary_Attribute_Volumes_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess( new SecondaryAttributeVolumesProcess( m_project, this ), params );
+}
+
+
+
+void ProjectViewer::on_actionConvert_Grid_triggered()
+{
+    Q_ASSERT( m_project );
+
+    ConvertGridDialog dlg;
+    dlg.setWindowTitle(tr("Convert Grid"));
+
+    dlg.setInputGrids( toQString(GridType::Attribute), m_project->gridList(GridType::Attribute));
+    dlg.setInputGrids( toQString(GridType::Horizon), m_project->gridList(GridType::Horizon));
+    dlg.setInputGrids( toQString(GridType::Other), m_project->gridList(GridType::Other));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new ConvertGridProcess( m_project, this ), params );
 }
 
 void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
@@ -2556,7 +2577,7 @@ void ProjectViewer::updateMenu(){
     ui->actionCompute_Intercept_Gradient->setEnabled(isProject);
     ui->actionTrend_Based_Attribute_Grids->setEnabled(isProject);
     ui->actionSecondary_Attribute_Grids->setEnabled(isProject);
-    //ui->actionFluid_Factor_Grid->setEnabled(isProject);
+    ui->actionConvert_Grid->setEnabled(isProject);
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
 
     ui->action_Crop_Volume->setEnabled(isProject);
@@ -2573,5 +2594,4 @@ void ProjectViewer::updateMenu(){
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 }
-
 

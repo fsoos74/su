@@ -150,6 +150,8 @@ private slots:
 
     void on_action_Crop_Volume_triggered();
 
+    void on_actionConvert_Grid_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);
