@@ -343,7 +343,7 @@ void VolumeViewer::refreshView(){
         if( h ){
 
             if( hdef.useColor ){
-                horizonToView(h, hdef.color, hdef.delay);
+                horizonToView(h, hdef.color, hdef.colorScaler, hdef.delay);
             }
             else{
                 horizonToView(h, hdef.delay );
@@ -757,7 +757,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, int delayMSec){
 }
 
 
-void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, int delayMSec){
+void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, qreal scaler, int delayMSec){
 
     Q_ASSERT( m_volume );
     Q_ASSERT( hrz );
@@ -790,7 +790,7 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, int delayMSe
 
                 if( value != m_volume->NULL_VALUE ){
 
-                    color = baseColor*(2.-x)/2;
+                    color = baseColor * ( 1 - x * scaler);//  (2.-x)/2;
                 }
 
                 vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );

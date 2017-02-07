@@ -13,6 +13,7 @@ EditHorizonsDialog::EditHorizonsDialog(QWidget *parent) :
 
     connect( ui->cbColor, SIGNAL(colorChanged(QColor)), this, SLOT(horizonControlsChanged()) );
     connect( ui->cbUseColor, SIGNAL(toggled(bool)), this, SLOT(horizonControlsChanged()) );
+    connect( ui->sbScaler, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
     connect( ui->sbDelay, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
 }
 
@@ -113,6 +114,7 @@ void EditHorizonsDialog::horizonToControls( QString name, HorizonDef horizon ){
 
     ui->cbUseColor->setChecked(horizon.useColor);
     ui->cbColor->setColor(horizon.color);
+    ui->sbScaler->setValue( static_cast<int>(100*horizon.colorScaler) );
     ui->sbDelay->setValue(horizon.delay);
 
     // value changes of controls can trigger signals again
@@ -126,6 +128,7 @@ HorizonDef EditHorizonsDialog::horizonFromControls( QString name){
     def.horizon=m_currentHorizonControl;
     def.useColor=ui->cbUseColor->isChecked();
     def.color=ui->cbColor->color();
+    def.colorScaler = 0.01 * ui->sbScaler->value();
     def.delay=ui->sbDelay->value();
 
     return def;

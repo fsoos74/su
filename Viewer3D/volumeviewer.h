@@ -136,7 +136,7 @@ private:
     void crosslineSliceToView( int xline );
     void timeSliceToView( int msec);
     void horizonToView(Grid2D<float>* hrz, int delayMSec=0);
-    void horizonToView(Grid2D<float>* hrz, QColor, int delayMSec=0);
+    void horizonToView(Grid2D<float>* hrz, QColor, qreal scaler, int delayMSec=0);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
     void compassToView( QVector3D pos, qreal SIZE, QColor color);
     void textToView( QVector3D pos1, QVector3D pos2, QString text,  Qt::Alignment valign=Qt::AlignVCenter );
