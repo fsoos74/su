@@ -355,7 +355,8 @@ void MapViewer::drawColorbar(QGraphicsScene* scene){
     for( int i=0; i<img.height(); i++){
         double v=m_colorTable->range().first + i*(m_colorTable->range().second - m_colorTable->range().first)/img.height();
 
-        img.setPixel(0, img.height() - i -1, m_colorTable->map(v) );   // lowest at bottom
+        //img.setPixel(0, img.height() - i -1, m_colorTable->map(v) );   // lowest at bottom, wrong vertically mirrored
+        img.setPixel(0, i, m_colorTable->map(v) );   // lowest at bottom, image origin at bottom of image
     }
 
     QGraphicsPixmapItem* item=new QGraphicsPixmapItem(QPixmap::fromImage(img) );
