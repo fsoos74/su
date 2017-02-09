@@ -127,6 +127,8 @@ public:
 
     std::shared_ptr<Grid2D<float>> loadGrid(GridType, const QString& name);
 
+    bool saveGrid( GridType, const QString&, std::shared_ptr<Grid2D<float>>);
+
     bool existsGrid( GridType, const QString& name );
 
     bool addGrid( GridType, const QString& name, std::shared_ptr<Grid2D<float>> grid);

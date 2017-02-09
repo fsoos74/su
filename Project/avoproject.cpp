@@ -214,8 +214,22 @@ bool AVOProject::renameGrid( GridType t, const QString& name, const QString& new
  }
 
 
+bool AVOProject::saveGrid( GridType t, const QString& name, std::shared_ptr<Grid2D<float>> grid){
 
+    Q_ASSERT( grid);
+    // it is a serious error to call save on an not added grid
+    Q_ASSERT( !existsGrid(t,name));
 
+    QString gridFileName=getGridPath( t, name);
+
+    QFile file(gridFileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        return false;
+    }
+
+    XGRWriter writer(*grid);
+    return writer.writeFile(&file);
+}
 
  QString AVOProject::getVolumePath( const QString& name){
 
