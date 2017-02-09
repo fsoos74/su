@@ -37,7 +37,9 @@ SOURCES += seismicui.cpp \
     headerscandialog.cpp \
     gathersortkey.cpp \
     sectionscaledialog.cpp \
-    picker.cpp
+    picker.cpp \
+    pickmode.cpp \
+    picktype.cpp
 
 HEADERS += seismicui.h\
         seismicui_global.h \
@@ -59,7 +61,9 @@ HEADERS += seismicui.h\
     headerscandialog.h \
     gathersortkey.h \
     sectionscaledialog.h \
-    picker.h
+    picker.h \
+    pickmode.h \
+    picktype.h
 
 unix {
     target.path = /usr/lib

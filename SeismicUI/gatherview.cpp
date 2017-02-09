@@ -177,6 +177,9 @@ void GatherView::setMouseMode(MouseMode m){
 
     m_gatherLabel->setCursor(modeCursor(m_mouseMode));
 
+
+    std::cout<<"MM="<<toQString(m).toStdString()<<std::endl;
+
     emit mouseModeChanged(m_mouseMode);
 }
 
@@ -522,6 +525,16 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
         int trace=static_cast<int>(p.x()/m_pixelPerTrace);
         qreal secs=m_ft + p.y()/m_pixelPerSecond;
         m_picker->pick(trace, secs);
+        return true;
+    }
+
+    // delete pick
+    if( m_mouseMode == MouseMode::DeletePick && widget==m_gatherLabel &&
+            mouseEvent->type()==QEvent::MouseButtonPress ){
+        QPoint p=mouseEvent->pos();
+        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+        m_picker->deletePick(trace);
         return true;
     }
 

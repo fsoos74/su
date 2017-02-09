@@ -109,18 +109,15 @@
     </property>
     <widget class="QMenu" name="menuPick_Mode">
      <property name="title">
-      <string>Pick Mode</string>
+      <string>&amp;Pick Mode</string>
      </property>
-     <addaction name="actionSingle"/>
-     <addaction name="actionMulti"/>
     </widget>
     <widget class="QMenu" name="menuPick_Type">
      <property name="title">
-      <string>Pick Type</string>
+      <string>P&amp;ick Type</string>
      </property>
-     <addaction name="actionMinimum"/>
-     <addaction name="actionMaximum"/>
     </widget>
+    <addaction name="action_New_Picks"/>
     <addaction name="action_Load_Picks"/>
     <addaction name="action_Save_Picks"/>
     <addaction name="action_Close_Picks"/>
@@ -224,7 +221,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -236,7 +233,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -422,7 +419,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Single</string>
+    <string>&amp;Single</string>
    </property>
   </action>
   <action name="actionMulti">
@@ -430,7 +427,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Multi</string>
+    <string>&amp;Multi</string>
    </property>
   </action>
   <action name="actionMinimum">
@@ -441,7 +438,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Minimum</string>
+    <string>&amp;Minimum</string>
    </property>
   </action>
   <action name="actionMaximum">
@@ -449,7 +446,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Maximum</string>
+    <string>Ma&amp;ximum</string>
+   </property>
+  </action>
+  <action name="action_New_Picks">
+   <property name="text">
+    <string>&amp;New Picks</string>
    </property>
   </action>
  </widget>
@@ -463,7 +465,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

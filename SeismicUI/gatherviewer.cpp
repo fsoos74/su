@@ -72,21 +72,11 @@ GatherViewer::GatherViewer(QWidget *parent) :
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomFitWindowAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->zoomButton(), SLOT(setDisabled(bool)) );
 
-    // need to group picker options here because designer does not support this
-    QActionGroup* pickModeGroup=new QActionGroup(this);
-    pickModeGroup->addAction(ui->actionSingle);
-    pickModeGroup->addAction(ui->actionMulti);
-    QActionGroup* pickTypeGroup=new QActionGroup(this);
-    pickTypeGroup->addAction(ui->actionMinimum);
-    pickTypeGroup->addAction(ui->actionMaximum);
-
-    connect( pickModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickModeSelected(QAction*)) );
-    connect( pickTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickTypeSelected(QAction*)) );
-
-
     createDockWidgets();
 
     populateWindowMenu();
+
+    setupPickMenus();
 
     resize( 800, 700);
 }
@@ -101,6 +91,37 @@ void GatherViewer::populateWindowMenu(){
     ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->navigationToolBar->toggleViewAction());
+}
+
+
+void GatherViewer::setupPickMenus(){
+
+    // need to group picker options here because designer does not support this
+    QActionGroup* pickModeGroup=new QActionGroup(this);
+    pickModeGroup->setExclusive(true);
+    std::array<PickMode,4> modes{PickMode::Single, PickMode::Left, PickMode::Right, PickMode::All };
+    for( PickMode mode : modes){
+        QAction* act = new QAction( toQString(mode), this);
+        act->setCheckable(true);
+        act->setChecked(gatherView->picker()->mode()==mode);
+        ui->menuPick_Mode->addAction(act);
+        pickModeGroup->addAction(act);
+    }
+
+    QActionGroup* pickTypeGroup=new QActionGroup(this);
+    pickTypeGroup->setExclusive(true);
+    std::array<PickType,4> types{PickType::Minimum, PickType::Maximum, PickType::Zero, PickType::Free };
+    for( PickType type : types){
+        QAction* act = new QAction( toQString(type), this);
+        act->setCheckable(true);
+        act->setChecked( gatherView->picker()->type()==type );
+        ui->menuPick_Type->addAction(act);
+        pickTypeGroup->addAction(act);
+    }
+
+    connect( pickModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickModeSelected(QAction*)) );
+    connect( pickTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickTypeSelected(QAction*)) );
+
 }
 
 GatherViewer::~GatherViewer()
@@ -607,32 +628,87 @@ void GatherViewer::on_action_Load_Picks_triggered()
         std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Other, gridName );
 
         gatherView->picker()->setPicks(grid);
+
+        m_picksGridName = gridName;
     }
 
 }
 
+void GatherViewer::on_action_Close_Picks_triggered()
+{
+    if( !m_project ) return;
+
+    /*
+    QRect bb=m_project->geometry().bboxLines();
+    Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
+    //std::cout<<"Bounds: i1="<<bounds.i1()<<" j1="<<bounds.j1()<<" i2="<<bounds.i2()<<" j2="<<bounds.j2()<<std::endl;
+    std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
+    gatherView->picker()->setPicks(g);
+    */
+
+    gatherView->picker()->setPicks(std::shared_ptr<Grid2D<float>>());
+    m_picksGridName = QString();
+}
+
+void GatherViewer::on_action_Save_Picks_triggered()
+{
+    if( !m_project ) return;
+
+
+    if( m_picksGridName.isEmpty()) return;
+
+    if( ! m_project->saveGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
+
+        QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
+    }
+}
+
+void GatherViewer::on_action_New_Picks_triggered()
+{
+    if( !m_project ) return;
+
+    while(1){
+
+        QString name = QInputDialog::getText(this, tr("New Picks"), tr("Pick Grid Name:") );
+
+        if( name.isNull() ) return; // canceled
+
+        // grid does not already exists, savee and done
+        if( !m_project->gridList(GridType::Other).contains(name)){
+
+            // create empty grid (filled with NULL) for entire project geometry
+            QRect bb=m_project->geometry().bboxLines();
+            Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
+            std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
+
+            // save empty grid to reserve name
+            if( !m_project->addGrid(GridType::Other, name, g ) ){
+                QMessageBox::critical(this, tr("New Picks"), tr("Addind Grid to Project failed"));
+            }
+
+            m_picksGridName=name;
+            gatherView->picker()->setPicks(g);
+            break;
+        }
+        // grid exists: warn and repeat
+        else{
+            QMessageBox::warning( this, tr("New Picks"), tr("Grid Exists!"));
+        }
+    }
+}
+
+
 void GatherViewer::pickModeSelected(QAction * a){
 
-    if( a==ui->actionSingle){
-        gatherView->picker()->setMode(Picker::MODE_SINGLE);
-    }else if(a==ui->actionMulti){
-        gatherView->picker()->setMode(Picker::MODE_MULTI);
-    }else{
-        qFatal("Invalid action in GatherViewer::pickModeSelected(QAction * a)");
-    }
-
+    PickMode m = toPickMode( a->text() );
+    gatherView->picker()->setMode(m);
 }
 
 
 void GatherViewer::pickTypeSelected(QAction * a){
 
-    if( a==ui->actionMinimum ){
-        gatherView->picker()->setType(Picker::TYPE_MINIMUM);
-    }else if(a==ui->actionMaximum){
-        gatherView->picker()->setType(Picker::TYPE_MAXIMUM);
-    }else{
-        qFatal("Invalid action in GatherViewer::pickTypeSelected(QAction * a)");
-    }
+    PickType t = toPickType(a->text());
+    gatherView->picker()->setType(t);
 }
 
 void GatherViewer::closeEvent(QCloseEvent *)
@@ -878,35 +954,3 @@ void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
 
 
 
-void GatherViewer::on_action_Close_Picks_triggered()
-{
-    if( !m_project ) return;
-
-    QRect bb=m_project->geometry().bboxLines();
-    Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
-    //std::cout<<"Bounds: i1="<<bounds.i1()<<" j1="<<bounds.j1()<<" i2="<<bounds.i2()<<" j2="<<bounds.j2()<<std::endl;
-    std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
-    gatherView->picker()->setPicks(g);
-}
-
-void GatherViewer::on_action_Save_Picks_triggered()
-{
-    while(1){
-
-        QString name = QInputDialog::getText(this, tr("Save Picks"), tr("Grid Name:") );
-
-        if( name.isNull() ) break;
-
-        // grid does not already exists, savee and done
-        if( !m_project->gridList(GridType::Other).contains(name)){
-            if( m_project->addGrid(GridType::Other, name, gatherView->picker()->picks() ) ) break;
-
-            QMessageBox::critical(this, tr("Save Picks"), tr("Addind Grid to Project failed"));
-        }
-        // grid exists: warn and repeat
-        else{
-            QMessageBox::warning( this, tr("Save Picks"), tr("Grid Exists!"));
-        }
-    }
-
-}

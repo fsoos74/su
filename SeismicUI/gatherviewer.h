@@ -143,12 +143,14 @@ private slots:
 
     void on_action_Load_Picks_triggered();
 
-    void pickModeSelected( QAction* );
-    void pickTypeSelected( QAction* );
-
     void on_action_Close_Picks_triggered();
 
     void on_action_Save_Picks_triggered();
+
+    void on_action_New_Picks_triggered();
+
+    void pickModeSelected( QAction* );
+    void pickTypeSelected( QAction* );
 
 private:
 
@@ -156,6 +158,7 @@ private:
     void loadSettings();
 
     void populateWindowMenu();
+    void setupPickMenus();
     void createDockWidgets();
 
     QString createStatusMessage( SelectionPoint);
@@ -171,6 +174,8 @@ private:
     std::shared_ptr<Gather> m_gather;
 
     AVOProject* m_project;
+
+    QString m_picksGridName;
 
     std::vector<seismic::SEGYHeaderWordDef> m_traceHeaderDef;
 
