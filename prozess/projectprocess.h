@@ -22,13 +22,13 @@ public:
         }
     };
 
-    ProjectProcess( const QString& name, std::shared_ptr<AVOProject> project, QObject *parent = 0);
+    ProjectProcess( const QString& name, AVOProject* project, QObject *parent = 0);
 
     const QString& name()const{
         return m_name;
     }
 
-    std::shared_ptr<AVOProject> project()const{
+    AVOProject* project()const{
 
         return m_project;
     }
@@ -64,7 +64,7 @@ private:
 
     QString m_name;
 
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
 
     bool m_canceled=false;
 

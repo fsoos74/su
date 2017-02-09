@@ -119,7 +119,7 @@ void AmplitudeCurveViewer::receivePoints( QVector<SelectionPoint> points, int co
 }
 
 
-void AmplitudeCurveViewer::setProject( std::shared_ptr<AVOProject> project){
+void AmplitudeCurveViewer::setProject( AVOProject* project){
     m_project=project;
     if( selector){      // need to update this
         selector->setDatasetNames(m_project->seismicDatasetList());

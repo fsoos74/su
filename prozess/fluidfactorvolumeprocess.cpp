@@ -13,7 +13,7 @@
 #include<fstream>
 #include<iostream>
 
-FluidFactorVolumeProcess::FluidFactorVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+FluidFactorVolumeProcess::FluidFactorVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Compute Fluid Factor"), project, parent){
 
 }

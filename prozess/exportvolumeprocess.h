@@ -14,7 +14,7 @@ class ExportVolumeProcess : public ProjectProcess
     Q_OBJECT
 
 public:
-    ExportVolumeProcess(std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    ExportVolumeProcess(AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters)override;
     ResultCode run()override;

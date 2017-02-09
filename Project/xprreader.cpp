@@ -5,9 +5,10 @@
 #include<QDir>
 
 
-XPRReader::XPRReader( AVOProject& project, QString projectFilePath)
+XPRReader::XPRReader( AVOProject* project, QString projectFilePath)
     : m_project( project ), m_projectFilePath(projectFilePath)
 {
+    Q_ASSERT( project );
 }
 
 bool XPRReader::read(QIODevice *device)
@@ -32,11 +33,8 @@ bool XPRReader::read(QIODevice *device)
                     projectDirectory=pdir.absoluteFilePath(projectDirectory);
                 }
 
-
-                try{
-                    AVOProject tmp;
-                    tmp.setProjectDirectory(projectDirectory);
-                    m_project=tmp;
+                try{  // ADD: setProjectDirectory should remember old value and restore it upon failure!!!
+                    m_project->setProjectDirectory(projectDirectory);
                 }catch(AVOProject::PathException& ex){
                     xml.raiseError(QString("Creating project failed: %1").arg(ex.what()));
                     return false;
@@ -105,7 +103,7 @@ void XPRReader::readGeometry(){
             xml.skipCurrentElement();
             //xml.readNext();
 
-            m_project.setGeometry(geom);
+            m_project->setGeometry(geom);
         }
         else{
             xml.raiseError("Unexpected element");
@@ -138,9 +136,9 @@ void XPRReader::readOrientation(){
             }
             AxxisDirection crossline_direction=toAxxisDirection( xml.readElementText() );
 
-            m_project.setInlineOrientation(inline_orientation );
-            m_project.setInlineDirection(inline_direction);
-            m_project.setCrosslineDirection(crossline_direction);
+            m_project->setInlineOrientation(inline_orientation );
+            m_project->setInlineDirection(inline_direction);
+            m_project->setCrosslineDirection(crossline_direction);
 
        }
    }

@@ -7,7 +7,7 @@
 #include<segy_text_header.h>
 #include<segy_header_def.h>
 
-ExportSeismicProcess::ExportSeismicProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+ExportSeismicProcess::ExportSeismicProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Export Seismic Dataset"), project, parent){
 
 }

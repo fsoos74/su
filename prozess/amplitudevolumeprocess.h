@@ -12,7 +12,7 @@ class AmplitudeVolumeProcess : public ProjectProcess
 
 public:
 
-    AmplitudeVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    AmplitudeVolumeProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

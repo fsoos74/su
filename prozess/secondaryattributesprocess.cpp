@@ -10,7 +10,7 @@
 #include<QObject>
 #include<QThread>
 
-SecondaryAttributesProcess::SecondaryAttributesProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+SecondaryAttributesProcess::SecondaryAttributesProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Secondary Attributes"), project, parent){
 
 }

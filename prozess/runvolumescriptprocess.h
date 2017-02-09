@@ -18,7 +18,7 @@ class RunVolumeScriptProcess : public ProjectProcess
 
 public:
 
-    RunVolumeScriptProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    RunVolumeScriptProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

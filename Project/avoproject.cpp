@@ -72,7 +72,7 @@ std::pair<GridType, QString> splitFullGridName(const QString& fullName){
 
 
 
-AVOProject::AVOProject()
+AVOProject::AVOProject( QObject* parent) : QObject(parent)
 {
 
 }
@@ -112,6 +112,8 @@ void AVOProject::setProjectDirectory( const QString& dir){
     syncVolumeList();
 
     syncSeismicDatasetList();
+
+    emit changed();
 }
 
 QString AVOProject::getDatabasePath(const QString& databaseName){
@@ -153,6 +155,8 @@ bool AVOProject::addGrid( GridType t, const QString& name, std::shared_ptr<Grid2
 
     syncGridList(t);
 
+    emit changed();
+
     return true;
 }
 
@@ -168,6 +172,8 @@ bool AVOProject::removeGrid( GridType t, const QString& name){
 
     syncGridList(t);
 
+    emit changed();
+
     return res;
 }
 
@@ -181,6 +187,8 @@ bool AVOProject::renameGrid( GridType t, const QString& name, const QString& new
     bool res=file.rename(newGridFileName);
 
     syncGridList(t);
+
+    emit changed();
 
     return res;
 }
@@ -235,6 +243,8 @@ bool AVOProject::addVolume( const QString& name, std::shared_ptr<Grid3D<float>> 
 
     syncVolumeList();
 
+    emit changed();
+
     return true;
 }
 
@@ -250,6 +260,8 @@ bool AVOProject::removeVolume( const QString& name){
 
     syncVolumeList();
 
+    emit changed();
+
     return res;
 }
 
@@ -263,6 +275,8 @@ bool AVOProject::renameVolume( const QString& name, const QString& newName){
     bool res=file.rename(newFileName);
 
     syncVolumeList();
+
+    emit changed();
 
     return res;
 }
@@ -422,6 +436,8 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& path, co
 
     syncSeismicDatasetList();
 
+    emit changed();
+
     return true;
 }
 
@@ -492,6 +508,8 @@ bool AVOProject::removeSeismicDataset( const QString& name){
 
     syncSeismicDatasetList();
 
+    emit changed();
+
     return res;
 }
 
@@ -506,6 +524,8 @@ bool AVOProject::renameSeismicDataset( const QString& name, const QString& newNa
     bool res=file.rename(newDatasetFileName);
 
     syncSeismicDatasetList();
+
+    emit changed();
 
     return res;
 }

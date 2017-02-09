@@ -43,7 +43,7 @@ public:
 public slots:
 
     void setVolume( std::shared_ptr<Grid3D<float> >);
-    void setProject( std::shared_ptr<AVOProject> );
+    void setProject( AVOProject* );
     void setHighlightedPoints(QVector<SelectionPoint> rpoints);
     void clear();
 
@@ -156,7 +156,7 @@ private:
     VolumeNavigationDialog* m_navigationDialog=nullptr;
 
     std::shared_ptr<Grid3D<float> > m_volume;
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
     QTransform ilxl_to_xy, xy_to_ilxl;
     ColorTable* m_colorTable;           // holds colors and display range
 

@@ -14,7 +14,7 @@ class TrendBasedAttributesProcess : public ProjectProcess
 
 public:
 
-    TrendBasedAttributesProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    TrendBasedAttributesProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

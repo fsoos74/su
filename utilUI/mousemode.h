@@ -7,7 +7,7 @@
 
 #include<QCursor>
 
-enum class MouseMode{ Explore, Select, Zoom };
+enum class MouseMode{ Explore, Select, Zoom, Pick };
 
 Q_DECLARE_METATYPE(MouseMode);
 

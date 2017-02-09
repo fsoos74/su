@@ -2,7 +2,8 @@
 
 #include "axxisorientation.h"
 
-XPRWriter::XPRWriter( const AVOProject& project):m_project(project){
+XPRWriter::XPRWriter( const AVOProject* project):m_project(project){
+    Q_ASSERT( m_project );
     xml.setAutoFormatting(true);
 }
 
@@ -17,9 +18,9 @@ bool XPRWriter::writeFile(QIODevice *device){
     xml.writeStartElement("xpr");
     xml.writeAttribute("version", "1.0");
 
-    xml.writeTextElement("project-directory", m_project.projectDirectory());
+    xml.writeTextElement("project-directory", m_project->projectDirectory());
 
-    const ProjectGeometry& geom=m_project.geometry();
+    const ProjectGeometry& geom=m_project->geometry();
 
     xml.writeStartElement("project-geometry");
     for( int i=0; i<3; i++){
@@ -32,9 +33,9 @@ bool XPRWriter::writeFile(QIODevice *device){
     xml.writeEndElement();
 
     xml.writeStartElement("axis-setup");
-        xml.writeTextElement("inline-orientation", toQString(m_project.inlineOrientation()));
-        xml.writeTextElement("inline-direction", toQString(m_project.inlineDirection()));
-        xml.writeTextElement("crossline-direction", toQString(m_project.crosslineDirection()));
+        xml.writeTextElement("inline-orientation", toQString(m_project->inlineOrientation()));
+        xml.writeTextElement("inline-direction", toQString(m_project->inlineDirection()));
+        xml.writeTextElement("crossline-direction", toQString(m_project->crosslineDirection()));
     xml.writeEndElement();
 
      xml.writeEndElement();

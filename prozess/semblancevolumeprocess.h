@@ -18,7 +18,7 @@ class SemblanceVolumeProcess : public ProjectProcess
 
 public:
 
-    SemblanceVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    SemblanceVolumeProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

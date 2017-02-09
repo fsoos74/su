@@ -14,7 +14,7 @@ class SecondaryAttributesProcess : public ProjectProcess
 
 public:
 
-    SecondaryAttributesProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    SecondaryAttributesProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

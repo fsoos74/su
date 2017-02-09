@@ -17,7 +17,7 @@ extern "C" {
 
 #include<cstdio>
 
-RunGridScriptProcess::RunGridScriptProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+RunGridScriptProcess::RunGridScriptProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Run Grid Script"), project, parent){
 
 }

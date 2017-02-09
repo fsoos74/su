@@ -22,7 +22,7 @@ public:
     ProjectGeometry projectGeometry();
     bool isUpdateAxes();
     void setProjectGeometry( ProjectGeometry);
-    void setProject(std::shared_ptr<AVOProject>);
+    void setProject(AVOProject*);
 
 private slots:
     void updateOkButton();
@@ -32,7 +32,7 @@ private slots:
 private:
     Ui::ProjectGeometryDialog *ui;
 
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project=nullptr;
 };
 
 #endif // PROJECTGEOMETRYDIALOG_H

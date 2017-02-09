@@ -142,7 +142,7 @@ void VolumeRelativeSliceSelector::setHorizon(std::shared_ptr<Grid2D<float> > g){
 }
 
 
-void VolumeRelativeSliceSelector::setProject(std::shared_ptr<AVOProject> prj){
+void VolumeRelativeSliceSelector::setProject(AVOProject* prj){
 
     if( prj==m_project) return;
 

@@ -31,8 +31,11 @@ MouseMode MouseModeSelector::mode(){
     else if( ui->tbSelect->isChecked()){
         return MouseMode::Select;
     }
-    else{
+    else if( ui->tbZoom->isChecked()){
         return  MouseMode::Zoom;
+    }
+    else{
+        return MouseMode::Pick;
     }
 }
 
@@ -51,7 +54,9 @@ void MouseModeSelector::setMode(MouseMode m){
     case MouseMode::Zoom:
         ui->tbZoom->setChecked(true);
         break;
-
+    case MouseMode::Pick:
+        ui->tbPick->setChecked(true);
+        break;
     }
 }
 

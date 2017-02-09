@@ -10,7 +10,7 @@
 #include<QObject>
 #include<QThread>
 
-FluidFactorProcess::FluidFactorProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+FluidFactorProcess::FluidFactorProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Compute Fluid Factor"), project, parent){
 
 }

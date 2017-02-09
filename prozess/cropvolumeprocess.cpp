@@ -5,7 +5,7 @@
 
 #include<iostream>
 
-CropVolumeProcess::CropVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+CropVolumeProcess::CropVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Secondary Attribute Volumes"), project, parent){
 
 }

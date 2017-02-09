@@ -11,7 +11,7 @@
 // necessary to speed up slow segy input
 const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "dt", "ns" };
 
-AmplitudeVolumeProcess::AmplitudeVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+AmplitudeVolumeProcess::AmplitudeVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Amplitude Volume"), project, parent){
 
 }

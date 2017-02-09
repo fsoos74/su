@@ -92,7 +92,7 @@ void ProjectGeometryDialog::setProjectGeometry( ProjectGeometry geom){
     ui->leY3->setText(QString::number(geom.coords(2).y()));
 }
 
-void ProjectGeometryDialog::setProject(std::shared_ptr<AVOProject> prj){
+void ProjectGeometryDialog::setProject(AVOProject* prj){
 
     m_project=prj;
     if( m_project){

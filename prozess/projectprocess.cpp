@@ -2,7 +2,7 @@
 
 #include<iostream>
 
-ProjectProcess::ProjectProcess( const QString& name, std::shared_ptr<AVOProject> project, QObject *parent)
+ProjectProcess::ProjectProcess( const QString& name, AVOProject* project, QObject *parent)
     : QObject(parent), m_name(name), m_project(project)
 {
     if( !project ) throw ParamException("Invalid project!");

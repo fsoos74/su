@@ -15,7 +15,7 @@ class ConvertGridProcess : public ProjectProcess
 
 public:
 
-    ConvertGridProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    ConvertGridProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

@@ -27,7 +27,7 @@
 const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns",
                                        "sx", "sy", "gx", "gy"};
 
-InterceptGradientVolumeProcess::InterceptGradientVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+InterceptGradientVolumeProcess::InterceptGradientVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Intercept and Gradient Volumes"), project, parent){
 
 }

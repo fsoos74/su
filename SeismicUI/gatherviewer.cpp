@@ -22,8 +22,9 @@
 #include <QSettings>
 #include <pointdisplayoptionsdialog.h>
 #include<mousemodeselector.h>
-
+#include <QActionGroup>
 #include<gridviewer.h>
+#include <QMessageBox>
 
 GatherViewer::GatherViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -70,6 +71,18 @@ GatherViewer::GatherViewer(QWidget *parent) :
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomOutAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomFitWindowAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->zoomButton(), SLOT(setDisabled(bool)) );
+
+    // need to group picker options here because designer does not support this
+    QActionGroup* pickModeGroup=new QActionGroup(this);
+    pickModeGroup->addAction(ui->actionSingle);
+    pickModeGroup->addAction(ui->actionMulti);
+    QActionGroup* pickTypeGroup=new QActionGroup(this);
+    pickTypeGroup->addAction(ui->actionMinimum);
+    pickTypeGroup->addAction(ui->actionMaximum);
+
+    connect( pickModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickModeSelected(QAction*)) );
+    connect( pickTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickTypeSelected(QAction*)) );
+
 
     createDockWidgets();
 
@@ -173,7 +186,7 @@ void GatherViewer::zoomFitWindow(){
     emit gatherChanged();
  }
 
- void GatherViewer::setProject( std::shared_ptr<AVOProject> project){
+ void GatherViewer::setProject( AVOProject* project){
 
      if( project==m_project ) return;
 
@@ -582,6 +595,46 @@ void GatherViewer::on_actionCloseVolume_triggered()
     gatherView->setVolume(std::shared_ptr<Grid3D<float>>());
 }
 
+
+void GatherViewer::on_action_Load_Picks_triggered()
+{
+    bool ok=false;
+    QString gridName=QInputDialog::getItem(this, "Open Picks", "Please select a Grid:",
+                                           m_project->gridList(GridType::Other), 0, false, &ok);
+
+    if( !gridName.isEmpty() && ok ){
+
+        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Other, gridName );
+
+        gatherView->picker()->setPicks(grid);
+    }
+
+}
+
+void GatherViewer::pickModeSelected(QAction * a){
+
+    if( a==ui->actionSingle){
+        gatherView->picker()->setMode(Picker::MODE_SINGLE);
+    }else if(a==ui->actionMulti){
+        gatherView->picker()->setMode(Picker::MODE_MULTI);
+    }else{
+        qFatal("Invalid action in GatherViewer::pickModeSelected(QAction * a)");
+    }
+
+}
+
+
+void GatherViewer::pickTypeSelected(QAction * a){
+
+    if( a==ui->actionMinimum ){
+        gatherView->picker()->setType(Picker::TYPE_MINIMUM);
+    }else if(a==ui->actionMaximum){
+        gatherView->picker()->setType(Picker::TYPE_MAXIMUM);
+    }else{
+        qFatal("Invalid action in GatherViewer::pickTypeSelected(QAction * a)");
+    }
+}
+
 void GatherViewer::closeEvent(QCloseEvent *)
 {
     saveSettings();
@@ -825,3 +878,35 @@ void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
 
 
 
+void GatherViewer::on_action_Close_Picks_triggered()
+{
+    if( !m_project ) return;
+
+    QRect bb=m_project->geometry().bboxLines();
+    Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
+    //std::cout<<"Bounds: i1="<<bounds.i1()<<" j1="<<bounds.j1()<<" i2="<<bounds.i2()<<" j2="<<bounds.j2()<<std::endl;
+    std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
+    gatherView->picker()->setPicks(g);
+}
+
+void GatherViewer::on_action_Save_Picks_triggered()
+{
+    while(1){
+
+        QString name = QInputDialog::getText(this, tr("Save Picks"), tr("Grid Name:") );
+
+        if( name.isNull() ) break;
+
+        // grid does not already exists, savee and done
+        if( !m_project->gridList(GridType::Other).contains(name)){
+            if( m_project->addGrid(GridType::Other, name, gatherView->picker()->picks() ) ) break;
+
+            QMessageBox::critical(this, tr("Save Picks"), tr("Addind Grid to Project failed"));
+        }
+        // grid exists: warn and repeat
+        else{
+            QMessageBox::warning( this, tr("Save Picks"), tr("Grid Exists!"));
+        }
+    }
+
+}

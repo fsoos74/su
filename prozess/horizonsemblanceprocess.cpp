@@ -17,7 +17,7 @@ const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt"
 
 double semblance( const seismic::Gather& g, size_t halfSamples, double tt);
 
-HorizonSemblanceProcess::HorizonSemblanceProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+HorizonSemblanceProcess::HorizonSemblanceProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Horizon Semblance"), project, parent){
 
 }

@@ -55,6 +55,12 @@ GatherView::GatherView( QWidget* parent) : QScrollArea(parent)
       m_gatherScaler=new GatherScaler(this);
 
       connect( m_gatherScaler, SIGNAL(changed()), m_gatherLabel, SLOT(updateTraceScaleFactors()));
+
+      // setup picker
+      m_picker=new Picker(this);
+      connect( m_picker, SIGNAL(picksChanged()), gatherLabel(), SLOT(update()) );
+      connect( this, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), m_picker, SLOT(setGather(std::shared_ptr<seismic::Gather>)) );
+
 }
 
 
@@ -169,7 +175,7 @@ void GatherView::setMouseMode(MouseMode m){
 
     m_mouseMode=m;
 
-    setCursor(modeCursor(m_mouseMode));
+    m_gatherLabel->setCursor(modeCursor(m_mouseMode));
 
     emit mouseModeChanged(m_mouseMode);
 }
@@ -208,7 +214,6 @@ QStringList GatherView::horizonList(){
 
    return m_horizons.keys();
 }
-
 
 std::shared_ptr< Grid3D<float> > GatherView::volume()const{
 
@@ -410,24 +415,6 @@ void GatherView::zoomBy( qreal factor ){
 
     if( m_fixedScale ) return;
 
-/*
-    QSize newSize=factor * m_gatherLabel->size();
-    if( newSize.width()<viewport()->width()) newSize.setWidth(viewport()->width());
-    if( newSize.height()<viewport()->height()) newSize.setHeight( viewport()->height());
-
-    m_pixelPerTrace=qreal(newSize.width())/m_gather->size();
-    m_pixelPerSecond=qreal(newSize.height())/seconds();
-    emit pixelPerTraceChanged(m_pixelPerTrace);
-    emit pixelPerSecondChanged(m_pixelPerSecond);
-
-    m_gatherLabel->setFixedSize( newSize );
-    horizontalScrollBar()->setMaximum(newSize.width()-horizontalScrollBar()->pageStep());
-    verticalScrollBar()->setMaximum(newSize.height()-verticalScrollBar()->pageStep());
-    adjustScrollBar( horizontalScrollBar(), factor);
-    adjustScrollBar( verticalScrollBar(), factor);
-
-    update();
-    */
     setPixelPerUnits(factor*m_pixelPerTrace, factor*m_pixelPerSecond);
     adjustScrollBar( horizontalScrollBar(), factor);
     adjustScrollBar( verticalScrollBar(), factor);
@@ -465,43 +452,6 @@ void GatherView::updateTimeRange(){
     m_ft=ft;
     m_lt=lt;
 }
-
-/*
-void GatherView::resizeEvent(QResizeEvent *){
-
-    if( ! m_gather || m_gather->empty() ) return;
-
-    int labelWidth=m_gatherLabel->width();
-    int labelHeight=m_gatherLabel->height();
-
-    if( !m_fixedScale){
-        if( labelWidth<viewport()->width()) labelWidth=viewport()->width();
-        if( labelHeight<viewport()->height()) labelHeight=viewport()->height();
-
-        m_pixelPerTrace=labelWidth/m_gather->size();
-        m_pixelPerSecond=labelHeight/seconds();
-        emit pixelPerTraceChanged(m_pixelPerTrace);
-        emit pixelPerSecondChanged(m_pixelPerSecond);
-
-        m_gatherLabel->setFixedSize(labelWidth, labelHeight);
-    }
-
-    horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, labelWidth - viewport()->width());
-    verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0,labelHeight-viewport()->height());
-
-
-    m_topRuler->update();
-    m_leftRuler->update();
-
-    updateLayout();
-
-}
-
-*/
-
-
 
 void GatherView::resizeEvent(QResizeEvent *ev){
 //
@@ -563,6 +513,16 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
         int trace=p.x()/m_pixelPerTrace;
         qreal secs=m_ft + p.y()/m_pixelPerSecond;
         emit mouseOver(trace, secs);
+    }
+
+    // pick
+    if( m_mouseMode == MouseMode::Pick && widget==m_gatherLabel &&
+            mouseEvent->type()==QEvent::MouseButtonPress ){
+        QPoint p=mouseEvent->pos();
+        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+        m_picker->pick(trace, secs);
+        return true;
     }
 
     // trace header

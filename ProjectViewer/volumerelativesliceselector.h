@@ -61,7 +61,7 @@ public slots:
     void setGrid( std::shared_ptr<Grid2D<float>>);
     void setHorizonName(QString);
     void setHorizon( std::shared_ptr<Grid2D<float>>);
-    void setProject(std::shared_ptr<AVOProject> );
+    void setProject(AVOProject* );
 
 private slots:
 
@@ -72,7 +72,7 @@ private slots:
 private:
     Ui::VolumeRelativeSliceSelector *ui;
 
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
 
     QString m_volumeName;
     QString m_horizonName;

@@ -404,16 +404,20 @@ void ProjectViewer::on_actionNewProject_triggered()
 
     try{
 
-        std::shared_ptr<AVOProject> tmp(new AVOProject);
+        ui->actionCloseProject->trigger();
+
+        AVOProject* tmp = new AVOProject(this);
         tmp->setProjectDirectory(dirName);
-        m_project=tmp;
+
+        m_project = tmp;
+        connect( m_project, SIGNAL(changed()), this, SLOT(updateProjectViews()) );
     }
     catch( AVOProject::PathException& ex ){
         QMessageBox::critical( this, "Create new project", ex.what(), QMessageBox::Ok);
     }
 
     updateMenu();
-    updateProjectViews();
+    //updateProjectViews();
 }
 
 void ProjectViewer::on_actionOpenProject_triggered()
@@ -476,7 +480,9 @@ void ProjectViewer::on_actionCloseProject_triggered()
         }
     }
 
-    m_project.reset();
+    delete m_project;
+    m_project=nullptr;
+    //m_project.reset();
     m_lockfile.reset();
 
     setProjectFileName(QString());
@@ -589,7 +595,7 @@ void ProjectViewer::importGrid(GridType gridType){
             return;
         }
 
-        updateProjectViews();
+        //updateProjectViews();
 
 
     }
@@ -650,7 +656,7 @@ void ProjectViewer::on_actionImportSeismic_triggered()
         return;
     }
 
-    updateProjectViews();
+    //updateProjectViews();
 }
 
 void ProjectViewer::selectAndExportSeismicDataset(){
@@ -831,7 +837,7 @@ void ProjectViewer::on_actionImportVolume_triggered()
 
     // add volume to project
     m_project->addVolume(name, volume);
-    updateProjectViews();
+    //updateProjectViews();
 }
 
 
@@ -1596,7 +1602,7 @@ void ProjectViewer::renameGrid( GridType t, const QString& name){
             QMessageBox::critical(this, "Rename Grid", QString("Renaming grid %1 failed!").arg(name));
         }
 
-        updateProjectViews();
+        //updateProjectViews();
     }
 }
 
@@ -1616,7 +1622,7 @@ void ProjectViewer::removeGrid( GridType t, const QString& name){
              QMessageBox::critical(this, QString("Remove %1").arg(typeName), QString("Removing %1 grid %2 failed!").arg(typeName, name));
          }
 
-         updateProjectViews();
+         //updateProjectViews();
     }
 }
 
@@ -2015,7 +2021,7 @@ void ProjectViewer::renameVolume( const QString& name){
             QMessageBox::critical(this, "Rename Volume", QString("Renaming volume %1 failed!").arg(name));
         }
 
-        updateProjectViews();
+        //updateProjectViews();
     }
 }
 
@@ -2032,7 +2038,7 @@ void ProjectViewer::removeVolume( const QString& name){
              QMessageBox::critical(this, QString("Remove Volume"), QString("Removing volume %1 failed!").arg(name));
          }
 
-         updateProjectViews();
+         //updateProjectViews();
     }
 }
 
@@ -2287,7 +2293,7 @@ void ProjectViewer::editSeismicDatasetProperties(const QString& name){
                     return;
 
                 }
-                updateProjectViews();
+                //updateProjectViews();
             }
 
         }
@@ -2317,7 +2323,7 @@ void ProjectViewer::renameSeismicDataset(const QString& name){
             QMessageBox::critical(this, "Rename Dataset", QString("Renaming dataset %1 failed!").arg(name));
         }
 
-        updateProjectViews();
+        //updateProjectViews();
     }
 }
 
@@ -2334,7 +2340,7 @@ void ProjectViewer::removeSeismicDataset(const QString& name){
              QMessageBox::critical(this, "Remove Dataset", QString("Removing dataset %1 failed!").arg(name));
          }
 
-         updateProjectViews();
+         //updateProjectViews();
     }
 }
 
@@ -2358,16 +2364,20 @@ bool ProjectViewer::openProject(const QString &fileName){
         return false;
     }
 
-    std::shared_ptr<AVOProject> tmp(new AVOProject);
-    XPRReader reader(*tmp, fileName);
+
+    AVOProject* tmp = new AVOProject(this);
+    XPRReader reader(tmp, fileName);
     if (!reader.read(&file)) {
         QMessageBox::warning(this, tr("Open Project"),
                              tr("Parse error in file %1:\n\n%2")
                              .arg(fileName)
                              .arg(reader.errorString()));
+        delete tmp;
         return false;
 
     }
+
+
 
     // check if project already in use, create lockfile if not
     // no need to remove stale lockfiles. This is handled by QLockfile
@@ -2379,7 +2389,10 @@ bool ProjectViewer::openProject(const QString &fileName){
     }
 
     m_lockfile=lf;  // will be unlocked when deleted
+
+    ui->actionCloseProject->trigger();
     m_project=tmp;
+    connect( m_project, SIGNAL(changed()), this, SLOT(updateProjectViews()) );
 
     setProjectFileName(fileName);
     updateProjectViews();
@@ -2401,7 +2414,7 @@ bool ProjectViewer::saveProject( const QString& fileName){
         return false;
     }
 
-    XPRWriter writer(*m_project);
+    XPRWriter writer(m_project);
     if( !writer.writeFile(&file) ){
         QMessageBox::warning(this, tr("Save Project"),
                              tr("Saving project failed!"));
@@ -2491,7 +2504,7 @@ void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> 
         return;
     }
 
-    updateProjectViews();
+    //updateProjectViews();
 
     QDateTime end=QDateTime::currentDateTime();
     qreal duration=0.001*start.msecsTo(end);

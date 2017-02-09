@@ -8,7 +8,7 @@
 #include<QtGui> // qApp->processEvents
 
 
-ExportVolumeProcess::ExportVolumeProcess(std::shared_ptr<AVOProject> project, QObject* parent) :
+ExportVolumeProcess::ExportVolumeProcess(AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Export Seismic Dataset"), project, parent){
 
 }

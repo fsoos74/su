@@ -16,7 +16,7 @@ const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "dt", "ns" };
 
 
 
-SemblanceVolumeProcess::SemblanceVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+SemblanceVolumeProcess::SemblanceVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Semblance Volume"), project, parent){
 
 }

@@ -18,7 +18,7 @@ class ComputeInterceptGradientProcess : public ProjectProcess
 
 public:
 
-    ComputeInterceptGradientProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    ComputeInterceptGradientProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

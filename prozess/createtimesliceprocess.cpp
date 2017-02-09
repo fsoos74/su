@@ -9,7 +9,7 @@
 // necessary to speed up slow segy input
 const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns" };
 
-CreateTimesliceProcess::CreateTimesliceProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+CreateTimesliceProcess::CreateTimesliceProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Create Timeslice"), project, parent){
 
 }

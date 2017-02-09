@@ -2,7 +2,7 @@
 
 #include <avoproject.h>
 
-ConvertGridProcess::ConvertGridProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+ConvertGridProcess::ConvertGridProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Convert Grid"), project, parent){
 
 }

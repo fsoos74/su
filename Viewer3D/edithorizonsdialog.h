@@ -23,7 +23,7 @@ public:
     explicit EditHorizonsDialog(QWidget *parent = 0);
     ~EditHorizonsDialog();
 
-    void setProject( std::shared_ptr<AVOProject>);
+    void setProject( AVOProject*);
 
 public slots:
 
@@ -53,7 +53,7 @@ private:
     Ui::EditHorizonsDialog *ui;
 
     HorizonModel* m_horizonModel=nullptr;
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
 
     bool wait_controls=false;
     std::shared_ptr<Grid2D<float>> m_currentHorizonControl;

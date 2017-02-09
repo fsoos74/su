@@ -207,7 +207,8 @@ private:
     Ui::ProjectViewer *ui;
 
 
-    std::shared_ptr<AVOProject> m_project;
+    //std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project=nullptr;
     QString m_projectFileName;
     std::shared_ptr<QLockFile> m_lockfile;
 

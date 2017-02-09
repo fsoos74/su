@@ -10,7 +10,7 @@
 #include<QObject>
 #include<QThread>
 
-SecondaryAttributeVolumesProcess::SecondaryAttributeVolumesProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+SecondaryAttributeVolumesProcess::SecondaryAttributeVolumesProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Secondary Attribute Volumes"), project, parent){
 
 }

@@ -25,7 +25,7 @@ public:
     explicit MapViewer(QWidget *parent = 0);
     ~MapViewer();
 
-    void setProject(std::shared_ptr<AVOProject> );
+    void setProject(AVOProject* );
 
     void setGrid( std::shared_ptr<Grid2D<float>>);
 
@@ -98,7 +98,7 @@ private:
     QRectF m_bbCoords;      // bounding rect of plot in coordinates
     QRect  m_bbProject;     // bounding rect of proect(from geometry) in inline/xline
 
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
 
     std::shared_ptr<Grid2D<float>> m_grid;
 

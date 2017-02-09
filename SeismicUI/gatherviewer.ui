@@ -103,11 +103,37 @@
      <string>&amp;Window</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menu_Picking">
+    <property name="title">
+     <string>Pic&amp;king</string>
+    </property>
+    <widget class="QMenu" name="menuPick_Mode">
+     <property name="title">
+      <string>Pick Mode</string>
+     </property>
+     <addaction name="actionSingle"/>
+     <addaction name="actionMulti"/>
+    </widget>
+    <widget class="QMenu" name="menuPick_Type">
+     <property name="title">
+      <string>Pick Type</string>
+     </property>
+     <addaction name="actionMinimum"/>
+     <addaction name="actionMaximum"/>
+    </widget>
+    <addaction name="action_Load_Picks"/>
+    <addaction name="action_Save_Picks"/>
+    <addaction name="action_Close_Picks"/>
+    <addaction name="separator"/>
+    <addaction name="menuPick_Mode"/>
+    <addaction name="menuPick_Type"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
    <addaction name="menuDisplay"/>
    <addaction name="menu_Window"/>
    <addaction name="menu_Broadcast"/>
+   <addaction name="menu_Picking"/>
   </widget>
   <widget class="QToolBar" name="mouseToolBar">
    <property name="windowTitle">
@@ -370,7 +396,60 @@
      <normaloff>:/icons/images/volume-colortable-icon-32x32.png</normaloff>:/icons/images/volume-colortable-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Volume Color Table</string>
+    <string>V&amp;olume Color Table</string>
+   </property>
+  </action>
+  <action name="action_Load_Picks">
+   <property name="text">
+    <string>&amp;Load Picks</string>
+   </property>
+  </action>
+  <action name="action_Save_Picks">
+   <property name="text">
+    <string>&amp;Save Picks</string>
+   </property>
+  </action>
+  <action name="action_Close_Picks">
+   <property name="text">
+    <string>&amp;Close Picks</string>
+   </property>
+  </action>
+  <action name="actionSingle">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Single</string>
+   </property>
+  </action>
+  <action name="actionMulti">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Multi</string>
+   </property>
+  </action>
+  <action name="actionMinimum">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Minimum</string>
+   </property>
+  </action>
+  <action name="actionMaximum">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Maximum</string>
    </property>
   </action>
  </widget>

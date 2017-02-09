@@ -17,7 +17,7 @@ extern "C" {
 
 #include<cstdio>
 
-RunVolumeScriptProcess::RunVolumeScriptProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+RunVolumeScriptProcess::RunVolumeScriptProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Run Volume Script"), project, parent){
 
 }

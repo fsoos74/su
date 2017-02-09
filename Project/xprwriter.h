@@ -11,13 +11,13 @@ class XPRWriter
 {
 public:
 
-    XPRWriter( const AVOProject& project);
+    XPRWriter( const AVOProject* project);
 
     bool writeFile(QIODevice *device);
 
 private:
 
-    const AVOProject& m_project;
+    const AVOProject* m_project;
     QXmlStreamWriter xml;
 };
 

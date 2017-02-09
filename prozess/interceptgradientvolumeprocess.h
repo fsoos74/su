@@ -18,7 +18,7 @@ class InterceptGradientVolumeProcess : public ProjectProcess
 
 public:
 
-    InterceptGradientVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    InterceptGradientVolumeProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

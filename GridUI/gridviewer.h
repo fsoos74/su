@@ -64,7 +64,7 @@ public:
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
-    void setProject( std::shared_ptr<AVOProject> );
+    void setProject( AVOProject* );
     void setTimeSource(TimeSource);
     void setFixedTime(int);
     void setTimeFunction(std::function<double(int,int)>);
@@ -140,7 +140,7 @@ private:
     QDockWidget* m_colorBarDock=nullptr;
 
     std::shared_ptr<Grid2D<float> > m_grid;
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
 
     TimeSource m_timeSource=TimeSource::TIME_NONE;
     int m_fixedTime=0;

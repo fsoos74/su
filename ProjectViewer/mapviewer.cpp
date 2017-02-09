@@ -58,7 +58,7 @@ MapViewer::~MapViewer()
 }
 
 
-void MapViewer::setProject(std::shared_ptr<AVOProject> p){
+void MapViewer::setProject(AVOProject* p){
 
     if( p==m_project) return;
 

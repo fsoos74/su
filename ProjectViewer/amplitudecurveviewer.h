@@ -65,7 +65,7 @@ protected:
 
 public slots:
 
-    void setProject( std::shared_ptr<AVOProject>);
+    void setProject( AVOProject*);
     void addCurve( AmplitudeCurveDefinition );
 
     void setShowRegressionLines(bool);
@@ -117,7 +117,7 @@ private:
     QMap<int, std::pair<QPointF,double> > m_curveRegressions; // QPointF x=intercept, y=gradient, double=quality
     QVector<int> m_tableRowCurveIndexMap;
 
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
     AmplitudeCurveDataSelectionDialog* selector=nullptr;
     CurveViewerDisplayOptionsDialog* displayOptionsDialog=nullptr;
     int m_curveCounter=0;

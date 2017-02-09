@@ -7,7 +7,7 @@
 // necessary to speed up slow segy input
 const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns" };
 
-HorizonAmplitudesProcess::HorizonAmplitudesProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+HorizonAmplitudesProcess::HorizonAmplitudesProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Horizon Amplitudes"), project, parent){
 
 }

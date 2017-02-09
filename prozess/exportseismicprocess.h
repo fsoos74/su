@@ -13,7 +13,7 @@ class ExportSeismicProcess : public ProjectProcess
     Q_OBJECT
 
 public:
-    ExportSeismicProcess(std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    ExportSeismicProcess(AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters)override;
     ResultCode run()override;

@@ -134,6 +134,7 @@ private:
 
     void drawHorizons( QPainter& painter );
     void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen);
+    void drawPicks(QPainter& painter, std::shared_ptr<Grid2D<float>> picks);
     void drawHorizontalLines(QPainter& painter, const QRect& rect);
     void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
     void drawViewerCurrentPosition( QPainter& painter, SelectionPoint);

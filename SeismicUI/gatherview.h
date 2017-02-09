@@ -24,6 +24,8 @@ class AxxisLabelWidget;
 
 #include<grid2d.h>
 
+#include <picker.h>
+
 
 class GatherView : public QScrollArea
 {
@@ -59,6 +61,10 @@ public:
 
     std::shared_ptr< Grid3D<float> > volume()const;
 
+    Picker* picker()const{
+        return m_picker;
+    }
+
     GatherLabel* gatherLabel()const{
         return m_gatherLabel;
     }
@@ -71,7 +77,7 @@ public:
         return m_topRuler;
     }
 
-    MouseMode moouseMode()const{
+    MouseMode mouseMode()const{
         return m_mouseMode;
     }
 
@@ -155,6 +161,7 @@ public slots:
     void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
+    //void setPicks( std::shared_ptr<Grid2D<float>>);
     void setVolume( std::shared_ptr<Grid3D<float>>);    // set null for closing
     void setAnnotationKeys( const std::vector<std::string>&);
     void setPixelPerTrace( qreal );
@@ -189,8 +196,9 @@ private:
     QMap<QString, std::shared_ptr<Grid2D<float> > > m_horizons;
     QMap<QString, QColor> m_horizonColors;
 
-
     std::shared_ptr<Grid3D<float>> m_volume;
+
+    Picker* m_picker=nullptr;
 
     QMap< QString, int> m_traceLookup;       // key is combination il and xl : "iline_xline"
 

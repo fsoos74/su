@@ -180,7 +180,7 @@ void GridViewer::receivePoints( QVector<SelectionPoint> points, int code){
     }
 }
 
-void GridViewer::setProject(std::shared_ptr<AVOProject> p){
+void GridViewer::setProject(AVOProject* p){
 
     if( p==m_project ) return;
 

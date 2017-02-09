@@ -36,7 +36,8 @@ SOURCES += seismicui.cpp \
     tracescalingdialog.cpp \
     headerscandialog.cpp \
     gathersortkey.cpp \
-    sectionscaledialog.cpp
+    sectionscaledialog.cpp \
+    picker.cpp
 
 HEADERS += seismicui.h\
         seismicui_global.h \
@@ -57,7 +58,8 @@ HEADERS += seismicui.h\
     tracescalingdialog.h \
     headerscandialog.h \
     gathersortkey.h \
-    sectionscaledialog.h
+    sectionscaledialog.h \
+    picker.h
 
 unix {
     target.path = /usr/lib

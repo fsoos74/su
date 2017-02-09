@@ -11,7 +11,7 @@ class CreateTimesliceProcess : public ProjectProcess{
 
 public:
 
-    CreateTimesliceProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    CreateTimesliceProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

@@ -25,6 +25,8 @@
 #include <QDockWidget>
 #include<colorbarwidget.h>
 
+#include <picker.h>
+
 using seismic::Gather;
 
 namespace Ui {
@@ -70,7 +72,7 @@ protected:
     void receivePoints(QVector<SelectionPoint>, int code);
 
 public slots:
-    void setProject( std::shared_ptr<AVOProject>);
+    void setProject( AVOProject*);
     void setGather( std::shared_ptr<seismic::Gather>);
     void setTraceHeaderDef(const std::vector<seismic::SEGYHeaderWordDef>&);
     void zoomFitWindow();
@@ -139,6 +141,15 @@ private slots:
 
     void on_actionVolume_Color_Table_triggered();
 
+    void on_action_Load_Picks_triggered();
+
+    void pickModeSelected( QAction* );
+    void pickTypeSelected( QAction* );
+
+    void on_action_Close_Picks_triggered();
+
+    void on_action_Save_Picks_triggered();
+
 private:
 
     void saveSettings();
@@ -159,8 +170,7 @@ private:
 
     std::shared_ptr<Gather> m_gather;
 
-
-    std::shared_ptr<AVOProject> m_project;
+    AVOProject* m_project;
 
     std::vector<seismic::SEGYHeaderWordDef> m_traceHeaderDef;
 

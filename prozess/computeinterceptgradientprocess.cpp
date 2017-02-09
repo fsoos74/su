@@ -30,7 +30,7 @@
 const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns",
                                        "sx", "sy", "gx", "gy"};
 
-ComputeInterceptGradientProcess::ComputeInterceptGradientProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+ComputeInterceptGradientProcess::ComputeInterceptGradientProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Compute Intercept and Gradient"), project, parent){
 
 }

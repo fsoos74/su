@@ -23,7 +23,7 @@ EditHorizonsDialog::~EditHorizonsDialog()
 }
 
 
-void EditHorizonsDialog::setProject(std::shared_ptr<AVOProject> project){
+void EditHorizonsDialog::setProject(AVOProject* project){
 
     m_project=project;
 }

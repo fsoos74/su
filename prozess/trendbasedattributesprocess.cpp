@@ -10,7 +10,7 @@
 #include<QObject>
 #include<QThread>
 
-TrendBasedAttributesProcess::TrendBasedAttributesProcess( std::shared_ptr<AVOProject> project, QObject* parent) :
+TrendBasedAttributesProcess::TrendBasedAttributesProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Trend Based Attributes"), project, parent){
 
 }

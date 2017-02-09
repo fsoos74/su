@@ -16,7 +16,7 @@ class RunGridScriptProcess : public ProjectProcess
 
 public:
 
-    RunGridScriptProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    RunGridScriptProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

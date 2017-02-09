@@ -14,7 +14,7 @@ class CropVolumeProcess : public ProjectProcess
 
 public:
 
-    CropVolumeProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    CropVolumeProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

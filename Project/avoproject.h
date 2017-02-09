@@ -48,9 +48,9 @@ QString toQString( GridType );
 QString createFullGridName( GridType, QString );
 std::pair<GridType, QString> splitFullGridName(const QString&);
 
-class AVOProject //: public QObject
+class AVOProject : public QObject
 {
-    //Q_OBJECT
+    Q_OBJECT
 
 public:
 
@@ -67,7 +67,7 @@ public:
     };
 
 
-    AVOProject();
+    AVOProject( QObject* parent=0 );
 
     QString lockfileName()const{
         return QDir(m_projectDirectory).absoluteFilePath("lock.lock");
@@ -179,6 +179,9 @@ public:
     std::shared_ptr<SeismicDatasetReader> openSeismicDataset(const QString& datasetName);
     //std::shared_ptr<seismic::SEGYReader> openSeismicDataset(const QString& datasetName);
 
+
+signals:
+    void changed();
 
 private:
     // made these private because external access must be through datasetinfo which handles relative paths!!!!

@@ -14,7 +14,7 @@ class SecondaryAttributeVolumesProcess : public ProjectProcess
 
 public:
 
-    SecondaryAttributeVolumesProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    SecondaryAttributeVolumesProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

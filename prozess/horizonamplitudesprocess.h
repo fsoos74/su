@@ -15,7 +15,7 @@ class HorizonAmplitudesProcess : public ProjectProcess
 
 public:
 
-    HorizonAmplitudesProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    HorizonAmplitudesProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

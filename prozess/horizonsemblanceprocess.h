@@ -18,7 +18,7 @@ class HorizonSemblanceProcess : public ProjectProcess
 
 public:
 
-    HorizonSemblanceProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    HorizonSemblanceProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

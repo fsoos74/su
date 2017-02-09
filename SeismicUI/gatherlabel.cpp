@@ -223,6 +223,8 @@ void GatherLabel::paintEvent(QPaintEvent *event){
 
    drawIntersectionTimes( painter, m_view->intersectionTimes() );
 
+   drawPicks( painter, m_view->picker()->picks() );
+
    SelectionPoint sp=m_view->cursorPosition();
    drawViewerCurrentPosition( painter, sp);
 
@@ -301,6 +303,45 @@ void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> 
    painter.strokePath(path, thePen);
 }
 
+
+void GatherLabel::drawPicks(QPainter &painter, std::shared_ptr<Grid2D<float>> picks){
+
+    const int PICK_SIZE=3;
+
+    if( !picks ) return;
+
+    if(!m_view->gather()) return;
+    const seismic::Gather& gather=*(m_view->gather() );
+
+    painter.save();
+
+    painter.setPen(QPen(Qt::blue,2));
+
+    qreal pixelPerTrace=m_view->pixelPerTrace();
+    qreal pixelPerSecond=m_view->pixelPerSecond();
+    qreal ft=m_view->ft();
+
+    for( size_t i=0; i<gather.size(); i++){  // XXX
+
+       const seismic::Trace& trace=gather[i];
+       const seismic::Header& header=trace.header();
+       int iline=header.at("iline").intValue();
+       int xline=header.at("xline").intValue();
+       qreal t=picks->bounds().isInside(iline,xline) ?           // need to check this here because it is not checked in grid
+                   (*picks)( iline, xline ) : picks->NULL_VALUE;  // maybe add a getValue function to grid that includes this check
+
+       if( t==picks->NULL_VALUE) continue;
+
+       t*=0.001; // test hrz was mills change!!!
+       qreal x= i * pixelPerTrace;
+       qreal y= ( t - ft )*pixelPerSecond;
+
+       painter.drawLine( x - PICK_SIZE, y - PICK_SIZE, x + PICK_SIZE, y + PICK_SIZE );
+       painter.drawLine( x + PICK_SIZE, y - PICK_SIZE, x - PICK_SIZE, y + PICK_SIZE );
+   }
+
+    painter.restore();
+}
 
 
 void GatherLabel::drawHighlightedPoints( QPainter& painter,

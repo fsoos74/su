@@ -14,7 +14,7 @@ class FluidFactorProcess : public ProjectProcess
 
 public:
 
-    FluidFactorProcess( std::shared_ptr<AVOProject> project, QObject* parent=nullptr);
+    FluidFactorProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();

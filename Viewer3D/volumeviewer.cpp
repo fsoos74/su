@@ -118,7 +118,7 @@ void VolumeViewer::createDockWidgets(){
 
 }
 
-void VolumeViewer::setProject(std::shared_ptr<AVOProject> p){
+void VolumeViewer::setProject(AVOProject* p){
 
     if( p==m_project ) return;
 
