@@ -129,6 +129,8 @@ private slots:
 
     void on_action_Point_Display_Options_triggered();
 
+    void on_actionVolume_Histogram_triggered();
+
     void on_actionShare_Current_Position_toggled(bool arg1);
 
     void on_action_Receive_CDPs_toggled(bool arg1);
@@ -151,6 +153,8 @@ private slots:
 
     void pickModeSelected( QAction* );
     void pickTypeSelected( QAction* );
+
+    void on_actionGather_Histogram_triggered();
 
 private:
 

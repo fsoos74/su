@@ -51,6 +51,8 @@
         <file>../images/move-up_32x32.png</file>
         <file>../images/pick_32x32.png</file>
         <file>../images/delete_pick_32x32.png</file>
+        <file>../images/histogram-gather-icon-32x32.png</file>
+        <file>../images/histogram-volume-icon-32x32.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>

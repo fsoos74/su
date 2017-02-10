@@ -24,6 +24,7 @@
 #include<mousemodeselector.h>
 #include <QActionGroup>
 #include<gridviewer.h>
+#include <histogramdialog.h>
 #include <QMessageBox>
 
 GatherViewer::GatherViewer(QWidget *parent) :
@@ -541,6 +542,50 @@ void GatherViewer::on_actionVolume_Options_triggered()
     m_volumeDisplayOptionsDialog->show();
 }
 
+void GatherViewer::on_actionVolume_Histogram_triggered()
+{
+    if( ! gatherView->volume() ) return;
+
+    std::shared_ptr<Grid3D<float>> volume=gatherView->volume();
+
+    QVector<double> data;
+    data.reserve(volume->size());
+    for( auto it=volume->values().cbegin(); it!=volume->values().cend(); ++it){
+        if( *it==volume->NULL_VALUE) continue;
+        data.push_back(*it);
+    }
+
+
+    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
+                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of volume overlay -  %1").arg(windowTitle() ) );
+    viewer->setColorTable( gatherView->gatherLabel()->volumeColorTable());
+    viewer->show();
+}
+
+void GatherViewer::on_actionGather_Histogram_triggered()
+{
+    if( ! m_gather ) return;
+
+    QVector<double> data;
+
+    for( const seismic::Trace& trace : *m_gather ){
+
+        for( float sam : trace.samples() ){
+
+            data.push_back(sam);
+        }
+    }
+
+    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
+                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
+    viewer->setColorTable( gatherView->gatherLabel()->volumeColorTable());
+    viewer->show();
+}
+
 
 void GatherViewer::on_openGridAct_triggered()
 {
@@ -951,6 +996,8 @@ void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
     setBroadcastEnabled(on);
     updateIntersections();
 }
+
+
 
 
 

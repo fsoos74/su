@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>601</width>
+    <width>789</width>
     <height>421</height>
    </rect>
   </property>
@@ -36,7 +36,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>601</width>
+     <width>789</width>
      <height>28</height>
     </rect>
    </property>
@@ -78,7 +78,7 @@
    </widget>
    <widget class="QMenu" name="menuDisplay">
     <property name="title">
-     <string>&amp;Display</string>
+     <string>&amp;Options</string>
     </property>
     <addaction name="separator"/>
     <addaction name="actionTrace_Scaling"/>
@@ -88,6 +88,8 @@
     <addaction name="action_Point_Display_Options"/>
     <addaction name="actionDensity_Color_Table"/>
     <addaction name="actionVolume_Color_Table"/>
+    <addaction name="actionGather_Histogram"/>
+    <addaction name="actionVolume_Histogram"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -128,9 +130,9 @@
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
    <addaction name="menuDisplay"/>
+   <addaction name="menu_Picking"/>
    <addaction name="menu_Window"/>
    <addaction name="menu_Broadcast"/>
-   <addaction name="menu_Picking"/>
   </widget>
   <widget class="QToolBar" name="mouseToolBar">
    <property name="windowTitle">
@@ -186,6 +188,8 @@
    <addaction name="action_Trace_Options"/>
    <addaction name="actionVolume_Options"/>
    <addaction name="action_Point_Display_Options"/>
+   <addaction name="actionGather_Histogram"/>
+   <addaction name="actionVolume_Histogram"/>
    <addaction name="separator"/>
    <addaction name="action_Receive_CDPs"/>
    <addaction name="action_Dispatch_CDPs"/>
@@ -221,7 +225,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -233,7 +237,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -454,6 +458,24 @@
     <string>&amp;New Picks</string>
    </property>
   </action>
+  <action name="actionGather_Histogram">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/histogram-gather-icon-32x32.png</normaloff>:/icons/images/histogram-gather-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Gather Histogram</string>
+   </property>
+  </action>
+  <action name="actionVolume_Histogram">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/histogram-volume-icon-32x32.png</normaloff>:/icons/images/histogram-volume-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Volume Histogram</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -465,6 +487,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>
