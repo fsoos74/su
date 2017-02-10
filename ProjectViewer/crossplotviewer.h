@@ -137,6 +137,8 @@ private:
 
     void createDockWidgets();
     void populateWindowMenu();
+    void setupMouseModes();
+
 
     void saveSettings();
     void loadSettings();

@@ -164,6 +164,7 @@ private:
     void populateWindowMenu();
     void setupPickMenus();
     void createDockWidgets();
+    void setupMouseModes();
 
     QString createStatusMessage( SelectionPoint);
 

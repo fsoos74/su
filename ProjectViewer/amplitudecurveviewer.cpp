@@ -19,7 +19,7 @@
 #include<QInputDialog>
 #include<iostream>
 
-#include <mousemodeselector.h>
+#include <dynamicmousemodeselector.h>
 
 #include<datapointitem.h>
 
@@ -75,14 +75,9 @@ AmplitudeCurveViewer::AmplitudeCurveViewer(QWidget *parent) :
     ui->graphicsView->setMouseTracking(true);
     ui->splitter->setStretchFactor(1,0);
 
-    MouseModeSelector* mm=new MouseModeSelector(this);
-    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
-    //QToolBar* mouseToolBar=new QToolBar(this);
-    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
-    ui->mouseToolBar->addWidget( mm);
-    //insertToolBar( ui->toolBar, mouseToolBar);
-
     populateWindowMenu();
+
+    setupMouseModes();
 
     loadSettings();
 }
@@ -92,6 +87,15 @@ void AmplitudeCurveViewer::populateWindowMenu(){
     ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
+}
+
+void AmplitudeCurveViewer::setupMouseModes(){
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    mm->addMode(MouseMode::Select);
+    ui->mouseToolBar->addWidget( mm);
 }
 
 AmplitudeCurveViewer::~AmplitudeCurveViewer()

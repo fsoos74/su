@@ -120,9 +120,8 @@ private slots:
 private:
 
     void createDockWidgets();
-
     void populateWindowMenu();
-
+    void setupMouseModes();
     double pointTime( int iline, int xline );
 
     QString createStatusMessage( SelectionPoint);

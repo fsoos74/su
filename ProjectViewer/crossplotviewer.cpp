@@ -20,7 +20,7 @@
 #include<QGraphicsSceneMouseEvent>
 #include<datapointitem.h>
 
-#include<mousemodeselector.h>
+#include<dynamicmousemodeselector.h>
 
 #include <volumedataselectiondialog.h>
 #include <colortabledialog.h>
@@ -69,13 +69,7 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
 
     m_colorTable->setColors(ColorTable::defaultColors());
 
-    MouseModeSelector* mm=new MouseModeSelector(this);
-    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
-    //QToolBar* mouseToolBar=new QToolBar(this);
-    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
-    ui->mouseToolBar->addWidget( mm);
-    //insertToolBar( ui->toolBar, mouseToolBar);
-
+    setupMouseModes();
     createDockWidgets();
     populateWindowMenu();
 
@@ -89,6 +83,17 @@ void CrossplotViewer::populateWindowMenu(){
     ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
+}
+
+void CrossplotViewer::setupMouseModes(){
+
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    mm->addMode(MouseMode::Select);
+    ui->mouseToolBar->addWidget( mm);
+
 }
 
 CrossplotViewer::~CrossplotViewer()

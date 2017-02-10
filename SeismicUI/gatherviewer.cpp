@@ -59,34 +59,20 @@ GatherViewer::GatherViewer(QWidget *parent) :
     //setMinimumWidth(ui->mainToolBar->width() + 50);
 
     //loadSettings();
-/*
-    MouseModeSelector* mm=new MouseModeSelector(this);
-    connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
-    //QToolBar* mouseToolBar=new QToolBar(this);
-    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
-    ui->mouseToolBar->addWidget( mm);
-    //insertToolBar( ui->mainToolBar, mouseToolBar);
-*/
-    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
-    connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
-    mm->addMode(MouseMode::Explore);
-    mm->addMode(MouseMode::Zoom);
-    mm->addMode(MouseMode::Select);
-    mm->addMode(MouseMode::Pick);
-    mm->addMode(MouseMode::DeletePick);
-    ui->mouseToolBar->addWidget( mm);
+
 
     // deactivate zooming controls if scale is locked
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomInAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomOutAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomFitWindowAct, SLOT(setDisabled(bool)) );
-    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->button(MouseMode::Zoom), SLOT(setDisabled(bool)) );
 
     createDockWidgets();
 
     populateWindowMenu();
 
     setupPickMenus();
+
+    setupMouseModes();
 
     resize( 800, 700);
 }
@@ -131,6 +117,22 @@ void GatherViewer::setupPickMenus(){
 
     connect( pickModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickModeSelected(QAction*)) );
     connect( pickTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickTypeSelected(QAction*)) );
+
+}
+
+void GatherViewer::setupMouseModes(){
+
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    mm->addMode(MouseMode::Select);
+    mm->addMode(MouseMode::Pick);
+    mm->addMode(MouseMode::DeletePick);
+    ui->mouseToolBar->addWidget( mm);
+
+    // don't zoom on fixed scale
+    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->button(MouseMode::Zoom), SLOT(setDisabled(bool)) );
 
 }
 

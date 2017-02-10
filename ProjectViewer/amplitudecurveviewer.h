@@ -105,6 +105,7 @@ private:
     QVector<QPointF> buildCurve( AmplitudeCurveDefinition );
 
     void populateWindowMenu();
+    void setupMouseModes();
 
     void loadSettings();
     void saveSettings();

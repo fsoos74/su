@@ -22,7 +22,7 @@
 #include<gatherviewer.h>
 #include<gatherview.h>
 
-#include <mousemodeselector.h>
+#include <dynamicmousemodeselector.h>
 
 GridViewer::GridViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -63,15 +63,9 @@ GridViewer::GridViewer(QWidget *parent) :
 
     loadSettings();
 
-    MouseModeSelector* mm=new MouseModeSelector(this);
-    connect( mm, SIGNAL(modeChanged(MouseMode)), m_gridView, SLOT(setMouseMode(MouseMode)));
-    //QToolBar* mouseToolBar=new QToolBar(this);
-    //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
-    ui->mouseToolBar->insertWidget( ui->zoomInAct, mm);
-    //insertToolBar( ui->mainToolBar, mouseToolBar);
-
     createDockWidgets();
     populateWindowMenu();
+    setupMouseModes();
 }
 
 void GridViewer::populateWindowMenu(){
@@ -97,6 +91,16 @@ void GridViewer::createDockWidgets(){
     //m_attributeColorBarDock->close();
 }
 
+void GridViewer::setupMouseModes(){
+
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->gridView, SLOT(setMouseMode(MouseMode)));
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    mm->addMode(MouseMode::Select);
+    ui->mouseToolBar->addWidget( mm);
+
+}
 
 GridViewer::~GridViewer()
 {
