@@ -120,7 +120,18 @@ void SeismicDataSelector::setPrimarySort(GatherSortKey key){
 
     m_primarySortKey=key;
 
+    updateNavigationButtonsEnabled(key);
+
     emit primarySortChanged(key);
+}
+
+void SeismicDataSelector::updateNavigationButtonsEnabled(GatherSortKey key){
+
+    bool useButtons =  ( key==GatherSortKey::Inline || key==GatherSortKey::Crossline );
+    ui->pbFirst->setEnabled(useButtons);
+    ui->pbPrevious->setEnabled(useButtons);
+    ui->pbNext->setEnabled(useButtons);
+    ui->pbLast->setEnabled(useButtons);
 }
 
 
@@ -437,6 +448,10 @@ void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
     ui->cbOrder1->setEnabled(!checked);
     ui->cbOrder2->setEnabled(!checked);
     ui->cbOrder3->setEnabled(!checked);
+    ui->pbFirst->setEnabled(!checked);
+    ui->pbPrevious->setEnabled(!checked);
+    ui->pbNext->setEnabled(!checked);
+    ui->pbLast->setEnabled(!checked);
 
     if(checked){    // for random lines there is no primary sort order
 
@@ -558,4 +573,60 @@ void SeismicDataSelector::on_pbLock_toggled(bool checked)
     ui->rbRandomLine->setEnabled(!checked);
     ui->tbInline->setEnabled(!checked);
     ui->tbXLine->setEnabled(!checked);
+}
+
+void SeismicDataSelector::on_pbFirst_clicked()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->setValue(ui->sbInline->minimum()); break;
+    case ILINE_DESC_INDEX: ui->sbInline->setValue(ui->sbInline->maximum()); break;
+    case XLINE_ASC_INDEX: ui->sbXline->setValue(ui->sbXline->minimum()); break;
+    case XLINE_DESC_INDEX: ui->sbXline->setValue(ui->sbXline->maximum()); break;
+    default: //nop
+        break;
+    }
+}
+
+void SeismicDataSelector::on_pbPrevious_clicked()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->stepDown();break;
+    case ILINE_DESC_INDEX: ui->sbInline->stepUp(); break;
+    case XLINE_ASC_INDEX: ui->sbXline->stepDown(); break;
+    case XLINE_DESC_INDEX: ui->sbXline->stepUp(); break;
+    default: //nop
+        break;
+    }
+}
+
+void SeismicDataSelector::on_pbNext_clicked()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->stepUp();break;
+    case ILINE_DESC_INDEX: ui->sbInline->stepDown(); break;
+    case XLINE_ASC_INDEX: ui->sbXline->stepUp(); break;
+    case XLINE_DESC_INDEX: ui->sbXline->stepDown(); break;
+    default: //nop
+        break;
+    }
+}
+
+void SeismicDataSelector::on_pbLast_clicked()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->setValue(ui->sbInline->maximum()); break;
+    case ILINE_DESC_INDEX: ui->sbInline->setValue(ui->sbInline->minimum()); break;
+    case XLINE_ASC_INDEX: ui->sbXline->setValue(ui->sbXline->maximum()); break;
+    case XLINE_DESC_INDEX: ui->sbXline->setValue(ui->sbXline->minimum()); break;
+    default: //nop
+        break;
+    }
 }

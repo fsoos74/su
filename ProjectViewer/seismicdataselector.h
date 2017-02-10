@@ -87,6 +87,7 @@ private slots:
 
     void updatePrimarySort();
     void setPrimarySort(GatherSortKey);
+    void updateNavigationButtonsEnabled(GatherSortKey key);
 
     void readGather();
     void changeOrder();
@@ -102,6 +103,14 @@ private slots:
     void on_tbXLine_clicked();
 
     void on_pbLock_toggled(bool checked);
+
+    void on_pbFirst_clicked();
+
+    void on_pbPrevious_clicked();
+
+    void on_pbNext_clicked();
+
+    void on_pbLast_clicked();
 
 private:
 
