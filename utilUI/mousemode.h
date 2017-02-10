@@ -6,6 +6,7 @@
 #include<QString>
 
 #include<QCursor>
+#include<QPixmap>
 
 enum class MouseMode{ Explore, Select, Zoom, Pick, DeletePick };
 
@@ -21,5 +22,7 @@ QDataStream& operator>>(QDataStream& in, MouseMode& o);
 
 
 QCursor modeCursor( MouseMode );
+
+QPixmap modePixmap( MouseMode );
 
 #endif // MOUSEMODE_H

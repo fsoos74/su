@@ -39,7 +39,8 @@ SOURCES += utilui.cpp \
     mousemode.cpp \
     reversespinbox.cpp \
     linelabelgraphicsitem.cpp \
-    pixmaputils.cpp
+    pixmaputils.cpp \
+    dynamicmousemodeselector.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -58,7 +59,8 @@ HEADERS += utilui.h\
     mousemode.h \
     reversespinbox.h \
     linelabelgraphicsitem.h \
-    pixmaputils.h
+    pixmaputils.h \
+    dynamicmousemodeselector.h
 
 unix {
     target.path = /usr/lib

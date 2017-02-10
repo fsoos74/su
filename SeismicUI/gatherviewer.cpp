@@ -21,7 +21,8 @@
 #include<QInputDialog>
 #include <QSettings>
 #include <pointdisplayoptionsdialog.h>
-#include<mousemodeselector.h>
+//#include<mousemodeselector.h>
+#include<dynamicmousemodeselector.h>
 #include <QActionGroup>
 #include<gridviewer.h>
 #include <histogramdialog.h>
@@ -58,20 +59,28 @@ GatherViewer::GatherViewer(QWidget *parent) :
     //setMinimumWidth(ui->mainToolBar->width() + 50);
 
     //loadSettings();
-
+/*
     MouseModeSelector* mm=new MouseModeSelector(this);
     connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
     //QToolBar* mouseToolBar=new QToolBar(this);
     //mouseToolBar->setWindowTitle("Mouse Mode Toolbar");
     ui->mouseToolBar->addWidget( mm);
     //insertToolBar( ui->mainToolBar, mouseToolBar);
-
+*/
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), gatherView, SLOT(setMouseMode(MouseMode)));
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    mm->addMode(MouseMode::Select);
+    mm->addMode(MouseMode::Pick);
+    mm->addMode(MouseMode::DeletePick);
+    ui->mouseToolBar->addWidget( mm);
 
     // deactivate zooming controls if scale is locked
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomInAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomOutAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomFitWindowAct, SLOT(setDisabled(bool)) );
-    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->zoomButton(), SLOT(setDisabled(bool)) );
+    connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->button(MouseMode::Zoom), SLOT(setDisabled(bool)) );
 
     createDockWidgets();
 
