@@ -17,14 +17,16 @@ TEMPLATE = lib
 
 DEFINES += UTIL_LIBRARY
 
-SOURCES += util.cpp
+SOURCES += util.cpp \
+    interp.cpp
 
 HEADERS += util.h\
         util_global.h \
     array2d.h \
     rectangle.h \
     array3d.h \
-    range.h
+    range.h \
+    interp.h
 
 unix {
     target.path = /usr/lib
