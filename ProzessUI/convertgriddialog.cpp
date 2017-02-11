@@ -13,6 +13,8 @@ ConvertGridDialog::ConvertGridDialog(QWidget *parent) :
 
     connect( ui->cbInputType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateInputGrids()) );
     connect( ui->cbOutputType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOkButton()) );
+    connect( ui->leOutputName, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->cbInputName, SIGNAL(currentTextChanged(QString)), this, SLOT(updateOkButton()) );
 }
 
 ConvertGridDialog::~ConvertGridDialog()
