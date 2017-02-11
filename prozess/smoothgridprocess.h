@@ -1,5 +1,5 @@
-#ifndef CONVERTGRIDPROCESS_H
-#define CONVERTGRIDPROCESS_H
+#ifndef SMOOTHGRIDPROCESS_H
+#define SMOOTHGRIDPROCESS_H
 
 #include "projectprocess.h"
 #include <QObject>
@@ -8,29 +8,29 @@
 
 #include <seismicdatasetreader.h>  // added this for qApp
 
-class ConvertGridProcess : public ProjectProcess
+class SmoothGridProcess : public ProjectProcess
 {
 
     Q_OBJECT
 
 public:
 
-    ConvertGridProcess( AVOProject* project, QObject* parent=nullptr);
+    SmoothGridProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
     ResultCode run();
 
 private:
 
-    GridType m_inputType;
+    GridType m_gridType;
     QString m_inputName;
-
-    GridType m_outputType;
     QString m_outputName;
+    int m_halfIlines;
+    int m_halfXlines;
 
     std::shared_ptr<Grid2D<float> > m_inputGrid;
     std::shared_ptr<Grid2D<float> > m_outputGrid;
 };
 
 
-#endif // CONVERTGRIDPTPROCESS_H
+#endif // SMOOTHGRIDPTPROCESS_H
