@@ -118,6 +118,8 @@ void GatherViewer::setupPickMenus(){
     connect( pickModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickModeSelected(QAction*)) );
     connect( pickTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickTypeSelected(QAction*)) );
 
+    connect( ui->actionConservative, SIGNAL(toggled(bool)), gatherView->picker(), SLOT(setConservative(bool)) );
+    connect( gatherView->picker(), SIGNAL(conservativeChanged(bool)), ui->actionConservative, SLOT(setChecked(bool)) );
 }
 
 void GatherViewer::setupMouseModes(){

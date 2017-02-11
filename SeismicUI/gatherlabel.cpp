@@ -4,6 +4,7 @@
 #include<colortable.h>
 #include<grid2d.h>
 
+
 #include <pixmaputils.h>
 
 #include<QPainter>
@@ -333,8 +334,22 @@ void GatherLabel::drawPicks(QPainter &painter, std::shared_ptr<Grid2D<float>> pi
        if( t==picks->NULL_VALUE) continue;
 
        t*=0.001; // test hrz was mills change!!!
-       qreal x= i * pixelPerTrace;
+       qreal x= (0.5 + i ) * pixelPerTrace;     // draw pick in midle of trace box
        qreal y= ( t - ft )*pixelPerSecond;
+
+       //* display picks in middle of trace now because picking is also related to the closest trace center
+       // make picks show on wiggle
+       qreal s = ( t - trace.ft() ) / trace.dt();
+       qreal val=0;
+       int si = static_cast<int>(s);
+       if( si<0 ) val = trace.samples().front();
+       else if( si+1>=trace.samples().size() ) val= trace.samples().back();
+       else{    // interpolate
+           s-= si;
+           val=(1.-s)*trace.samples()[si] + s*trace.samples()[i];
+       }
+       x+= pixelPerTrace/2 * traceScaleFactors[i]*val;
+        //*/
 
        painter.drawLine( x - PICK_SIZE, y - PICK_SIZE, x + PICK_SIZE, y + PICK_SIZE );
        painter.drawLine( x + PICK_SIZE, y - PICK_SIZE, x - PICK_SIZE, y + PICK_SIZE );
@@ -661,6 +676,8 @@ void GatherLabel::updateTracePaths(){
 
     for( seismic::Gather::size_type i=0; i<gather.size(); i++){
 
+        int polarity = ( traceScaleFactors[i]>0) ? 1 : -1;
+
         const seismic::Trace::Samples& samples=gather[i].samples();
 
         QPainterPath wiggles;
@@ -685,7 +702,7 @@ void GatherLabel::updateTracePaths(){
             qreal y=j;
              if( polygon.size()>0){
 
-                if( x>0 ){
+                if( polarity * x>0 ){
                     polygon<<QPointF( x, y);
                 }
                 else{
@@ -696,7 +713,7 @@ void GatherLabel::updateTracePaths(){
              }
              else{
 
-                 if( x>0){
+                 if( polarity * x>0){         // XXX changed!!!
                     polygon<<QPointF( 0, lin_inter_y(lastx, lasty, x, y, 0)  );
                     polygon<<QPointF( x, y );
                  }

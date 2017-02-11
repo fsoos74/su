@@ -126,6 +126,7 @@
     <addaction name="separator"/>
     <addaction name="menuPick_Mode"/>
     <addaction name="menuPick_Type"/>
+    <addaction name="actionConservative"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
@@ -464,7 +465,7 @@
      <normaloff>:/icons/images/histogram-gather-icon-32x32.png</normaloff>:/icons/images/histogram-gather-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Gather Histogram</string>
+    <string>&amp;Gather Histogram</string>
    </property>
   </action>
   <action name="actionVolume_Histogram">
@@ -473,7 +474,18 @@
      <normaloff>:/icons/images/histogram-volume-icon-32x32.png</normaloff>:/icons/images/histogram-volume-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Volume Histogram</string>
+    <string>Vo&amp;lume Histogram</string>
+   </property>
+  </action>
+  <action name="actionConservative">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Conservative</string>
    </property>
   </action>
  </widget>
