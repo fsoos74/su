@@ -33,12 +33,17 @@ public:
         return m_type;
     }
 
+    bool isConservative()const{
+        return m_conservative;
+    }
+
 signals:
 
     void gatherChanged();
     void picksChanged();
     void modeChanged(PickMode);
     void typeChanged(PickType);
+    void conservativeChanged( bool );
 
 public slots:
 
@@ -46,6 +51,7 @@ public slots:
     void setPicks( std::shared_ptr<Grid2D<float>> );
     void setMode( PickMode );
     void setType( PickType );
+    void setConservative( bool );
 
     void pick( int traceNo, float t );
     void deletePick( int traceNo );
@@ -77,6 +83,7 @@ private:
 
     PickMode m_mode=PickMode::Single;
     PickType m_type=PickType::Minimum;
+    bool m_conservative=true;
     std::function<void (int,float)> pickFunc;
     std::function<void (int)> deletePickFunc;
     std::function<float( const seismic::Trace&, float)> adjustFunc;

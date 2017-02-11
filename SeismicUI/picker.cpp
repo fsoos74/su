@@ -1,6 +1,22 @@
 #include "picker.h"
 
+//#include <interp.h>
+
+
 using namespace std::placeholders;
+
+
+double lininterp(double x1, double y1, double x2, double y2, double x){
+
+    // need to add eps checks instead ==
+
+
+   // if( x<=x1 ) return y1;
+   // if( x>=x2 ) return y2;
+    if( x1 == x2 ) return (y1+y2)/2;
+
+    return y1 + x * ( y2 - y1 ) / ( x2 - x1 );
+}
 
 Picker::Picker(QObject *parent) : QObject(parent)
 {
@@ -50,6 +66,15 @@ void Picker::setType( PickType t){
     emit typeChanged(t);
 }
 
+void Picker::setConservative(bool on){
+
+    if( on==m_conservative) return;
+
+    m_conservative=on;
+
+    emit conservativeChanged(on);
+}
+
 void Picker::pick( int traceNo, float secs ){
 
     pickFunc(traceNo, secs);
@@ -72,6 +97,10 @@ float Picker::pick1(int traceNo, float secs){
         return m_picks->NULL_VALUE;
     }
     else{
+
+        // don't overwrite existing picks in conservative mode
+        if( m_conservative && (*m_picks)(iline,xline)!=m_picks->NULL_VALUE ) return m_picks->NULL_VALUE;
+
         secs = adjustPick(trace, secs);
         (*m_picks)(iline, xline) = 1000 * secs;     // picks are stored in milliseconds
         return secs;
@@ -121,7 +150,7 @@ void Picker::pickFillLeft(int firstTraceNo, float traceTime){
 void Picker::pickFillAll(int firstTraceNo, float traceTime){
 
     pickFillLeft(firstTraceNo, traceTime);
-    pickFillRight(firstTraceNo, traceTime);
+    pickFillRight(firstTraceNo+1, traceTime);
 }
 
 
@@ -140,8 +169,8 @@ bool Picker::delete1( int traceNo){
 
     if( !m_picks->bounds().isInside(iline, xline ) ) return false;
 
-    // nothing to delete, allready NULL
-    if( (*m_picks)(iline, xline) == m_picks->NULL_VALUE ) return false;
+    // nothing to delete, allready NULL, stop here in conservative mode
+    if( m_conservative && (*m_picks)(iline, xline) == m_picks->NULL_VALUE ) return false;
 
     (*m_picks)(iline, xline) = m_picks->NULL_VALUE;
 
@@ -279,7 +308,14 @@ float Picker::adjustZero(const seismic::Trace & trace, float t){
         it=iup;
     }
     else{ // select closest
-        it =  ( it-iup < idown-it ) ? iup : idown;
+        if( it-iup < idown-it ){
+            it = iup;
+        }
+        else{
+            it=idown;
+        }
+
+        return trace.ft() + it * trace.dt();
     }
 
     return trace.ft() + it * trace.dt();
