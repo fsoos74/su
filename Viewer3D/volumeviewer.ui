@@ -80,6 +80,9 @@
     <addaction name="separator"/>
     <addaction name="actionReset_Highlighted_Points"/>
     <addaction name="actionLimit_Highlighted_Points"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpen_Overlay_Volume"/>
+    <addaction name="actionClose_Overlay_Volume"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -383,7 +386,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Slices</string>
+    <string>Setup &amp;Slices</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -391,7 +394,7 @@
   </action>
   <action name="actionEdit_Horizons">
    <property name="text">
-    <string>&amp;Horizons</string>
+    <string>Setup &amp;Horizons</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
@@ -454,17 +457,33 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Labels</string>
+    <string>S&amp;how Labels</string>
    </property>
   </action>
   <action name="actionSet_Label_size">
    <property name="text">
-    <string>Set Label Size</string>
+    <string>Set &amp;Label Size</string>
    </property>
   </action>
   <action name="actionSet_Label_Color">
    <property name="text">
     <string>Set Label Color</string>
+   </property>
+  </action>
+  <action name="actionOpen_Overlay_Volume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Open &amp;Overlay Volume</string>
+   </property>
+  </action>
+  <action name="actionClose_Overlay_Volume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Close Overlay Volume</string>
    </property>
   </action>
  </widget>

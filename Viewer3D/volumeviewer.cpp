@@ -156,6 +156,15 @@ void VolumeViewer::setVolume( std::shared_ptr<Grid3D<float> > volume){
     }
 }
 
+void VolumeViewer::setOverlayVolume( std::shared_ptr<Grid3D<float> > volume){
+
+    if( volume==m_overlayVolume) return;
+
+    m_overlayVolume=volume;
+
+    refreshView();
+}
+
 void VolumeViewer::setHighlightedPoints(QVector<SelectionPoint> rpoints){
 
     m_highlightedPoints=rpoints;
@@ -1399,6 +1408,25 @@ void VolumeViewer::on_action_Open_Volume_triggered()
     setWindowTitle( QString("Volume Viewer - %1").arg(name ));
 }
 
+void VolumeViewer::on_actionOpen_Overlay_Volume_triggered()
+{
+    if( !m_project )return;
+
+    bool ok=false;
+    QString name=QInputDialog::getItem( this, tr("Open Overlay Volume"), tr("Select Volume"),
+                                        m_project->volumeList(), 0, false, &ok);
+
+    if( !ok || name.isNull() ) return;
+
+    std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+    if( !volume ){
+        QMessageBox::critical(this, tr("Open Volume"), tr("Loading Volume failed!"));
+        return;
+    }
+
+    setOverlayVolume(volume);
+}
+
 void VolumeViewer::on_actionReset_Highlighted_Points_triggered()
 {
     QVector<SelectionPoint> empty;
@@ -1475,3 +1503,4 @@ void VolumeViewer::on_actionSet_Label_Color_triggered()
 
     setLabelColor(color);
 }
+

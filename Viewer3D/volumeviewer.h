@@ -43,6 +43,7 @@ public:
 public slots:
 
     void setVolume( std::shared_ptr<Grid3D<float> >);
+    void setOverlayVolume( std::shared_ptr<Grid3D<float> >);
     void setProject( AVOProject* );
     void setHighlightedPoints(QVector<SelectionPoint> rpoints);
     void clear();
@@ -118,6 +119,8 @@ private slots:
 
     void on_actionSet_Label_Color_triggered();
 
+    void on_actionOpen_Overlay_Volume_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -159,6 +162,8 @@ private:
     AVOProject* m_project;
     QTransform ilxl_to_xy, xy_to_ilxl;
     ColorTable* m_colorTable;           // holds colors and display range
+
+    std::shared_ptr<Grid3D<float> > m_overlayVolume;
 
     HorizonModel* m_horizonModel;
     SliceModel* m_sliceModel;
