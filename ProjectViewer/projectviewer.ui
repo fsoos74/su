@@ -214,6 +214,7 @@
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
     <addaction name="actionConvert_Grid"/>
+    <addaction name="actionSmooth_Grid"/>
     <addaction name="actionRun_Grid_User_Script"/>
     <addaction name="separator"/>
    </widget>
@@ -531,7 +532,12 @@
   </action>
   <action name="actionConvert_Grid">
    <property name="text">
-    <string>Convert Grid</string>
+    <string>&amp;Convert Grid</string>
+   </property>
+  </action>
+  <action name="actionSmooth_Grid">
+   <property name="text">
+    <string>Smooth Grid</string>
    </property>
   </action>
  </widget>

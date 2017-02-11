@@ -86,6 +86,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <amplitudevolumeprocess.h>
 #include <convertgriddialog.h>
 #include <convertgridprocess.h>
+#include <smoothgriddialog.h>
+#include <smoothgridprocess.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
 #include <runvolumescriptdialog.h>
@@ -1143,6 +1145,24 @@ void ProjectViewer::on_actionConvert_Grid_triggered()
 
     runProcess( new ConvertGridProcess( m_project, this ), params );
 }
+
+void ProjectViewer::on_actionSmooth_Grid_triggered()
+{
+    Q_ASSERT( m_project );
+
+    SmoothGridDialog dlg;
+    dlg.setWindowTitle(tr("Smooth Grid"));
+
+    dlg.setInputGrids( toQString(GridType::Attribute), m_project->gridList(GridType::Attribute));
+    dlg.setInputGrids( toQString(GridType::Horizon), m_project->gridList(GridType::Horizon));
+    dlg.setInputGrids( toQString(GridType::Other), m_project->gridList(GridType::Other));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new SmoothGridProcess( m_project, this ), params );
+}
+
 
 void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
 {
@@ -2591,6 +2611,7 @@ void ProjectViewer::updateMenu(){
     ui->actionTrend_Based_Attribute_Grids->setEnabled(isProject);
     ui->actionSecondary_Attribute_Grids->setEnabled(isProject);
     ui->actionConvert_Grid->setEnabled(isProject);
+    ui->actionSmooth_Grid->setEnabled(isProject);
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
 
     ui->action_Crop_Volume->setEnabled(isProject);
@@ -2607,4 +2628,5 @@ void ProjectViewer::updateMenu(){
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 }
+
 

@@ -152,6 +152,8 @@ private slots:
 
     void on_actionConvert_Grid_triggered();
 
+    void on_actionSmooth_Grid_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);
