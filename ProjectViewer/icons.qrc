@@ -57,6 +57,14 @@
         <file>../images/overlay-histogram-icon-32x32.png</file>
         <file>../images/overlay-colortable-icon-32x32.png</file>
         <file>../images/overlay-percentage-32x32.png</file>
+        <file>../images/pick-zero-32x32.png</file>
+        <file>../images/pick-minimum-32x32.png</file>
+        <file>../images/pick-maximum-32x32.png</file>
+        <file>../images/pick-free-32x32.png</file>
+        <file>../images/pick-right-32x32.png</file>
+        <file>../images/pick-left-32x32.png</file>
+        <file>../images/pick-both-32x32.png</file>
+        <file>../images/pick-single-32x32.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>

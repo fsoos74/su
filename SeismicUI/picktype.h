@@ -2,7 +2,7 @@
 #define PICKTYPE_H
 
 #include <QString>
-
+#include <QPixmap>
 
 enum class PickType{
     Free,
@@ -16,5 +16,6 @@ QString toQString(PickType);
 
 PickType toPickType(QString);
 
+QPixmap pickTypePixmap(PickType);
 
 #endif // PICKTYPE_H

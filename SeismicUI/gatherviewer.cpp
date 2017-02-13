@@ -74,7 +74,7 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
     setupMouseModes();
 
-    resize( 800, 700);
+    resize( 1024 , 768);
 }
 
 
@@ -87,6 +87,8 @@ void GatherViewer::populateWindowMenu(){
     ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->navigationToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->pickToolBar->toggleViewAction());
+
 }
 
 
@@ -99,8 +101,10 @@ void GatherViewer::setupPickMenus(){
     for( PickMode mode : modes){
         QAction* act = new QAction( toQString(mode), this);
         act->setCheckable(true);
+        act->setIcon(QIcon(pickModePixmap(mode)));
         act->setChecked(gatherView->picker()->mode()==mode);
         ui->menuPick_Mode->addAction(act);
+        ui->pickToolBar->addAction(act);
         pickModeGroup->addAction(act);
     }
 
@@ -110,8 +114,11 @@ void GatherViewer::setupPickMenus(){
     for( PickType type : types){
         QAction* act = new QAction( toQString(type), this);
         act->setCheckable(true);
+        act->setIcon(QIcon(pickTypePixmap(type)));
         act->setChecked( gatherView->picker()->type()==type );
+
         ui->menuPick_Type->addAction(act);
+        ui->pickToolBar->addAction(act);
         pickTypeGroup->addAction(act);
     }
 

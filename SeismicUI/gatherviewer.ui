@@ -197,6 +197,17 @@
    <addaction name="actionShare_Current_Position"/>
    <addaction name="separator"/>
   </widget>
+  <widget class="QToolBar" name="pickToolBar">
+   <property name="windowTitle">
+    <string>Pick Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="navigationToolBar">
    <property name="sizePolicy">
@@ -442,6 +453,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/pick-minimum-32x32.png</normaloff>:/icons/images/pick-minimum-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Minimum</string>
    </property>
@@ -449,6 +464,10 @@
   <action name="actionMaximum">
    <property name="checkable">
     <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/pick-maximum-32x32.png</normaloff>:/icons/images/pick-maximum-32x32.png</iconset>
    </property>
    <property name="text">
     <string>Ma&amp;ximum</string>
@@ -485,7 +504,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Conservative</string>
+    <string>C&amp;onservative</string>
    </property>
   </action>
  </widget>

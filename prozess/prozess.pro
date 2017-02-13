@@ -46,7 +46,8 @@ SOURCES += prozess.cpp \
     trendbasedattributesprocess.cpp \
     trendbasedattributevolumesprocess.cpp \
     cropvolumeprocess.cpp \
-    convertgridprocess.cpp
+    convertgridprocess.cpp \
+    smoothgridprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -76,7 +77,8 @@ HEADERS += prozess.h\
     trendbasedattributesprocess.h \
     trendbasedattributevolumesprocess.h \
     cropvolumeprocess.h \
-    convertgridprocess.h
+    convertgridprocess.h \
+    smoothgridprocess.h
 
 unix {
     target.path = /usr/lib
