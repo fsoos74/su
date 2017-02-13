@@ -17,6 +17,7 @@
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
 #include <displayrangedialog.h>
+#include <overlaypercentagedialog.h>
 #include <editslicesdialog.h>
 #include <edithorizonsdialog.h>
 #include <horizonmodel.h>
@@ -42,12 +43,18 @@ public:
 
 public slots:
 
-    void setVolume( std::shared_ptr<Grid3D<float> >);
-    void setOverlayVolume( std::shared_ptr<Grid3D<float> >);
     void setProject( AVOProject* );
-    void setHighlightedPoints(QVector<SelectionPoint> rpoints);
+
     void clear();
 
+    void setVolume( std::shared_ptr<Grid3D<float> >);
+    void setVolumeName(QString);
+
+    void setOverlayVolume( std::shared_ptr<Grid3D<float> >);
+    void setOverlayName(QString);
+    void setOverlayPercentage(int);
+
+    void setHighlightedPoints(QVector<SelectionPoint> rpoints);
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
 
@@ -68,6 +75,9 @@ signals:
     void sliceRemoved(SliceDef);
     void horizonsChanged( );
     */
+
+    void overlayPercentageChanged(int);
+
 private slots:
 
     void refreshView();
@@ -75,6 +85,12 @@ private slots:
     void on_action_Volume_Colortable_triggered();
 
     void on_actionVolume_Range_triggered();
+
+    void on_actionOverlay_Colortable_triggered();
+
+    void on_actionOverlay_Range_triggered();
+
+    void on_actionOverlay_Percentage_triggered();
 
     void on_action_Front_triggered();
 
@@ -121,6 +137,10 @@ private slots:
 
     void on_actionOpen_Overlay_Volume_triggered();
 
+    void on_actionClose_Overlay_Volume_triggered();
+
+    void on_actionOverlay_Histogram_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -149,21 +169,30 @@ private:
     Ui::VolumeViewer *ui;
 
     DisplayRangeDialog* displayRangeDialog=nullptr;
+    DisplayRangeDialog* overlayRangeDialog=nullptr;
+    OverlayPercentageDialog* overlayPercentageDialog=nullptr;
     EditSlicesDialog* editSlicesDialog = nullptr;
     EditHorizonsDialog* editHorizonsDialog=nullptr;
     ColorBarWidget* m_volumeColorBarWidget=nullptr;
     QDockWidget* m_volumeColorBarDock=nullptr;
+    ColorBarWidget* m_overlayColorBarWidget=nullptr;
+    QDockWidget* m_overlayColorBarDock=nullptr;
     Navigation3DControls* m_navigationControls=nullptr;
     QDockWidget* m_navigationControlsDock=nullptr;
 
     VolumeNavigationDialog* m_navigationDialog=nullptr;
 
-    std::shared_ptr<Grid3D<float> > m_volume;
     AVOProject* m_project;
     QTransform ilxl_to_xy, xy_to_ilxl;
+
+    std::shared_ptr<Grid3D<float> > m_volume;
     ColorTable* m_colorTable;           // holds colors and display range
+    QString m_volumeName;
 
     std::shared_ptr<Grid3D<float> > m_overlayVolume;
+    ColorTable* m_overlayColorTable;           // holds colors and display range
+    QString m_overlayName;
+    int m_overlayPercentage=50;    // percent
 
     HorizonModel* m_horizonModel;
     SliceModel* m_sliceModel;
@@ -177,7 +206,7 @@ private:
     qreal m_compassSize=1000;
 
     QColor m_labelColor=Qt::black;
-    qreal m_labelSize=15;
+    qreal m_labelSize=12;
 
     QColor m_outlineColor=Qt::white;
 

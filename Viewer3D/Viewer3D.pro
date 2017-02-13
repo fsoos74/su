@@ -34,7 +34,8 @@ SOURCES += \
     editslicesdialog.cpp \
     edithorizonsdialog.cpp \
     slicemodel.cpp \
-    horizonmodel.cpp
+    horizonmodel.cpp \
+    overlaypercentagedialog.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -56,7 +57,8 @@ HEADERS  += \
     sliceparameters.h \
     slicemodel.h \
     horizondef.h \
-    horizonmodel.h
+    horizonmodel.h \
+    overlaypercentagedialog.h
 
 FORMS    += \
     volumeviewer.ui \
@@ -64,7 +66,8 @@ FORMS    += \
     navigation3dcontrols.ui \
     volumenavigationdialog.ui \
     editslicesdialog.ui \
-    edithorizonsdialog.ui
+    edithorizonsdialog.ui \
+    overlaypercentagedialog.ui
 
 RESOURCES += \
     shaders.qrc

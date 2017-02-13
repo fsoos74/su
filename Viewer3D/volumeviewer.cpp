@@ -22,16 +22,22 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::VolumeViewer),
     m_colorTable(new ColorTable(this)),
+    m_overlayColorTable(new ColorTable(this)),
      m_horizonModel(new HorizonModel(this)),
     m_sliceModel(new SliceModel(this))
 {
     ui->setupUi(this);
 
     m_colorTable->setColors(ColorTable::defaultColors());
-
     connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(refreshView()) );
     connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
     connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
+
+    m_overlayColorTable->setColors(ColorTable::defaultColors());
+    connect( m_overlayColorTable, SIGNAL(colorsChanged()), this, SLOT(refreshView()) );
+    connect( m_overlayColorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
+    connect( m_overlayColorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
+
     connect( ui->actionShow_Volume_Outline, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Compass, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Labels, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
@@ -61,6 +67,7 @@ VolumeViewer::~VolumeViewer()
 void VolumeViewer::populateWindowMenu(){
 
     ui->menu_Window->addAction( m_volumeColorBarDock->toggleViewAction());
+    ui->menu_Window->addAction( m_overlayColorBarDock->toggleViewAction());
     ui->menu_Window->addAction( m_navigationControlsDock->toggleViewAction());
     ui->menu_Window->addSeparator();
     ui->menu_Window->addAction( ui->toolBar->toggleViewAction());
@@ -76,6 +83,7 @@ void VolumeViewer::createDockWidgets(){
                                       QDockWidget::DockWidgetMovable |
                                       QDockWidget::DockWidgetFloatable);
     m_volumeColorBarWidget=new ColorBarWidget(m_volumeColorBarDock);
+    m_volumeColorBarWidget->setMinimumHeight(200);
     m_volumeColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
     m_volumeColorBarDock->setContentsMargins(10, 5, 10, 5);
     m_volumeColorBarDock->setWidget(m_volumeColorBarWidget);
@@ -83,6 +91,22 @@ void VolumeViewer::createDockWidgets(){
     m_volumeColorBarWidget->setColorTable( m_colorTable );
     //m_volumeColorBarWidget->setLabel("Volume Amplitudes");
     m_volumeColorBarDock->close();
+
+    m_overlayColorBarDock = new QDockWidget(tr("Overlay Colorbar"), this);
+    m_overlayColorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_overlayColorBarDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar |
+                                      QDockWidget::DockWidgetClosable |
+                                      QDockWidget::DockWidgetMovable |
+                                      QDockWidget::DockWidgetFloatable);
+    m_overlayColorBarWidget=new ColorBarWidget(m_overlayColorBarDock);
+     m_overlayColorBarWidget->setMinimumHeight(200);
+    m_overlayColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
+    m_overlayColorBarDock->setContentsMargins(10, 5, 10, 5);
+    m_overlayColorBarDock->setWidget(m_overlayColorBarWidget);
+    addDockWidget(Qt::RightDockWidgetArea, m_overlayColorBarDock);
+    m_overlayColorBarWidget->setColorTable( m_overlayColorTable );
+    //m_volumeColorBarWidget->setLabel("Volume Amplitudes");
+    m_overlayColorBarDock->close();
 
     m_navigationControlsDock = new QDockWidget(tr("Navigation Controls"), this);
     m_navigationControlsDock->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -156,11 +180,50 @@ void VolumeViewer::setVolume( std::shared_ptr<Grid3D<float> > volume){
     }
 }
 
+void VolumeViewer::setVolumeName(QString name){
+
+    if( name==m_volumeName) return;
+
+    m_volumeName=name;
+
+    m_volumeColorBarDock->setWindowTitle(QString("%1 - Colortable").arg(name));
+
+    setWindowTitle( QString("Volume Viewer - %1").arg(name ));
+}
+
 void VolumeViewer::setOverlayVolume( std::shared_ptr<Grid3D<float> > volume){
 
     if( volume==m_overlayVolume) return;
 
     m_overlayVolume=volume;
+
+    if( m_overlayVolume ){
+
+        //if( !isColorMappingLocked() ){
+            m_overlayColorTable->setRange(m_overlayVolume->valueRange());
+        //}
+
+    }
+
+    refreshView();
+}
+
+void VolumeViewer::setOverlayName(QString name){
+
+    if( name==m_overlayName) return;
+
+    m_overlayName=name;
+
+    m_overlayColorBarDock->setWindowTitle(QString("%1 - Colortable").arg(name) );
+}
+
+void VolumeViewer::setOverlayPercentage(int p){
+
+    if( p==m_overlayPercentage ) return;
+
+    m_overlayPercentage=p;
+
+    emit overlayPercentageChanged(p);
 
     refreshView();
 }
@@ -294,12 +357,11 @@ void VolumeViewer::refreshView(){
     }
 
 
-
     // labels
     if( ui->actionShow_Labels->isChecked()){
 
-        int topMS=1000*bounds.ft();
-        int bottomMS=1000*bounds.lt();
+        //int topMS=1000*bounds.ft();
+        //int bottomMS=1000*bounds.lt();
 
         // inlines
         foreach( int iline, ilines){
@@ -547,6 +609,28 @@ void VolumeViewer::sliceToView( const SliceDef& def ){
     }
 }
 
+QImage mix( QImage img1, QImage img2, int perc2){
+
+    Q_ASSERT( img1.size()==img2.size());
+
+    QImage tmp(img1.width(), img1.height(),  QImage::Format_RGBA8888 );
+    tmp.fill(qRgba(0,0,0,0));
+    QPainter painter(&tmp);
+    painter.setOpacity( qreal(100-perc2)/100 );
+    painter.drawImage(0,0,img1);
+    painter.setOpacity( qreal(perc2)/100 );
+    painter.drawImage(0,0,img2);
+    return tmp;
+}
+
+QColor mix(QColor color1, QColor color2, qreal r){
+
+    return QColor::fromRgbF( (1.-r)*color1.redF() + r * color2.redF(),
+                    (1.-r)*color1.greenF() + r * color2.greenF(),
+                    (1.-r)*color1.blueF() + r* color2.blueF(),
+                    1. - (1.-r)*(1.-color1.alphaF()) + r*(1.-color2.alphaF() ) );
+}
+
 void VolumeViewer::inlineSliceToView( int iline ){
 
     Q_ASSERT( m_volume);
@@ -563,9 +647,28 @@ void VolumeViewer::inlineSliceToView( int iline ){
             Grid3D<float>::value_type value=volume(iline, bounds.crossline1()+i, j);
             ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(i,j, color );
-
-            //img.setPixel(i,j,m_colorTable->map(volume(iline, bounds.crossline1()+i, j) ) );
         }
+    }
+
+    // overlay
+    if( m_overlayVolume ){
+
+        QImage oimg(bounds.crosslineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);
+        oimg.fill(qRgba(0,0,0,0));
+        Grid3DBounds obounds=m_overlayVolume->bounds();
+
+        for( int i=0; i<oimg.width(); i++){
+            int xline = bounds.crossline1() + i;
+            for( int j=0; j<oimg.height(); j++){
+                float t=bounds.sampleToTime(j);
+                Grid3D<float>::value_type value=m_overlayVolume->value( iline, xline, t);  // returns NULL if outside
+                if( value == m_overlayVolume->NULL_VALUE ) continue;
+                ColorTable::color_type color=m_overlayColorTable->map(value);
+                oimg.setPixel(i,j, color );
+            }
+        }
+
+        img=mix(img, oimg, m_overlayPercentage);
     }
 
     QPointF xy1=ilxl_to_xy.map(QPoint(iline, bounds.crossline1()));
@@ -606,6 +709,27 @@ void VolumeViewer::crosslineSliceToView( int xline ){
         }
     }
 
+    // overlay
+    if( m_overlayVolume ){
+
+        QImage oimg(bounds.inlineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);
+        oimg.fill(qRgba(0,0,0,0));
+        Grid3DBounds obounds=m_overlayVolume->bounds();
+
+        for( int i=0; i<oimg.width(); i++){
+            int iline = bounds.inline1() + i;
+            for( int j=0; j<oimg.height(); j++){
+                float t=bounds.sampleToTime(j);
+                Grid3D<float>::value_type value=m_overlayVolume->value( iline, xline, t);  // returns NULL if outside
+                if( value == m_overlayVolume->NULL_VALUE ) continue;
+                ColorTable::color_type color=m_overlayColorTable->map(value);
+                oimg.setPixel(i,j, color );
+            }
+        }
+
+        img=mix(img, oimg, m_overlayPercentage);
+    }
+
     QPointF xy1=ilxl_to_xy.map(QPoint(bounds.inline1(), xline));
     QPointF xy2=ilxl_to_xy.map(QPoint(bounds.inline2(), xline));
 
@@ -644,9 +768,32 @@ void VolumeViewer::timeSliceToView( int msec ){
             Grid3D<float>::value_type value=volume.value(il, xl, time);
             ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(xi, yi, color );
-
-            //img.setPixel( xi, yi, m_colorTable->map(volume(il, xl, sample) ) );
         }
+    }
+
+    // overlay
+    if( m_overlayVolume ){
+
+        QImage oimg(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGBA8888);
+        oimg.fill(qRgba(0,0,0,0));
+        Grid3DBounds obounds=m_overlayVolume->bounds();
+
+        for( int il=bounds.inline1(); il<=bounds.inline2(); il++){
+            for( int xl=bounds.crossline1(); xl<=bounds.crossline2(); xl++){
+
+                Grid3D<float>::value_type value=m_overlayVolume->value( il, xl, time); // returns NULL if outside
+                if( value == m_overlayVolume->NULL_VALUE ) continue;
+
+                int xi=il-bounds.inline1();
+                int yi=xl-bounds.crossline1();
+
+                ColorTable::color_type color=m_overlayColorTable->map(value);
+                oimg.setPixel(xi,yi, color );
+            }
+        }
+
+        img=mix(img, oimg, m_overlayPercentage);
+
     }
 
     QPoint ILXL1(bounds.inline1(), bounds.crossline1());
@@ -688,6 +835,8 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, int delayMSec){
     QVector3D nullColor{0,0,0};
     QVector<VIC::Vertex> vertices;
 
+    qreal r = qreal(m_overlayPercentage)/100;
+
     for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
 
         for( int xline=hbounds.j1(); xline<=hbounds.j2(); xline++){
@@ -707,7 +856,21 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, int delayMSec){
                 if( value != m_volume->NULL_VALUE ){
 
                     QColor c = m_colorTable->map(value);
-                    color = QVector3D{static_cast<float>(c.redF()), static_cast<float>(c.greenF()), static_cast<float>(c.blueF()) };
+                    float red=static_cast<float>(c.redF());
+                    float green=static_cast<float>(c.greenF());
+                    float blue=static_cast<float>(c.blueF());
+
+                    if( m_overlayVolume ){
+
+                        float ovalue=m_overlayVolume->value(iline, xline, t);
+                        if( ovalue!=m_overlayVolume->NULL_VALUE){
+                            QColor oc=m_overlayColorTable->map(ovalue);
+                            c = mix( c, oc, r);
+                        }
+
+                    }
+
+                    color = QVector3D{ red, green , blue };
                 }
 
                 vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
@@ -1099,104 +1262,63 @@ void VolumeViewer::on_actionVolume_Range_triggered()
 
     displayRangeDialog->show();
 
-/*
-    ModalDisplayRangeDialog dlg;
-    dlg.setWindowTitle(tr("Edit Volume Range"));
-    dlg.setMinimum(m_colorTable->range().first);
-    dlg.setMaximum(m_colorTable->range().second);
-    dlg.setPower(m_colorTable->power());
-
-    if( dlg.exec()==QDialog::Accepted){
-
-        m_colorTable->setRange(dlg.minimum(), dlg.maximum());
-        m_colorTable->setPower(dlg.power());
-        refreshView();
-    }
-    */
-
 }
 
-/*
-void VolumeViewer::on_action_Add_Slice_triggered()
+void VolumeViewer::on_actionOverlay_Colortable_triggered()
 {
+    QVector<QRgb> oldColors=m_overlayColorTable->colors();
 
-    AddSliceDialog dlg;
-    dlg.setWindowTitle(tr("Add Slice"));
+    ColorTableDialog colorTableDialog( oldColors );
 
-    if( dlg.exec()==QDialog::Accepted){
+    colorTableDialog.setWindowTitle(tr("Configure Overlay Colortable"));
 
-        SliceDef def=dlg.sliceDef();
-
-        m_slices.append(def);
-        refreshView();
+    if( colorTableDialog.exec()==QDialog::Accepted ){
+        m_overlayColorTable->setColors( colorTableDialog.colors());
+    }else{
+        m_overlayColorTable->setColors( oldColors );
     }
+
 }
-*/
-/*
-void VolumeViewer::on_action_List_Slices_triggered()
+
+void VolumeViewer::on_actionOverlay_Range_triggered()
 {
-    QStringList slices;
+    if(!overlayRangeDialog){
 
-    foreach( SliceDef slice, m_slices){
+        overlayRangeDialog=new DisplayRangeDialog(this);
 
-        QString str=QString("%1 %2").arg(toQString(slice.type)).arg(slice.value);
-        slices.append(str);
+        overlayRangeDialog->setWindowTitle(tr("Overlay Display Range"));
+
+        overlayRangeDialog->setPower( m_overlayColorTable->power());
+        overlayRangeDialog->setRange( m_overlayColorTable->range());
+        overlayRangeDialog->setLocked( false );//isColorMappingLocked() );
+        connect( overlayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
+                 m_overlayColorTable, SLOT(setRange(std::pair<double,double>)) );
+        connect( overlayRangeDialog, SIGNAL(powerChanged(double)),
+                 m_overlayColorTable, SLOT( setPower(double)) );
+        //connect( overlayRangeDialog, SIGNAL(lockedChanged(bool)),
+        //         this, SLOT(setColorMappingLocked(bool)) );
+        connect( m_overlayColorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
+                 overlayRangeDialog, SLOT(setRange(std::pair<double,double>)) );
+        connect( m_overlayColorTable, SIGNAL(powerChanged(double)),
+                 overlayRangeDialog, SLOT(setPower(double)) );
     }
 
-    bool ok=false;
-
-    QString slice=QInputDialog::getItem(this, tr("Remove Slice"), tr("Select Slice"), slices, 0, false, &ok);
-    if( slice.isEmpty() || !ok ) return;
-
-    int idx=slices.indexOf(slice);
-
-    removeSlice( m_slices.at(idx) );
+    overlayRangeDialog->show();
 }
-*/
-/*
-void VolumeViewer::addHorizon(){
 
-    static const QVector<QColor> HorizonColors{Qt::darkRed, Qt::darkGreen, Qt::darkBlue,
-                Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow,
-                Qt::red, Qt::green, Qt::blue,
-                Qt::cyan, Qt::magenta, Qt::yellow};
+void VolumeViewer::on_actionOverlay_Percentage_triggered()
+{
+    if( !overlayPercentageDialog ){
 
-
-    if( !m_project ) return;
-
-    QStringList notLoaded;
-    foreach( QString name, m_project->gridList(GridType::Horizon) ){
-
-        if( ! m_horizonManager->contains( name )) notLoaded.append(name);
+        overlayPercentageDialog = new OverlayPercentageDialog(this);
+        overlayPercentageDialog->setWindowTitle(tr("Volume Overlay Percentage"));
+        overlayPercentageDialog->setPercentage(m_overlayPercentage);
+        connect( overlayPercentageDialog, SIGNAL(percentageChanged(int)), this, SLOT(setOverlayPercentage(int)) );
+        connect( this, SIGNAL(overlayPercentageChanged(int)), overlayPercentageDialog, SLOT(setPercentage(int)) );
     }
 
-    // nothing left to load
-    if( notLoaded.isEmpty() ) return;
-
-    bool ok=false;
-    QString gridName=QInputDialog::getItem(this, "Open Horizon", "Please select a horizon:",
-                                           notLoaded, 0, false, &ok);
-    if( !gridName.isEmpty() && ok ){
-
-
-        if( m_horizonManager->contains( gridName) ){
-                QMessageBox::information(this, tr("Add Horizon"), QString("Horizon \"%1\" is already loaded!").arg(gridName));
-                return;
-        }
-
-        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Horizon, gridName );
-        if( !grid ){
-            QMessageBox::critical(this, tr("Add Horizon"), QString("Loading horizon \"%1\" failed!"). arg(gridName) );
-            return;
-        }
-
-        HorizonParameters def{ false, HorizonColors.at(m_horizonManager->size()%HorizonColors.size()) };
-
-        m_horizonManager->add(gridName, def, grid );
-    }
-
+    overlayPercentageDialog->show();
 }
-*/
 
 void VolumeViewer::defaultPositionAndScale(){
 
@@ -1269,6 +1391,9 @@ void VolumeViewer::on_action_Bottom_triggered()
     ui->openGLWidget->setRotation(QVector3D(270.0,0,0));
 }
 
+
+
+
 void VolumeViewer::on_actionSet_Point_Size_triggered()
 {
     bool ok=false;
@@ -1313,8 +1438,26 @@ void VolumeViewer::on_actionHistogram_triggered()
     HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
                                                             // this is important because otherwise the colortable will be deleted before this! CRASH!!!
     viewer->setData( data );
-    viewer->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
+    viewer->setWindowTitle(QString("Histogram of %1").arg(m_volumeName ) );
     viewer->setColorTable(m_colorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
+    viewer->show();
+}
+
+void VolumeViewer::on_actionOverlay_Histogram_triggered()
+{
+    if( ! m_overlayVolume ) return;
+
+    QVector<double> data;
+    for( auto it=m_overlayVolume->values().cbegin(); it!=m_overlayVolume->values().cend(); ++it){
+        if( *it==m_overlayVolume->NULL_VALUE) continue;
+        data.push_back(*it);
+     }
+
+    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
+                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
+    viewer->setData( data );
+    viewer->setWindowTitle(QString("Histogram of %1").arg(m_overlayName) );
+    viewer->setColorTable(m_overlayColorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
 }
 
@@ -1404,8 +1547,7 @@ void VolumeViewer::on_action_Open_Volume_triggered()
     }
 
     setVolume(volume);
-
-    setWindowTitle( QString("Volume Viewer - %1").arg(name ));
+    setVolumeName(name);
 }
 
 void VolumeViewer::on_actionOpen_Overlay_Volume_triggered()
@@ -1425,6 +1567,14 @@ void VolumeViewer::on_actionOpen_Overlay_Volume_triggered()
     }
 
     setOverlayVolume(volume);
+    setOverlayName(name);
+}
+
+void VolumeViewer::on_actionClose_Overlay_Volume_triggered()
+{
+
+    setOverlayVolume( std::shared_ptr<Grid3D<float>>() );
+    setOverlayName("");
 }
 
 void VolumeViewer::on_actionReset_Highlighted_Points_triggered()
@@ -1502,5 +1652,7 @@ void VolumeViewer::on_actionSet_Label_Color_triggered()
     if( !color.isValid()) return;
 
     setLabelColor(color);
+
 }
+
 

@@ -1670,11 +1670,12 @@ void ProjectViewer::displayVolume3D( const QString& name){
 
         VolumeViewer* vviewer=new VolumeViewer;
 
-        vviewer->setWindowTitle( QString("Volume Viewer - %1").arg(name) );
+        // vviewer->setWindowTitle( QString("Volume Viewer").arg(name) );
         vviewer->setProject(m_project);
         vviewer->setDispatcher(m_dispatcher);
         vviewer->show();
         // call this after show because otherwise o valid gl context!!!
+        vviewer->setVolumeName(name);   // this will also update the window title
         vviewer->setVolume(volume);
     }
 }
