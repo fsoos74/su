@@ -156,7 +156,7 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
 
     // adjust widget width
     maxWidth+=BOX_WIDTH + label_size.width() + 20;
-    setFixedWidth(maxWidth);
+    setMinimumWidth(maxWidth);
 
 
     // draw label
