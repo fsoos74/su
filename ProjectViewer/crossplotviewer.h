@@ -14,8 +14,8 @@
 #include <colortable.h>
 #include <QDockWidget>
 #include<colorbarwidget.h>
-#include<displayrangedialog.h>
-
+//#include<displayrangedialog.h>
+#include <histogramrangeselectiondialog.h>
 #include "crossplotviewerdisplayoptionsdialog.h"
 
 namespace Ui {
@@ -153,7 +153,7 @@ private:
     QGraphicsScene* m_scene=nullptr;
 
     CrossplotViewerDisplayOptionsDialog* displayOptionsDialog=nullptr;
-    DisplayRangeDialog* displayRangeDialog=nullptr;
+    HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     ColorBarWidget* m_attributeColorBarWidget=nullptr;
     QDockWidget* m_attributeColorBarDock=nullptr;
 

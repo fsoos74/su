@@ -725,14 +725,24 @@ void CrossplotViewer::on_actionAttribute_Range_triggered()
 {
     if(!displayRangeDialog){
 
-        displayRangeDialog=new DisplayRangeDialog(this);
+        std::vector< float > tmp;
+        tmp.reserve(m_data.size());
+        for( auto p : m_data ){
+            if( p.attribute!=Grid2D<float>::NULL_VALUE) tmp.push_back(p.attribute);
+        }
 
-        displayRangeDialog->setPower(m_colorTable->power());
-        displayRangeDialog->setRange(m_colorTable->range());
-        connect( displayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 m_colorTable, SLOT(setRange(std::pair<double,double>)) );
-        connect( displayRangeDialog, SIGNAL(powerChanged(double)),
-                 m_colorTable, SLOT( setPower(double)) );
+        displayRangeDialog=new HistogramRangeSelectionDialog(this);
+
+        displayRangeDialog->setInstantUpdates(false);
+
+        displayRangeDialog->setHistogram(createHistogram( std::begin(tmp), std::end(tmp),
+                                                          Grid2D<float>::NULL_VALUE, 100 ));
+        auto mm = std::minmax_element(tmp.begin(), tmp.end() );
+
+        displayRangeDialog->setDefaultRange( std::make_pair( static_cast<double>(*mm.first), static_cast<double>(*mm.second)));
+        displayRangeDialog->setColorTable(m_colorTable );   // all updating through colortable
+
+        displayRangeDialog->setWindowTitle("Configure Volume Display Range" );
     }
 
     displayRangeDialog->show();

@@ -151,13 +151,10 @@ void GridView::setViewerCurrentPoint(SelectionPoint p){
 
 void GridView::setColorMapping( const std::pair<double,double>& m){
     Q_ASSERT( m_colorTable);
-    if( m_colorMappingLock) return;
+
     m_colorTable->setRange(m);
 }
 
-void GridView::setColorMappingLocked(bool on){
-    m_colorMappingLock=on;
-}
 
 void GridView::setColors(const QVector<QRgb>& c){
 

@@ -24,6 +24,7 @@
 #include <histogramdialog.h>
 #include<colorbarconfigurationdialog.h>
 #include <projectgeometry.h>
+#include <histogramrangeselectiondialog.h>
 
 #include<baseviewer.h>
 #include<selectionpoint.h>
@@ -145,7 +146,8 @@ private:
     int m_fixedTime=0;
     std::function<double(int,int)> m_timeFunction=[](int il, int xl){return 0.0;};
 
-    DisplayRangeDialog* displayRangeDialog=nullptr;
+    HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
+    //DisplayRangeDialog* displayRangeDialog=nullptr;
     AspectRatioDialog* aspectRatioDialog=nullptr;
     ScaleDialog* scaleDialog=nullptr;
     IsoLineDialog* isoLineDialog=nullptr;

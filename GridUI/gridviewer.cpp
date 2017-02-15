@@ -9,6 +9,8 @@
 #include<QColorDialog>
 #include<iostream>
 #include<cmath>
+#include<algorithm>
+#include<limits>
 
 #include<gridimportdialog.h>
 #include<colortabledialog.h>
@@ -23,6 +25,9 @@
 #include<gatherview.h>
 
 #include <dynamicmousemodeselector.h>
+
+#include <histogramrangeselectiondialog.h>
+
 
 GridViewer::GridViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -212,6 +217,15 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
         if( oldBounds != m_grid->bounds() ){
             gridView()->zoomFit();
         }
+
+    }
+
+    if( displayRangeDialog ){
+        displayRangeDialog->setHistogram(
+            createHistogram( std::begin(*m_grid), std::end(*m_grid), m_grid->NULL_VALUE, 100 )
+            );
+        //displayRangeDialog->setHistogram(createHistogram(m_grid.get()));
+        displayRangeDialog->setRange(valueRange(*m_grid));
     }
 }
 
@@ -354,6 +368,8 @@ void GridViewer::on_zoomNormalAct_triggered()
     gridView()->zoomFit();
 }
 
+/*
+//* ORIGINAL WORKING VERSION
 void GridViewer::on_displayRangeAct_triggered()
 {
 
@@ -375,6 +391,28 @@ void GridViewer::on_displayRangeAct_triggered()
     displayRangeDialog->show();
 
 }
+*/
+
+
+
+void GridViewer::on_displayRangeAct_triggered()
+{
+
+    if(!displayRangeDialog){
+
+        displayRangeDialog=new HistogramRangeSelectionDialog(this);
+        HistogramRangeSelectionDialog* dialog=new HistogramRangeSelectionDialog();
+        displayRangeDialog->setHistogram(createHistogram( std::begin(*m_grid), std::end(*m_grid), m_grid->NULL_VALUE, 100 ));
+        displayRangeDialog->setDefaultRange(valueRange(*m_grid));
+        displayRangeDialog->setColorTable(gridView()->colorTable() );   // all updating through colortable
+
+        displayRangeDialog->setWindowTitle("Configure Display Range" );
+    }
+
+    displayRangeDialog->show();
+}
+
+
 
 void GridViewer::on_EditColorTableAct_triggered()
 {
@@ -722,7 +760,7 @@ void GridViewer::updateIntersectionTimes(){
     }
 }
 
-
+// ORIGINAL WORKING
 void GridViewer::on_actionDisplay_Histogram_triggered()
 {
 
@@ -744,6 +782,25 @@ void GridViewer::on_actionDisplay_Histogram_triggered()
 }
 
 
+/*
+// TEST
+void GridViewer::on_actionDisplay_Histogram_triggered()
+{
 
+    if( ! m_grid ) return;
 
+    const size_t STEPS=100;
+    auto range = valueRange( *m_grid );
+    Histogram histogram( range.first, (range.second-range.first)/STEPS, STEPS);
+    for( auto it=m_grid->values().cbegin(); it!=m_grid->values().cend(); ++it){
+        if( *it!=m_grid->NULL_VALUE) histogram.addValue(*it);
+    }
+
+    HistogramRangeSelectionDialog* dialog=new HistogramRangeSelectionDialog();
+    dialog->setHistogram(histogram);
+    dialog->setColorTable(gridView()->colorTable() );
+    dialog->setWindowTitle(QString("Histogram of %1").arg(windowTitle() ) );
+    dialog->show();
+}
+*/
 

@@ -16,7 +16,8 @@
 #include <navigation3dcontrols.h>
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
-#include <displayrangedialog.h>
+//#include <displayrangedialog.h>
+#include<histogramrangeselectiondialog.h>
 #include <overlaypercentagedialog.h>
 #include <editslicesdialog.h>
 #include <edithorizonsdialog.h>
@@ -36,10 +37,6 @@ public:
 
     explicit VolumeViewer(QWidget *parent = 0);
     ~VolumeViewer();
-
-    bool isColorMappingLocked(){
-        return m_colorMappingLock;
-    }
 
 public slots:
 
@@ -65,8 +62,6 @@ public slots:
     void setLabelSize( qreal );
 
     void setOutlineColor( QColor );
-
-    void setColorMappingLocked(bool);
 
 signals:
 
@@ -168,8 +163,9 @@ private:
 
     Ui::VolumeViewer *ui;
 
-    DisplayRangeDialog* displayRangeDialog=nullptr;
-    DisplayRangeDialog* overlayRangeDialog=nullptr;
+    HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
+    //DisplayRangeDialog* displayRangeDialog=nullptr;
+    HistogramRangeSelectionDialog* overlayRangeDialog=nullptr;
     OverlayPercentageDialog* overlayPercentageDialog=nullptr;
     EditSlicesDialog* editSlicesDialog = nullptr;
     EditHorizonsDialog* editHorizonsDialog=nullptr;
@@ -209,8 +205,6 @@ private:
     qreal m_labelSize=12;
 
     QColor m_outlineColor=Qt::white;
-
-    bool m_colorMappingLock=false;
 };
 
 #endif // VOLUMEVIEWER_H

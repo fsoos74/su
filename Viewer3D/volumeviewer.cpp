@@ -167,9 +167,15 @@ void VolumeViewer::setVolume( std::shared_ptr<Grid3D<float> > volume){
 
     if( m_volume ){
 
-        if( !isColorMappingLocked() ){
-            m_colorTable->setRange(m_volume->valueRange());
+        if( displayRangeDialog ){
+            displayRangeDialog->setHistogram(
+                createHistogram( std::begin(*m_volume), std::end(*m_volume), m_volume->NULL_VALUE, 100 )
+                );
+            //displayRangeDialog->setHistogram(createHistogram(m_grid.get()));
+            displayRangeDialog->setRange(m_volume->valueRange());
         }
+
+        m_colorTable->setRange(m_volume->valueRange());
 
         if( !old || !volume || old->bounds() !=volume->bounds()){
             initialVolumeDisplay();
@@ -235,9 +241,6 @@ void VolumeViewer::setHighlightedPoints(QVector<SelectionPoint> rpoints){
     refreshView();
 }
 
-void VolumeViewer::setColorMappingLocked(bool on){
-    m_colorMappingLock=on;
-}
 
 void VolumeViewer::setHighlightedPointColor(QColor color){
 
@@ -1240,25 +1243,19 @@ void VolumeViewer::on_action_Volume_Colortable_triggered()
 
 void VolumeViewer::on_actionVolume_Range_triggered()
 {
+    if( !m_volume ) return;
 
     if(!displayRangeDialog){
 
-        displayRangeDialog=new DisplayRangeDialog(this);
+        displayRangeDialog=new HistogramRangeSelectionDialog(this);
+        displayRangeDialog->setHistogram(createHistogram( std::begin(*m_volume), std::end(*m_volume),
+                                                          m_volume->NULL_VALUE, 100 ));
+        displayRangeDialog->setDefaultRange( m_volume->valueRange());
+        displayRangeDialog->setColorTable(m_colorTable );   // all updating through colortable
 
-        displayRangeDialog->setPower( m_colorTable->power());
-        displayRangeDialog->setRange( m_colorTable->range());
-        displayRangeDialog->setLocked( isColorMappingLocked() );
-        connect( displayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 m_colorTable, SLOT(setRange(std::pair<double,double>)) );
-        connect( displayRangeDialog, SIGNAL(powerChanged(double)),
-                 m_colorTable, SLOT( setPower(double)) );
-        connect( displayRangeDialog, SIGNAL(lockedChanged(bool)),
-                 this, SLOT(setColorMappingLocked(bool)) );
-        connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 displayRangeDialog, SLOT(setRange(std::pair<double,double>)) );
-        connect( m_colorTable, SIGNAL(powerChanged(double)),
-                 displayRangeDialog, SLOT(setPower(double)) );
+        displayRangeDialog->setWindowTitle("Configure Volume Display Range" );
     }
+
 
     displayRangeDialog->show();
 
@@ -1282,25 +1279,19 @@ void VolumeViewer::on_actionOverlay_Colortable_triggered()
 
 void VolumeViewer::on_actionOverlay_Range_triggered()
 {
+    if( !m_overlayVolume ) return;
+
     if(!overlayRangeDialog){
 
-        overlayRangeDialog=new DisplayRangeDialog(this);
+        overlayRangeDialog=new HistogramRangeSelectionDialog(this);
+        overlayRangeDialog->setHistogram(createHistogram( std::begin(*m_overlayVolume), std::end(*m_overlayVolume),
+                                                          m_overlayVolume->NULL_VALUE, 100 ));
+        overlayRangeDialog->setDefaultRange( m_overlayVolume->valueRange());
+        overlayRangeDialog->setColorTable(m_overlayColorTable );   // all updating through colortable
 
-        overlayRangeDialog->setWindowTitle(tr("Overlay Display Range"));
+        overlayRangeDialog->setWindowTitle("Configure Overlay Display" );
 
-        overlayRangeDialog->setPower( m_overlayColorTable->power());
-        overlayRangeDialog->setRange( m_overlayColorTable->range());
-        overlayRangeDialog->setLocked( false );//isColorMappingLocked() );
-        connect( overlayRangeDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 m_overlayColorTable, SLOT(setRange(std::pair<double,double>)) );
-        connect( overlayRangeDialog, SIGNAL(powerChanged(double)),
-                 m_overlayColorTable, SLOT( setPower(double)) );
-        //connect( overlayRangeDialog, SIGNAL(lockedChanged(bool)),
-        //         this, SLOT(setColorMappingLocked(bool)) );
-        connect( m_overlayColorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 overlayRangeDialog, SLOT(setRange(std::pair<double,double>)) );
-        connect( m_overlayColorTable, SIGNAL(powerChanged(double)),
-                 overlayRangeDialog, SLOT(setPower(double)) );
+        overlayRangeDialog->setWindowTitle(tr("Configure Overlay Display Range"));
     }
 
     overlayRangeDialog->show();
