@@ -41,6 +41,8 @@ void Picker::setPicks( std::shared_ptr<Grid2D<float>> p ){
 
     m_picks=p;
 
+    m_dirty=false;
+
     emit picksChanged();
 }
 
@@ -75,6 +77,10 @@ void Picker::setConservative(bool on){
     emit conservativeChanged(on);
 }
 
+void Picker::setDirty(bool on){
+    m_dirty=on;
+}
+
 void Picker::pick( int traceNo, float secs ){
 
     pickFunc(traceNo, secs);
@@ -93,7 +99,8 @@ float Picker::pick1(int traceNo, float secs){
 
     // store NULL as pick if time is not within trace
     if( secs<trace.ft() || secs>trace.lt() ){
-        (*m_picks)( iline, xline ) = m_picks->NULL_VALUE;
+         m_dirty=true;
+        (*m_picks)( iline, xline ) = m_picks->NULL_VALUE;       
         return m_picks->NULL_VALUE;
     }
     else{
@@ -101,6 +108,7 @@ float Picker::pick1(int traceNo, float secs){
         // don't overwrite existing picks in conservative mode
         if( m_conservative && (*m_picks)(iline,xline)!=m_picks->NULL_VALUE ) return m_picks->NULL_VALUE;
 
+        m_dirty=true;
         secs = adjustPick(trace, secs);
         (*m_picks)(iline, xline) = 1000 * secs;     // picks are stored in milliseconds
         return secs;
@@ -171,6 +179,8 @@ bool Picker::delete1( int traceNo){
 
     // nothing to delete, allready NULL, stop here in conservative mode
     if( m_conservative && (*m_picks)(iline, xline) == m_picks->NULL_VALUE ) return false;
+
+    m_dirty=true;
 
     (*m_picks)(iline, xline) = m_picks->NULL_VALUE;
 

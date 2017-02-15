@@ -37,6 +37,10 @@ public:
         return m_conservative;
     }
 
+    bool isDirty()const{
+        return m_dirty;
+    }
+
 signals:
 
     void gatherChanged();
@@ -55,6 +59,8 @@ public slots:
 
     void pick( int traceNo, float t );
     void deletePick( int traceNo );
+
+    void setDirty(bool);
 
 private:
 
@@ -87,6 +93,9 @@ private:
     std::function<void (int,float)> pickFunc;
     std::function<void (int)> deletePickFunc;
     std::function<float( const seismic::Trace&, float)> adjustFunc;
+
+    bool m_dirty=false;
 };
+
 
 #endif // PICKER_H

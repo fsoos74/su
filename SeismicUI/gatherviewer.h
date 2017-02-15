@@ -171,6 +171,7 @@ private:
     QVector<int> computeIntersections();
     void updateIntersections();
 
+    bool picksSaved();
 
     Ui::GatherViewer *ui;
 

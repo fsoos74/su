@@ -684,6 +684,8 @@ void GatherViewer::on_actionCloseVolume_triggered()
 
 void GatherViewer::on_action_Load_Picks_triggered()
 {
+    if( !picksSaved()) return;
+
     bool ok=false;
     QString gridName=QInputDialog::getItem(this, "Open Picks", "Please select a Grid:",
                                            m_project->gridList(GridType::Other), 0, false, &ok);
@@ -710,6 +712,7 @@ void GatherViewer::on_action_Close_Picks_triggered()
     std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
     gatherView->picker()->setPicks(g);
     */
+    if( !picksSaved()) return;
 
     gatherView->picker()->setPicks(std::shared_ptr<Grid2D<float>>());
     m_picksGridName = QString();
@@ -726,11 +729,15 @@ void GatherViewer::on_action_Save_Picks_triggered()
 
         QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
     }
+
+    gatherView->picker()->setDirty(false);
 }
 
 void GatherViewer::on_action_New_Picks_triggered()
 {
     if( !m_project ) return;
+
+    if( !picksSaved()) return;
 
     while(1){
 
@@ -776,8 +783,13 @@ void GatherViewer::pickTypeSelected(QAction * a){
     gatherView->picker()->setType(t);
 }
 
-void GatherViewer::closeEvent(QCloseEvent *)
+void GatherViewer::closeEvent(QCloseEvent *event)
 {
+    if( !picksSaved()){
+        event->ignore();
+        return;
+    }
+
     saveSettings();
 
     sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );  // notify other viewers
@@ -1018,6 +1030,16 @@ void GatherViewer::on_action_Dispatch_CDPs_toggled(bool on)
 }
 
 
+bool GatherViewer::picksSaved(){
 
+    if( !gatherView->picker()) return true;
+
+    if( !gatherView->picker()->isDirty() ) return true;
+
+    auto reply = QMessageBox::warning(this, tr("Discard Picks"),
+                                      tr("Picks have unsaved changes. Continuing will delete them. Continue?"),
+                                        QMessageBox::Yes | QMessageBox::No );
+    return reply == QMessageBox::Yes;
+}
 
 
