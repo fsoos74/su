@@ -105,7 +105,6 @@ public:
         return (t-m_ft)/m_dt;
     }
 
-
 private:
 
 
@@ -131,6 +130,8 @@ public:
     static const value_type NULL_VALUE;// = std::numeric_limits<value_type>::max();
     using bounds_type=Grid3DBounds;
     using values_type=util::Array3D<value_type>;
+    typedef typename values_type::iterator iterator;
+    typedef typename values_type::const_iterator const_iterator;
 
     Grid3D(){}
 
@@ -205,6 +206,21 @@ public:
         return m_values[idx];
     }
 
+    iterator begin(){
+        return m_values.begin();
+    }
+
+    iterator end(){
+        return m_values.end();
+    }
+
+    const_iterator cbegin(){
+        return m_values.cbegin();
+    }
+
+    const_iterator cend(){
+        return m_values.cend();
+    }
 
 private:
 

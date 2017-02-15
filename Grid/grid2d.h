@@ -73,9 +73,13 @@ public:
 
     typedef T value_type;
     typedef int index_type;
+
     static const value_type NULL_VALUE;// = std::numeric_limits<value_type>::max();
     using bounds_type=Grid2DBounds;
     using values_type=util::Array2D<value_type>;
+
+    typedef typename values_type::iterator iterator;
+    typedef typename values_type::const_iterator const_iterator;
 
     Grid2D()=default;
 
@@ -116,6 +120,23 @@ public:
     const values_type& values()const{
         return m_values;
     }
+
+    iterator begin(){
+        return m_values.begin();
+    }
+
+    iterator end(){
+        return m_values.end();
+    }
+
+    const_iterator cbegin(){
+        return m_values.cbegin();
+    }
+
+    const_iterator cend(){
+        return m_values.cend();
+    }
+
     /*
     std::pair< value_type, value_type> Grid2D<float>ange()const{
         return std::pair<value_type, value_type>(value_type(), value_type());
