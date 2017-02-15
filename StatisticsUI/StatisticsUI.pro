@@ -18,13 +18,18 @@ win32{
 DEFINES += STATISTICSUI_LIBRARY
 
 SOURCES += statisticsui.cpp\
-            histogramdialog.cpp
+            histogramdialog.cpp \
+    histogramrangeselectiondialog.cpp \
+    histogramwidget.cpp
 
 HEADERS += statisticsui.h\
         statisticsui_global.h\
-        histogramdialog.h
+        histogramdialog.h \
+    histogramrangeselectiondialog.h \
+    histogramwidget.h
 
-FORMS += histogramdialog.ui
+FORMS += histogramdialog.ui \
+    histogramrangeselectiondialog.ui
 
 unix {
     target.path = /usr/lib
