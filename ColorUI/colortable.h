@@ -35,6 +35,10 @@ public:
          return m_power;
      }
 
+     bool isLocked()const{
+         return m_lock;
+     }
+
      color_type map( const double val )const;
 
      static QVector<color_type> defaultColors();
@@ -47,6 +51,7 @@ signals:
     void colorsChanged();
     void rangeChanged( std::pair<double,double>  );
     void powerChanged( double );
+    bool lockedChanged(bool);
 
 public slots:
 
@@ -54,12 +59,14 @@ public slots:
     void setRange( const  std::pair<double,double> & );
     void setRange(double, double);
     void setPower(double);
+    void setLocked(bool);
 
 private:
 
     QVector<color_type> m_colors;
     std::pair<double, double> m_range;
     double m_power=1;
+    bool m_lock=false;
 };
 
 #endif // COLORTABLE_H
