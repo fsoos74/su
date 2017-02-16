@@ -63,7 +63,8 @@ HEADERS += seismicui.h\
     sectionscaledialog.h \
     picker.h \
     pickmode.h \
-    picktype.h
+    picktype.h \
+    pickfillmode.h
 
 unix {
     target.path = /usr/lib

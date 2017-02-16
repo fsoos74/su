@@ -97,7 +97,7 @@ void GatherViewer::setupPickMenus(){
     // need to group picker options here because designer does not support this
     QActionGroup* pickModeGroup=new QActionGroup(this);
     pickModeGroup->setExclusive(true);
-    std::array<PickMode,4> modes{PickMode::Single, PickMode::Left, PickMode::Right, PickMode::All };
+    std::array<PickMode,3> modes{PickMode::Single, PickMode::Left, PickMode::Right};
     for( PickMode mode : modes){
         QAction* act = new QAction( toQString(mode), this);
         act->setCheckable(true);

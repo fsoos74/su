@@ -9,6 +9,8 @@
 
 #include "picktype.h"
 #include "pickmode.h"
+#include "pickfillmode.h"
+
 
 class Picker : public QObject
 {
@@ -33,6 +35,10 @@ public:
         return m_type;
     }
 
+    PickFillMode fillMode()const{
+        return m_fillMode;
+    }
+
     bool isConservative()const{
         return m_conservative;
     }
@@ -47,6 +53,7 @@ signals:
     void picksChanged();
     void modeChanged(PickMode);
     void typeChanged(PickType);
+    void fillModeChanged(PickFillMode);
     void conservativeChanged( bool );
 
 public slots:
@@ -55,6 +62,7 @@ public slots:
     void setPicks( std::shared_ptr<Grid2D<float>> );
     void setMode( PickMode );
     void setType( PickType );
+    void setFillMode( PickFillMode );
     void setConservative( bool );
 
     void pick( int traceNo, float t );
@@ -66,14 +74,14 @@ private:
 
     float pick1( int traceNo, float secs);  // helper, does not check valid traceno and does not emit change
     void pickSingle( int firstTraceNo, float firstTraceTime);
-    void pickFillLeft( int firstTraceNo, float firstTraceTime);
-    void pickFillRight( int firstTraceNo, float firstTraceTime);
-    void pickFillAll( int firstTraceNo, float firstTraceTime);
+    void pickFillLeftNext( int firstTraceNo, float firstTraceTime);
+    void pickFillLeftNearest( int firstTraceNo, float firstTraceTime);
+    void pickFillRightNearest( int firstTraceNo, float firstTraceTime);
+    void pickFillRightNext( int firstTraceNo, float firstTraceTime);
     bool delete1(int traceNo);  // helper, does not check valid traceno and does not emit change
     void deleteSingle( int traceNo);
     void deleteLeft( int traceNo );
     void deleteRight( int traceNo );
-    void deleteAll( int traceNo );
 
     float adjustPick( const seismic::Trace&, float t);
     float adjustMinimum( const seismic::Trace&, float t);
@@ -81,6 +89,7 @@ private:
     float adjustZero( const seismic::Trace&, float t);
     float adjustNone( const seismic::Trace&, float t);
 
+    void fillILXLBuffer();
     void updateModeFuncs();
     void updateTypeFunc();
 
@@ -89,7 +98,10 @@ private:
 
     PickMode m_mode=PickMode::Single;
     PickType m_type=PickType::Minimum;
+    PickFillMode m_fillMode=PickFillMode::Nearest;
     bool m_conservative=true;
+
+    std::vector<std::pair<int,int>> m_ilxlBuffer;
     std::function<void (int,float)> pickFunc;
     std::function<void (int)> deletePickFunc;
     std::function<float( const seismic::Trace&, float)> adjustFunc;

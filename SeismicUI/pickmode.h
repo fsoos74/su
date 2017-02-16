@@ -7,8 +7,7 @@
 enum class PickMode{
     Single,
     Left,
-    Right,
-    All
+    Right
 };
 
 
