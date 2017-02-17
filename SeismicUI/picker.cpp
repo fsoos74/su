@@ -102,6 +102,9 @@ void Picker::setDirty(bool on){
 
 void Picker::pick( int traceNo, float secs ){
 
+    //check this only here in external interface
+    if( traceNo<0 || traceNo>=static_cast<int>(m_gather->size() ) ) return;
+
     pickFunc(traceNo, secs);
 }
 
@@ -255,6 +258,9 @@ void Picker::pickFillLeftNext(int firstTraceNo, float traceTime){
 }
 
 void Picker::deletePick( int traceNo ){
+
+    //check this only here in external interface
+    if( traceNo<0 || traceNo>=static_cast<int>(m_gather->size() ) ) return;
 
     deletePickFunc( traceNo );
 }

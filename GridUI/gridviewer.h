@@ -144,7 +144,7 @@ private:
 
     TimeSource m_timeSource=TimeSource::TIME_NONE;
     int m_fixedTime=0;
-    std::function<double(int,int)> m_timeFunction=[](int il, int xl){return 0.0;};
+    std::function<double(int,int)> m_timeFunction=[](int, int){return 0.0;};
 
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     //DisplayRangeDialog* displayRangeDialog=nullptr;

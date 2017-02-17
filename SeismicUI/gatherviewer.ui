@@ -119,13 +119,19 @@
       <string>P&amp;ick Type</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuFill_Method">
+     <property name="title">
+      <string>Fill Method</string>
+     </property>
+    </widget>
     <addaction name="action_New_Picks"/>
     <addaction name="action_Load_Picks"/>
     <addaction name="action_Save_Picks"/>
     <addaction name="action_Close_Picks"/>
     <addaction name="separator"/>
-    <addaction name="menuPick_Mode"/>
     <addaction name="menuPick_Type"/>
+    <addaction name="menuPick_Mode"/>
+    <addaction name="menuFill_Method"/>
     <addaction name="actionConservative"/>
    </widget>
    <addaction name="menu_File"/>
@@ -505,6 +511,21 @@
    </property>
    <property name="text">
     <string>C&amp;onservative</string>
+   </property>
+  </action>
+  <action name="actionFill_Strategy">
+   <property name="text">
+    <string>Fill Strategy</string>
+   </property>
+  </action>
+  <action name="actionFill_Strategy_2">
+   <property name="text">
+    <string>Fill Strategy</string>
+   </property>
+  </action>
+  <action name="actionGg">
+   <property name="text">
+    <string>gg</string>
    </property>
   </action>
  </widget>

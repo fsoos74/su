@@ -180,6 +180,12 @@ protected:
 
 private:
 
+    bool eventFilterExplore(QWidget* widget, QMouseEvent *mouseEvent);
+    bool eventFilterZoom(QWidget* widget, QMouseEvent *mouseEvent);
+    bool eventFilterSelect(QWidget* widget, QMouseEvent *mouseEvent);
+    bool eventFilterPick(QWidget* widget, QMouseEvent *mouseEvent);
+    bool eventFilterDeletePick(QWidget* widget, QMouseEvent *mouseEvent);
+
     void buildTraceLookup();
 
     QPoint mouseEventToLabel( QPoint, bool start=true );    // if start ruler val set to 0 else to rightmost/bottommost

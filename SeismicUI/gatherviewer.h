@@ -153,6 +153,7 @@ private slots:
 
     void pickModeSelected( QAction* );
     void pickTypeSelected( QAction* );
+    void fillModeSelected( QAction* );
 
     void on_actionGather_Histogram_triggered();
 

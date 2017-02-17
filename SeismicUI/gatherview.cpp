@@ -486,6 +486,189 @@ void GatherView::resizeEvent(QResizeEvent *ev){
 }
 
 
+bool GatherView::eventFilterExplore(QWidget* widget, QMouseEvent *mouseEvent){
+
+}
+
+
+bool GatherView::eventFilterZoom(QWidget* widget, QMouseEvent *mouseEvent){
+
+    if( mouseEvent->type()==QEvent::MouseButtonPress && mouseEvent->button()==Qt::LeftButton ){
+
+            mouseSelection=true;
+            mouseSelectionWidget=widget;
+            mouseSelectionStart=mouseEventToLabel(mouseEvent->pos(), true);
+            if( !rubberBand ){
+                rubberBand=new QRubberBand( QRubberBand::Shape::Rectangle, m_gatherLabel);
+            }
+            rubberBand->setGeometry(QRect(mouseSelectionStart, QSize()));
+            rubberBand->show();
+    }
+    else if( mouseEvent->type()==QEvent::MouseMove && mouseSelection ){
+
+        if( widget==mouseSelectionWidget ){
+
+            QPoint cur=mouseEventToLabel(mouseEvent->pos(), false);
+
+            rubberBand->setGeometry(QRect(mouseSelectionStart, cur).normalized());
+        }
+
+    }
+    else if( mouseEvent->type()==QEvent::MouseButtonRelease && mouseEvent->button()==Qt::LeftButton){
+
+        mouseSelection=false;
+       // mouseSelectionWidget=nullptr;
+        QPoint end=mouseEventToLabel(mouseEvent->pos(), false);
+        rubberBand->hide();
+
+        zoom( QRect(mouseSelectionStart, end).normalized());
+
+    }
+}
+
+bool GatherView::eventFilterSelect(QWidget* widget, QMouseEvent *mouseEvent){
+
+    // select point on double click
+    if( widget==m_gatherLabel && mouseEvent->type()==QEvent::MouseButtonDblClick){
+        QPoint p=mouseEvent->pos();
+        int trace=p.x()/m_pixelPerTrace;
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+
+        //if( trace>=0 ) emit traceSelected(static_cast<size_t>(trace));
+        if( trace>=0 ){
+            int iline=(*m_gather)[trace].header().at("iline").intValue();
+            int xline=(*m_gather)[trace].header().at("xline").intValue();
+            emit pointSelected( SelectionPoint( iline, xline, secs ));
+        }
+    }
+    if( widget==m_gatherLabel && mouseEvent->type()==QEvent::MouseButtonRelease ){
+
+        int trace=mouseEvent->pos().x() / m_pixelPerTrace;
+
+        emit traceClicked(trace);
+    }
+    else if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=std::floor(qreal(horizontalScrollBar()->value() + p.x())/m_pixelPerTrace);
+        emit topRulerClicked(trace);
+    }
+    else if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseButtonDblClick ){
+
+        QPoint p=mouseEvent->pos();
+        qreal secs=m_ft + qreal(verticalScrollBar()->value() + p.y() )/m_pixelPerSecond;
+        emit leftRulerClicked(secs);
+    }
+
+    return true;
+}
+
+bool GatherView::eventFilterPick(QWidget* widget, QMouseEvent *mouseEvent){
+
+    // pick
+    if( widget!=m_gatherLabel ) return false;
+
+    if(mouseEvent->type()==QEvent::MouseButtonPress ||
+            (mouseEvent->type()==QEvent::MouseMove &&
+             mouseEvent->buttons()&Qt::LeftButton &&
+             m_picker->mode()==PickMode::Single) ){
+        QPoint p=mouseEvent->pos();
+        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+        m_picker->pick(trace, secs);
+    }
+
+    return true;
+}
+
+bool GatherView::eventFilterDeletePick(QWidget* widget, QMouseEvent *mouseEvent){
+
+    if( widget!=m_gatherLabel ) return false;
+
+    if(mouseEvent->type()==QEvent::MouseButtonPress ||
+            (mouseEvent->type()==QEvent::MouseMove &&
+             mouseEvent->buttons()&Qt::LeftButton &&
+             m_picker->mode()==PickMode::Single) ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+        m_picker->deletePick(trace);
+    }
+
+    return true;
+}
+
+
+
+bool GatherView::eventFilter(QObject *obj, QEvent *ev){
+
+    QWidget* widget=dynamic_cast<QWidget*>(obj);
+    QMouseEvent* mouseEvent=dynamic_cast<QMouseEvent*>(ev);
+
+    if( !widget || !mouseEvent ) return QObject::eventFilter(obj,ev);
+
+    if( !(widget==m_gatherLabel || widget==m_leftRuler || widget==m_topRuler)) return QObject::eventFilter(obj,ev);
+
+    // emit position move on label
+    if( widget==m_gatherLabel && mouseEvent->type()==QEvent::MouseMove ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=p.x()/m_pixelPerTrace;
+        qreal secs=m_ft + p.y()/m_pixelPerSecond;
+        emit mouseOver(trace, secs);
+    }
+    // emit position, mouse move on top tuler
+    else if( widget==m_topRuler && mouseEvent->type()==QEvent::MouseMove ){
+        QPoint p=mouseEvent->pos();
+        int trace=std::floor(qreal(horizontalScrollBar()->value() + p.x())/m_pixelPerTrace);
+        qreal secs=m_ft;
+        emit mouseOver(trace, secs);
+    }
+    // emit position, mouse move on left ruler
+    else if( widget==m_leftRuler && mouseEvent->type()==QEvent::MouseMove ){
+
+        QPoint p=mouseEvent->pos();
+        int trace=0;    // rightmost
+        qreal secs=m_ft + qreal(verticalScrollBar()->value() + p.y() )/m_pixelPerSecond;
+        emit mouseOver(trace, secs);
+    }
+
+
+    if( mouseEvent->modifiers()==Qt::ControlModifier ){
+        return eventFilterZoom( widget, mouseEvent);
+    }
+
+    if( mouseEvent->modifiers()==Qt::ShiftModifier || mouseEvent->type()==QEvent::MouseButtonDblClick ){
+        return eventFilterSelect( widget, mouseEvent);
+    }
+
+    if( m_mouseMode==MouseMode::Explore ){
+        return eventFilterExplore( widget, mouseEvent );
+    }
+
+    if( m_mouseMode == MouseMode::Zoom){
+        return eventFilterZoom( widget, mouseEvent);
+    }
+
+    if( m_mouseMode == MouseMode::Select ){
+        return eventFilterSelect( widget, mouseEvent);
+    }
+
+    if( m_mouseMode == MouseMode::Pick ){
+        return eventFilterPick(widget, mouseEvent);
+    }
+
+    if( m_mouseMode == MouseMode::DeletePick ){
+        return eventFilterDeletePick(widget, mouseEvent);
+    }
+
+    return QObject::eventFilter(obj,ev);
+
+}
+
+
+/* ORIGINAL
 bool GatherView::eventFilter(QObject *obj, QEvent *ev){
 
     QWidget* widget=dynamic_cast<QWidget*>(obj);
@@ -519,23 +702,34 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
     }
 
     // pick
-    if( m_mouseMode == MouseMode::Pick && widget==m_gatherLabel &&
-            mouseEvent->type()==QEvent::MouseButtonPress ){
-        QPoint p=mouseEvent->pos();
-        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
-        qreal secs=m_ft + p.y()/m_pixelPerSecond;
-        m_picker->pick(trace, secs);
-        return true;
+    if( m_mouseMode == MouseMode::Pick && widget==m_gatherLabel ){
+
+        if(mouseEvent->type()==QEvent::MouseButtonPress ||
+                (mouseEvent->type()==QEvent::MouseMove &&
+                 mouseEvent->buttons()&Qt::LeftButton &&
+                 m_picker->mode()==PickMode::Single) ){
+            QPoint p=mouseEvent->pos();
+            int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+            qreal secs=m_ft + p.y()/m_pixelPerSecond;
+            m_picker->pick(trace, secs);
+            return true;
+        }
     }
 
     // delete pick
-    if( m_mouseMode == MouseMode::DeletePick && widget==m_gatherLabel &&
-            mouseEvent->type()==QEvent::MouseButtonPress ){
-        QPoint p=mouseEvent->pos();
-        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
-        qreal secs=m_ft + p.y()/m_pixelPerSecond;
-        m_picker->deletePick(trace);
-        return true;
+    if( m_mouseMode == MouseMode::DeletePick && widget==m_gatherLabel ){
+
+        if(mouseEvent->type()==QEvent::MouseButtonPress ||
+                (mouseEvent->type()==QEvent::MouseMove &&
+                 mouseEvent->buttons()&Qt::LeftButton &&
+                 m_picker->mode()==PickMode::Single) ){
+
+            QPoint p=mouseEvent->pos();
+            int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+            qreal secs=m_ft + p.y()/m_pixelPerSecond;
+            m_picker->deletePick(trace);
+            return true;
+        }
     }
 
     // trace header
@@ -625,6 +819,7 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
 
     return true;
 }
+*/
 
 
 

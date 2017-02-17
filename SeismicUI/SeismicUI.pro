@@ -39,7 +39,8 @@ SOURCES += seismicui.cpp \
     sectionscaledialog.cpp \
     picker.cpp \
     pickmode.cpp \
-    picktype.cpp
+    picktype.cpp \
+    pickfillmode.cpp
 
 HEADERS += seismicui.h\
         seismicui_global.h \

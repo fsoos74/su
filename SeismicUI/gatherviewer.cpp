@@ -122,8 +122,23 @@ void GatherViewer::setupPickMenus(){
         pickTypeGroup->addAction(act);
     }
 
+    // need to group picker options here because designer does not support this
+    QActionGroup* fillModeGroup=new QActionGroup(this);
+    fillModeGroup->setExclusive(true);
+    std::array<PickFillMode,2> fillModes{PickFillMode::Next, PickFillMode::Nearest };
+    for( PickFillMode mode : fillModes){
+        QAction* act = new QAction( toQString(mode), this);
+        act->setCheckable(true);
+        //act->setIcon(QIcon(pickModePixmap(mode)));
+        act->setChecked(gatherView->picker()->fillMode()==mode);
+        ui->menuFill_Method->addAction(act);
+        //ui->pickToolBar->addAction(act);
+        fillModeGroup->addAction(act);
+    }
+
     connect( pickModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickModeSelected(QAction*)) );
     connect( pickTypeGroup, SIGNAL(triggered(QAction*)), this, SLOT(pickTypeSelected(QAction*)) );
+    connect( fillModeGroup, SIGNAL(triggered(QAction*)), this, SLOT(fillModeSelected(QAction*)) );
 
     connect( ui->actionConservative, SIGNAL(toggled(bool)), gatherView->picker(), SLOT(setConservative(bool)) );
     connect( gatherView->picker(), SIGNAL(conservativeChanged(bool)), ui->actionConservative, SLOT(setChecked(bool)) );
@@ -233,6 +248,8 @@ void GatherViewer::zoomFitWindow(){
      if( project==m_project ) return;
 
      m_project=project;
+
+     ui->action_New_Picks->trigger();   // create empty picks grid for this project
 
     emit projectChanged();
 
@@ -391,7 +408,7 @@ void GatherViewer::on_zoomFitWindowAct_triggered()
 void GatherViewer::onMouseOver(int trace, qreal secs){
 
 
-    if( !m_gather || trace>=m_gather->size()) return;
+    if( !m_gather || trace>=static_cast<int>(m_gather->size() ) ) return;
 
     const seismic::Trace& trc=(*m_gather)[trace];
 
@@ -413,7 +430,7 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
 
 void GatherViewer::onTopRulerClicked( int traceno ){
 
-    if( !m_gather || traceno<0 || traceno>=m_gather->size()) return;
+    if( !m_gather || traceno<0 || traceno>=static_cast<int>(m_gather->size() ) ) return;
 
     const seismic::Trace& trace=(*m_gather)[traceno];
 
@@ -433,7 +450,7 @@ void GatherViewer::on_actionTrace_Scaling_triggered()
 {
     if( !m_traceScalingDialog){
 
-        GatherLabel* gatherLabel=gatherView->gatherLabel();
+        //GatherLabel* gatherLabel=gatherView->gatherLabel();
 
         m_traceScalingDialog=new TraceScalingDialog(this);
         m_traceScalingDialog->setWindowTitle("Configure Trace Scaling");
@@ -513,7 +530,7 @@ void GatherViewer::on_action_Trace_Options_triggered()
         m_traceDisplayOptionsDialog->setDisplayDensity(gatherLabel->isDisplayDensity());
         m_traceDisplayOptionsDialog->setEditColorTableAction(ui->actionDensity_Color_Table);
         //m_traceDisplayOptionsDialog->setColors(gatherLabel->colorTable()->colors() );
-        GatherScaler* scaler=gatherView->gatherScaler();
+        //GatherScaler* scaler=gatherView->gatherScaler();
         m_traceDisplayOptionsDialog->setTraceColor(gatherLabel->traceColor());
         m_traceDisplayOptionsDialog->setTraceOpacity(gatherLabel->traceOpacity());
         m_traceDisplayOptionsDialog->setDensityOpacity(gatherLabel->densityOpacity());
@@ -705,13 +722,6 @@ void GatherViewer::on_action_Close_Picks_triggered()
 {
     if( !m_project ) return;
 
-    /*
-    QRect bb=m_project->geometry().bboxLines();
-    Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
-    //std::cout<<"Bounds: i1="<<bounds.i1()<<" j1="<<bounds.j1()<<" i2="<<bounds.i2()<<" j2="<<bounds.j2()<<std::endl;
-    std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
-    gatherView->picker()->setPicks(g);
-    */
     if( !picksSaved()) return;
 
     gatherView->picker()->setPicks(std::shared_ptr<Grid2D<float>>());
@@ -723,14 +733,31 @@ void GatherViewer::on_action_Save_Picks_triggered()
     if( !m_project ) return;
 
 
-    if( m_picksGridName.isEmpty()) return;
+    if( m_picksGridName.isEmpty()){
 
-    if( ! m_project->saveGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
+        // input non-existing name
+        for(;;){
+
+            QString name = QInputDialog::getText(this, tr("Save Picks"), tr("Pick Grid Name:") );
+
+            if( name.isNull() ) return; // canceled
+
+            if( ! m_project->gridList(GridType::Other).contains(name)){
+                m_picksGridName=name;
+                break;
+            }
+
+            QMessageBox::warning(this, tr("Save Grid"), QString("Grid \"%1\" already exists. Please enter a new name").arg(name));
+        }
+    }
+
+    if( ! m_project->addGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
 
         QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
     }
 
     gatherView->picker()->setDirty(false);
+
 }
 
 void GatherViewer::on_action_New_Picks_triggered()
@@ -739,34 +766,13 @@ void GatherViewer::on_action_New_Picks_triggered()
 
     if( !picksSaved()) return;
 
-    while(1){
+    // create empty grid (filled with NULL) for entire project geometry
+    QRect bb=m_project->geometry().bboxLines();
+    Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
+    std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
 
-        QString name = QInputDialog::getText(this, tr("New Picks"), tr("Pick Grid Name:") );
-
-        if( name.isNull() ) return; // canceled
-
-        // grid does not already exists, savee and done
-        if( !m_project->gridList(GridType::Other).contains(name)){
-
-            // create empty grid (filled with NULL) for entire project geometry
-            QRect bb=m_project->geometry().bboxLines();
-            Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
-            std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
-
-            // save empty grid to reserve name
-            if( !m_project->addGrid(GridType::Other, name, g ) ){
-                QMessageBox::critical(this, tr("New Picks"), tr("Addind Grid to Project failed"));
-            }
-
-            m_picksGridName=name;
-            gatherView->picker()->setPicks(g);
-            break;
-        }
-        // grid exists: warn and repeat
-        else{
-            QMessageBox::warning( this, tr("New Picks"), tr("Grid Exists!"));
-        }
-    }
+    m_picksGridName=QString();  // empty name for new grid
+    gatherView->picker()->setPicks(g);
 }
 
 
@@ -781,6 +787,12 @@ void GatherViewer::pickTypeSelected(QAction * a){
 
     PickType t = toPickType(a->text());
     gatherView->picker()->setType(t);
+}
+
+void GatherViewer::fillModeSelected(QAction * a){
+
+    PickFillMode m = toPickFillMode( a->text() );
+    gatherView->picker()->setFillMode(m);
 }
 
 void GatherViewer::closeEvent(QCloseEvent *event)
@@ -1011,7 +1023,7 @@ QVector<int> GatherViewer::computeIntersections(){
 
 
 
-void GatherViewer::on_actionShare_Current_Position_toggled(bool on)
+void GatherViewer::on_actionShare_Current_Position_toggled(bool)
 {
     // need to update all viewers accordingly
     updateIntersections();
