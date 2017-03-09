@@ -177,9 +177,6 @@ void GatherView::setMouseMode(MouseMode m){
 
     m_gatherLabel->setCursor(modeCursor(m_mouseMode));
 
-
-    std::cout<<"MM="<<toQString(m).toStdString()<<std::endl;
-
     emit mouseModeChanged(m_mouseMode);
 }
 
@@ -504,6 +501,27 @@ void GatherView::resizeEvent(QResizeEvent *ev){
 
 
 bool GatherView::eventFilterExplore(QWidget* widget, QMouseEvent *mouseEvent){
+
+    static bool drag=false;
+    static QPoint last;
+
+    if( mouseEvent->type()==QEvent::MouseButtonPress && mouseEvent->button()==Qt::LeftButton ){
+        last=mouseEvent->pos();
+        drag=true;
+        m_gatherLabel->setCursor(QCursor(Qt::DragMoveCursor) );
+    }
+    else if( mouseEvent->type()==QEvent::MouseMove && drag ){
+
+        QPoint delta = last - mouseEvent->pos();
+        horizontalScrollBar()->setValue( horizontalScrollBar()->value() + delta.x() );
+        verticalScrollBar()->setValue( verticalScrollBar()->value() + delta.y() );
+        last = mouseEvent->pos();
+    }
+    else if( mouseEvent->type()==QEvent::MouseButtonRelease && drag ){
+        drag=false;
+        m_gatherLabel->setCursor(modeCursor(m_mouseMode));  // restore previous cursor
+    }
+
     return true;
 }
 
@@ -520,6 +538,9 @@ bool GatherView::eventFilterZoom(QWidget* widget, QMouseEvent *mouseEvent){
             }
             rubberBand->setGeometry(QRect(mouseSelectionStart, QSize()));
             rubberBand->show();
+
+            // set the appropriate cursor even if we came here using CTRL key, i.s. mouseMode is not zoom
+            m_gatherLabel->setCursor(modeCursor(MouseMode::Zoom) );
     }
     else if( mouseEvent->type()==QEvent::MouseMove && mouseSelection ){
 
@@ -540,6 +561,7 @@ bool GatherView::eventFilterZoom(QWidget* widget, QMouseEvent *mouseEvent){
 
         zoom( QRect(mouseSelectionStart, end).normalized());
 
+        m_gatherLabel->setCursor(modeCursor(m_mouseMode));  // restore previous cursor
     }
 
     return true;
