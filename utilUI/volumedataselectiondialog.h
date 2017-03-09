@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include <volumedimensions.h>
+
 namespace Ui {
 class VolumeDataSelectionDialog;
 }
@@ -23,8 +25,9 @@ public:
     int maxInline()const;
     int minCrossline()const;
     int maxCrossline()const;
-    double minTime()const;
-    double maxTime()const;
+    int minMSec()const;
+    int maxMSec()const;
+    VolumeDimensions dimensions()const;
 
 public slots:
 
@@ -34,8 +37,9 @@ public slots:
     void setMaxInline(int);
     void setMinCrossline(int);
     void setMaxCrossline(int);
-    void setMinTime(double);
-    void setMaxTime(double);
+    void setMinMSec(int);
+    void setMaxMSec(int);
+    void setDimensions( VolumeDimensions );
 
 signals:
     void areaModeChanged(bool);

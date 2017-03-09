@@ -65,6 +65,7 @@ public:
 
 public slots:
     void setGrid( std::shared_ptr<Grid2D<float> >);
+    void setGridInfos( GridType, QString );
     void setProject( AVOProject* );
     void setTimeSource(TimeSource);
     void setFixedTime(int);
@@ -118,6 +119,8 @@ private slots:
 
     void on_actionConfigure_Scales_triggered();
 
+    void on_actionReload_triggered();
+
 private:
 
     void createDockWidgets();
@@ -139,8 +142,11 @@ private:
     ColorBarWidget* m_colorBar=nullptr;
     QDockWidget* m_colorBarDock=nullptr;
 
-    std::shared_ptr<Grid2D<float> > m_grid;
     AVOProject* m_project;
+
+    std::shared_ptr<Grid2D<float> > m_grid;
+    GridType m_gridType;
+    QString m_gridName;
 
     TimeSource m_timeSource=TimeSource::TIME_NONE;
     int m_fixedTime=0;

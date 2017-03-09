@@ -5,13 +5,21 @@
 #include <QInputDialog>
 #include<iostream>
 
+std::ostream& operator<<(std::ostream& os, const SliceDef& def ){
+
+    os<<"[ volume="<<def.volume.toStdString()<<" type="<<toQString(def.type).toStdString()<<" value="<<def.value<<" ]";
+    return os;
+}
+
 EditSlicesDialog::EditSlicesDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EditSlicesDialog)
 {
     ui->setupUi(this);
 
+    connect( ui->cbName , SIGNAL(currentIndexChanged(QString)), this, SLOT(sliceControlsChanged()) );
     connect( ui->sbValue, SIGNAL(valueChanged(int)), this, SLOT(sliceControlsChanged()) );
+    connect( ui->cbVolume, SIGNAL(currentIndexChanged(int)), this, SLOT(sliceControlsChanged()) );
 }
 
 EditSlicesDialog::~EditSlicesDialog()
@@ -20,9 +28,25 @@ EditSlicesDialog::~EditSlicesDialog()
 }
 
 
+void EditSlicesDialog::setDimensions(VolumeDimensions dims){
+
+    if( dims==m_dimensions ) return;
+
+    m_dimensions=dims;
+
+
+}
+
 void EditSlicesDialog::setSliceModel(SliceModel * model){
 
     if( model == m_sliceModel ) return;
+/*
+    std::cout<<"MODEL:"<<std::endl;
+    foreach( QString name, model->names()){
+        std::cout<<name.toStdString()<<" : "<<model->slice(name)<<std::endl<<std::flush;
+    }
+*/
+    wait_controls=true;
 
     m_sliceModel=model;
 
@@ -35,6 +59,8 @@ void EditSlicesDialog::setSliceModel(SliceModel * model){
     foreach( QString name, m_sliceModel->names()){
         ui->cbName->addItem(name);
     }
+
+    wait_controls=false;
 
     ui->cbName->setCurrentIndex(0);
 }
@@ -59,7 +85,7 @@ void EditSlicesDialog::modelChanged(){
     wait_controls=false;
 
     // if exists make same slice current as before
-    if( names.contains(name)){
+    if( !name.isEmpty() && names.contains(name)){
         ui->cbName->setCurrentText(name);
     }
     else{
@@ -68,9 +94,17 @@ void EditSlicesDialog::modelChanged(){
 }
 
 
-void EditSlicesDialog::setBounds(Grid3DBounds bounds){
+void EditSlicesDialog::setVolumes(QStringList l){
 
-    m_bounds=bounds;
+    QString cur=ui->cbVolume->currentText();
+
+    ui->cbVolume->clear();
+
+    ui->cbVolume->addItems(l);
+
+    if( l.contains(cur)){
+        ui->cbVolume->setCurrentText(cur);
+    }
 }
 
 void EditSlicesDialog::setCurrentSlice(QString name){
@@ -93,20 +127,21 @@ void EditSlicesDialog::sliceControlsChanged(){
 
 void EditSlicesDialog::sliceToControls( QString name, SliceDef slice ){
 
-
     // prevent signals of controls before all params are set
     wait_controls=true;
 
+    ui->cbVolume->setCurrentText(slice.volume);
+
+    // adjust bounds to current volume bounds
     // update value range according to slice type and volume bounds
     int min=0;
     int max=100;
     int inc=1;
     switch(slice.type){
-    case SliceType::INLINE: min=m_bounds.inline1(); max=m_bounds.inline2(); inc=1; break;
-    case SliceType::CROSSLINE: min=m_bounds.crossline1(); max=m_bounds.crossline2(); inc=1; break;
-    case SliceType::TIME: min=static_cast<int>(1000*m_bounds.ft()); max=static_cast<int>(1000*m_bounds.lt());
-                            inc=static_cast<int>(1000*m_bounds.dt());break;
-    }   
+    case SliceType::INLINE: min=m_dimensions.inline1; max=m_dimensions.inline2; inc=1; break;
+    case SliceType::CROSSLINE: min=m_dimensions.crossline1; max=m_dimensions.crossline2; inc=1; break;
+    case SliceType::TIME: min=m_dimensions.msec1; max=m_dimensions.msec2; inc=1;break;              // need a clever way to make this settable
+    }
     ui->sbValue->setRange(min, max);
     ui->sbValue->setSingleStep(inc);
 
@@ -123,16 +158,17 @@ void EditSlicesDialog::sliceToControls( QString name, SliceDef slice ){
     // value changes of controls can trigger signals again
     wait_controls=false;
 
-    //std::cout<<"slice to controls: name="<<name.toStdString()<<" type="<<toQString(slice.type).toStdString()<<" value="<<slice.value<<std::endl;
-
 }
 
 SliceDef EditSlicesDialog::sliceFromControls(){
 
-    SliceDef slice;
+    SliceDef slice{"", SliceType::INLINE, 0};
+
+    if( ui->leType->text().isEmpty()) return slice;
 
     slice.type = toSliceType(ui->leType->text());
     slice.value = ui->sbValue->value();
+    slice.volume = ui->cbVolume->currentText();
 
     return slice;
 }
@@ -147,22 +183,30 @@ void EditSlicesDialog::on_pbAdd_clicked()
     types.append(toQString(SliceType::TIME));
     bool ok=false;
 
+    QString volume=ui->cbVolume->currentText();
+
     QString s = QInputDialog::getItem(this, tr("Add Slice"), tr("Select Type:"), types, 0, false, &ok );
+
     if( s.isNull() || !ok ) return;
     SliceType type = toSliceType(s);
 
     // find central value for slice
     int value=0;
     switch( type ){
-    case SliceType::INLINE: value=(m_bounds.inline1() + m_bounds.inline2() ) / 2; break;
-    case SliceType::CROSSLINE: value=(m_bounds.crossline1() + m_bounds.crossline2() ) / 2; break;
-    case SliceType::TIME: value=static_cast<int>(1000 * (m_bounds.ft() + m_bounds.lt() ) / 2 ); break;
+    case SliceType::INLINE: value=(m_dimensions.inline1 + m_dimensions.inline2 ) / 2; break;
+    case SliceType::CROSSLINE: value=(m_dimensions.crossline1 + m_dimensions.crossline2 ) / 2; break;
+    case SliceType::TIME: value= (m_dimensions.msec1+m_dimensions.msec2 ) / 2; break;
     }
 
-    SliceDef def{ type, value };
+    SliceDef slice{ volume, type, value };
 
     QString name=m_sliceModel->generateName();
-    m_sliceModel->addSlice( name, def );
+
+    wait_controls=true;
+
+    m_sliceModel->addSlice( name, slice );
+
+    wait_controls=false;
 
     ui->cbName->setCurrentText(name);
 
@@ -191,7 +235,6 @@ void EditSlicesDialog::on_pbDelete_clicked()
 
 void EditSlicesDialog::on_cbName_currentIndexChanged(const QString& name)
 {
-
     if( ! m_sliceModel->contains(name)) return;
 
     SliceDef slice=m_sliceModel->slice(name);

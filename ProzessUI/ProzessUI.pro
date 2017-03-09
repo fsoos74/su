@@ -38,7 +38,9 @@ SOURCES += prozessui.cpp \
     trendbasedattributesdialog.cpp \
     cropvolumedialog.cpp \
     convertgriddialog.cpp \
-    smoothgriddialog.cpp
+    smoothgriddialog.cpp \
+    cropgriddialog.cpp \
+    curvaturevolumedialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -60,7 +62,9 @@ HEADERS += prozessui.h\
     trendbasedattributesdialog.h \
     cropvolumedialog.h \
     convertgriddialog.h \
-    smoothgriddialog.h
+    smoothgriddialog.h \
+    cropgriddialog.h \
+    curvaturevolumedialog.h
 
 unix {
     target.path = /usr/lib
@@ -85,7 +89,9 @@ FORMS += \
     trendbasedattributesdialog.ui \
     cropvolumedialog.ui \
     convertgriddialog.ui \
-    smoothgriddialog.ui
+    smoothgriddialog.ui \
+    cropgriddialog.ui \
+    curvaturevolumedialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

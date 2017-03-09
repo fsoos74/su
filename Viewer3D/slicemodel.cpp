@@ -48,6 +48,8 @@ void SliceModel::removeSlice(QString name){
 
 void SliceModel::setSlice(QString name, SliceDef slice){
 
+    if( name.isEmpty() ) return;
+
     if( !m_slices.contains(name)) return;
 
     if( m_slices.value(name) == slice ) return;  // no change

@@ -310,9 +310,8 @@ void GatherView::setPixelPerSecond( qreal pps ){
     emit pixelPerSecondChanged(pps);
 
     m_gatherLabel->setFixedHeight(newHeight);
-    //m_gatherLabel->resize( width(), newHeight);
 
-    qreal factor=oldPPS/pps;
+    qreal factor=pps / oldPPS;        // !!!! XXXX same as for traces
 
     adjustScrollBar( verticalScrollBar(), factor);
 
@@ -418,9 +417,27 @@ void GatherView::zoomBy( qreal factor ){
 
     if( m_fixedScale ) return;
 
+    // adjust factor such that gather at least fills the viewport
+    qreal minPPT=qreal(viewport()->width())/m_gather->size();   // minimum pixel per trace
+    qreal minPPS=qreal(viewport()->height())/(lt()-ft());       // minium pixel per second
+    if( factor*m_pixelPerTrace < minPPT ) factor=minPPT/m_pixelPerTrace;
+    if( factor*m_pixelPerSecond < minPPS ) factor=minPPS/m_pixelPerSecond;
+
     setPixelPerUnits(factor*m_pixelPerTrace, factor*m_pixelPerSecond);
-    adjustScrollBar( horizontalScrollBar(), factor);
-    adjustScrollBar( verticalScrollBar(), factor);
+    //adjustScrollBar( horizontalScrollBar(), factor);
+    //adjustScrollBar( verticalScrollBar(), factor);
+
+/*
+    QSize oldSize=m_gatherLabel->size();
+    QSize newSize=factor * m_gatherLabel->size();
+    if( newSize.width()<viewport()->width()) newSize.setWidth(viewport()->width());
+    if( newSize.height()<viewport()->height()) newSize.setHeight( viewport()->height());
+
+    m_gatherLabel->setFixedSize( newSize );
+    adjustScrollBar( horizontalScrollBar(), qreal(newSize.width())/oldSize.width());// factor);
+    adjustScrollBar( verticalScrollBar(), qreal(newSize.height())/oldSize.height());//factor);
+*/
+    update();
 }
 
 void GatherView::updateLayout(){
@@ -487,7 +504,7 @@ void GatherView::resizeEvent(QResizeEvent *ev){
 
 
 bool GatherView::eventFilterExplore(QWidget* widget, QMouseEvent *mouseEvent){
-
+    return true;
 }
 
 
@@ -524,6 +541,8 @@ bool GatherView::eventFilterZoom(QWidget* widget, QMouseEvent *mouseEvent){
         zoom( QRect(mouseSelectionStart, end).normalized());
 
     }
+
+    return true;
 }
 
 bool GatherView::eventFilterSelect(QWidget* widget, QMouseEvent *mouseEvent){
@@ -854,6 +873,7 @@ QPoint GatherView::mouseEventToLabel( QPoint pt, bool start ){
 
 void GatherView::adjustScrollBar(QScrollBar *scrollBar, qreal factor)
 {
+
     int newValue=int(factor * scrollBar->value()
                      + ((factor - 1) * scrollBar->pageStep()/2));
     scrollBar->setValue(newValue);

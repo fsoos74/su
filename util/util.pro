@@ -26,7 +26,9 @@ HEADERS += util.h\
     rectangle.h \
     array3d.h \
     range.h \
-    interp.h
+    interp.h \
+    volumedimensions.h \
+    tree2d.h
 
 unix {
     target.path = /usr/lib

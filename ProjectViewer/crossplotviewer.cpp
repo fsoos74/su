@@ -179,8 +179,9 @@ void CrossplotViewer::scanBounds(){
         if(point.time>maxt) maxt=point.time;
     }
 
-    m_geometryBounds=Grid2DBounds(minil, minxl, maxil, maxxl);
-    m_timeRange=Range<float>(mint, maxt);
+    setRegion( VolumeDimensions(minil, maxil, minxl, maxxl, static_cast<int>(1000*mint), static_cast<int>(1000*maxt)));
+    //m_geometryBounds=Grid2DBounds(minil, minxl, maxil, maxxl);
+    //m_timeRange=Range<float>(mint, maxt);
 }
 
 void CrossplotViewer::scanAttribute(){
@@ -258,12 +259,11 @@ void CrossplotViewer::setAxisLabels( const QString& xAxisAnnotation, const QStri
 }
 
 
-void CrossplotViewer::setRegion(Grid2DBounds bounds, Range<float> timerange){
+void CrossplotViewer::setRegion(VolumeDimensions dims){
 
-    if( bounds==m_geometryBounds && timerange==m_timeRange) return;
+    if( dims == m_region) return;
 
-    m_geometryBounds=bounds;
-    m_timeRange=timerange;
+    m_region=dims;
 
     updateScene();
 }
@@ -415,10 +415,10 @@ void CrossplotViewer::updateScene(){
 
         crossplot::DataPoint p = m_data[i];
 
-        // check if point is within the inline/crossline selection for display
-        if( !m_geometryBounds.isInside(p.iline,p.xline)) continue;
-        // check if point is within time range
-        if( !m_timeRange.isInside(p.time)) continue;
+        // check if point is within the inline/crossline/time selection for display
+        int msec=static_cast<int>(1000*p.time);
+        if( !m_region.isInside(p.iline,p.xline, msec)) continue;
+
 
         // NULL values are filtered before the data is set, thus they are not checked for
 
@@ -659,20 +659,11 @@ void CrossplotViewer::on_actionSelect_By_Inline_Crossline_Ranges_triggered()
 
     dlg.setWindowTitle( "Select Line Ranges and Time Range");
 
-    dlg.setMinInline(m_geometryBounds.i1());
-    dlg.setMaxInline(m_geometryBounds.i2());
-    dlg.setMinCrossline(m_geometryBounds.j1());
-    dlg.setMaxCrossline(m_geometryBounds.j2());
-    dlg.setMinTime(m_timeRange.minimum);
-    dlg.setMaxTime(m_timeRange.maximum);
+    dlg.setDimensions(m_region);
 
     if( dlg.exec()==QDialog::Accepted){
 
-        Grid2DBounds bounds( dlg.minInline(), dlg.minCrossline(),
-                             dlg.maxInline(), dlg.maxCrossline() );
-        Range<float> timerange=Range<float>( dlg.minTime(), dlg.maxTime() );
-
-        setRegion( bounds, timerange);
+       setRegion( dlg.dimensions());
     }
 }
 

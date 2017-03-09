@@ -4,8 +4,8 @@
 #include <QDialog>
 #include <QVector>
 #include <slicedef.h>
-#include <grid3d.h>  // need bounds
 #include <slicemodel.h>
+#include <volumedimensions.h>
 
 namespace Ui {
 class EditSlicesDialog;
@@ -23,10 +23,11 @@ public:
         return m_sliceModel;
     }
 
-    void setBounds( Grid3DBounds );
-
 
 public slots:
+
+    void setDimensions( VolumeDimensions );
+    void setVolumes( QStringList );
 
     void setSliceModel( SliceModel* );
     void setCurrentSlice( QString );
@@ -51,7 +52,7 @@ private:
     Ui::EditSlicesDialog *ui;
 
     SliceModel* m_sliceModel=nullptr;
-    Grid3DBounds  m_bounds;
+    VolumeDimensions m_dimensions;
 
     bool wait_controls=false;
 };

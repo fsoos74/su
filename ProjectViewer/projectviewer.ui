@@ -206,6 +206,7 @@
      <string>Process(&amp;Grid)</string>
     </property>
     <addaction name="actionCreateTimeslice"/>
+    <addaction name="actionCrop_Grid"/>
     <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Semblance"/>
     <addaction name="actionCompute_Intercept_Gradient"/>
@@ -259,6 +260,7 @@
     <addaction name="separator"/>
     <addaction name="actionRun_Volume_Script"/>
     <addaction name="separator"/>
+    <addaction name="actionVolume_Curvature"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
@@ -537,7 +539,17 @@
   </action>
   <action name="actionSmooth_Grid">
    <property name="text">
-    <string>Smooth Grid</string>
+    <string>Smooth &amp;Grid</string>
+   </property>
+  </action>
+  <action name="actionCrop_Grid">
+   <property name="text">
+    <string>Cr&amp;op Grid</string>
+   </property>
+  </action>
+  <action name="actionVolume_Curvature">
+   <property name="text">
+    <string>Volume Curvature</string>
    </property>
   </action>
  </widget>

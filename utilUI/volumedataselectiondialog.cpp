@@ -2,7 +2,6 @@
 #include "ui_volumedataselectiondialog.h"
 
 #include<QIntValidator>
-#include<QDoubleValidator>
 #include<QPushButton>
 
 VolumeDataSelectionDialog::VolumeDataSelectionDialog(QWidget *parent) :
@@ -16,20 +15,18 @@ VolumeDataSelectionDialog::VolumeDataSelectionDialog(QWidget *parent) :
     ui->leMaxInline->setValidator(ivalidator);
     ui->leMinCrossline->setValidator(ivalidator);
     ui->leMaxCrossline->setValidator(ivalidator);
-
-    QDoubleValidator* dvalidator=new QDoubleValidator(this);
-    ui->leMinTime->setValidator(dvalidator);
-    ui->leMaxTime->setValidator(dvalidator);
+    ui->leMinMSec->setValidator(ivalidator);
+    ui->leMaxMSec->setValidator(ivalidator);
 
     connect( ui->leMinInline, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
     connect( ui->leMaxInline, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
     connect( ui->leMinCrossline, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
     connect( ui->leMaxCrossline, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
-    connect( ui->leMinTime, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
-    connect( ui->leMaxTime, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
+    connect( ui->leMinMSec, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
+    connect( ui->leMaxMSec, SIGNAL(textChanged(QString)), this, SLOT(checkOk()) );
 
-    connect( this, SIGNAL(areaModeChanged(bool)), ui->leMinTime, SLOT(setEnabled(bool)) );
-    connect( this, SIGNAL(areaModeChanged(bool)), ui->leMaxTime, SLOT(setEnabled(bool)) );
+    connect( this, SIGNAL(areaModeChanged(bool)), ui->leMinMSec, SLOT(setEnabled(bool)) );
+    connect( this, SIGNAL(areaModeChanged(bool)), ui->leMaxMSec, SLOT(setEnabled(bool)) );
 }
 
 VolumeDataSelectionDialog::~VolumeDataSelectionDialog()
@@ -57,14 +54,19 @@ int VolumeDataSelectionDialog::maxCrossline()const{
     return ui->leMaxCrossline->text().toInt();
 }
 
-double VolumeDataSelectionDialog::minTime()const{
+int VolumeDataSelectionDialog::minMSec()const{
 
-    return ui->leMinTime->text().toDouble();
+    return ui->leMinMSec->text().toInt();
 }
 
-double VolumeDataSelectionDialog::maxTime()const{
+int VolumeDataSelectionDialog::maxMSec()const{
 
-    return ui->leMaxTime->text().toDouble();
+    return ui->leMaxMSec->text().toInt();
+}
+
+VolumeDimensions VolumeDataSelectionDialog::dimensions()const{
+
+    return VolumeDimensions( minInline(), maxInline(), minCrossline(), maxCrossline(), minMSec(), maxMSec() );
 }
 
 void VolumeDataSelectionDialog::setMinInline(int line){
@@ -87,14 +89,24 @@ void VolumeDataSelectionDialog::setMaxCrossline(int line){
     ui->leMaxCrossline->setText(QString::number(line));
 }
 
-void VolumeDataSelectionDialog::setMinTime(double time){
+void VolumeDataSelectionDialog::setMinMSec(int time){
 
-    ui->leMinTime->setText(QString::number(time));
+    ui->leMinMSec->setText(QString::number(time));
 }
 
-void VolumeDataSelectionDialog::setMaxTime(double time){
+void VolumeDataSelectionDialog::setMaxMSec(int time){
 
-    ui->leMaxTime->setText(QString::number(time));
+    ui->leMaxMSec->setText(QString::number(time));
+}
+
+void VolumeDataSelectionDialog::setDimensions(VolumeDimensions dim){
+
+    setMinInline(dim.inline1);
+    setMaxInline(dim.inline2);
+    setMinCrossline(dim.crossline1);
+    setMaxCrossline(dim.crossline2);
+    setMinMSec(dim.msec1);
+    setMaxMSec(dim.msec2);
 }
 
 void VolumeDataSelectionDialog::setAreaMode(bool on){
@@ -111,5 +123,5 @@ void VolumeDataSelectionDialog::checkOk(){
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(
                 minInline()<=maxInline() &&
                 minCrossline()<=maxCrossline() &&
-                minTime()<=maxTime() );
+                minMSec()<=maxMSec() );
 }

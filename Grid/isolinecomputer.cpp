@@ -5,6 +5,8 @@
 #include<iomanip>
 #include<array>
 
+#include<tree2d.h>
+
 const std::array<int,4> CODES{ 0x01, 0x02, 0x04, 0x08 };
 const std::array<int,4> DELTA_I{ 1, 1, 0, 0 };
 const std::array<int,4> DELTA_J{ 0, 1, 1, 0 };
@@ -279,5 +281,12 @@ void IsoLineComputer::compute_2_a( int i, int j ){
 
 
     }
+
+}
+
+
+void create_polygons( QVector< QLineF > segments ){
+
+
 
 }

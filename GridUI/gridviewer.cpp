@@ -229,6 +229,20 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     }
 }
 
+void GridViewer::setGridInfos( GridType type, QString name ){
+std::cout<<"0 name="<<name.toStdString()<<std::endl<<std::flush;
+    if( type==m_gridType && name==m_gridName ) return;
+
+    ui->actionReload->setEnabled(false);
+std::cout<<"1"<<std::endl<<std::flush;
+    //if( !m_project || !m_project->existsGrid( type, name ) ) return;
+std::cout<<"2"<<std::endl<<std::flush;
+    m_gridType=type;
+    m_gridName=name;
+
+    ui->actionReload->setEnabled(true);
+}
+
 void GridViewer::setTimeSource(TimeSource s){
 
     if( s==m_timeSource ) return;
@@ -804,3 +818,17 @@ void GridViewer::on_actionDisplay_Histogram_triggered()
 }
 */
 
+
+void GridViewer::on_actionReload_triggered()
+{
+    if( !m_project ) return;
+
+    std::shared_ptr<Grid2D<float>> g = m_project->loadGrid( m_gridType, m_gridName );
+
+    if( !g ){
+        QMessageBox::critical(this, tr("Load Grid"), tr("Loading grid failed!"));
+        return;
+    }
+
+    setGrid(g);
+}

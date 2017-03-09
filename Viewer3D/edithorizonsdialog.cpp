@@ -11,10 +11,8 @@ EditHorizonsDialog::EditHorizonsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect( ui->cbColor, SIGNAL(colorChanged(QColor)), this, SLOT(horizonControlsChanged()) );
-    connect( ui->cbUseColor, SIGNAL(toggled(bool)), this, SLOT(horizonControlsChanged()) );
-    connect( ui->sbScaler, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
     connect( ui->sbDelay, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
+    connect( ui->cbVolume, SIGNAL(currentIndexChanged(int)), this, SLOT(horizonControlsChanged()) );
 }
 
 EditHorizonsDialog::~EditHorizonsDialog()
@@ -57,6 +55,18 @@ void EditHorizonsDialog::setCurrentHorizon(QString name){
     ui->cbHorizon->setCurrentText(name);
 }
 
+void EditHorizonsDialog::setVolumes(QStringList l){
+
+    QString cur=ui->cbVolume->currentText();
+
+    ui->cbVolume->clear();
+
+    ui->cbVolume->addItems(l);
+
+    if( l.contains(cur)){
+        ui->cbVolume->setCurrentText(cur);
+    }
+}
 
 void EditHorizonsDialog::modelChanged(){
 
@@ -92,6 +102,8 @@ void EditHorizonsDialog::horizonControlsChanged(){
     if( wait_controls) return;
 
     QString name=ui->cbHorizon->currentText();
+    if(name.isEmpty()) return;
+
     HorizonDef horizon=horizonFromControls(name);
 
     // keep grid, no need to store it elsewhere
@@ -111,10 +123,7 @@ void EditHorizonsDialog::horizonToControls( QString name, HorizonDef horizon ){
     // update value range according to slice type and volume bounds
 
     m_currentHorizonControl = horizon.horizon;  // keep
-
-    ui->cbUseColor->setChecked(horizon.useColor);
-    ui->cbColor->setColor(horizon.color);
-    ui->sbScaler->setValue( static_cast<int>(100*horizon.colorScaler) );
+    ui->cbVolume->setCurrentText(horizon.volume);
     ui->sbDelay->setValue(horizon.delay);
 
     // value changes of controls can trigger signals again
@@ -126,9 +135,7 @@ HorizonDef EditHorizonsDialog::horizonFromControls( QString name){
     HorizonDef def;
 
     def.horizon=m_currentHorizonControl;
-    def.useColor=ui->cbUseColor->isChecked();
-    def.color=ui->cbColor->color();
-    def.colorScaler = 0.01 * ui->sbScaler->value();
+    def.volume=ui->cbVolume->currentText();
     def.delay=ui->sbDelay->value();
 
     return def;
@@ -157,12 +164,6 @@ void EditHorizonsDialog::on_cbHorizon_currentIndexChanged(const QString &name)
 
 void EditHorizonsDialog::on_pbAdd_clicked()
 {
-    static const QVector<QColor> HorizonColors{Qt::darkRed, Qt::darkGreen, Qt::darkBlue,
-                Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow,
-                Qt::red, Qt::green, Qt::blue,
-                Qt::cyan, Qt::magenta, Qt::yellow};
-
-
     if( !m_project ) return;
 
     QStringList notLoaded;
@@ -185,19 +186,12 @@ void EditHorizonsDialog::on_pbAdd_clicked()
             return;
         }
 
-        HorizonDef def{ grid, false, HorizonColors.at(m_horizonModel->size()%HorizonColors.size()), 0 };
+        HorizonDef def{ grid, QString(""), 0 };
 
         m_horizonModel->addItem(gridName, def);
 
         setCurrentHorizon(gridName);
-    }
-}
 
-void EditHorizonsDialog::on_cbColor_clicked()
-{
-    QColor color=QColorDialog::getColor( ui->cbColor->color(), this, tr("Select a Color"));
-
-    if( color.isValid()){
-        ui->cbColor->setColor(color);
+        horizonControlsChanged();
     }
 }

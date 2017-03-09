@@ -60,6 +60,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 
 #include <createtimesliceprocess.h>
 #include <createtimeslicedialog.h>
+#include <cropgriddialog.h>
+#include <cropgridprocess.h>
 #include <horizonamplitudesprocess.h>
 #include <horizonamplitudesdialog.h>
 #include <horizonsemblanceprocess.h>
@@ -84,6 +86,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <cropvolumeprocess.h>
 #include <amplitudevolumedialog.h>
 #include <amplitudevolumeprocess.h>
+#include <curvaturevolumedialog.h>
+#include <curvaturevolumeprocess.h>
 #include <convertgriddialog.h>
 #include <convertgridprocess.h>
 #include <smoothgriddialog.h>
@@ -903,6 +907,30 @@ void ProjectViewer::on_actionCreateTimeslice_triggered()
     runProcess( new CreateTimesliceProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionCrop_Grid_triggered()
+{
+    Q_ASSERT( m_project );
+
+    CropGridDialog dlg;
+    dlg.setWindowTitle(tr("Crop Grid"));
+
+    dlg.setInputGrids( toQString(GridType::Attribute), m_project->gridList(GridType::Attribute));
+    dlg.setInputGrids( toQString(GridType::Horizon), m_project->gridList(GridType::Horizon));
+    dlg.setInputGrids( toQString(GridType::Other), m_project->gridList(GridType::Other));
+
+    ProjectGeometry geom=m_project->geometry();
+    QPoint min=geom.linesRange().first;
+    QPoint max=geom.linesRange().second;
+
+    dlg.setInlineRange( min.x(), max.x() );
+    dlg.setCrosslineRange( min.y(), max.y() );
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new CropGridProcess( m_project, this ), params );
+}
+
 void ProjectViewer::on_actionHorizon_Amplitudes_triggered()
 {
     Q_ASSERT( m_project );
@@ -1014,6 +1042,16 @@ void ProjectViewer::on_actionVolume_Semblance_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess( new SemblanceVolumeProcess( m_project, this ), params );
+}
+
+void ProjectViewer::on_actionVolume_Curvature_triggered()
+{
+    CurvatureVolumeDialog dlg;
+    dlg.setInputVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new CurvatureVolumeProcess( m_project, this ), params );
 }
 
 
@@ -1570,6 +1608,7 @@ void ProjectViewer::displayGrid( GridType t, const QString& name){
 
         //viewer->orientate(m_project->geometry());  // this is now obtained from project
         viewer->setProject( m_project );    // need this for il/xl coords conversion
+        viewer->setGridInfos(t, name);  // need this for reloading, maybe only give this info and let viewer load the grid
         viewer->setDispatcher(m_dispatcher);
 
     }
@@ -1670,13 +1709,14 @@ void ProjectViewer::displayVolume3D( const QString& name){
 
         VolumeViewer* vviewer=new VolumeViewer;
 
-        // vviewer->setWindowTitle( QString("Volume Viewer").arg(name) );
+        vviewer->setWindowTitle( QString("Volume Viewer").arg(name) );
         vviewer->setProject(m_project);
         vviewer->setDispatcher(m_dispatcher);
         vviewer->show();
         // call this after show because otherwise o valid gl context!!!
-        vviewer->setVolumeName(name);   // this will also update the window title
-        vviewer->setVolume(volume);
+        vviewer->addVolume(name, volume);
+        //vviewer->setVolumeName(name);   // this will also update the window title
+        //vviewer->setVolume(volume);
     }
 }
 
@@ -2606,6 +2646,7 @@ void ProjectViewer::updateMenu(){
     ui->actionDisplay_Map->setEnabled(isProject);
 
     ui->actionCreateTimeslice->setEnabled(isProject);
+    ui->actionCrop_Grid->setEnabled(isProject);
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
     ui->actionHorizon_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_Gradient->setEnabled(isProject);
@@ -2628,6 +2669,10 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
+
+    ui->actionVolume_Curvature->setEnabled(isProject);
 }
+
+
 
 

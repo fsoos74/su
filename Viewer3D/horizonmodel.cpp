@@ -14,14 +14,12 @@ void HorizonModel::clear(){
 
     emit changed();
 }
-
+#include<iostream>
 
 void HorizonModel::addItem(QString name, HorizonDef slice){
 
     if( m_items.contains(name)) return;
-
     m_items.insert(name, slice);
-
     emit changed();
 }
 
@@ -35,6 +33,7 @@ void HorizonModel::removeItem(QString name){
 }
 
 void HorizonModel::setItem(QString name, HorizonDef def){
+
 
     if( !m_items.contains(name)) return;
 

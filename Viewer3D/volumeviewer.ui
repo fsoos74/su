@@ -42,19 +42,20 @@
     </property>
     <addaction name="action_Open_Volume"/>
     <addaction name="separator"/>
+    <addaction name="action_Close_Volume"/>
+    <addaction name="separator"/>
     <addaction name="actionE_xit"/>
    </widget>
    <widget class="QMenu" name="menu_Options">
     <property name="title">
      <string>Optio&amp;ns</string>
     </property>
+    <addaction name="actionSet_Dimensions"/>
+    <addaction name="separator"/>
     <addaction name="action_Volume_Colortable"/>
     <addaction name="actionVolume_Range"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="actionOverlay_Colortable"/>
-    <addaction name="actionOverlay_Range"/>
-    <addaction name="actionOverlay_Percentage"/>
     <addaction name="separator"/>
     <addaction name="actionSet_Point_Size"/>
     <addaction name="actionSet_Point_Color"/>
@@ -72,6 +73,7 @@
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="action_Background_Color"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menu_Data">
     <property name="title">
@@ -85,8 +87,6 @@
     <addaction name="actionReset_Highlighted_Points"/>
     <addaction name="actionLimit_Highlighted_Points"/>
     <addaction name="separator"/>
-    <addaction name="actionOpen_Overlay_Volume"/>
-    <addaction name="actionClose_Overlay_Volume"/>
    </widget>
    <widget class="QMenu" name="menu_Broadcast">
     <property name="title">
@@ -143,10 +143,6 @@
    <addaction name="actionVolume_Range"/>
    <addaction name="actionHistogram"/>
    <addaction name="separator"/>
-   <addaction name="actionOverlay_Colortable"/>
-   <addaction name="actionOverlay_Range"/>
-   <addaction name="actionOverlay_Percentage"/>
-   <addaction name="actionOverlay_Histogram"/>
    <addaction name="separator"/>
    <addaction name="action_Receive_CDPs"/>
    <addaction name="action_Dispatch_CDPs"/>
@@ -479,56 +475,14 @@
     <string>Set Label Color</string>
    </property>
   </action>
-  <action name="actionOpen_Overlay_Volume">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
+  <action name="actionSet_Dimensions">
    <property name="text">
-    <string>Open &amp;Overlay Volume</string>
+    <string>Set &amp;Dimensions</string>
    </property>
   </action>
-  <action name="actionClose_Overlay_Volume">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
+  <action name="action_Close_Volume">
    <property name="text">
-    <string>&amp;Close Overlay Volume</string>
-   </property>
-  </action>
-  <action name="actionOverlay_Colortable">
-   <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
-     <normaloff>:/icons/images/overlay-colortable-icon-32x32.png</normaloff>:/icons/images/overlay-colortable-icon-32x32.png</iconset>
-   </property>
-   <property name="text">
-    <string>Overla&amp;y Colortable</string>
-   </property>
-  </action>
-  <action name="actionOverlay_Range">
-   <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
-     <normaloff>:/icons/images/overlay-range-icon-32x32.png</normaloff>:/icons/images/overlay-range-icon-32x32.png</iconset>
-   </property>
-   <property name="text">
-    <string>Overlay Ra&amp;nge</string>
-   </property>
-  </action>
-  <action name="actionOverlay_Percentage">
-   <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
-     <normaloff>:/icons/images/overlay-percentage-32x32.png</normaloff>:/icons/images/overlay-percentage-32x32.png</iconset>
-   </property>
-   <property name="text">
-    <string>Overlay Percenta&amp;ge</string>
-   </property>
-  </action>
-  <action name="actionOverlay_Histogram">
-   <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
-     <normaloff>:/icons/images/overlay-histogram-icon-32x32.png</normaloff>:/icons/images/overlay-histogram-icon-32x32.png</iconset>
-   </property>
-   <property name="text">
-    <string>Overlay Histogram</string>
+    <string>&amp;Close Volume</string>
    </property>
   </action>
  </widget>

@@ -54,7 +54,6 @@ SOURCES += main.cpp\
     projectgeometrydialog.cpp \
     aboutdialog.cpp \
     crossplot.cpp \
-    volumedataselectiondialog.cpp \
     crossplotgridsinputdialog.cpp \
     crossplotvolumesinputdialog.cpp \
     edittrenddialog.cpp \
@@ -79,7 +78,6 @@ HEADERS  += projectviewer.h \
     amplitudecurvedefinition.h \
     licenseinfo.h \
     crossplot.h \
-    volumedataselectiondialog.h \
     crossplotgridsinputdialog.h \
     crossplotvolumesinputdialog.h \
     edittrenddialog.h \
@@ -101,7 +99,6 @@ FORMS    += projectviewer.ui \
     amplitudecurveviewer.ui \
     projectgeometrydialog.ui \
     aboutdialog.ui \
-    volumedataselectiondialog.ui \
     crossplotgridsinputdialog.ui \
     crossplotvolumesinputdialog.ui \
     edittrenddialog.ui \

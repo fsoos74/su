@@ -3,6 +3,7 @@
 #include <colortable.h>
 #include <colortabledialog.h>
 #include <modaldisplayrangedialog.h>
+#include <volumedataselectiondialog.h>
 #include<QInputDialog>
 #include<QMessageBox>
 #include<QColorDialog>
@@ -18,25 +19,23 @@
 #include <random>
 #include<horizondef.h>
 
+
+VolumeDimensions toVolumeDimensions(Grid3DBounds bounds){
+
+    return VolumeDimensions(
+        bounds.inline1(), bounds.inline2(), bounds.crossline1(), bounds.crossline2(),
+                static_cast<int>(1000*bounds.ft()), static_cast<int>(1000*bounds.lt() )
+    );
+}
+
 VolumeViewer::VolumeViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::VolumeViewer),
-    m_colorTable(new ColorTable(this)),
-    m_overlayColorTable(new ColorTable(this)),
-     m_horizonModel(new HorizonModel(this)),
+    m_horizonModel(new HorizonModel(this)),
     m_sliceModel(new SliceModel(this))
 {
     ui->setupUi(this);
 
-    m_colorTable->setColors(ColorTable::defaultColors());
-    connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(refreshView()) );
-    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
-    connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
-
-    m_overlayColorTable->setColors(ColorTable::defaultColors());
-    connect( m_overlayColorTable, SIGNAL(colorsChanged()), this, SLOT(refreshView()) );
-    connect( m_overlayColorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
-    connect( m_overlayColorTable, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
 
     connect( ui->actionShow_Volume_Outline, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
     connect( ui->actionShow_Compass, SIGNAL(toggled(bool)), this, SLOT(refreshView()) );
@@ -66,8 +65,8 @@ VolumeViewer::~VolumeViewer()
 
 void VolumeViewer::populateWindowMenu(){
 
-    ui->menu_Window->addAction( m_volumeColorBarDock->toggleViewAction());
-    ui->menu_Window->addAction( m_overlayColorBarDock->toggleViewAction());
+
+
     ui->menu_Window->addAction( m_navigationControlsDock->toggleViewAction());
     ui->menu_Window->addSeparator();
     ui->menu_Window->addAction( ui->toolBar->toggleViewAction());
@@ -75,38 +74,6 @@ void VolumeViewer::populateWindowMenu(){
 }
 
 void VolumeViewer::createDockWidgets(){
-
-    m_volumeColorBarDock = new QDockWidget(tr("Volume Colorbar"), this);
-    m_volumeColorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
-    m_volumeColorBarDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar |
-                                      QDockWidget::DockWidgetClosable |
-                                      QDockWidget::DockWidgetMovable |
-                                      QDockWidget::DockWidgetFloatable);
-    m_volumeColorBarWidget=new ColorBarWidget(m_volumeColorBarDock);
-    m_volumeColorBarWidget->setMinimumHeight(200);
-    m_volumeColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
-    m_volumeColorBarDock->setContentsMargins(10, 5, 10, 5);
-    m_volumeColorBarDock->setWidget(m_volumeColorBarWidget);
-    addDockWidget(Qt::RightDockWidgetArea, m_volumeColorBarDock);
-    m_volumeColorBarWidget->setColorTable( m_colorTable );
-    //m_volumeColorBarWidget->setLabel("Volume Amplitudes");
-    m_volumeColorBarDock->close();
-
-    m_overlayColorBarDock = new QDockWidget(tr("Overlay Colorbar"), this);
-    m_overlayColorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
-    m_overlayColorBarDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar |
-                                      QDockWidget::DockWidgetClosable |
-                                      QDockWidget::DockWidgetMovable |
-                                      QDockWidget::DockWidgetFloatable);
-    m_overlayColorBarWidget=new ColorBarWidget(m_overlayColorBarDock);
-     m_overlayColorBarWidget->setMinimumHeight(200);
-    m_overlayColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
-    m_overlayColorBarDock->setContentsMargins(10, 5, 10, 5);
-    m_overlayColorBarDock->setWidget(m_overlayColorBarWidget);
-    addDockWidget(Qt::RightDockWidgetArea, m_overlayColorBarDock);
-    m_overlayColorBarWidget->setColorTable( m_overlayColorTable );
-    //m_volumeColorBarWidget->setLabel("Volume Amplitudes");
-    m_overlayColorBarDock->close();
 
     m_navigationControlsDock = new QDockWidget(tr("Navigation Controls"), this);
     m_navigationControlsDock->setAllowedAreas(Qt::LeftDockWidgetArea);
@@ -157,82 +124,99 @@ void VolumeViewer::setProject(AVOProject* p){
     //update();
 }
 
-void VolumeViewer::setVolume( std::shared_ptr<Grid3D<float> > volume){
 
-    if( volume==m_volume) return;
+void VolumeViewer::setDimensions(VolumeDimensions dim){
 
-    std::shared_ptr<Grid3D<float>> old = m_volume;  // keep this for geometry comparison
+    if( dim==m_dimensions ) return;
 
-    m_volume=volume;
-
-    if( m_volume ){
-
-        if( displayRangeDialog ){
-            displayRangeDialog->setHistogram(
-                createHistogram( std::begin(*m_volume), std::end(*m_volume), m_volume->NULL_VALUE, 100 )
-                );
-            //displayRangeDialog->setHistogram(createHistogram(m_grid.get()));
-            displayRangeDialog->setRange(m_volume->valueRange());
-        }
-
-        m_colorTable->setRange(m_volume->valueRange());
-
-        if( !old || !volume || old->bounds() !=volume->bounds()){
-            initialVolumeDisplay();
-        }
-        else{
-            refreshView();
-        }
-    }
-}
-
-void VolumeViewer::setVolumeName(QString name){
-
-    if( name==m_volumeName) return;
-
-    m_volumeName=name;
-
-    m_volumeColorBarDock->setWindowTitle(QString("%1 - Colortable").arg(name));
-
-    setWindowTitle( QString("Volume Viewer - %1").arg(name ));
-}
-
-void VolumeViewer::setOverlayVolume( std::shared_ptr<Grid3D<float> > volume){
-
-    if( volume==m_overlayVolume) return;
-
-    m_overlayVolume=volume;
-
-    if( m_overlayVolume ){
-
-        //if( !isColorMappingLocked() ){
-            m_overlayColorTable->setRange(m_overlayVolume->valueRange());
-        //}
-
-    }
+    m_dimensions=dim;
 
     refreshView();
+
+    emit dimensionsChanged(dim);
 }
 
-void VolumeViewer::setOverlayName(QString name){
 
-    if( name==m_overlayName) return;
+void VolumeViewer::addVolume(QString name, std::shared_ptr<Grid3D<float> > volume){
 
-    m_overlayName=name;
+    if( m_volumes.contains(name)) return;   // no dupes
 
-    m_overlayColorBarDock->setWindowTitle(QString("%1 - Colortable").arg(name) );
+    if( name.isEmpty() || !volume ) return; // check key and volume are valid
+
+    // create colortable first
+
+    ColorTable* ct=new ColorTable(this);
+    // NEED ADD CHECK FOR ALLOC OK
+    ct->setColors(ColorTable::defaultColors());
+    ct->setRange(volume->valueRange());
+    connect( ct, SIGNAL(colorsChanged()), this, SLOT(refreshView()) );
+    connect( ct, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshView()) );
+    connect( ct, SIGNAL(powerChanged(double)), this, SLOT(refreshView()) );
+
+    QDockWidget* volumeColorBarDock = new QDockWidget(name, this);
+    volumeColorBarDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    volumeColorBarDock->setFeatures(QDockWidget::DockWidgetVerticalTitleBar |
+                                      QDockWidget::DockWidgetClosable |
+                                      QDockWidget::DockWidgetMovable |
+                                      QDockWidget::DockWidgetFloatable);
+    ColorBarWidget* volumeColorBarWidget=new ColorBarWidget(volumeColorBarDock);
+    volumeColorBarWidget->setFixedHeight(200);
+    volumeColorBarWidget->setScaleAlignment(ColorBarWidget::SCALE_LEFT);
+    volumeColorBarDock->setContentsMargins(10, 5, 10, 5);
+    volumeColorBarDock->setWidget(volumeColorBarWidget);
+    volumeColorBarWidget->setColorTable(ct);
+
+    m_colorTables.insert(name, ct);
+    m_volumeColorBarDocks.insert(name, volumeColorBarDock);
+    m_volumeColorBarWidgets.insert(name, volumeColorBarWidget);
+    m_volumes.insert(name, volume);
+
+    addDockWidget(Qt::RightDockWidgetArea, volumeColorBarDock);
+    volumeColorBarDock->close();
+
+    // add colorbar to window menu
+    ui->menu_Window->addAction( volumeColorBarDock->toggleViewAction());
+
+    // FIRST VOLUME CREATE DEFAULT SLICES
+    if( m_volumes.size()==1) initialVolumeDisplay();
+
+    emit volumeListChanged(volumeList());
 }
 
-void VolumeViewer::setOverlayPercentage(int p){
 
-    if( p==m_overlayPercentage ) return;
+void VolumeViewer::removeVolume(QString name){
 
-    m_overlayPercentage=p;
+    if( name.isEmpty() ) return;
 
-    emit overlayPercentageChanged(p);
+    // remove colorbar from window menu
+    QDockWidget* dock=m_volumeColorBarDocks.value( name, nullptr );
+    if( dock ){
+        ui->menu_Window->removeAction(dock->toggleViewAction());
+        removeDockWidget(dock);
+        delete dock;      // when dock is deleted also cb widget will be deleted because it is child of dock
+    }
+    m_volumeColorBarDocks.remove(name);
+
+    HistogramRangeSelectionDialog* dlg=m_displayRangeDialogs.value(name, nullptr);
+    if(dlg){
+        dlg->close();
+        delete dlg;
+    }
+    m_displayRangeDialogs.remove(name);
+
+    ColorTable* ct=m_colorTables.value(name, nullptr);
+    if( ct ){
+        delete ct;
+    }
+    m_colorTables.remove(name);
+
+    m_volumes.remove(name);
 
     refreshView();
+
+    emit volumeListChanged(volumeList());
 }
+
 
 void VolumeViewer::setHighlightedPoints(QVector<SelectionPoint> rpoints){
 
@@ -320,7 +304,6 @@ void VolumeViewer::refreshView(){
     ViewWidget* view=ui->openGLWidget;
     Q_ASSERT(view);
 
-    Q_ASSERT( m_volume);
 
     ui->openGLWidget->makeCurrent(); // need this to access currect VBOs
 
@@ -330,21 +313,20 @@ void VolumeViewer::refreshView(){
 
     scene->clear();
 
-    Grid3DBounds bounds=m_volume->bounds();
     QVector<int> ilines;
     QVector<int> xlines;
     QVector<int> msecs;
     // volume outline
     if( ui->actionShow_Volume_Outline->isChecked()){
-        outlineToView( bounds, m_outlineColor);
+        outlineToView( m_dimensions, m_outlineColor);
 
         // add min/max inline and crossline and time to labels if outline is drawn
-        ilines<<bounds.inline1();
-        ilines<<bounds.inline2();
-        xlines<<bounds.crossline1();
-        xlines<<bounds.crossline2();
-        msecs<<static_cast<int>(1000*bounds.ft());
-        msecs<<static_cast<int>(1000*bounds.lt());
+        ilines<<m_dimensions.inline1;
+        ilines<<m_dimensions.inline2;
+        xlines<<m_dimensions.crossline1;
+        xlines<<m_dimensions.crossline2;
+        msecs<<m_dimensions.msec1;
+        msecs<<m_dimensions.msec2;
     }
 
     // slices
@@ -359,22 +341,21 @@ void VolumeViewer::refreshView(){
         }
     }
 
+    double ft=0.001*m_dimensions.msec1;
+    double lt=0.001*m_dimensions.msec2;
 
     // labels
     if( ui->actionShow_Labels->isChecked()){
 
-        //int topMS=1000*bounds.ft();
-        //int bottomMS=1000*bounds.lt();
-
         // inlines
         foreach( int iline, ilines){
 
-            QPointF xy1=ilxl_to_xy.map( QPoint(iline, bounds.crossline1() ) );
-            QPointF xy2=ilxl_to_xy.map( QPoint(iline, bounds.crossline2() ) );
+            QPointF xy1=ilxl_to_xy.map( QPoint(iline, m_dimensions.crossline1 ) );
+            QPointF xy2=ilxl_to_xy.map( QPoint(iline, m_dimensions.crossline2 ) );
             QString str=QString("iline %1").arg(iline);
-            textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
+            textToView( QVector3D( xy1.x(), ft, xy1.y()), QVector3D( xy2.x(), ft, xy2.y()),
                         str, Qt::AlignHCenter|Qt::AlignBottom);
-            textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
+            textToView( QVector3D( xy2.x(), lt, xy2.y()), QVector3D( xy1.x(), lt, xy1.y()),
                         str, Qt::AlignHCenter|Qt::AlignTop);
         }
 
@@ -382,20 +363,20 @@ void VolumeViewer::refreshView(){
         // crosslines
         foreach( int xline, xlines){
 
-            QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), xline ) );
-            QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline2(), xline ) );
+            QPointF xy1=ilxl_to_xy.map( QPoint(m_dimensions.inline1, xline ) );
+            QPointF xy2=ilxl_to_xy.map( QPoint(m_dimensions.inline2, xline ) );
             QString str=QString("xline %1").arg(xline);
-            textToView( QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector3D( xy2.x(), bounds.ft(), xy2.y()),
+            textToView( QVector3D( xy1.x(), ft, xy1.y()), QVector3D( xy2.x(), ft, xy2.y()),
                         str, Qt::AlignHCenter|Qt::AlignBottom);
-            textToView( QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector3D( xy1.x(), bounds.lt(), xy1.y()),
+            textToView( QVector3D( xy2.x(), lt, xy2.y()), QVector3D( xy1.x(), lt, xy1.y()),
                         str, Qt::AlignHCenter|Qt::AlignTop);
         }
 
         // times / msecs
-        QPointF xy1=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline1() ) );
-        QPointF xy2=ilxl_to_xy.map( QPoint(bounds.inline1(), bounds.crossline2() ) );
-        QPointF xy3=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline2() ) );
-        QPointF xy4=ilxl_to_xy.map( QPoint(bounds.inline2(), bounds.crossline1() ) );
+        QPointF xy1=ilxl_to_xy.map( QPoint(m_dimensions.inline1, m_dimensions.crossline1 ) );
+        QPointF xy2=ilxl_to_xy.map( QPoint(m_dimensions.inline1, m_dimensions.crossline2 ) );
+        QPointF xy3=ilxl_to_xy.map( QPoint(m_dimensions.inline2, m_dimensions.crossline2 ) );
+        QPointF xy4=ilxl_to_xy.map( QPoint(m_dimensions.inline2, m_dimensions.crossline1 ) );
         foreach( int msec, msecs){
             qreal t=0.001*msec;
             QString str=QString("%1 ms").arg(msec);
@@ -412,17 +393,7 @@ void VolumeViewer::refreshView(){
     foreach( QString hname, m_horizonModel->names() ){
 
         HorizonDef hdef=m_horizonModel->item(hname);
-        Grid2D<float>* h = hdef.horizon.get();
-
-        if( h ){
-
-            if( hdef.useColor ){
-                horizonToView(h, hdef.color, hdef.colorScaler, hdef.delay);
-            }
-            else{
-                horizonToView(h, hdef.delay );
-            }
-        }
+        horizonToView(hdef);
     }
 
     // highlighted points
@@ -432,16 +403,16 @@ void VolumeViewer::refreshView(){
     // compasses / north indicators
     if( ui->actionShow_Compass->isChecked()){
         // draw compasses on every corner at top and bottom of outline cube
-        Grid3DBounds bounds=m_volume->bounds();
-        QVector<QPoint> compassPoints{ QPoint{ bounds.inline1(), bounds.crossline1() },
-                                       QPoint{ bounds.inline1(), bounds.crossline2() },
-                                       QPoint{ bounds.inline2(), bounds.crossline1() },
-                                       QPoint{ bounds.inline2(), bounds.crossline2() } };
+        //Grid3Dm_dimensions m_dimensions=m_volume->m_dimensions();
+        QVector<QPoint> compassPoints{ QPoint{ m_dimensions.inline1, m_dimensions.crossline1 },
+                                       QPoint{ m_dimensions.inline1, m_dimensions.crossline2 },
+                                       QPoint{ m_dimensions.inline2, m_dimensions.crossline1 },
+                                       QPoint{ m_dimensions.inline2, m_dimensions.crossline2 } };
         foreach( QPoint ilxl, compassPoints){
             QPointF xy=ilxl_to_xy.map(ilxl);
-            compassToView( QVector3D{static_cast<float>(xy.x()), static_cast<float>(bounds.ft()), static_cast<float>(xy.y())},
+            compassToView( QVector3D{static_cast<float>(xy.x()), static_cast<float>(ft), static_cast<float>(xy.y())},
                            m_compassSize, m_compassColor );
-            compassToView( QVector3D{static_cast<float>(xy.x()), static_cast<float>(bounds.lt()), static_cast<float>(xy.y())},
+            compassToView( QVector3D{static_cast<float>(xy.x()), static_cast<float>(lt), static_cast<float>(xy.y())},
                            m_compassSize, m_compassColor );
         }
     }
@@ -450,7 +421,7 @@ void VolumeViewer::refreshView(){
 }
 
 void VolumeViewer::receivePoint( SelectionPoint point, int code ){
-
+/*
     Q_ASSERT(m_volume);
 
     switch( code ){
@@ -458,17 +429,17 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
     case PointCode::VIEWER_POINT_SELECTED:{
 
        if( point.iline!=SelectionPoint::NO_LINE){
-            m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::INLINE, point.iline} );
+            m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{m_volumeName, SliceType::INLINE, point.iline} );
         }
         if( point.xline!=SelectionPoint::NO_LINE){
-            m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::CROSSLINE, point.xline} );
+            m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{m_volumeName, SliceType::CROSSLINE, point.xline} );
         }
         break;
     }
 
     case PointCode::VIEWER_TIME_SELECTED:{
         int msec=static_cast<int>(1000*point.time);
-        m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::TIME, msec} );
+        m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{m_volumeName, SliceType::TIME, msec} );
         break;
     }
     default:{               // nop
@@ -477,7 +448,7 @@ void VolumeViewer::receivePoint( SelectionPoint point, int code ){
     }
 
     }
-
+*/
 }
 
 void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
@@ -504,29 +475,33 @@ void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
 }
 
-void VolumeViewer::outlineToView(Grid3DBounds bounds, QColor color){
+void VolumeViewer::outlineToView(VolumeDimensions dims, QColor color){
 
     QVector3D vcolor{ static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF() ) };
 
-    QPoint ILXL1(bounds.inline1(), bounds.crossline1());
-    QPoint ILXL2(bounds.inline1(), bounds.crossline2());
-    QPoint ILXL3(bounds.inline2(), bounds.crossline1());
-    QPoint ILXL4(bounds.inline2(), bounds.crossline2());
+
+
+    QPoint ILXL1(dims.inline1, dims.crossline1);
+    QPoint ILXL2(dims.inline1, dims.crossline2);
+    QPoint ILXL3(dims.inline2, dims.crossline1);
+    QPoint ILXL4(dims.inline2, dims.crossline2);
 
     QPointF XY1=ilxl_to_xy.map(ILXL1);
     QPointF XY2=ilxl_to_xy.map(ILXL2);
     QPointF XY3=ilxl_to_xy.map(ILXL3);
     QPointF XY4=ilxl_to_xy.map(ILXL4);
 
+    float ft=0.001*dims.msec1;
+    float lt=0.001*dims.msec2;
     QVector<VIC::Vertex> vertices{
-        {QVector3D( XY1.x(), bounds.ft(), XY1.y()), vcolor },
-        {QVector3D( XY2.x(), bounds.ft(), XY2.y()), vcolor },
-        {QVector3D( XY4.x(), bounds.ft(), XY4.y()), vcolor },
-        {QVector3D( XY3.x(), bounds.ft(), XY3.y()), vcolor },
-        {QVector3D( XY1.x(), bounds.lt(), XY1.y()), vcolor },
-        {QVector3D( XY2.x(), bounds.lt(), XY2.y()), vcolor },
-        {QVector3D( XY4.x(), bounds.lt(), XY4.y()), vcolor },
-        {QVector3D( XY3.x(), bounds.lt(), XY3.y()), vcolor }
+        {QVector3D( XY1.x(), ft, XY1.y()), vcolor },
+        {QVector3D( XY2.x(), ft, XY2.y()), vcolor },
+        {QVector3D( XY4.x(), ft, XY4.y()), vcolor },
+        {QVector3D( XY3.x(), ft, XY3.y()), vcolor },
+        {QVector3D( XY1.x(), lt, XY1.y()), vcolor },
+        {QVector3D( XY2.x(), lt, XY2.y()), vcolor },
+        {QVector3D( XY4.x(), lt, XY4.y()), vcolor },
+        {QVector3D( XY3.x(), lt, XY3.y()), vcolor }
     };
 
     // points for gl_lines, maybe change to line_strip
@@ -605,9 +580,9 @@ void VolumeViewer::directionIndicatorPlanesToView( Grid3DBounds bounds){
 void VolumeViewer::sliceToView( const SliceDef& def ){
 
     switch(def.type){
-    case SliceType::INLINE: inlineSliceToView(def.value);break;
-    case SliceType::CROSSLINE: crosslineSliceToView(def.value); break;
-    case SliceType::TIME: timeSliceToView(def.value); break;
+    case SliceType::INLINE: inlineSliceToView(def);break;
+    case SliceType::CROSSLINE: crosslineSliceToView(def); break;
+    case SliceType::TIME: timeSliceToView(def); break;
     default: qFatal("Invalid SliceType!!!");
     }
 }
@@ -626,62 +601,53 @@ QImage mix( QImage img1, QImage img2, int perc2){
     return tmp;
 }
 
+// blending by percentage
 QColor mix(QColor color1, QColor color2, qreal r){
 
     return QColor::fromRgbF( (1.-r)*color1.redF() + r * color2.redF(),
                     (1.-r)*color1.greenF() + r * color2.greenF(),
                     (1.-r)*color1.blueF() + r* color2.blueF(),
-                    1. - (1.-r)*(1.-color1.alphaF()) + r*(1.-color2.alphaF() ) );
+                    (1.-r)*color1.alphaF() + r* color2.alphaF()  );
 }
 
-void VolumeViewer::inlineSliceToView( int iline ){
 
-    Q_ASSERT( m_volume);
 
-    Grid3D<float>& volume=*m_volume;
+void VolumeViewer::inlineSliceToView( const SliceDef& def){
+
+    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(def.volume);
+    if( !pvolume) return;
+    Grid3D<float>& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
+    VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
-    if( iline<bounds.inline1() || iline>bounds.inline2()) return;
+    int iline=def.value;
+    if( iline<dims.inline1 || iline>dims.inline2 ) return;
 
-    QImage img(bounds.crosslineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);// QImage::Format_RGB32 );
+    ColorTable* colorTable=m_colorTables.value(def.volume, nullptr);
+    if(!colorTable) return;
+
+    int sample1=bounds.timeToSample(0.001*dims.msec1);
+    int sample2=bounds.timeToSample(0.001*dims.msec2);
+    int sampleCount=sample2-sample1+1;
+    QImage img(dims.crosslineCount(), sampleCount, QImage::Format_RGBA8888);// QImage::Format_RGB32 );
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
 
-            Grid3D<float>::value_type value=volume(iline, bounds.crossline1()+i, j);
-            ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
+            Grid3D<float>::value_type value=volume(iline, dims.crossline1+i, sample1+j);
+            ColorTable::color_type color=(value!=volume.NULL_VALUE) ? colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(i,j, color );
         }
     }
 
-    // overlay
-    if( m_overlayVolume ){
-
-        QImage oimg(bounds.crosslineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);
-        oimg.fill(qRgba(0,0,0,0));
-        Grid3DBounds obounds=m_overlayVolume->bounds();
-
-        for( int i=0; i<oimg.width(); i++){
-            int xline = bounds.crossline1() + i;
-            for( int j=0; j<oimg.height(); j++){
-                float t=bounds.sampleToTime(j);
-                Grid3D<float>::value_type value=m_overlayVolume->value( iline, xline, t);  // returns NULL if outside
-                if( value == m_overlayVolume->NULL_VALUE ) continue;
-                ColorTable::color_type color=m_overlayColorTable->map(value);
-                oimg.setPixel(i,j, color );
-            }
-        }
-
-        img=mix(img, oimg, m_overlayPercentage);
-    }
-
-    QPointF xy1=ilxl_to_xy.map(QPoint(iline, bounds.crossline1()));
-    QPointF xy2=ilxl_to_xy.map(QPoint(iline, bounds.crossline2()));
-
+    QPointF xy1=ilxl_to_xy.map(QPoint(iline, dims.crossline1));
+    QPointF xy2=ilxl_to_xy.map(QPoint(iline, dims.crossline2));
+    float ft=0.001*dims.msec1;
+    float lt=0.001*dims.msec2;
     QVector<VIT::Vertex> vertices{
-        {QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector2D( 0, 0)},   // top left
-        {QVector3D( xy2.x(), bounds.ft(), xy2.y()), QVector2D( 1, 0)},   // top right
-        {QVector3D( xy1.x(), bounds.lt(), xy1.y()), QVector2D( 0, 1)},   // bottom left
-        {QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector2D( 1, 1)}    // bottom right
+        {QVector3D( xy1.x(), ft, xy1.y()), QVector2D( 0, 0)},   // top left
+        {QVector3D( xy2.x(), ft, xy2.y()), QVector2D( 1, 0)},   // top right
+        {QVector3D( xy1.x(), lt, xy1.y()), QVector2D( 0, 1)},   // bottom left
+        {QVector3D( xy2.x(), lt, xy2.y()), QVector2D( 1, 1)}    // bottom right
     };
 
     QVector<VIT::Index> indices{
@@ -691,56 +657,44 @@ void VolumeViewer::inlineSliceToView( int iline ){
     ui->openGLWidget->scene()->addItem(VIT::makeVIT(vertices, indices, GL_TRIANGLE_STRIP, img) );
 }
 
-void VolumeViewer::crosslineSliceToView( int xline ){
+void VolumeViewer::crosslineSliceToView(  const SliceDef& def){
 
-    Q_ASSERT( m_volume);
-
-    Grid3D<float>& volume=*m_volume;
+    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(def.volume);
+    if( !pvolume) return;
+    Grid3D<float>& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
+    VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
-    if( xline<bounds.crossline1() || xline>bounds.crossline2()) return;
+    int xline=def.value;
+    if( xline<dims.crossline1 || xline>dims.crossline2) return;
 
-    QImage img(bounds.inlineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);// QImage::Format_RGB32 );
+    ColorTable* colorTable=m_colorTables.value(def.volume, nullptr);
+    if(!colorTable) return;
+
+    int sample1=bounds.timeToSample(0.001*dims.msec1);
+    int sample2=bounds.timeToSample(0.001*dims.msec2);
+    int sampleCount=sample2-sample1+1;
+    QImage img(dims.inlineCount(), sampleCount, QImage::Format_RGBA8888);// QImage::Format_RGB32 );
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
 
-            Grid3D<float>::value_type value=volume(bounds.inline1()+i, xline, j);
-            ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
+            Grid3D<float>::value_type value=volume(dims.inline1+i, xline, sample1+j);
+            ColorTable::color_type color=(value!=volume.NULL_VALUE) ? colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(i,j, color );
 
             //img.setPixel(i,j,m_colorTable->map(volume(bounds.inline1()+i, xline, j) ) );
         }
     }
 
-    // overlay
-    if( m_overlayVolume ){
-
-        QImage oimg(bounds.inlineCount(), bounds.sampleCount(), QImage::Format_RGBA8888);
-        oimg.fill(qRgba(0,0,0,0));
-        Grid3DBounds obounds=m_overlayVolume->bounds();
-
-        for( int i=0; i<oimg.width(); i++){
-            int iline = bounds.inline1() + i;
-            for( int j=0; j<oimg.height(); j++){
-                float t=bounds.sampleToTime(j);
-                Grid3D<float>::value_type value=m_overlayVolume->value( iline, xline, t);  // returns NULL if outside
-                if( value == m_overlayVolume->NULL_VALUE ) continue;
-                ColorTable::color_type color=m_overlayColorTable->map(value);
-                oimg.setPixel(i,j, color );
-            }
-        }
-
-        img=mix(img, oimg, m_overlayPercentage);
-    }
-
-    QPointF xy1=ilxl_to_xy.map(QPoint(bounds.inline1(), xline));
-    QPointF xy2=ilxl_to_xy.map(QPoint(bounds.inline2(), xline));
-
+    QPointF xy1=ilxl_to_xy.map(QPoint(dims.inline1, xline));
+    QPointF xy2=ilxl_to_xy.map(QPoint(dims.inline2, xline));
+    float ft=0.001*dims.msec1;
+    float lt=0.001*dims.msec2;
     QVector<VIT::Vertex> vertices{
-        {QVector3D( xy1.x(), bounds.ft(), xy1.y()), QVector2D( 0, 0)},   // top left
-        {QVector3D( xy2.x(), bounds.ft(), xy2.y()), QVector2D( 1, 0)},   // top right
-        {QVector3D( xy1.x(), bounds.lt(), xy1.y()), QVector2D( 0, 1)},   // bottom left
-        {QVector3D( xy2.x(), bounds.lt(), xy2.y()), QVector2D( 1, 1)}    // bottom right
+        {QVector3D( xy1.x(), ft, xy1.y()), QVector2D( 0, 0)},   // top left
+        {QVector3D( xy2.x(), ft, xy2.y()), QVector2D( 1, 0)},   // top right
+        {QVector3D( xy1.x(), lt, xy1.y()), QVector2D( 0, 1)},   // bottom left
+        {QVector3D( xy2.x(), lt, xy2.y()), QVector2D( 1, 1)}    // bottom right
     };
 
     QVector<VIT::Index> indices{
@@ -751,58 +705,39 @@ void VolumeViewer::crosslineSliceToView( int xline ){
 
 }
 
-void VolumeViewer::timeSliceToView( int msec ){
+void VolumeViewer::timeSliceToView( const SliceDef& def ){
 
-    Q_ASSERT( m_volume);
-
-    Grid3D<float>& volume=*m_volume;
+    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(def.volume);
+    if( !pvolume) return;
+    Grid3D<float>& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
+    VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
+    int msec=def.value;
     qreal time=0.001*msec;
+    if( msec<dims.msec1 || msec>dims.msec2  ) return;
 
-    if( time<bounds.ft() || time>bounds.lt()  ) return;
+    ColorTable* colorTable=m_colorTables.value(def.volume, nullptr);
+    if(!colorTable) return;
 
-    QImage img(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGBA8888); //QImage::Format_RGB32 );
-    for( int il=bounds.inline1(); il<=bounds.inline2(); il++){
-        for( int xl=bounds.crossline1(); xl<=bounds.crossline2(); xl++){
-            int xi=il-bounds.inline1();
-            int yi=xl-bounds.crossline1();
+    QImage img(dims.inlineCount(), dims.crosslineCount(), QImage::Format_RGBA8888); //QImage::Format_RGB32 );
+    for( int il=dims.inline1; il<=dims.inline2; il++){
+        for( int xl=dims.crossline1; xl<=dims.crossline2; xl++){
+            int xi=il-dims.inline1;
+            int yi=xl-dims.crossline1;
 
             Grid3D<float>::value_type value=volume.value(il, xl, time);
-            ColorTable::color_type color=(value!=m_volume->NULL_VALUE) ? m_colorTable->map(value) : qRgba(0,0,0,0);
+            ColorTable::color_type color=(value!=volume.NULL_VALUE) ? colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(xi, yi, color );
         }
     }
 
-    // overlay
-    if( m_overlayVolume ){
 
-        QImage oimg(bounds.inlineCount(), bounds.crosslineCount(), QImage::Format_RGBA8888);
-        oimg.fill(qRgba(0,0,0,0));
-        Grid3DBounds obounds=m_overlayVolume->bounds();
 
-        for( int il=bounds.inline1(); il<=bounds.inline2(); il++){
-            for( int xl=bounds.crossline1(); xl<=bounds.crossline2(); xl++){
-
-                Grid3D<float>::value_type value=m_overlayVolume->value( il, xl, time); // returns NULL if outside
-                if( value == m_overlayVolume->NULL_VALUE ) continue;
-
-                int xi=il-bounds.inline1();
-                int yi=xl-bounds.crossline1();
-
-                ColorTable::color_type color=m_overlayColorTable->map(value);
-                oimg.setPixel(xi,yi, color );
-            }
-        }
-
-        img=mix(img, oimg, m_overlayPercentage);
-
-    }
-
-    QPoint ILXL1(bounds.inline1(), bounds.crossline1());
-    QPoint ILXL2(bounds.inline1(), bounds.crossline2());
-    QPoint ILXL3(bounds.inline2(), bounds.crossline1());
-    QPoint ILXL4(bounds.inline2(), bounds.crossline2());
+    QPoint ILXL1(dims.inline1, dims.crossline1);
+    QPoint ILXL2(dims.inline1, dims.crossline2);
+    QPoint ILXL3(dims.inline2, dims.crossline1);
+    QPoint ILXL4(dims.inline2, dims.crossline2);
 
     QPointF XY1=ilxl_to_xy.map(ILXL1);
     QPointF XY2=ilxl_to_xy.map(ILXL2);
@@ -825,20 +760,24 @@ void VolumeViewer::timeSliceToView( int msec ){
 }
 
 
-// project volume on horizon
-void VolumeViewer::horizonToView(Grid2D<float>* hrz, int delayMSec){
 
-    Q_ASSERT( m_volume );
-    Q_ASSERT( hrz );
+// project volume on horizon
+void VolumeViewer::horizonToView(const HorizonDef& hdef){
+
+    if(!hdef.horizon) return;
+    auto hrz = hdef.horizon.get();
+
+    if(!m_volumes.contains(hdef.volume)) return;
+    auto volume=m_volumes.value(hdef.volume).get();
+
+    auto colorTable=m_colorTables.value(hdef.volume, nullptr);
+    if( !colorTable ) return;
 
     Grid2DBounds hbounds=hrz->bounds();
-
 
     //auto range=valueRange(*hrz);
     QVector3D nullColor{0,0,0};
     QVector<VIC::Vertex> vertices;
-
-    qreal r = qreal(m_overlayPercentage)/100;
 
     for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
 
@@ -850,122 +789,19 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, int delayMSec){
             if(tms!=hrz->NULL_VALUE){
                 // scale colour according to relative depth, deeper->darker
                 //float x=(tms-range.first)/(range.second-range.first);
-                qreal t = 0.001*(delayMSec+tms);        // convert time to seconds
+                qreal t = 0.001*(hdef.delay+tms);        // convert time to seconds
 
                 QVector3D color = nullColor;
 
-                float value = m_volume->value(iline, xline, t);
+                float value = volume->value(iline, xline, t);
 
-                if( value != m_volume->NULL_VALUE ){
+                if( value != volume->NULL_VALUE ){
 
-                    QColor c = m_colorTable->map(value);
+                    QColor c = colorTable->map(value);
                     float red=static_cast<float>(c.redF());
                     float green=static_cast<float>(c.greenF());
                     float blue=static_cast<float>(c.blueF());
-
-                    if( m_overlayVolume ){
-
-                        float ovalue=m_overlayVolume->value(iline, xline, t);
-                        if( ovalue!=m_overlayVolume->NULL_VALUE){
-                            QColor oc=m_overlayColorTable->map(ovalue);
-                            c = mix( c, oc, r);
-                        }
-
-                    }
-
                     color = QVector3D{ red, green , blue };
-                }
-
-                vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
-            }
-            else{
-                vertices.append( VIC::Vertex{ QVector3D( xy.x(), 0, xy.y() ), nullColor } );
-            }
-
-        }
-    }
-
-    QVector<VIC::Index> indices;
-
-    bool gap=false;
-    for( int i=hbounds.i1(); i<hbounds.i2(); i++){  // 1 less
-
-        for( int j=hbounds.j1(); j<=hbounds.j2(); j++){
-
-            int l=(i-hbounds.i1())*hbounds.width()+j-hbounds.j1();
-            if( (*hrz)(i,j)!=hrz->NULL_VALUE){ //ignore null values
-                if( gap ){
-                    indices.append(l);
-                    gap=false;
-                }
-                indices.append(l);
-            }
-            else{
-                if(!gap && !indices.empty()){
-                    indices.append(indices.back());
-                    gap=true;
-                }
-            }
-
-            int r=l+hbounds.width();
-            if( (*hrz)(i+1,j)!=hrz->NULL_VALUE){ //ignore null values
-                if( gap ){
-                    indices.append(r);
-                    gap=false;
-                }
-                indices.append(r);
-            }
-            else{
-                if(!gap && !indices.empty()){
-                    indices.append(indices.back());
-                    gap=true;
-                }
-            }
-        }
-        if(!gap){
-            indices.append(indices.back()); // duplicate point marks end of part
-            gap=true;
-        }
-    }
-
-    ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
-}
-
-
-void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, qreal scaler, int delayMSec){
-
-    Q_ASSERT( m_volume );
-    Q_ASSERT( hrz );
-
-    //Grid3D<float>& volume=*m_volume;
-    //Grid3DBounds vbounds=volume.bounds();
-
-    Grid2DBounds hbounds=hrz->bounds();
-
-    auto range=valueRange(*hrz);
-    QVector3D nullColor{0,0,0};
-    QVector3D baseColor{static_cast<float>(hcolor.redF()), static_cast<float>(hcolor.greenF()), static_cast<float>(hcolor.blueF()) };
-    QVector<VIC::Vertex> vertices;
-
-    for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
-
-        for( int xline=hbounds.j1(); xline<=hbounds.j2(); xline++){
-
-            float tms=(*hrz)(iline, xline);  // horizon is in millis
-            QPointF xy=ilxl_to_xy.map(QPoint(iline, xline));
-
-            if(tms!=hrz->NULL_VALUE){
-                // scale colour according to relative depth, deeper->darker
-                float x=(tms-range.first)/(range.second-range.first);
-                qreal t = 0.001*(delayMSec+tms);        // convert time to seconds
-
-                QVector3D color = nullColor;
-
-                float value = m_volume->value(iline, xline, t);
-
-                if( value != m_volume->NULL_VALUE ){
-
-                    color = baseColor * ( 1 - x * scaler);//  (2.-x)/2;
                 }
 
                 vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
@@ -1028,7 +864,6 @@ void VolumeViewer::horizonToView(Grid2D<float>* hrz, QColor hcolor, qreal scaler
 
 void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qreal SIZE){
 
-    Q_ASSERT( m_volume );
 
     QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
     QVector<VIC::Vertex> vertices;
@@ -1128,7 +963,7 @@ void VolumeViewer::textToView( QVector3D pos1, QVector3D pos2, QString text, Qt:
     QFontMetrics metrics(font);
 
     QRect rect = metrics.tightBoundingRect(text);
-    //std::cout<<"rect: x="<<rect.x()<<" y="<<rect.y()<<" w="<<rect.width()<<" h="<<rect.height()<<std::endl;
+    //std::cout<<"rect: x="<<rect.x()<<" y="<<rect.y()<<" w="<<rect.width()<<" h="<<rect.height()<<std::endl<<std::flush;
 
     QImage img(rect.x() + rect.width(), rect.height(), QImage::Format_RGBA8888);
 
@@ -1201,59 +1036,96 @@ void VolumeViewer::textToView( QVector3D pos1, QVector3D pos2, QString text, Qt:
 
 void VolumeViewer::initialVolumeDisplay(){
 
-    Q_ASSERT( m_volume );
-
     m_sliceModel->clear();
 
-    Grid3DBounds bounds=m_volume->bounds();
+    if( m_volumes.empty()) return;
+    QString name=m_volumes.keys().first();
+    Grid3DBounds bounds=m_volumes.value(name)->bounds();
+
+    setDimensions( VolumeDimensions(bounds.inline1(), bounds.inline2(), bounds.crossline1(), bounds.crossline2(),
+                                    static_cast<int>(1000*bounds.ft()), static_cast<int>(1000*bounds.lt()) ) );
 
     int iline=(bounds.inline1()+bounds.inline2())/2;
-    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::INLINE, iline});
+    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{name, SliceType::INLINE, iline});
 
     int xline=(bounds.crossline1()+bounds.crossline2())/2;
-    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::CROSSLINE, xline});
+    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{name, SliceType::CROSSLINE, xline});
 
     int msec=static_cast<int>(1000*(bounds.ft() + bounds.lt() )/2);
-    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{SliceType::TIME, msec});
-
-   // ui->openGLWidget->setCenter(QVector3D(xline, sample, iline) );
+    m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{name, SliceType::TIME, msec});
 
     defaultPositionAndScale();
     ui->openGLWidget->setRotation(QVector3D(0,0,0));
 
     refreshView();
+
+   // ui->openGLWidget->setCenter(QVector3D(xline, sample, iline) );
+
 }
 
+
+QString VolumeViewer::selectVolume(){
+
+    if( m_volumes.empty()) return QString();
+
+    if( m_volumes.size()==1){
+        return m_volumes.keys().first();
+    }
+    else{
+        bool ok=false;
+        QString volume=QInputDialog::getItem(this, tr("Select Volume"), tr("Volume"), m_volumes.keys(), 0, false, &ok);
+        if( volume.isNull() || !ok ) return QString();
+        else return volume;
+    }
+
+}
 
 
 void VolumeViewer::on_action_Volume_Colortable_triggered()
 {
-    QVector<QRgb> oldColors=m_colorTable->colors();
+    QString volume=selectVolume();
+    if( volume.isEmpty() ) return;
+
+    ColorTable* colorTable=m_colorTables.value(volume, nullptr);
+    if(!colorTable) return;
+
+    QVector<QRgb> oldColors=colorTable->colors();
 
     ColorTableDialog colorTableDialog( oldColors );
-
+    colorTableDialog.setWindowTitle(QString("Colortable %1").arg(volume));
 
     if( colorTableDialog.exec()==QDialog::Accepted ){
-        m_colorTable->setColors( colorTableDialog.colors());
+        colorTable->setColors( colorTableDialog.colors());
     }else{
-        m_colorTable->setColors( oldColors );
+        colorTable->setColors( oldColors );
     }
 
 }
 
 void VolumeViewer::on_actionVolume_Range_triggered()
 {
-    if( !m_volume ) return;
+    QString volume=selectVolume();
+    if( volume.isEmpty() ) return;
+
+    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(volume, nullptr);
+    if(!pvolume) return;
+
+    ColorTable* colorTable=m_colorTables.value(volume, nullptr);
+    if(!colorTable) return;
+
+    HistogramRangeSelectionDialog* displayRangeDialog=m_displayRangeDialogs.value(volume, nullptr);
 
     if(!displayRangeDialog){
 
         displayRangeDialog=new HistogramRangeSelectionDialog(this);
-        displayRangeDialog->setHistogram(createHistogram( std::begin(*m_volume), std::end(*m_volume),
-                                                          m_volume->NULL_VALUE, 100 ));
-        displayRangeDialog->setDefaultRange( m_volume->valueRange());
-        displayRangeDialog->setColorTable(m_colorTable );   // all updating through colortable
+        displayRangeDialog->setHistogram(createHistogram( std::begin(*pvolume), std::end(*pvolume),
+                                                          pvolume->NULL_VALUE, 100 ));
+        displayRangeDialog->setDefaultRange( pvolume->valueRange());
+        displayRangeDialog->setColorTable( colorTable );   // all updating through colortable
 
-        displayRangeDialog->setWindowTitle("Configure Volume Display Range" );
+        displayRangeDialog->setWindowTitle(QString("Range %1").arg(volume) );
+
+        m_displayRangeDialogs.insert(volume, displayRangeDialog );
     }
 
 
@@ -1261,78 +1133,27 @@ void VolumeViewer::on_actionVolume_Range_triggered()
 
 }
 
-void VolumeViewer::on_actionOverlay_Colortable_triggered()
-{
-    QVector<QRgb> oldColors=m_overlayColorTable->colors();
-
-    ColorTableDialog colorTableDialog( oldColors );
-
-    colorTableDialog.setWindowTitle(tr("Configure Overlay Colortable"));
-
-    if( colorTableDialog.exec()==QDialog::Accepted ){
-        m_overlayColorTable->setColors( colorTableDialog.colors());
-    }else{
-        m_overlayColorTable->setColors( oldColors );
-    }
-
-}
-
-void VolumeViewer::on_actionOverlay_Range_triggered()
-{
-    if( !m_overlayVolume ) return;
-
-    if(!overlayRangeDialog){
-
-        overlayRangeDialog=new HistogramRangeSelectionDialog(this);
-        overlayRangeDialog->setHistogram(createHistogram( std::begin(*m_overlayVolume), std::end(*m_overlayVolume),
-                                                          m_overlayVolume->NULL_VALUE, 100 ));
-        overlayRangeDialog->setDefaultRange( m_overlayVolume->valueRange());
-        overlayRangeDialog->setColorTable(m_overlayColorTable );   // all updating through colortable
-
-        overlayRangeDialog->setWindowTitle("Configure Overlay Display" );
-
-        overlayRangeDialog->setWindowTitle(tr("Configure Overlay Display Range"));
-    }
-
-    overlayRangeDialog->show();
-}
-
-void VolumeViewer::on_actionOverlay_Percentage_triggered()
-{
-    if( !overlayPercentageDialog ){
-
-        overlayPercentageDialog = new OverlayPercentageDialog(this);
-        overlayPercentageDialog->setWindowTitle(tr("Volume Overlay Percentage"));
-        overlayPercentageDialog->setPercentage(m_overlayPercentage);
-        connect( overlayPercentageDialog, SIGNAL(percentageChanged(int)), this, SLOT(setOverlayPercentage(int)) );
-        connect( this, SIGNAL(overlayPercentageChanged(int)), overlayPercentageDialog, SLOT(setPercentage(int)) );
-    }
-
-    overlayPercentageDialog->show();
-}
-
 void VolumeViewer::defaultPositionAndScale(){
 
-    Q_ASSERT(m_volume);
+    if( !m_dimensions.isValid() ) return;
 
-    Grid3DBounds bounds=m_volume->bounds();
-
-    QRect br_ilxl( bounds.inline1(), bounds.crossline1(), bounds.inlineCount(), bounds.crosslineCount() );
+    QRect br_ilxl( m_dimensions.inline1, m_dimensions.crossline1,
+                   m_dimensions.inline2-m_dimensions.inline1+1, m_dimensions.crossline2 - m_dimensions.crossline1 + 1 );
     br_ilxl=br_ilxl.normalized();
     QRectF br_xy=ilxl_to_xy.mapRect(br_ilxl);
     br_xy=br_xy.normalized();
 
     // compute scale factor to make lines and times same size
-    qreal yfac=qreal(std::max(br_xy.width(), br_xy.height()))/(bounds.lt()-bounds.ft());
+    qreal yfac=qreal(std::max(br_xy.width(), br_xy.height()))/(m_dimensions.msec2 - m_dimensions.msec1 + 1)*1000;   //*1000 sec->msec
 
 
     qreal cx=(br_xy.left()+br_xy.right())/2; //br_xy.center().x();
     qreal cz=(br_xy.top()+br_xy.bottom())/2;//br_xy.center().y();
-    qreal cy=0.5*(bounds.ft()+bounds.lt());
+    qreal cy=0.5*(m_dimensions.msec1+m_dimensions.msec2)*0.001;
 
     qreal sizeX=br_xy.width();
     qreal sizeZ=br_xy.height();
-    qreal sizeY=(bounds.lt()-bounds.ft());
+    qreal sizeY=(m_dimensions.msec2-m_dimensions.msec1)*0.001;
 
     QVector3D dimensions(sizeX, sizeY, sizeZ);
 
@@ -1418,39 +1239,31 @@ void VolumeViewer::on_action_Navigation_Dialog_triggered()
 
 void VolumeViewer::on_actionHistogram_triggered()
 {
-    if( ! m_volume ) return;
+
+    QString volume=selectVolume();
+    if( volume.isEmpty() ) return;
+
+    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(volume, nullptr);
+    if(!pvolume) return;
+
+    ColorTable* colorTable=m_colorTables.value(volume, nullptr);
+    if(!colorTable) return;
+
 
     QVector<double> data;
-    for( auto it=m_volume->values().cbegin(); it!=m_volume->values().cend(); ++it){
-        if( *it==m_volume->NULL_VALUE) continue;
+    for( auto it=pvolume->values().cbegin(); it!=pvolume->values().cend(); ++it){
+        if( *it==pvolume->NULL_VALUE) continue;
         data.push_back(*it);
      }
 
     HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
                                                             // this is important because otherwise the colortable will be deleted before this! CRASH!!!
     viewer->setData( data );
-    viewer->setWindowTitle(QString("Histogram of %1").arg(m_volumeName ) );
-    viewer->setColorTable(m_colorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
+    viewer->setWindowTitle(QString("Histogram of %1").arg(volume ) );
+    viewer->setColorTable(colorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
 }
 
-void VolumeViewer::on_actionOverlay_Histogram_triggered()
-{
-    if( ! m_overlayVolume ) return;
-
-    QVector<double> data;
-    for( auto it=m_overlayVolume->values().cbegin(); it!=m_overlayVolume->values().cend(); ++it){
-        if( *it==m_overlayVolume->NULL_VALUE) continue;
-        data.push_back(*it);
-     }
-
-    HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
-                                                            // this is important because otherwise the colortable will be deleted before this! CRASH!!!
-    viewer->setData( data );
-    viewer->setWindowTitle(QString("Histogram of %1").arg(m_overlayName) );
-    viewer->setColorTable(m_overlayColorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
-    viewer->show();
-}
 
 
 void VolumeViewer::on_actionNavigation_Dialog_triggered()
@@ -1491,14 +1304,20 @@ void VolumeViewer::on_action_Background_Color_triggered()
 
 void VolumeViewer::on_actionEdit_Slices_triggered()
 {
+    if( m_volumes.empty()) return;
+
     if( !editSlicesDialog ){
 
         editSlicesDialog = new EditSlicesDialog( this );
 
-        editSlicesDialog->setBounds( m_volume->bounds() );
+        editSlicesDialog->setDimensions(m_dimensions);
+        editSlicesDialog->setVolumes(m_volumes.keys());
         editSlicesDialog->setWindowTitle(tr("Edit Slices"));
 
         editSlicesDialog->setSliceModel(m_sliceModel);
+
+        connect( this, SIGNAL(volumeListChanged(QStringList)), editSlicesDialog, SLOT(setVolumes(QStringList)) );
+        connect( this, SIGNAL(dimensionsChanged(VolumeDimensions)), editSlicesDialog, SLOT(setDimensions(VolumeDimensions)) );
     }
 
     editSlicesDialog->show();
@@ -1510,12 +1329,12 @@ void VolumeViewer::on_actionEdit_Horizons_triggered()
     if( !editHorizonsDialog ){
 
         editHorizonsDialog=new EditHorizonsDialog( this );
-
+        editHorizonsDialog->setVolumes(m_volumes.keys());
         editHorizonsDialog->setHorizonModel(m_horizonModel);    // dialog and manager have this as parent
-
         editHorizonsDialog->setProject( m_project );
-
         editHorizonsDialog->setWindowTitle(tr("Edit Horizons"));
+
+        connect( this, SIGNAL(volumeListChanged(QStringList)), editHorizonsDialog, SLOT(setVolumes(QStringList)) );
     }
 
     editHorizonsDialog->show();
@@ -1537,36 +1356,10 @@ void VolumeViewer::on_action_Open_Volume_triggered()
         return;
     }
 
-    setVolume(volume);
-    setVolumeName(name);
+    addVolume(name, volume);
 }
 
-void VolumeViewer::on_actionOpen_Overlay_Volume_triggered()
-{
-    if( !m_project )return;
 
-    bool ok=false;
-    QString name=QInputDialog::getItem( this, tr("Open Overlay Volume"), tr("Select Volume"),
-                                        m_project->volumeList(), 0, false, &ok);
-
-    if( !ok || name.isNull() ) return;
-
-    std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
-    if( !volume ){
-        QMessageBox::critical(this, tr("Open Volume"), tr("Loading Volume failed!"));
-        return;
-    }
-
-    setOverlayVolume(volume);
-    setOverlayName(name);
-}
-
-void VolumeViewer::on_actionClose_Overlay_Volume_triggered()
-{
-
-    setOverlayVolume( std::shared_ptr<Grid3D<float>>() );
-    setOverlayName("");
-}
 
 void VolumeViewer::on_actionReset_Highlighted_Points_triggered()
 {
@@ -1647,3 +1440,23 @@ void VolumeViewer::on_actionSet_Label_Color_triggered()
 }
 
 
+
+void VolumeViewer::on_actionSet_Dimensions_triggered()
+{
+   VolumeDataSelectionDialog dlg;
+   dlg.setDimensions(m_dimensions);
+   dlg.setWindowTitle(tr("Set Dimensions"));
+
+   if( dlg.exec()==QDialog::Accepted){
+       setDimensions(dlg.dimensions());
+   }
+}
+
+void VolumeViewer::on_action_Close_Volume_triggered()
+{
+    QString volume=selectVolume();
+
+    if( volume.isEmpty()) return;
+
+    removeVolume(volume);
+}

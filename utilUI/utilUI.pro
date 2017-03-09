@@ -40,7 +40,8 @@ SOURCES += utilui.cpp \
     reversespinbox.cpp \
     linelabelgraphicsitem.cpp \
     pixmaputils.cpp \
-    dynamicmousemodeselector.cpp
+    dynamicmousemodeselector.cpp \
+    volumedataselectiondialog.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -60,7 +61,8 @@ HEADERS += utilui.h\
     reversespinbox.h \
     linelabelgraphicsitem.h \
     pixmaputils.h \
-    dynamicmousemodeselector.h
+    dynamicmousemodeselector.h \
+    volumedataselectiondialog.h
 
 unix {
     target.path = /usr/lib
@@ -71,7 +73,8 @@ FORMS += \
     linerangeselectiondialog.ui \
     twocombosdialog.ui \
     pointdisplayoptionsdialog.ui \
-    mousemodeselector.ui
+    mousemodeselector.ui \
+    volumedataselectiondialog.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
@@ -79,6 +82,13 @@ else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
 
 INCLUDEPATH += $$PWD/../ColorUI
 DEPENDPATH += $$PWD/../ColorUI
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+
+INCLUDEPATH += $$PWD/../util
+DEPENDPATH += $$PWD/../util
 
 RESOURCES += \
     ../icons.qrc

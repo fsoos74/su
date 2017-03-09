@@ -10,7 +10,6 @@
 #include <grid2d.h>
 #include <memory>
 
-
 namespace Ui {
 class EditHorizonsDialog;
 }
@@ -27,6 +26,7 @@ public:
 
 public slots:
 
+    void setVolumes( QStringList );
     void setHorizonModel( HorizonModel* );
     void setCurrentHorizon( QString );
 
@@ -41,8 +41,6 @@ private slots:
     void on_pbAdd_clicked();
 
     void on_cbHorizon_currentIndexChanged(const QString &arg1);
-
-    void on_cbColor_clicked();
 
 private:
 

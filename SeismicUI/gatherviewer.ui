@@ -121,7 +121,7 @@
     </widget>
     <widget class="QMenu" name="menuFill_Method">
      <property name="title">
-      <string>Fill Method</string>
+      <string>&amp;Fill Method</string>
      </property>
     </widget>
     <addaction name="action_New_Picks"/>
@@ -426,6 +426,9 @@
   <action name="action_Save_Picks">
    <property name="text">
     <string>&amp;Save Picks</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
    </property>
   </action>
   <action name="action_Close_Picks">

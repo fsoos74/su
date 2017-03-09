@@ -751,12 +751,24 @@ void GatherViewer::on_action_Save_Picks_triggered()
         }
     }
 
-    if( ! m_project->addGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
-
-        QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
+    if(  m_project->gridList(GridType::Other).contains(m_picksGridName)){
+        if( m_project->saveGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
+            gatherView->picker()->setDirty(false);
+        }
+        else{
+            QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
+        }
+    }
+    else{
+        if( m_project->addGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
+            gatherView->picker()->setDirty(false);
+        }
+        else{
+            QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
+        }
     }
 
-    gatherView->picker()->setDirty(false);
+
 
 }
 

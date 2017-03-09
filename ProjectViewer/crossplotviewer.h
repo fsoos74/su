@@ -27,6 +27,7 @@ class CrossplotViewer;
 #include<functional>
 #include<grid2d.h>
 #include<range.h>
+#include <volumedimensions.h>
 #include <crossplot.h>
 
 #include <mousemodeselector.h>
@@ -72,7 +73,7 @@ public slots:
     void setDetailedPointInformation(bool);
     void setTrend( QPointF ); // p(intercept, gradient)
     void setAxisLabels( const QString& xAxisAnnotation, const QString& yAxisAnnotation );
-    void setRegion( Grid2DBounds, Range<float>);
+    void setRegion( VolumeDimensions );
     void setFlattenTrend(bool);
     void setDisplayTrendLine(bool);
     void setDatapointSize( int );
@@ -159,8 +160,11 @@ private:
 
     crossplot::Data m_data;
 
+    VolumeDimensions m_region;
+    /*
     Grid2DBounds m_geometryBounds;
     Range<float> m_timeRange;
+    */
 
     Range<float> m_attributeRange;
 

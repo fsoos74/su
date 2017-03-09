@@ -20,5 +20,4 @@ SliceType toSliceType(QString str){
     else if(str==CROSSLINE_STRING) return SliceType::CROSSLINE;
     else if( str==TIME_STRING) return SliceType::TIME;
     else qFatal("Invalid SliceType string");
-
 }
