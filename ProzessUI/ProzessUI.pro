@@ -40,7 +40,9 @@ SOURCES += prozessui.cpp \
     convertgriddialog.cpp \
     smoothgriddialog.cpp \
     cropgriddialog.cpp \
-    curvaturevolumedialog.cpp
+    curvaturevolumedialog.cpp \
+    horizonfrequenciesdialog.cpp \
+    frequencyvolumedialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -64,7 +66,9 @@ HEADERS += prozessui.h\
     convertgriddialog.h \
     smoothgriddialog.h \
     cropgriddialog.h \
-    curvaturevolumedialog.h
+    curvaturevolumedialog.h \
+    horizonfrequenciesdialog.h \
+    frequencyvolumedialog.h
 
 unix {
     target.path = /usr/lib
@@ -91,7 +95,9 @@ FORMS += \
     convertgriddialog.ui \
     smoothgriddialog.ui \
     cropgriddialog.ui \
-    curvaturevolumedialog.ui
+    curvaturevolumedialog.ui \
+    horizonfrequenciesdialog.ui \
+    frequencyvolumedialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
@@ -107,6 +113,13 @@ else:unix: LIBS += -L$$OUT_PWD/../Grid/ -lGrid
 
 INCLUDEPATH += $$PWD/../Grid
 DEPENDPATH += $$PWD/../Grid
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../prozess/release/ -lprozess
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../prozess/debug/ -lprozess
+else:unix: LIBS += -L$$OUT_PWD/../prozess/ -lprozess
+
+INCLUDEPATH += $$PWD/../prozess
+DEPENDPATH += $$PWD/../prozess
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil

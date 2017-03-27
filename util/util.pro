@@ -18,7 +18,7 @@ TEMPLATE = lib
 DEFINES += UTIL_LIBRARY
 
 SOURCES += util.cpp \
-    interp.cpp
+    interp.cpp 
 
 HEADERS += util.h\
         util_global.h \
@@ -28,7 +28,7 @@ HEADERS += util.h\
     range.h \
     interp.h \
     volumedimensions.h \
-    tree2d.h
+    tree2d.h 
 
 unix {
     target.path = /usr/lib

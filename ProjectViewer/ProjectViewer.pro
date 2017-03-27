@@ -61,7 +61,9 @@ SOURCES += main.cpp\
     volumesliceselector.cpp \
     volumerelativesliceselector.cpp \
     compasswidget.cpp \
-    mapviewer.cpp
+    mapviewer.cpp \
+    gridcolorcompositeinputdialog.cpp \
+    colorcompositeviewer.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -85,7 +87,9 @@ HEADERS  += projectviewer.h \
     volumesliceselector.h \
     volumerelativesliceselector.h \
     compasswidget.h \
-    mapviewer.h
+    mapviewer.h \
+    gridcolorcompositeinputdialog.h \
+    colorcompositeviewer.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -105,7 +109,9 @@ FORMS    += projectviewer.ui \
     seismicsliceselector.ui \
     volumesliceselector.ui \
     volumerelativesliceselector.ui \
-    mapviewer.ui
+    mapviewer.ui \
+    gridcolorcompositeinputdialog.ui \
+    colorcompositeviewer.ui
 
 RESOURCES += \
     icons.qrc

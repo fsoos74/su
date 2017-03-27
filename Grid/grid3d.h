@@ -101,6 +101,7 @@ public:
         return m_ft + i*m_dt;
     }
 
+    // maybe add round for better accuracy
     int timeToSample( double t )const{
         return (t-m_ft)/m_dt;
     }

@@ -1,7 +1,6 @@
 #include "volumedisplayoptionsdialog.h"
 #include "ui_volumedisplayoptionsdialog.h"
 
-#include<QDoubleValidator>
 #include<QKeyEvent>
 
 #include<colortabledialog.h>
@@ -13,26 +12,12 @@ VolumeDisplayOptionsDialog::VolumeDisplayOptionsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QDoubleValidator* validator=new QDoubleValidator(this);
-    ui->leMin->setValidator(validator);
-    ui->leMax->setValidator(validator);
-
-    connect( ui->leMin, SIGNAL(returnPressed()), this, SLOT(applyRange()));
-    connect( ui->leMax, SIGNAL(returnPressed()), this, SLOT(applyRange()));
-
     connect( ui->sbOpacity, SIGNAL(valueChanged(int)), this, SLOT(setOpacity(int)) );
 }
 
 VolumeDisplayOptionsDialog::~VolumeDisplayOptionsDialog()
 {
     delete ui;
-}
-
-std::pair<double, double> VolumeDisplayOptionsDialog::range(){
-
- double min=ui->leMin->text().toDouble();
- double max=ui->leMax->text().toDouble();
- return std::pair<double, double>(min, max);
 }
 
 int VolumeDisplayOptionsDialog::opacity(){
@@ -44,15 +29,11 @@ void VolumeDisplayOptionsDialog::setEditColorTableAction(QAction* action){
     m_editColorTableAction=action;
 }
 
-void VolumeDisplayOptionsDialog::setRange(std::pair<double, double> r){
+void VolumeDisplayOptionsDialog::setVolumeDisplayRangeAction(QAction* action){
 
- if( r==range() ) return;
-
- ui->leMin->setText(QString::number(r.first));
- ui->leMax->setText(QString::number(r.second));
-
- emit rangeChanged(r);
+    m_volumeDisplayRangeAction=action;
 }
+
 
 void VolumeDisplayOptionsDialog::setOpacity(int o){
 
@@ -60,11 +41,6 @@ void VolumeDisplayOptionsDialog::setOpacity(int o){
     ui->sbOpacity->setValue(o);
 
     emit opacityChanged(o);
-}
-
-void VolumeDisplayOptionsDialog::applyRange(){
-
- emit rangeChanged( range());
 }
 
 void VolumeDisplayOptionsDialog::keyPressEvent(QKeyEvent *ev){
@@ -81,5 +57,12 @@ void VolumeDisplayOptionsDialog::on_pbColorTable_clicked()
 {
     if(m_editColorTableAction){
         m_editColorTableAction->trigger();
+    }
+}
+
+void VolumeDisplayOptionsDialog::on_pbDisplayRange_clicked()
+{
+    if( m_volumeDisplayRangeAction){
+        m_volumeDisplayRangeAction->trigger();
     }
 }

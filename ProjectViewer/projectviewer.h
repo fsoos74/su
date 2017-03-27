@@ -88,6 +88,8 @@ private slots:
 
     void on_actionHorizon_Amplitudes_triggered();
 
+     void on_actionHorizon_Frequencies_triggered();
+
     void on_actionCrossplot_Grids_triggered();
 
     void on_actionCrossplot_Volumes_triggered();
@@ -107,6 +109,8 @@ private slots:
 
 
     void on_actionAmplitude_vs_Offset_Plot_triggered();
+
+    void on_actionColor_Composite_Grids_triggered();
 
     void on_actionVolume_Amplitudes_triggered();
 
@@ -157,6 +161,8 @@ private slots:
     void on_actionCrop_Grid_triggered();
 
     void on_actionVolume_Curvature_triggered();
+
+    void on_actionVolume_Frequencies_triggered();
 
 protected:
 

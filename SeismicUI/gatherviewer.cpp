@@ -517,6 +517,32 @@ void GatherViewer::on_actionVolume_Color_Table_triggered()
     delete dlg;
 }
 
+void GatherViewer::on_actionVolume_Display_Range_triggered()
+{
+    if( ! gatherView->volume() ) return;
+
+    Grid3D<float>* pvolume=gatherView->volume().get();
+    if(!pvolume) return;
+
+    ColorTable* colorTable=gatherView->gatherLabel()->volumeColorTable();
+    if(!colorTable) return;
+
+    if(!m_volumeDisplayRangeDialog ){
+
+        m_volumeDisplayRangeDialog=new HistogramRangeSelectionDialog(this);
+        m_volumeDisplayRangeDialog->setHistogram(createHistogram( std::begin(*pvolume), std::end(*pvolume),
+                                                          pvolume->NULL_VALUE, 100 ));
+        m_volumeDisplayRangeDialog->setDefaultRange( pvolume->valueRange());
+        m_volumeDisplayRangeDialog->setColorTable( colorTable );   // all updating through colortable
+
+        m_volumeDisplayRangeDialog->setWindowTitle(QString("Overlay Volume") );
+    }
+
+
+    m_volumeDisplayRangeDialog->show();
+}
+
+
 void GatherViewer::on_action_Trace_Options_triggered()
 {
     if( !m_traceDisplayOptionsDialog){
@@ -562,16 +588,10 @@ void GatherViewer::on_actionVolume_Options_triggered()
         m_volumeDisplayOptionsDialog=new VolumeDisplayOptionsDialog(this);
         m_volumeDisplayOptionsDialog->setWindowTitle("Configure Volume Overlay");
         m_volumeDisplayOptionsDialog->setEditColorTableAction(ui->actionVolume_Color_Table);
-        if( gatherView->volume()){
-            auto range=gatherView->volume()->valueRange();
-            std::pair<double, double> drange(range.first, range.second);
-            m_volumeDisplayOptionsDialog->setRange(drange);
-        }
+        m_volumeDisplayOptionsDialog->setVolumeDisplayRangeAction(ui->actionVolume_Display_Range);
 
         GatherLabel* gatherLabel=gatherView->gatherLabel();
 
-        connect( m_volumeDisplayOptionsDialog, SIGNAL(rangeChanged(std::pair<double,double>)),
-                 gatherLabel->volumeColorTable(), SLOT(setRange(std::pair<double,double>)) );
         connect( m_volumeDisplayOptionsDialog, SIGNAL(opacityChanged(int)),
                  gatherLabel, SLOT(setVolumeOpacity(int)) );
     }
@@ -684,8 +704,8 @@ void GatherViewer::on_actionOpenVolume_triggered()
         m_attributeColorBarWidget->setLabel(volumeName);
 
         // adjust the display range in volume options dialog if open
-        if( m_volumeDisplayOptionsDialog){           
-            m_volumeDisplayOptionsDialog->setRange(std::pair<double,double>(frange.first,frange.second));
+        if( m_volumeDisplayRangeDialog ){
+            m_volumeDisplayRangeDialog->setRange(std::pair<double,double>(frange.first,frange.second));
         }
 
     }
@@ -1065,5 +1085,6 @@ bool GatherViewer::picksSaved(){
                                         QMessageBox::Yes | QMessageBox::No );
     return reply == QMessageBox::Yes;
 }
+
 
 

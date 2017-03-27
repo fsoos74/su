@@ -64,6 +64,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <cropgridprocess.h>
 #include <horizonamplitudesprocess.h>
 #include <horizonamplitudesdialog.h>
+#include <horizonfrequenciesprocess.h>
+#include <horizonfrequenciesdialog.h>
 #include <horizonsemblanceprocess.h>
 #include <horizonsemblancedialog.h>
 #include <semblancevolumeprocess.h>
@@ -86,6 +88,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <cropvolumeprocess.h>
 #include <amplitudevolumedialog.h>
 #include <amplitudevolumeprocess.h>
+#include <frequencyvolumedialog.h>
+#include <frequencyvolumeprocess.h>
 #include <curvaturevolumedialog.h>
 #include <curvaturevolumeprocess.h>
 #include <convertgriddialog.h>
@@ -106,7 +110,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include "crossplotviewer.h"
 #include "amplitudecurveviewer.h"
 #include <crossplot.h>
-
+#include <gridcolorcompositeinputdialog.h>
+#include <colorcompositeviewer.h>
 #include <reversespinbox.h>
 
 #include <mapviewer.h>
@@ -950,6 +955,29 @@ void ProjectViewer::on_actionHorizon_Amplitudes_triggered()
     runProcess( new HorizonAmplitudesProcess( m_project, this ), params );
 }
 
+
+void ProjectViewer::on_actionHorizon_Frequencies_triggered()
+{
+    Q_ASSERT( m_project );
+
+    HorizonFrequenciesDialog dlg;
+    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setHorizons( m_project->gridList(GridType::Horizon));
+    dlg.setReservedGrids(m_project->gridList(GridType::Other));
+    QStringList methods;
+    methods<<"Maximum";
+    /*
+    for( auto method : ReductionMethodsAndNames.keys() ){
+        methods.append( ReductionMethodsAndNames.value(method));
+    }*/
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new HorizonFrequenciesProcess( m_project, this ), params );
+}
+
+
 void ProjectViewer::on_actionHorizon_Semblance_triggered()
 {
     Q_ASSERT( m_project );
@@ -1025,6 +1053,7 @@ void ProjectViewer::on_action_Crop_Volume_triggered()
 void ProjectViewer::on_actionVolume_Amplitudes_triggered()
 {
     AmplitudeVolumeDialog dlg;
+    dlg.setWindowTitle(tr("Volume Amplitudes"));
     dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
     dlg.setReservedVolumes(m_project->volumeList());
     if( dlg.exec()!=QDialog::Accepted) return;
@@ -1032,6 +1061,19 @@ void ProjectViewer::on_actionVolume_Amplitudes_triggered()
 
     runProcess( new AmplitudeVolumeProcess( m_project, this ), params );
 }
+
+void ProjectViewer::on_actionVolume_Frequencies_triggered()
+{
+    FrequencyVolumeDialog dlg;
+    dlg.setWindowTitle(tr("Volume Frequencies"));
+    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setReservedVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new FrequencyVolumeProcess( m_project, this ), params );
+}
+
 
 void ProjectViewer::on_actionVolume_Semblance_triggered()
 {
@@ -1382,6 +1424,78 @@ void ProjectViewer::on_actionAmplitude_vs_Offset_Plot_triggered()
     viewer->setProject(m_project);
     viewer->setDispatcher(m_dispatcher);
     //viewer->setData(data); // add data after visible!!!!
+}
+
+
+void ProjectViewer::on_actionColor_Composite_Grids_triggered()
+{
+    GridColorCompositeInputDialog dlg;
+    dlg.setWindowTitle("Select Grids for Color Composite");
+    dlg.setAttributeGrids(m_project->gridList(GridType::Attribute));
+    dlg.setHorizons(m_project->gridList(GridType::Horizon));
+    dlg.setOtherGrids(m_project->gridList(GridType::Other));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    std::shared_ptr<Grid2D<float> > red=m_project->loadGrid( dlg.redType(), dlg.redName());
+    if( !red ){
+        QMessageBox::critical(this, tr("Color Composite"), QString("Could not load grid \"%1\"").arg(dlg.redName()));
+        return;
+    }
+
+    std::shared_ptr<Grid2D<float> > green=m_project->loadGrid( dlg.greenType(), dlg.greenName());
+    if( !green ){
+        QMessageBox::critical(this, tr("Color Composite"), QString("Could not load grid \"%1\"").arg(dlg.greenName()));
+        return;
+    }
+
+    std::shared_ptr<Grid2D<float> > blue=m_project->loadGrid( dlg.blueType(), dlg.blueName());
+    if( !blue ){
+        QMessageBox::critical(this, tr("Color Composite"), QString("Could not load grid \"%1\"").arg(dlg.blueName()));
+        return;
+    }
+
+    if( red->bounds()!=green->bounds() || red->bounds()!=blue->bounds()){
+        QMessageBox::critical(this, tr("Color Composite"), tr("Grids have different bounds!"));
+        return;
+    }
+
+    ColorCompositeViewer* viewer=new ColorCompositeViewer();
+    viewer->setWindowTitle(tr("Color Composite"));
+    viewer->setProject(m_project);
+    viewer->setRed(red);
+    viewer->setGreen(green);
+    viewer->setBlue(blue);
+    viewer->show();
+
+    /*
+    auto redRange = valueRange(*red);
+    auto greenRange = valueRange(*green);
+    auto blueRange = valueRange(*blue);
+    auto bounds=red->bounds();
+    QImage img(bounds.height(), bounds.width(), QImage::Format_RGB32);
+    img.fill(Qt::black);
+
+    for( auto i = bounds.i1(); i<=bounds.i2(); i++){
+        for( auto j=bounds.j1(); j<=bounds.j2(); j++){
+            auto r = red->valueAt(i,j);
+            if( r==red->NULL_VALUE) continue;
+            auto rc = 255 * ( r - redRange.first )/(redRange.second-redRange.first);
+
+            auto g = green->valueAt(i,j);
+            if( g==green->NULL_VALUE) continue;
+            auto gc = 255 * ( g - greenRange.first )/(greenRange.second-greenRange.first);
+
+            auto b = blue->valueAt(i,j);
+            if( b==blue->NULL_VALUE) continue;
+            auto bc = 255 * ( b - blueRange.first )/(blueRange.second-blueRange.first);
+
+            img.setPixel( i - bounds.i1(), j - bounds.j1(), qRgb( rc, gc, bc ) );
+        }
+    }
+
+    img.save("/home/fsoos/composite1.png");
+    */
 }
 
 
@@ -2648,6 +2762,7 @@ void ProjectViewer::updateMenu(){
     ui->actionCreateTimeslice->setEnabled(isProject);
     ui->actionCrop_Grid->setEnabled(isProject);
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
+    ui->actionHorizon_Frequencies->setEnabled(isProject);
     ui->actionHorizon_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_Gradient->setEnabled(isProject);
     ui->actionTrend_Based_Attribute_Grids->setEnabled(isProject);
@@ -2658,6 +2773,7 @@ void ProjectViewer::updateMenu(){
 
     ui->action_Crop_Volume->setEnabled(isProject);
     ui->actionVolume_Amplitudes->setEnabled(isProject);
+    ui->actionVolume_Frequencies->setEnabled(isProject);
     ui->actionVolume_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
     //ui->actionFluid_Factor_Volume->setEnabled(isProject);
@@ -2668,11 +2784,10 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
+    ui->actionColor_Composite_Grids->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 
     ui->actionVolume_Curvature->setEnabled(isProject);
 }
-
-
 
 

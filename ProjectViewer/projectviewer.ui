@@ -145,7 +145,7 @@
      <x>0</x>
      <y>0</y>
      <width>597</width>
-     <height>28</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -208,6 +208,7 @@
     <addaction name="actionCreateTimeslice"/>
     <addaction name="actionCrop_Grid"/>
     <addaction name="actionHorizon_Amplitudes"/>
+    <addaction name="actionHorizon_Frequencies"/>
     <addaction name="actionHorizon_Semblance"/>
     <addaction name="actionCompute_Intercept_Gradient"/>
     <addaction name="separator"/>
@@ -229,6 +230,7 @@
     <addaction name="actionAmplitude_vs_Offset_Plot"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
+    <addaction name="actionColor_Composite_Grids"/>
    </widget>
    <widget class="QMenu" name="menuPro_ject">
     <property name="title">
@@ -252,6 +254,7 @@
     <addaction name="action_Crop_Volume"/>
     <addaction name="separator"/>
     <addaction name="actionVolume_Amplitudes"/>
+    <addaction name="actionVolume_Frequencies"/>
     <addaction name="actionVolume_Semblance"/>
     <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
@@ -549,7 +552,22 @@
   </action>
   <action name="actionVolume_Curvature">
    <property name="text">
-    <string>Volume Curvature</string>
+    <string>&amp;Volume Curvature</string>
+   </property>
+  </action>
+  <action name="actionHorizon_Frequencies">
+   <property name="text">
+    <string>Horizon &amp;Frequencies</string>
+   </property>
+  </action>
+  <action name="actionColor_Composite_Grids">
+   <property name="text">
+    <string>&amp;Color Composite Grids</string>
+   </property>
+  </action>
+  <action name="actionVolume_Frequencies">
+   <property name="text">
+    <string>Volume &amp;Frequencies</string>
    </property>
   </action>
  </widget>

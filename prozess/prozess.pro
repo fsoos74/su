@@ -14,6 +14,10 @@ win32{
 
 include(../common.pri)
 
+#this is in common.prj now
+#QMAKE_CXXFLAGS += -fopenmp
+#QMAKE_LFLAGS += -fopenmp
+
 TARGET = prozess
 TEMPLATE = lib
 
@@ -49,7 +53,11 @@ SOURCES += prozess.cpp \
     convertgridprocess.cpp \
     smoothgridprocess.cpp \
     cropgridprocess.cpp \
-    curvaturevolumeprocess.cpp
+    curvaturevolumeprocess.cpp \
+    horizonfrequenciesprocess.cpp \
+    fft.cpp \
+    horizonwindowposition.cpp \
+    frequencyvolumeprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -82,7 +90,11 @@ HEADERS += prozess.h\
     convertgridprocess.h \
     smoothgridprocess.h \
     cropgridprocess.h \
-    curvaturevolumeprocess.h
+    curvaturevolumeprocess.h \
+    horizonfrequenciesprocess.h \
+    fft.h \
+    horizonwindowposition.h \
+    frequencyvolumeprocess.h
 
 unix {
     target.path = /usr/lib

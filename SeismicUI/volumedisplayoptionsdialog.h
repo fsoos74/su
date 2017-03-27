@@ -15,18 +15,16 @@ public:
     explicit VolumeDisplayOptionsDialog(QWidget *parent = 0);
     ~VolumeDisplayOptionsDialog();
 
-    std::pair<double, double> range();
     int opacity();
 
 public slots:
 
     void setEditColorTableAction(QAction* action);
-    void setRange(std::pair<double,double>);
+    void setVolumeDisplayRangeAction(QAction* action);
     void setOpacity( int );
 
 signals:
 
-    void rangeChanged( std::pair<double, double>);
     void opacityChanged( int );
 
 protected:
@@ -36,14 +34,15 @@ protected:
 
 private slots:
 
-    void applyRange();
-
     void on_pbColorTable_clicked();
+
+    void on_pbDisplayRange_clicked();
 
 private:
     Ui::VolumeDisplayOptionsDialog *ui;
 
     QAction* m_editColorTableAction=nullptr;
+    QAction* m_volumeDisplayRangeAction=nullptr;
 };
 
 #endif // VOLUMEDISPLAYOPTIONSDIALOG_H

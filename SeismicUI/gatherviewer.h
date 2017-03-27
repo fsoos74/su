@@ -25,6 +25,7 @@
 #include <QDockWidget>
 #include<colorbarwidget.h>
 
+#include <histogramrangeselectiondialog.h>
 #include <picker.h>
 
 using seismic::Gather;
@@ -143,6 +144,8 @@ private slots:
 
     void on_actionVolume_Color_Table_triggered();
 
+    void on_actionVolume_Display_Range_triggered();
+
     void on_action_Load_Picks_triggered();
 
     void on_action_Close_Picks_triggered();
@@ -195,6 +198,7 @@ private:
     TraceScalingDialog* m_traceScalingDialog=nullptr;
     TraceDisplayOptionsDialog* m_traceDisplayOptionsDialog=nullptr;
     VolumeDisplayOptionsDialog* m_volumeDisplayOptionsDialog=nullptr;
+    HistogramRangeSelectionDialog* m_volumeDisplayRangeDialog=nullptr;
     PointDisplayOptionsDialog* m_pointDisplayOptionsDialog=nullptr;
 
     ColorBarWidget* m_densityColorBarWidget=nullptr;
