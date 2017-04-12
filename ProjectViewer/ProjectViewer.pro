@@ -63,7 +63,9 @@ SOURCES += main.cpp\
     compasswidget.cpp \
     mapviewer.cpp \
     gridcolorcompositeinputdialog.cpp \
-    colorcompositeviewer.cpp
+    colorcompositeviewer.cpp \
+    spectrumviewer.cpp \
+    spectrumdataselectiondialog.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -89,7 +91,10 @@ HEADERS  += projectviewer.h \
     compasswidget.h \
     mapviewer.h \
     gridcolorcompositeinputdialog.h \
-    colorcompositeviewer.h
+    colorcompositeviewer.h \
+    spectrumviewer.h \
+    spectrumdataselectiondialog.h \
+    spectrumdefinition.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -111,7 +116,9 @@ FORMS    += projectviewer.ui \
     volumerelativesliceselector.ui \
     mapviewer.ui \
     gridcolorcompositeinputdialog.ui \
-    colorcompositeviewer.ui
+    colorcompositeviewer.ui \
+    spectrumviewer.ui \
+    spectrumdataselectiondialog.ui
 
 RESOURCES += \
     icons.qrc

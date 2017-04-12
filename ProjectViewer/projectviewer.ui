@@ -228,7 +228,7 @@
     <addaction name="actionCrossplot_Volumes"/>
     <addaction name="separator"/>
     <addaction name="actionAmplitude_vs_Offset_Plot"/>
-    <addaction name="separator"/>
+    <addaction name="actionFrequency_Spectrum_Plot"/>
     <addaction name="separator"/>
     <addaction name="actionColor_Composite_Grids"/>
    </widget>
@@ -568,6 +568,11 @@
   <action name="actionVolume_Frequencies">
    <property name="text">
     <string>Volume &amp;Frequencies</string>
+   </property>
+  </action>
+  <action name="actionFrequency_Spectrum_Plot">
+   <property name="text">
+    <string>Frequency &amp;Spectrum Plot</string>
    </property>
   </action>
  </widget>

@@ -164,6 +164,8 @@ private slots:
 
     void on_actionVolume_Frequencies_triggered();
 
+    void on_actionFrequency_Spectrum_Plot_triggered();
+
 protected:
 
     void closeEvent(QCloseEvent*);

@@ -109,6 +109,7 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include "crossplotvolumesinputdialog.h"
 #include "crossplotviewer.h"
 #include "amplitudecurveviewer.h"
+#include "spectrumviewer.h"
 #include <crossplot.h>
 #include <gridcolorcompositeinputdialog.h>
 #include <colorcompositeviewer.h>
@@ -1426,6 +1427,15 @@ void ProjectViewer::on_actionAmplitude_vs_Offset_Plot_triggered()
     //viewer->setData(data); // add data after visible!!!!
 }
 
+void ProjectViewer::on_actionFrequency_Spectrum_Plot_triggered()
+{
+    SpectrumViewer* viewer=new SpectrumViewer;
+    viewer->setAttribute( Qt::WA_DeleteOnClose);
+    viewer->setWindowTitle( QString("Frequency Spectrum") );
+    viewer->show();
+    viewer->setProject(m_project);
+    viewer->setDispatcher(m_dispatcher);
+}
 
 void ProjectViewer::on_actionColor_Composite_Grids_triggered()
 {
@@ -2784,10 +2794,12 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
+    ui->actionFrequency_Spectrum_Plot->setEnabled(isProject);
     ui->actionColor_Composite_Grids->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 
     ui->actionVolume_Curvature->setEnabled(isProject);
 }
+
 
 

@@ -57,7 +57,9 @@ SOURCES += prozess.cpp \
     horizonfrequenciesprocess.cpp \
     fft.cpp \
     horizonwindowposition.cpp \
-    frequencyvolumeprocess.cpp
+    frequencyvolumeprocess.cpp \
+    frequencyspectra.cpp \
+    spectrum.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -94,7 +96,9 @@ HEADERS += prozess.h\
     horizonfrequenciesprocess.h \
     fft.h \
     horizonwindowposition.h \
-    frequencyvolumeprocess.h
+    frequencyvolumeprocess.h \
+    frequencyspectra.h \
+    spectrum.h
 
 unix {
     target.path = /usr/lib
