@@ -158,6 +158,7 @@ public slots:
     void zoomBy( qreal factor );
     void setSelectionMode( SelectionMode );
     void setSelectionPolygon( QPolygonF );
+    void setGridPen(QPen);
 
 signals:
     void mouseModeChanged(MouseMode);
@@ -193,6 +194,8 @@ private:
     int m_RULER_HEIGHT=60;
 
     qreal m_zoomFactor=1;
+
+    QPen m_gridPen=QPen(Qt::black,0);
 
     QRubberBand*        m_rubberBand=nullptr;
     bool                m_mouseSelection=false;

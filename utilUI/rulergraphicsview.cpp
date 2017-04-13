@@ -80,6 +80,12 @@ void RulerGraphicsView::setSelectionPolygon( QPolygonF poly){
   //  update();
 }
 
+void RulerGraphicsView::setGridPen(QPen pen){
+    if( pen==m_gridPen ) return;
+    m_gridPen=pen;
+    update();
+}
+
 void RulerGraphicsView::zoomFitWindow(){
 
     if( !scene() ) return;
@@ -332,10 +338,12 @@ void RulerGraphicsView::drawGrid(QPainter* painter, const QRect &rectInView){
 
     painter->setWorldMatrixEnabled(false);
 
+    /*
     QPen thePen(Qt::black);
     thePen.setCosmetic(true);
     painter->setPen(thePen);
-
+    */
+    painter->setPen(m_gridPen);
     QVector< GVRuler::Tick > leftTicks=m_leftRuler->computeTicks();
     for( GVRuler::Tick tick : leftTicks){
 
