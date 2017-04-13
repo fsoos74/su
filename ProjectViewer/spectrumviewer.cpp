@@ -23,6 +23,8 @@ SpectrumViewer::SpectrumViewer(QWidget *parent) :
     connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(runTableViewContextMenu(const QPoint&)));
 
+    ui->graphicsView->scale(1,-1);  // invert y-axis
+    ui->graphicsView->setGridPen(QPen(Qt::darkGray,0));
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -144,6 +146,7 @@ void SpectrumViewer::updateScene(){
 
     scene->setSceneRect(sceneRect);
     ui->graphicsView->setScene(scene);
+
     ui->graphicsView->fitInView(sceneRect);
 }
 
