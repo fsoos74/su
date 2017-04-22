@@ -64,8 +64,23 @@
     </property>
     <addaction name="action_Add_Spectrum"/>
    </widget>
+   <widget class="QMenu" name="menu_Options">
+    <property name="title">
+     <string>Optio&amp;ns</string>
+    </property>
+    <widget class="QMenu" name="menu_Mode">
+     <property name="title">
+      <string>&amp;Mode</string>
+     </property>
+     <addaction name="action_Amplitude"/>
+     <addaction name="action_Phase"/>
+    </widget>
+    <addaction name="menu_Mode"/>
+    <addaction name="actionShow_Datapoints"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuSpectrum"/>
+   <addaction name="menu_Options"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionE_xit">
@@ -82,6 +97,33 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="action_Amplitude">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Amplitude</string>
+   </property>
+  </action>
+  <action name="action_Phase">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Phase</string>
+   </property>
+  </action>
+  <action name="actionShow_Datapoints">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show &amp;Datapoints</string>
    </property>
   </action>
  </widget>

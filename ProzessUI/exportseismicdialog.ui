@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
-    <height>342</height>
+    <width>368</width>
+    <height>523</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="leOutputFile"/>
+      <widget class="QLineEdit" name="leOutputFile">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pbBrowse">
@@ -55,6 +59,87 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="cbObscure">
+     <property name="text">
+      <string>Obscure Location</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="wdObscure" native="true">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Inline Shift:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="leShiftIl">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Crossline Shift:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="leShiftXl">
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>X-Coordinate Shift:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="leShiftX">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Y-Coordinate Shift:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="leShiftY">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QCheckBox" name="cbRestrictArea">
@@ -187,6 +272,22 @@
     <hint type="destinationlabel">
      <x>208</x>
      <y>183</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbObscure</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>wdObscure</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>64</x>
+     <y>102</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>147</x>
+     <y>213</y>
     </hint>
    </hints>
   </connection>

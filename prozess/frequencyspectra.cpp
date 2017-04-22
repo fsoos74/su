@@ -2,10 +2,12 @@
 
 #include <fft.h>
 #include <vector>
+#include <cmath>
+#include <algorithm>
 
 Spectrum computeSpectrum( const seismic::Trace& trc, double window_start, double window_len){
 
-    if( window_start < trc.ft() ) throw std::runtime_error("INVALID WINDOW START");
+    if( window_start <trc.ft() || window_start+window_len>=trc.lt() ) return Spectrum();    // return NULL spectrum is window out of trace
 
     // translate window fro seconds to samples
     seismic::Trace::size_type i1 = trc.time_to_index(window_start);
@@ -64,3 +66,34 @@ QVector<QPointF> generateSpectrum( const seismic::Trace& trace, size_t index, Ho
     return res;
 }
 */
+
+// this works because power used fabs(amplitude), negative y-values are not handled by this integration algorithm
+Spectrum::float_type integratedPower( const Spectrum& spectrum, const Spectrum::float_type& f1, const Spectrum::float_type& f2){
+
+    if( f1>=f2 ) return 0;  // invalid or empty range
+    if( f2<=spectrum.fmin() ) return 0;    // nothing of spectrum within range
+
+    Spectrum::float_type sum=0;
+
+    for( Spectrum::index_type i = 1; i<spectrum.size(); i++ ){
+
+        auto fleft=spectrum.frequency(i-1);
+        auto aleft=std::fabs(spectrum.amplitude(i-1));
+        auto fright=spectrum.frequency(i);
+        auto aright=std::fabs(spectrum.amplitude(i));
+
+        if( fright<=f1 ) continue;
+
+        auto fl=std::max( f1, fleft );
+        if( fl>=fright ) break;
+        auto fr=std::min( f2, fright );
+
+        auto al=aleft+( fl-fleft)*( aright-aleft)/(fright-fleft);
+        auto ar=aleft+( fr-fleft)*( aright-aleft)/(fright-fleft);
+if( fr<fl)continue; // TESTZ
+        auto mn = std::min(al,ar);
+        sum += mn*(fr-fl) + 0.5*std::fabs(ar-al)*(fr-fl);
+    }
+    return sum;
+}
+

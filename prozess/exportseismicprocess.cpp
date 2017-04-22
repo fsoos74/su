@@ -27,6 +27,35 @@ ProjectProcess::ResultCode ExportSeismicProcess::init( const QMap<QString, QStri
         return ResultCode::Error;
     }
 
+    if( parameters.contains(QString("delta-iline"))){
+        m_deltaIl=parameters.value(QString("delta-iline")).toInt();
+    }
+    else{
+        m_deltaIl=0;
+    }
+
+    if( parameters.contains(QString("delta-xline"))){
+        m_deltaXl=parameters.value(QString("delta-xline")).toInt();
+    }
+    else{
+        m_deltaXl=0;
+    }
+
+    if( parameters.contains(QString("delta-x"))){
+        m_deltaX=parameters.value(QString("delta-x")).toDouble();
+    }
+    else{
+        m_deltaX=0;
+    }
+
+    if( parameters.contains(QString("delta-y"))){
+        m_deltaY=parameters.value(QString("delta-y")).toDouble();
+    }
+    else{
+        m_deltaY=0;
+    }
+
+
     if( parameters.contains(QString("min-inline"))){
         m_minInline=parameters.value(QString("min-inline")).toInt();
     }
@@ -79,8 +108,8 @@ ProjectProcess::ResultCode ExportSeismicProcess::run(){
     seismic::SEGYTextHeaderStr textHeaderStr;
     textHeaderStr.push_back("SEGY created with AVO-Detect");
     textHeaderStr.push_back(QString("Content:     Dataset %1").arg(m_datasetName).toStdString());
-    textHeaderStr.push_back(QString("Inlines:     %1 - %2").arg(m_minInline).arg(m_maxInline).toStdString());
-    textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(m_minCrossline).arg(m_maxCrossline).toStdString());
+    textHeaderStr.push_back(QString("Inlines:     %1 - %2").arg(m_minInline+m_deltaIl).arg(m_maxInline+m_deltaIl).toStdString());
+    textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(m_minCrossline+m_deltaXl).arg(m_maxCrossline+m_deltaXl).toStdString());
     textHeaderStr.push_back("");
     textHeaderStr.push_back("Trace Header Definition:");
     textHeaderStr.push_back("Inline                     bytes 189-192");
@@ -106,7 +135,7 @@ ProjectProcess::ResultCode ExportSeismicProcess::run(){
     while( reader->current_trace() < reader->trace_count() ){
 
         seismic::Trace trace=reader->read_trace();
-        const seismic::Header& header=trace.header();
+        seismic::Header header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
 
@@ -115,7 +144,34 @@ ProjectProcess::ResultCode ExportSeismicProcess::run(){
                 xline<m_minCrossline || xline>m_maxCrossline) continue;
 
 
-        writer->write_trace( trace );  // throws FormatError on failure
+        // obscure
+        iline+=m_deltaIl;
+        xline+=m_deltaXl;
+        header["iline"]=seismic::HeaderValue::makeIntValue(iline);
+        header["xline"]=seismic::HeaderValue::makeIntValue(xline);
+
+        double cdpx=header.at("cdpx").floatValue();
+        double cdpy=header.at("cdpy").floatValue();
+        double sx=header.at("sx").floatValue();
+        double sy=header.at("sy").floatValue();
+        double gx=header.at("gx").floatValue();
+        double gy=header.at("gy").floatValue();
+        cdpx+=m_deltaX;
+        cdpy+=m_deltaY;
+        sx+=m_deltaX;
+        sy+=m_deltaY;
+        gx+=m_deltaX;
+        gy+=m_deltaY;
+        header["cdpx"]=seismic::HeaderValue::makeFloatValue(cdpx);
+        header["cdpy"]=seismic::HeaderValue::makeFloatValue(cdpy);
+        header["sx"]=seismic::HeaderValue::makeFloatValue(sx);
+        header["sy"]=seismic::HeaderValue::makeFloatValue(sy);
+        header["gx"]=seismic::HeaderValue::makeFloatValue(gx);
+        header["gy"]=seismic::HeaderValue::makeFloatValue(gy);
+
+        seismic::Trace otrace(trace.ft(), trace.dt(), trace.samples(), header);
+
+        writer->write_trace( otrace );  // throws FormatError on failure
 
 
         emit progress( reader->current_trace());

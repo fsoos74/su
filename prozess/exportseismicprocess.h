@@ -23,6 +23,11 @@ private:
     QString m_outputFilename;
     QString m_datasetName;
 
+    int m_deltaIl;
+    int m_deltaXl;
+    double m_deltaX;
+    double m_deltaY;
+
     int m_minInline;
     int m_maxInline;
     int m_minCrossline;

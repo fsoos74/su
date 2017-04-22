@@ -20,6 +20,9 @@ class SpectrumViewer : public BaseViewer
     Q_OBJECT
 
 public:
+
+    enum class Mode{ Amplitude, Phase };
+
     explicit SpectrumViewer(QWidget *parent = 0);
     ~SpectrumViewer();
 
@@ -28,6 +31,7 @@ public slots:
     void addSpectrum( SpectrumDefinition );
     void removeSpectrum( int index );
     void changeColor( int index );
+    void setMode( Mode );
 
 protected:
     void receivePoint( SelectionPoint, int code );
@@ -36,6 +40,12 @@ protected:
 private slots:
     void on_action_Add_Spectrum_triggered();
     void runTableViewContextMenu(const QPoint&);
+    void onMouseOver( QPointF);
+    void onModeGroupChanged();
+
+    void updateScene();
+    void updateTable();
+    void showSelector();  // also creates it if necessary
 
 private:
 
@@ -45,9 +55,9 @@ private:
         QColor color;
     };
 
-    void updateScene();
-    void updateTable();
-    void showSelector();  // also creates it if necessary
+    QVector<QPointF> buildAmplitudePath(const Spectrum&);
+    QVector<QPointF> buildPhasePath(const Spectrum&);
+
     Spectrum generateSpectrum( SpectrumDefinition );
 
     Ui::SpectrumViewer *ui;
@@ -55,6 +65,7 @@ private:
     AVOProject* m_project=nullptr;
 
     QMap< int, Item > m_spectra;
+    Mode m_mode = Mode::Amplitude;
 };
 
 #endif // SPECTRUMVIEWER_H

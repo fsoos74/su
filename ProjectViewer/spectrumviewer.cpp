@@ -4,6 +4,7 @@
 #include <frequencyspectra.h>   // function to generate spectrum from trace
 
 #include <seismicdatasetreader.h>
+#include<datapointitem.h>
 
 #include <QMessageBox>
 #include <QGraphicsScene>
@@ -12,6 +13,9 @@
 #include<QStandardItem>
 #include<QStandardItemModel>
 #include<QColorDialog>
+#include<QActionGroup>
+
+
 
 SpectrumViewer::SpectrumViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -19,12 +23,26 @@ SpectrumViewer::SpectrumViewer(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // need to group mode options here because designer does not support this
+    QActionGroup* modeGroup=new QActionGroup(this);
+    modeGroup->setExclusive(true);
+    modeGroup->addAction(ui->action_Amplitude);
+    modeGroup->addAction(ui->action_Phase);
+    connect( modeGroup, SIGNAL(triggered(QAction*)), this, SLOT(onModeGroupChanged()) );
+
+    connect( ui->actionShow_Datapoints, SIGNAL(toggled(bool)), this, SLOT(updateScene() ) );
+
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableView, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(runTableViewContextMenu(const QPoint&)));
 
+    ui->graphicsView->setMouseTracking(true);
+    connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
+
     ui->graphicsView->scale(1,-1);  // invert y-axis
-    ui->graphicsView->setGridPen(QPen(Qt::darkGray,0));
+    ui->graphicsView->setGridPen(QPen(Qt::lightGray,0)); // nicer grid
+
+    ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers); // read only
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -45,12 +63,21 @@ void SpectrumViewer::addSpectrum(SpectrumDefinition def){
         Qt::red, Qt::green, Qt::blue, Qt::black, Qt::cyan, Qt::magenta, Qt::yellow
     };
 
+    static int index = 0;
+
     auto spectrum = generateSpectrum(def);
-    auto color = COLORS[m_spectra.size() % COLORS.size()];
-    m_spectra.insert( m_spectra.size(), Item{def, spectrum, color } );
+    if(Spectrum::isNull(spectrum)){
+        QMessageBox::warning(this, tr("Add Spectrum"), tr("Adding spectrum failed! Please check parameters."));
+        return;
+    }
+
+    auto color = COLORS[ index % COLORS.size()];
+    m_spectra.insert( index, Item{def, spectrum, color } );
 
     updateScene();
     updateTable();
+
+     index++;
 }
 
 void SpectrumViewer::changeColor( int index ){
@@ -74,6 +101,12 @@ void SpectrumViewer::removeSpectrum( int index ){
     updateTable();
 }
 
+void SpectrumViewer::setMode(Mode m){
+    if( m_mode==m) return;
+    m_mode=m;
+    updateScene();
+}
+
 void SpectrumViewer::receivePoint( SelectionPoint pt, int code ){
 
     // trigger adding of curve for given point
@@ -92,9 +125,53 @@ void SpectrumViewer::receivePoints( QVector<SelectionPoint> points, int code){
     if( !points.empty()) receivePoint(points.front(), code);
 }
 
+
+void SpectrumViewer::onModeGroupChanged(){
+    Mode m = (ui->action_Amplitude->isChecked() ) ? Mode::Amplitude : Mode::Phase;
+    setMode(m);
+}
+
+QVector<QPointF> SpectrumViewer::buildAmplitudePath(const Spectrum& spectrum){
+
+    QVector<QPointF> points;
+
+    // this will scale to maximum amplitude, in first pass we find it
+    auto maxAmp = spectrum.amplitude(0);    // aplitude is always positive, signum is expressed by phase
+    for( auto i=1; i<spectrum.size(); i++){
+        auto const& amp = spectrum.amplitude(i);
+        if( amp>maxAmp) maxAmp=amp;
+    }
+    if( !maxAmp) return points;
+
+    for( auto i=0; i<spectrum.size(); i++){
+        auto f = spectrum.frequency(i);
+        auto relAmp = spectrum.amplitude(i) / maxAmp;
+        points.push_back( QPointF( f, relAmp) );
+    }
+
+    return points;
+}
+
+QVector<QPointF> SpectrumViewer::buildPhasePath(const Spectrum& spectrum){
+
+    QVector<QPointF> points;
+
+    for( auto i=0; i<spectrum.size(); i++){
+        auto f = spectrum.frequency(i);
+        auto phase = spectrum.phase(i);
+        points.push_back(QPointF( f, phase ) );
+    }
+
+    return points;
+}
+
 void SpectrumViewer::updateScene(){
 
     QGraphicsScene* scene=new QGraphicsScene(this);
+
+    const int DATAPOINT_SIZE_PIX = 4;
+
+    QRectF bb;      // compute own bounding box without datapoints
 
     for( auto key : m_spectra.keys() ){
 
@@ -102,30 +179,39 @@ void SpectrumViewer::updateScene(){
         const Spectrum& spectrum = item.spectrum;
         if( Spectrum::isNull(spectrum) ) continue;
 
+        // find points
+        QVector<QPointF> points;
+        switch( m_mode ){
+        case Mode::Amplitude: points=buildAmplitudePath(spectrum) ; break;
+        case Mode::Phase: points=buildPhasePath(spectrum); break;
+        }
+        if( points.size()<2) continue;
+
+        // add polyline through points
         QPainterPath path;
-
-        // this will scale to maximum amplitude, in first pass we ind it
-        auto maxAmp = spectrum.amplitude(0);    // aplitude is always positive, signum is expressed by phase
-        for( auto i=1; i<spectrum.size(); i++){
-            auto const& amp = spectrum.amplitude(i);
-            if( amp>maxAmp) maxAmp=amp;
-        }
-        if( !maxAmp) continue; // no valid values
-
-        for( auto i=0; i<spectrum.size(); i++){
-            auto f = spectrum.frequency(i);
-            auto relAmp = spectrum.amplitude(i) / maxAmp;
-            if( i>0 ){
-                path.lineTo( f, relAmp );
-            }
-            else{       // first point
-                path.moveTo( f, relAmp );
-            }
-        }
-
+        path.moveTo(points[0]);
+        for( int i=1; i<points.size(); i++) path.lineTo(points[i]);
         QGraphicsPathItem* gitem=new QGraphicsPathItem(path);
         gitem->setPen( QPen( item.color, 0));
         scene->addItem( gitem );
+
+        bb=bb.united( gitem->boundingRect() );
+
+        //add datapoints if desired
+        if( ui->actionShow_Datapoints->isChecked()){
+            for( auto const& p : points){
+                DatapointItem* ditem=new DatapointItem( DATAPOINT_SIZE_PIX, 1.5*DATAPOINT_SIZE_PIX, item.color, Qt::white );
+                ditem->setFlag(QGraphicsItem::ItemIgnoresTransformations,true);
+                //item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+
+                // add user data inline and crossline
+                //item->setData( CURVE_INDEX_KEY, curveIndex);
+
+                ditem->setPos( p );
+
+                scene->addItem(ditem);
+            }
+        }
     }
 
     QRectF bounds;
@@ -135,10 +221,11 @@ void SpectrumViewer::updateScene(){
         scene->setSceneRect(bounds);
     }
     else{
-        bounds=scene->itemsBoundingRect();
+        //bounds=scene->itemsBoundingRect();  // don't use this because need to eclude datapoints
+       bounds=bb;
     }
 
-    const qreal PADDING_FACTOR=1.;
+    const qreal PADDING_FACTOR=0.;
 
     qreal xMargin=bounds.width()*PADDING_FACTOR;
     qreal yMargin=bounds.height()*PADDING_FACTOR;
@@ -148,6 +235,7 @@ void SpectrumViewer::updateScene(){
     ui->graphicsView->setScene(scene);
 
     ui->graphicsView->fitInView(sceneRect);
+    ui->graphicsView->update(); // this a hack to update the rulers, need to find a better way to do it
 }
 
 void SpectrumViewer::updateTable(){
@@ -194,8 +282,8 @@ void SpectrumViewer::showSelector(){
 
         selector=new SpectrumDataSelectionDialog(this);
         selector->setWindowTitle("Frequency Spectrum");
-        selector->setDatasetNames(m_project->seismicDatasetList());  // NEED to make this posstack only!!!
 
+        selector->setDatasetNames(m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
 
         connect(selector, SIGNAL(dataSelected(SpectrumDefinition)),
                 this, SLOT(addSpectrum(SpectrumDefinition)) );
@@ -240,6 +328,32 @@ void SpectrumViewer::runTableViewContextMenu(const QPoint& pos){
     }
 
 
+}
+
+void SpectrumViewer::onMouseOver(QPointF scenePos){
+
+    QString ylabel;
+    switch(m_mode){
+    case Mode::Amplitude: ylabel=tr("Relative Amplitude"); break;
+    case Mode::Phase: ylabel=tr("Phase"); break;
+    }
+
+    QString message=QString("Frequency=%1, %2=%3").arg(scenePos.x()).arg(ylabel).arg(scenePos.y());
+/*
+    QPoint viewPos=ui->graphicsView->mapFromScene(scenePos);
+    QGraphicsItem* item=ui->graphicsView->itemAt(viewPos);
+    if( item ){
+        DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
+        if(datapointItem ){
+            int curveIndex=datapointItem->data(CURVE_INDEX_KEY).toInt();
+            const AmplitudeCurveDefinition& info=m_curveInfos.value(curveIndex);
+            message.append(QString(", Inline=%1, Crossline=%2, Dataset=%3, Horizon=%4").arg(info.inlineNumber)
+                           .arg(info.crosslineNumber).arg(info.dataset).arg(info.horizon));
+        }
+    }
+
+*/
+    statusBar()->showMessage(message);
 }
 
 Spectrum SpectrumViewer::generateSpectrum( SpectrumDefinition def ){

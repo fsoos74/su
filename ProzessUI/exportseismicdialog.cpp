@@ -2,6 +2,8 @@
 #include "ui_exportseismicdialog.h"
 
 #include<QIntValidator>
+#include<QDoubleValidator>
+
 #include<QFileDialog>
 
 ExportSeismicDialog::ExportSeismicDialog(QWidget *parent) :
@@ -15,6 +17,13 @@ ExportSeismicDialog::ExportSeismicDialog(QWidget *parent) :
     ui->leMaxInline->setValidator(validator);
     ui->leMinCrossline->setValidator(validator);
     ui->leMaxCrossline->setValidator(validator);
+    ui->leShiftIl->setValidator(validator);
+    ui->leShiftXl->setValidator(validator);
+
+    QDoubleValidator* dvalidator=new QDoubleValidator(this);
+    ui->leShiftX->setValidator(dvalidator);
+    ui->leShiftY->setValidator(dvalidator);
+
 
     connect(ui->leMinInline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMaxInline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -91,6 +100,13 @@ QMap<QString,QString> ExportSeismicDialog::params(){
     p.insert( QString("dataset"), ui->cbDataset->currentText());
 
     p.insert( QString("output-file"), ui->leOutputFile->text() );
+
+    if( ui->cbObscure->isChecked()){
+        p.insert( QString("delta-iline" ), ui->leShiftIl->text() );
+        p.insert( QString("delta-xline" ), ui->leShiftXl->text() );
+        p.insert( QString("delta-x" ), ui->leShiftX->text() );
+        p.insert( QString("delta-y" ), ui->leShiftY->text() );
+    }
 
     if( ui->cbRestrictArea->isChecked()){
         p.insert( QString("min-inline" ), ui->leMinInline->text() );

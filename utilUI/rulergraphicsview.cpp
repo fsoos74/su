@@ -25,12 +25,12 @@ RulerGraphicsView::RulerGraphicsView(QWidget *parent) : QGraphicsView(parent){
     connect( horizontalScrollBar(), SIGNAL(valueChanged(int)), m_topRuler, SLOT( update()) );
     connect( horizontalScrollBar(), SIGNAL(rangeChanged(int,int)), m_topRuler, SLOT( update()) );
 
+
     setDragMode(QGraphicsView::RubberBandDrag);
 
     viewport()->installEventFilter(this);
     m_leftRuler->installEventFilter(this);
     m_topRuler->installEventFilter(this);
-
 }
 
 

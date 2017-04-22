@@ -8,7 +8,8 @@
 #include<segyreader.h>
 #include<trace.h>
 #include<fft.h>
-
+#include<frequencyspectra.h>
+#include<spectrum.h>
 #include<future>
 
 #include <omp.h>
@@ -122,6 +123,7 @@ float frequencyAmplitude( CONST_ITERATOR first, CONST_ITERATOR last, const std::
     }
 
     return mv;
+
 }
 
 
@@ -154,6 +156,13 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
         #pragma omp parallel for
         for( int i=0; i<m_bounds.sampleCount(); i++){  // i is output volume based
 
+            auto spectrum=computeSpectrum( trace, m_bounds.ft()+i*m_bounds.dt(), m_windowSamples*trace.dt() );
+            auto all=integratedPower(spectrum, 0, 1000);
+            auto area=integratedPower(spectrum, m_minimumFrequency, m_maximumFrequency );
+            (*m_volume)(iline, xline, i)= area/all;
+
+
+            /* old working version
             ssize_t windowIndex=traceStartIndex+i;                                                       // trace based
 
             switch(m_position){
@@ -162,12 +171,15 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
             case HorizonWindowPosition::Below: break;
             }
 
+
+
             seismic::Trace::Samples::const_iterator first=trace.samples().cbegin() + windowIndex;
             seismic::Trace::Samples::const_iterator last=trace.samples().cbegin() + windowIndex + m_windowSamples;
 
             if( windowIndex<0 || windowIndex+m_windowSamples>=trace.samples().size() ) continue;
 
             (*m_volume)(iline, xline, i)= frequencyAmplitude( first, last, freqs, m_minimumFrequency, m_maximumFrequency);
+            */
         }
 
 
