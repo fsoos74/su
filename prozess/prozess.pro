@@ -95,7 +95,6 @@ HEADERS += prozess.h\
     curvaturevolumeprocess.h \
     horizonfrequenciesprocess.h \
     fft.h \
-    horizonwindowposition.h \
     frequencyvolumeprocess.h \
     frequencyspectra.h \
     spectrum.h

@@ -4,25 +4,34 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <functional>
 
-Spectrum computeSpectrum( const seismic::Trace& trc, double window_start, double window_len){
+using namespace std::placeholders;
 
-    if( window_start <trc.ft() || window_start+window_len>=trc.lt() ) return Spectrum();    // return NULL spectrum is window out of trace
+auto hanning=[](int n, int N){
+    return 0.5*(1.-cos(2*M_PI*n/(N-1)));
+};
 
-    // translate window fro seconds to samples
-    seismic::Trace::size_type i1 = trc.time_to_index(window_start);
-    seismic::Trace::size_type i2 = trc.time_to_index(window_start + window_len);
-    seismic::Trace::size_type ni = i2 - i1 +1;      // window len in samples
+Spectrum computeSpectrum( const seismic::Trace& trc, size_t window_center, size_t window_len){
+
+    if( window_center <  window_len/2 || window_center+window_len/2>=trc.size() ) return Spectrum();    // return NULL spectrum is window out of trace
+
+    size_t window_start=window_center-window_len/2;
 
     // find fft window len, must be power of 2
     seismic::Trace::size_type fftlen = 1;
-    while( fftlen < ni ) fftlen *= 2;
+    while( fftlen < window_len ) fftlen *= 2;
 
-    // fill input buffer for fft
-    std::vector<seismic::Trace::sample_type> ibuf(fftlen);
-    std::copy(trc.samples().begin()+i1, trc.samples().begin()+i2, ibuf.begin());
+    // fill input buffer for fft, apply window taper function
+    std::vector<seismic::Trace::sample_type> ibuf(fftlen);    
+    std::copy( trc.samples().begin()+window_start, trc.samples().begin()+window_start+window_len+1, ibuf.begin() );
+    //apply window function
+    auto wf=std::bind( hanning, _1, window_len);
+    for( int i=0; i<window_len; i++){
+        ibuf[i]*=wf(i);
+    }
 
-    // ADD additional code here for window len not power of 2
+    // ADD additional code here for window len not power of 2 (e.g. padding)
     //
     //
 
@@ -34,6 +43,42 @@ Spectrum computeSpectrum( const seismic::Trace& trc, double window_start, double
 
     return Spectrum( 0, df, obuf.begin(), obuf.end() );
 }
+
+/* ORIGINAL
+Spectrum computeSpectrum( const seismic::Trace& trc, size_t window_center, size_t window_len){
+
+    if( window_center <  window_len/2 || window_center+window_len/2>=trc.size() ) return Spectrum();    // return NULL spectrum is window out of trace
+
+    size_t window_start=window_center-window_len/2;
+
+    // find fft window len, must be power of 2
+    seismic::Trace::size_type fftlen = 1;
+    while( fftlen < window_len ) fftlen *= 2;
+
+    // fill input buffer for fft
+    std::vector<seismic::Trace::sample_type> ibuf(fftlen);
+    std::copy(trc.samples().begin()+window_start, trc.samples().begin()+window_start+window_len+1, ibuf.begin());
+
+    // ADD additional code here for window len not power of 2 (e.g. padding)
+    //
+    //
+
+    // apply window function
+    for( auto i=0; i<ibuf.size(); i++){
+        //ibuf[i]*=sin( M_PI*i/(window_len-1));   // cosine
+        ibuf[i]*=0.5*(1.-cos(2*M_PI*i/(window_len-1)));  // hanning
+    }
+
+
+    // fft
+    auto obuf=fft(ibuf);
+
+    // compute frequency step
+    auto df = 1. / ( fftlen * trc.dt() );
+
+    return Spectrum( 0, df, obuf.begin(), obuf.end() );
+}
+*/
 
 /*
 QVector<QPointF> generateSpectrum( const seismic::Trace& trace, size_t index, HorizonWindowPosition pos, size_t window_size ){

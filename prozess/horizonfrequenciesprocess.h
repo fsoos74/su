@@ -2,7 +2,6 @@
 #define HORIZONFREQUENCIESPROCESS_H
 
 #include "projectprocess.h"
-#include "horizonwindowposition.h"
 #include <QObject>
 
 #include<grid2d.h>
@@ -27,7 +26,6 @@ private:
     QString m_horizonName;
     QString m_gridName;
     size_t m_windowSamples;
-    HorizonWindowPosition m_position;
     double m_minimumFrequency;
     double m_maximumFrequency;
 

@@ -4,7 +4,6 @@
 
 #include<projectprocess.h>
 #include<grid3d.h>
-#include<horizonwindowposition.h>
 
 class FrequencyVolumeProcess : public ProjectProcess
 {
@@ -20,7 +19,6 @@ public:
 private:
 
     size_t m_windowSamples;
-    HorizonWindowPosition m_position;
     double m_minimumFrequency;
     double m_maximumFrequency;
     QString m_volumeName;

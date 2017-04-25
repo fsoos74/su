@@ -1,6 +1,7 @@
 #include "horizonfrequenciesprocess.h"
 
 #include <seismicdatasetreader.h>
+#include <frequencyspectra.h>
 
 #include "utilities.h"
 
@@ -47,12 +48,6 @@ ProjectProcess::ResultCode HorizonFrequenciesProcess::init( const QMap<QString, 
     }
     m_windowSamples=parameters.value("window-samples").toInt();
 
-    if( !parameters.contains(QString("window-position"))){
-
-        setErrorString("Parameters don't contain window-position");
-        return ResultCode::Error;
-    }
-    m_position=toHorizonWindowPosition( parameters.value("window-position") );
 
     if( !parameters.contains(QString("horizon"))){
 
@@ -132,35 +127,11 @@ ProjectProcess::ResultCode HorizonFrequenciesProcess::run(){
         if( v == m_horizon->NULL_VALUE ) continue;  // can do this because progress is updated before
         qreal t=0.001 * v;      // horizon is in millis
 
-        std::vector<float> ibuf(m_windowSamples);
-        auto freqs = fft_freqs(trace.dt(), m_windowSamples);
-        ssize_t horizonIndex=trace.time_to_index(t); // returns trace.samples.size() if time is out of trace bounds
-        ssize_t windowIndex=horizonIndex;
-
-        switch(m_position){
-        case HorizonWindowPosition::Above: windowIndex-=m_windowSamples; break;
-        case HorizonWindowPosition::Center: windowIndex-=m_windowSamples/2; break;
-        case HorizonWindowPosition::Below: break;
-        }
-
-        if( windowIndex<0 || windowIndex+m_windowSamples>=trace.samples().size() ) continue;
-
-        seismic::Trace::Samples::const_iterator begin=trace.samples().cbegin() + windowIndex;
-        seismic::Trace::Samples::const_iterator end=trace.samples().cbegin() + windowIndex + m_windowSamples + 1;
-
-        std::copy( begin, end, ibuf.begin() );
-        auto obuf=fft(ibuf);
-
-        float mv = 0;
-        for( int i=0; i<obuf.size(); i++){
-
-            float v = std::norm( obuf[i] );    // complex abs squared
-
-            if( m_minimumFrequency<=freqs[i] && freqs[i]<=m_maximumFrequency) mv+=v;
-        }
-
-        (*m_grid)(iline, xline)= mv;
-
+        auto center=trace.time_to_index(t);
+        auto spectrum=computeSpectrum( trace, center, m_windowSamples );
+        auto all=integratedPower(spectrum, 0, 1000);
+        auto area=integratedPower(spectrum, m_minimumFrequency, m_maximumFrequency );
+        (*m_grid)(iline, xline)= area/all;
     }
 
     std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );

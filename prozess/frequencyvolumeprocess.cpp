@@ -57,13 +57,6 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::init( const QMap<QString, QSt
     }
     m_windowSamples=parameters.value("window-samples").toInt();
 
-    if( !parameters.contains(QString("window-position"))){
-
-        setErrorString("Parameters don't contain window-position");
-        return ResultCode::Error;
-    }
-    m_position=toHorizonWindowPosition( parameters.value("window-position") );
-
     m_reader= project()->openSeismicDataset( dataset);
     if( !m_reader){
         setErrorString(QString("Open dataset \"%1\" failed!").arg(dataset) );
@@ -156,7 +149,7 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
         #pragma omp parallel for
         for( int i=0; i<m_bounds.sampleCount(); i++){  // i is output volume based
 
-            auto spectrum=computeSpectrum( trace, m_bounds.ft()+i*m_bounds.dt(), m_windowSamples*trace.dt() );
+            auto spectrum=computeSpectrum( trace, traceStartIndex + i, m_windowSamples );
             auto all=integratedPower(spectrum, 0, 1000);
             auto area=integratedPower(spectrum, m_minimumFrequency, m_maximumFrequency );
             (*m_volume)(iline, xline, i)= area/all;
