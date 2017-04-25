@@ -1,17 +1,18 @@
 #ifndef COLORCOMPOSITEVIEWER_H
 #define COLORCOMPOSITEVIEWER_H
 
-#include <QMainWindow>
-
+#include <QDialog>
+#include <QGraphicsPixmapItem>
 #include <avoproject.h>
 #include <grid2d.h>
 #include<memory>
+
 
 namespace Ui {
 class ColorCompositeViewer;
 }
 
-class ColorCompositeViewer : public QMainWindow
+class ColorCompositeViewer : public QDialog
 {
     Q_OBJECT
 
@@ -21,12 +22,24 @@ public:
 
 public slots:
     void setProject(AVOProject* );
+
+private slots:
     void setRed(std::shared_ptr<Grid2D<float>>);
     void setGreen(std::shared_ptr<Grid2D<float>>);
     void setBlue(std::shared_ptr<Grid2D<float>>);
+    void updateInputGrids();
+    void updateScene();
+
+    void on_slRed_valueChanged(int value);
+    void on_slGreen_valueChanged(int value);
+    void on_slBlue_valueChanged(int value);
+
+    void on_cbRed_currentIndexChanged(const QString &arg1);
+    void on_cbGreen_currentIndexChanged(const QString &arg1);
+    void on_cbBlue_currentIndexChanged(const QString &arg1);
 
 private:
-    void refreshImage();
+    std::pair<Grid2DBounds, QImage> buildImage( Grid2D<float>* red, Grid2D<float>* green, Grid2D<float>* blue);
 
     Ui::ColorCompositeViewer *ui;
 
@@ -35,6 +48,9 @@ private:
     std::shared_ptr<Grid2D<float>> m_red;
     std::shared_ptr<Grid2D<float>> m_green;
     std::shared_ptr<Grid2D<float>> m_blue;
+
+    QGraphicsPixmapItem* m_pixmapItem=nullptr;
+
 };
 
 #endif // COLORCOMPOSITEVIEWER_H

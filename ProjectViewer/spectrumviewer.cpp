@@ -4,6 +4,7 @@
 #include <frequencyspectra.h>   // function to generate spectrum from trace
 
 #include <seismicdatasetreader.h>
+#include <trace.h>
 #include<datapointitem.h>
 
 #include <QMessageBox>
@@ -40,9 +41,13 @@ SpectrumViewer::SpectrumViewer(QWidget *parent) :
     connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
 
     ui->graphicsView->scale(1,-1);  // invert y-axis
-    ui->graphicsView->setGridPen(QPen(Qt::lightGray,0)); // nicer grid
+    ui->graphicsView->leftRuler()->setLabel(tr("Relative Amplitude"));
+    ui->graphicsView->topRuler()->setLabel(tr("Frequency [Hz]"));
 
     ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers); // read only
+
+    updateScene();
+    updateTable();
 }
 
 SpectrumViewer::~SpectrumViewer()
@@ -114,7 +119,7 @@ void SpectrumViewer::receivePoint( SelectionPoint pt, int code ){
         showSelector();
         selector->setInlineNumber(pt.iline);
         selector->setCrosslineNumber(pt.xline);
-        selector->setWindowStartMS( static_cast<int>( std::round( 1000 * pt.time ) ) ); // convert to milliseconds
+        selector->setWindowCenterMS( static_cast<int>( std::round( 1000 * pt.time ) ) ); // convert to milliseconds
     }
 }
 
@@ -217,7 +222,7 @@ void SpectrumViewer::updateScene(){
     QRectF bounds;
     // IMPORTANT: scene should never have an invalid scenerect, otherwise WEIRD problems with graphicsview!!!!!!
     if( scene->items().empty()){
-        bounds=QRectF(0,0,1000,1000);
+        bounds=QRectF(0,0,1000,1);
         scene->setSceneRect(bounds);
     }
     else{
@@ -225,23 +230,17 @@ void SpectrumViewer::updateScene(){
        bounds=bb;
     }
 
-    const qreal PADDING_FACTOR=0.;
-
-    qreal xMargin=bounds.width()*PADDING_FACTOR;
-    qreal yMargin=bounds.height()*PADDING_FACTOR;
-    QRectF sceneRect=bounds.marginsAdded(QMarginsF(xMargin, yMargin, xMargin, yMargin));
-
-    scene->setSceneRect(sceneRect);
+    scene->setSceneRect(bounds);
     ui->graphicsView->setScene(scene);
 
-    ui->graphicsView->fitInView(sceneRect);
+    ui->graphicsView->fitInView(bounds);
     ui->graphicsView->update(); // this a hack to update the rulers, need to find a better way to do it
 }
 
 void SpectrumViewer::updateTable(){
 
     QStringList labels;
-    labels<<"lookup*"<<"Color"<<"Dataset"<<"Inline"<<"Crossline"<<"Start[ms]"<<"length[ms]";
+    labels<<"lookup*"<<"Color"<<"Dataset"<<"Inline"<<"Crossline"<<"Start[ms]"<<"Samples";
 
     QStandardItemModel* model=new QStandardItemModel(m_spectra.size(), labels.size(), this);
     model->setHorizontalHeaderLabels(labels);
@@ -264,8 +263,8 @@ void SpectrumViewer::updateTable(){
         model->setItem(row, column++, new QStandardItem(info.dataset));
         model->setItem(row, column++, new QStandardItem(QString::number(info.inlineNumber)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.crosslineNumber)));
-        model->setItem(row, column++, new QStandardItem(QString::number(info.windowStartMS )));
-        model->setItem(row, column++, new QStandardItem(QString::number(info.windowLengthMS )));
+        model->setItem(row, column++, new QStandardItem(QString::number(info.windowCenterMS )));
+        model->setItem(row, column++, new QStandardItem(QString::number(info.windowSamples )));
 
         row++;
     }
@@ -360,7 +359,7 @@ Spectrum SpectrumViewer::generateSpectrum( SpectrumDefinition def ){
 
     std::shared_ptr<SeismicDatasetReader> reader=m_project->openSeismicDataset(def.dataset);
     if( !reader){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve",
+        QMessageBox::critical(this, "Add Spectrum",
                               QString("Open dataset %1 failed!").arg(def.dataset) );
         return Spectrum();      // empty spectrum == NULL
     }
@@ -368,12 +367,11 @@ Spectrum SpectrumViewer::generateSpectrum( SpectrumDefinition def ){
     auto trc = reader->readFirstTrace( "iline",QString::number(def.inlineNumber),
                                        "xline",QString::number(def.crosslineNumber) );
     if( !trc ){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve", "No data for this cdp!");
+        QMessageBox::critical(this, "Add  Spectrum", "No data for this cdp!");
         return Spectrum();
     }
 
-    double wstart=0.001 * def.windowStartMS;    // convert window start to seconds
-    double wlen=0.001 * def.windowLengthMS;     // convert to seconds
+    auto window_center = trc->time_to_index(0.001 * def.windowCenterMS);
 
-    return computeSpectrum( *trc, wstart, wlen );
+    return computeSpectrum( *trc, window_center, def.windowSamples );
 }

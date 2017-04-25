@@ -1438,74 +1438,11 @@ void ProjectViewer::on_actionFrequency_Spectrum_Plot_triggered()
 }
 
 void ProjectViewer::on_actionColor_Composite_Grids_triggered()
-{
-    GridColorCompositeInputDialog dlg;
-    dlg.setWindowTitle("Select Grids for Color Composite");
-    dlg.setAttributeGrids(m_project->gridList(GridType::Attribute));
-    dlg.setHorizons(m_project->gridList(GridType::Horizon));
-    dlg.setOtherGrids(m_project->gridList(GridType::Other));
-
-    if( dlg.exec()!=QDialog::Accepted) return;
-
-    std::shared_ptr<Grid2D<float> > red=m_project->loadGrid( dlg.redType(), dlg.redName());
-    if( !red ){
-        QMessageBox::critical(this, tr("Color Composite"), QString("Could not load grid \"%1\"").arg(dlg.redName()));
-        return;
-    }
-
-    std::shared_ptr<Grid2D<float> > green=m_project->loadGrid( dlg.greenType(), dlg.greenName());
-    if( !green ){
-        QMessageBox::critical(this, tr("Color Composite"), QString("Could not load grid \"%1\"").arg(dlg.greenName()));
-        return;
-    }
-
-    std::shared_ptr<Grid2D<float> > blue=m_project->loadGrid( dlg.blueType(), dlg.blueName());
-    if( !blue ){
-        QMessageBox::critical(this, tr("Color Composite"), QString("Could not load grid \"%1\"").arg(dlg.blueName()));
-        return;
-    }
-
-    if( red->bounds()!=green->bounds() || red->bounds()!=blue->bounds()){
-        QMessageBox::critical(this, tr("Color Composite"), tr("Grids have different bounds!"));
-        return;
-    }
-
+{  
     ColorCompositeViewer* viewer=new ColorCompositeViewer();
-    viewer->setWindowTitle(tr("Color Composite"));
+    viewer->setWindowTitle(tr("Color Composite Viewer"));
     viewer->setProject(m_project);
-    viewer->setRed(red);
-    viewer->setGreen(green);
-    viewer->setBlue(blue);
     viewer->show();
-
-    /*
-    auto redRange = valueRange(*red);
-    auto greenRange = valueRange(*green);
-    auto blueRange = valueRange(*blue);
-    auto bounds=red->bounds();
-    QImage img(bounds.height(), bounds.width(), QImage::Format_RGB32);
-    img.fill(Qt::black);
-
-    for( auto i = bounds.i1(); i<=bounds.i2(); i++){
-        for( auto j=bounds.j1(); j<=bounds.j2(); j++){
-            auto r = red->valueAt(i,j);
-            if( r==red->NULL_VALUE) continue;
-            auto rc = 255 * ( r - redRange.first )/(redRange.second-redRange.first);
-
-            auto g = green->valueAt(i,j);
-            if( g==green->NULL_VALUE) continue;
-            auto gc = 255 * ( g - greenRange.first )/(greenRange.second-greenRange.first);
-
-            auto b = blue->valueAt(i,j);
-            if( b==blue->NULL_VALUE) continue;
-            auto bc = 255 * ( b - blueRange.first )/(blueRange.second-blueRange.first);
-
-            img.setPixel( i - bounds.i1(), j - bounds.j1(), qRgb( rc, gc, bc ) );
-        }
-    }
-
-    img.save("/home/fsoos/composite1.png");
-    */
 }
 
 

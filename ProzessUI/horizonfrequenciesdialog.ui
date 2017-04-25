@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>312</width>
-    <height>365</height>
+    <height>331</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -58,20 +58,6 @@
       <string>Parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Minimum Frequency:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" colspan="2">
-       <widget class="QLineEdit" name="leMinimumFrequency">
-        <property name="text">
-         <string>30.0</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
        <widget class="QLabel" name="label_7">
         <property name="text">
@@ -117,15 +103,19 @@
         </item>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_5">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Horizon / Window Position:</string>
+         <string>Minimum Frequency:</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="2">
-       <widget class="QComboBox" name="cbPosition"/>
+      <item row="0" column="1" colspan="2">
+       <widget class="QLineEdit" name="leMinimumFrequency">
+        <property name="text">
+         <string>30.0</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

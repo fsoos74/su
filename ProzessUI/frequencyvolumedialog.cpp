@@ -5,7 +5,6 @@
 #include<QPalette>
 #include<QPushButton>
 
-#include<horizonwindowposition.h>
 
 FrequencyVolumeDialog::FrequencyVolumeDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
@@ -21,11 +20,6 @@ FrequencyVolumeDialog::FrequencyVolumeDialog(QWidget *parent) :
     ui->leMinimumFrequency->setValidator(dvalidator);
     ui->leMaximumFrequency->setValidator(dvalidator);
 
-    HorizonWindowPosition pos[]={HorizonWindowPosition::Above, HorizonWindowPosition::Center,
-                                HorizonWindowPosition::Below};
-    for( auto p : pos){
-        ui->cbPosition->addItem(toQString(p));
-    }
 
     connect( ui->leMinimumFrequency, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leMaximumFrequency, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -79,8 +73,6 @@ QMap<QString,QString> FrequencyVolumeDialog::params(){
     p.insert( QString("maximum-frequency"), ui->leMaximumFrequency->text() );
 
     p.insert( QString("window-samples"), ui->cbWindowSamples->currentText() );
-
-    p.insert( QString("window-position"), ui->cbPosition->currentText());
 
     return p;
 }

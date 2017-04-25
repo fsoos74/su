@@ -26,6 +26,10 @@ public:
         return m_instantUpdates;
     }
 
+    std::pair<double,double> range()const{
+        return m_range;
+    }
+
 public slots:
 
     void setHistogram(const Histogram&);

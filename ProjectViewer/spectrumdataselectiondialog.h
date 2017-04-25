@@ -19,15 +19,15 @@ public:
     QString datasetName();
     int inlineNumber();
     int crosslineNumber();
-    int windowStartMS();
-    int windowLengthMS();
+    int windowCenterMS();
+    int windowSamples();
 
 public slots:
     void setDatasetNames( const QStringList&);
     void setInlineNumber(int);
     void setCrosslineNumber(int);
-    void setWindowStartMS(int);
-    void setWindowLengthMS(int);
+    void setWindowCenterMS(int);
+    void setWindowSamples(int);
 
 signals:
     void dataSelected(SpectrumDefinition);

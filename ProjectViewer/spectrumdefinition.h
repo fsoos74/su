@@ -6,8 +6,8 @@ struct SpectrumDefinition{
     QString dataset;
     int inlineNumber;
     int crosslineNumber;
-    int windowStartMS;     // milliseconds
-    int windowLengthMS;    // milliseconds
+    int windowCenterMS;    // milliseconds
+    int windowSamples;     // length of window in samples
 };
 
 Q_DECLARE_METATYPE(SpectrumDefinition);

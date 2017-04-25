@@ -12,8 +12,7 @@ SpectrumDataSelectionDialog::SpectrumDataSelectionDialog(QWidget *parent) :
     QIntValidator* validator=new QIntValidator(this);
     ui->leIline->setValidator(validator);
     ui->leXline->setValidator(validator);
-    ui->leStart->setValidator(validator);
-    ui->leLen->setValidator(validator);
+    ui->leCenter->setValidator(validator);
 }
 
 SpectrumDataSelectionDialog::~SpectrumDataSelectionDialog()
@@ -33,12 +32,12 @@ int SpectrumDataSelectionDialog::crosslineNumber(){
     return ui->leXline->text().toInt();
 }
 
-int SpectrumDataSelectionDialog::windowStartMS(){
-    return ui->leStart->text().toInt();
+int SpectrumDataSelectionDialog::windowCenterMS(){
+    return ui->leCenter->text().toInt();
 }
 
-int SpectrumDataSelectionDialog::windowLengthMS(){
-    return ui->leLen->text().toInt();
+int SpectrumDataSelectionDialog::windowSamples(){
+    return ui->cbWindowSamples->currentText().toInt();
 }
 
 void SpectrumDataSelectionDialog::setDatasetNames( const QStringList& l){
@@ -54,16 +53,16 @@ void SpectrumDataSelectionDialog::setCrosslineNumber(int i){
     ui->leXline->setText(QString::number(i));
 }
 
-void SpectrumDataSelectionDialog::setWindowStartMS(int i){
-    ui->leStart->setText(QString::number(i));
+void SpectrumDataSelectionDialog::setWindowCenterMS(int i){
+    ui->leCenter->setText(QString::number(i));
 }
 
-void SpectrumDataSelectionDialog::setWindowLengthMS(int i){
-    ui->leLen->setText(QString::number(i));
+void SpectrumDataSelectionDialog::setWindowSamples(int i){
+    ui->cbWindowSamples->setCurrentText(QString::number(i));
 }
 
 void SpectrumDataSelectionDialog::on_pbAdd_clicked()
 {
-    SpectrumDefinition def{ datasetName(), inlineNumber(), crosslineNumber(), windowStartMS(), windowLengthMS() };
+    SpectrumDefinition def{ datasetName(), inlineNumber(), crosslineNumber(), windowCenterMS(), windowSamples() };
     emit dataSelected(def);
 }

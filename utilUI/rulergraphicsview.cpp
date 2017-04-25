@@ -86,11 +86,21 @@ void RulerGraphicsView::setGridPen(QPen pen){
     update();
 }
 
+void RulerGraphicsView::setSubGridPen(QPen pen){
+    if( pen==m_subGridPen ) return;
+    m_subGridPen=pen;
+    update();
+}
+
+void RulerGraphicsView::setAspectRatioMode(Qt::AspectRatioMode m){
+    m_aspectRatioMode=m;        // only used by zooming
+}
+
 void RulerGraphicsView::zoomFitWindow(){
 
     if( !scene() ) return;
 
-    fitInView( scene()->sceneRect());
+    fitInView( scene()->sceneRect(), m_aspectRatioMode );
     m_leftRuler->update();
     m_topRuler->update();
 }
@@ -338,21 +348,18 @@ void RulerGraphicsView::drawGrid(QPainter* painter, const QRect &rectInView){
 
     painter->setWorldMatrixEnabled(false);
 
-    /*
-    QPen thePen(Qt::black);
-    thePen.setCosmetic(true);
-    painter->setPen(thePen);
-    */
-    painter->setPen(m_gridPen);
+
     QVector< GVRuler::Tick > leftTicks=m_leftRuler->computeTicks();
     for( GVRuler::Tick tick : leftTicks){
 
+        painter->setPen( (tick.type()==GVRuler::MAIN_TICK) ? m_gridPen : m_subGridPen);
         painter->drawLine( rectInView.left(), tick.coord(), rectInView.right(), tick.coord() );//rectInScene.left(), tick.value(), rectInScene.right(), tick.value());
     }
 
     QVector< GVRuler::Tick > topTicks=m_topRuler->computeTicks();
     for( GVRuler::Tick tick : topTicks){
 
+        painter->setPen( (tick.type()==GVRuler::MAIN_TICK) ? m_gridPen : m_subGridPen);
         painter->drawLine( tick.coord(), rectInView.top(), tick.coord(), rectInView.bottom() );
     }
 
@@ -450,22 +457,12 @@ void GVRuler::setTickMarkSize(int s){
     update();
 }
 
-void GVRuler::paintEvent(QPaintEvent*){
+void GVRuler::setSubTickMarkSize(int s){
 
-    QPainter painter(this);
-
-    painter.setPen(Qt::black);
-
-    if( m_orientation==VERTICAL_RULER){
-        drawVertical( painter );
-    }
-    else{
-        drawHorizontal( painter );
-    }
-
+    if( s==m_subTickMarkSize) return;
+    m_subTickMarkSize=s;
+    update();
 }
-
-
 
 void GVRuler::setAutoTickIncrement(bool on){
 
@@ -485,34 +482,51 @@ void GVRuler::setTickIncrement(qreal incr){
     update();
 }
 
-qreal GVRuler::computeTickIncrement(int size_pix, qreal size_data)const{
+void GVRuler::setSubTickCount(int c){
+
+    if( c==m_subTickCount) return;
+
+    m_subTickCount=c;
+
+    update();
+}
+
+// return tick increment and subtick count
+std::pair<qreal,int> GVRuler::computeTickIncrement(int size_pix, qreal size_data)const{
 
     qreal pix_per_unit=std::fabs( qreal(size_pix)/size_data );
     qreal incr= std::pow(10,std::floor(std::log10( m_minimumPixelIncrement/pix_per_unit)));   //
-
+    int stc=9;
     if( incr * pix_per_unit>=m_minimumPixelIncrement){
         ;;
     }
+    /* don't use this because it was confusing for some people and it also gives uneven displays if other axis has 9 subticks
     else if( 2*incr*pix_per_unit>=m_minimumPixelIncrement){
         incr*=2;
+        stc=1;
     }
+    */
     else  if( 5*incr*pix_per_unit>=m_minimumPixelIncrement){
         incr*=5;
+        stc=4;
     }
     else  if( 10*incr*pix_per_unit>=m_minimumPixelIncrement){
         incr*=10;
+        stc=9;
     }
     else{
 
         qWarning("No tick increment found!");
-
-
         incr=-1;
+        stc=0;
     }
 
-    if( incr<m_minimumValueIncrement) incr=m_minimumValueIncrement;
+    if( incr<m_minimumValueIncrement){
+        incr=m_minimumValueIncrement;
+        stc=0;
+    }
 
-    return incr;
+    return std::make_pair(incr,stc);
 }
 
 QVector< GVRuler::Tick > GVRuler::computeTicks()const{
@@ -524,9 +538,11 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
        QPoint startP( 0, mappedSceneRect.top());
        QPoint endP( 0, mappedSceneRect.bottom());
-       qreal incr=( m_autoTickIncrement) ?
-                   computeTickIncrement( mappedSceneRect.height(), m_view->sceneRect().height() ) :
-                   m_tickIncrement;
+       qreal incr=m_tickIncrement;
+       int stc=m_subTickCount;
+       if( m_autoTickIncrement){
+            std::tie(incr,stc)=computeTickIncrement( mappedSceneRect.height(), m_view->sceneRect().height() );
+       }
 
        qreal startVal=m_view->mapToScene( startP ).y();
        qreal endVal=m_view->mapToScene(endP).y();
@@ -540,7 +556,14 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
            qreal value=i*incr;
            int pix=std::round( m_view->mapFromScene( QPointF( 0, value )).y() );
-           ticks.push_back( Tick( pix, value ));
+           ticks.push_back( Tick( pix, value, MAIN_TICK));
+
+           // now add sub ticks
+           for( int j=0; j<stc; j++){
+               qreal subvalue=value + (j+1)*incr/(stc+1);
+               int pix=std::round( m_view->mapFromScene( QPointF( 0, subvalue )).y() );
+               ticks.push_back(Tick( pix, subvalue, SUB_TICK));
+           }
        }
     }
 
@@ -548,9 +571,12 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
         QPoint startP( mappedSceneRect.left(), 0);
         QPoint endP( mappedSceneRect.right(), 0);
-        qreal incr=(m_autoTickIncrement) ?
-                    computeTickIncrement( mappedSceneRect.width(), m_view->sceneRect().width() ) :
-                    m_tickIncrement;
+        qreal incr=m_tickIncrement;
+        int stc=m_subTickCount;
+
+        if(m_autoTickIncrement){
+            std::tie(incr,stc)=computeTickIncrement( mappedSceneRect.width(), m_view->sceneRect().width() );
+        }
 
         qreal startVal=m_view->mapToScene( startP ).x();
         qreal endVal=m_view->mapToScene(endP).x();
@@ -562,13 +588,36 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
             qreal value=i*incr;
             int pix=std::round( m_view->mapFromScene( QPointF( value, 0 )).x() );
-            ticks.push_back( Tick( pix, value ));
+            ticks.push_back( Tick( pix, value, MAIN_TICK ));
+
+            // now add sub ticks
+            for( int j=0; j<stc; j++){
+                qreal subvalue=value + (j+1)*incr/(stc+1);
+                int pix=std::round( m_view->mapFromScene( QPointF( subvalue, 0 )).x() );
+                ticks.push_back(Tick( pix, subvalue, SUB_TICK));
+            }
         }
 
 
      }
 
     return ticks;
+
+}
+
+
+void GVRuler::paintEvent(QPaintEvent*){
+
+    QPainter painter(this);
+
+    painter.setPen(Qt::black);
+
+    if( m_orientation==VERTICAL_RULER){
+        drawVertical( painter );
+    }
+    else{
+        drawHorizontal( painter );
+    }
 
 }
 
@@ -594,21 +643,28 @@ void GVRuler::drawVertical( QPainter& painter ){
     QVector<Tick> ticks=computeTicks();
 
     int x1=width();
-    int x2=x1-1.5*m_TICK_MARK_SIZE;
 
     for( Tick tick: ticks ){
 
         int y=tick.coord();
-        painter.drawLine( x1, y , x2, y );
 
-        QString annotation=m_annotationFunction(tick.value());//QString::number( tick.value(), 'g', 4);
-        QSize annotation_size=painter.fontMetrics().size( Qt::TextSingleLine, annotation);
-        int halfSize=annotation_size.height()/2;
+        // main tick
+        if( tick.type()==MAIN_TICK ){
 
-        if( y<halfSize || y+halfSize>=height() ) continue;
+            // tick mark
+            int x2=x1-m_TICK_MARK_SIZE;
+            painter.drawLine( x1, y , x2, y );
 
-        painter.drawText( 0, y - m_minimumPixelIncrement/2, x2, m_minimumPixelIncrement, Qt::AlignRight | Qt::AlignVCenter, annotation);
-
+            // annotation
+            QString annotation=m_annotationFunction(tick.value());//QString::number( tick.value(), 'g', 4);
+            QSize annotation_size=painter.fontMetrics().size( Qt::TextSingleLine, annotation);
+            int halfSize=annotation_size.height()/2;
+            if( y<halfSize || y+halfSize>=height() ) continue;
+            painter.drawText( 0, y - m_minimumPixelIncrement/2, x2, m_minimumPixelIncrement, Qt::AlignRight | Qt::AlignVCenter, annotation);
+        }
+        else{  // sub tick
+            painter.drawLine( x1, y , x1-m_subTickMarkSize, y );
+        }
     }
 
 }
@@ -628,19 +684,28 @@ void GVRuler::drawHorizontal( QPainter& painter ){
 
     QVector<Tick> ticks=computeTicks();
     int y1=height();
-    int y2=y1-1.5*m_TICK_MARK_SIZE;
 
     for( Tick tick: ticks ){
 
         int x=tick.coord();
-        painter.drawLine( x, y1, x, y2 );
 
-        QString annotation=m_annotationFunction(tick.value());//QString::number(tick.value(), 'g', 4);
-        QSize annotation_size=painter.fontMetrics().size( Qt::TextSingleLine, annotation);
-        int halfSize=annotation_size.width()/2;
-        if( x<halfSize || x+halfSize>=width() ) continue;
+        // main tick
+        if( tick.type()==MAIN_TICK){
 
-        painter.drawText( x - m_minimumPixelIncrement/2, 0, m_minimumPixelIncrement, y2, Qt::AlignBottom|Qt::AlignHCenter, annotation);
+            // draw tick mark
+            int y2=y1-m_TICK_MARK_SIZE;
+            painter.drawLine( x, y1, x, y2 );
+
+            // draw label
+            QString annotation=m_annotationFunction(tick.value());//QString::number(tick.value(), 'g', 4);
+            QSize annotation_size=painter.fontMetrics().size( Qt::TextSingleLine, annotation);
+            int halfSize=annotation_size.width()/2;
+            if( x<halfSize || x+halfSize>=width() ) continue;
+            painter.drawText( x - m_minimumPixelIncrement/2, 0, m_minimumPixelIncrement, y2, Qt::AlignBottom|Qt::AlignHCenter, annotation);
+        }
+        else{   // sub tick
+            painter.drawLine( x, y1, x, y1-m_subTickMarkSize );
+        }
     }
 
 }

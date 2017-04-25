@@ -4,7 +4,6 @@
 #include<QPushButton>
 #include<QDoubleValidator>
 #include<avoproject.h>
-#include<horizonwindowposition.h>
 
 HorizonFrequenciesDialog::HorizonFrequenciesDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
@@ -15,12 +14,6 @@ HorizonFrequenciesDialog::HorizonFrequenciesDialog(QWidget *parent) :
     QDoubleValidator* validator=new QDoubleValidator(this);
     ui->leMinimumFrequency->setValidator(validator);
     ui->leMaximumFrequency->setValidator(validator);
-
-    HorizonWindowPosition pos[]={HorizonWindowPosition::Above, HorizonWindowPosition::Center,
-                                HorizonWindowPosition::Below};
-    for( auto p : pos){
-        ui->cbPosition->addItem(toQString(p));
-    }
 
     connect( ui->leGrid, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leMinimumFrequency, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -63,7 +56,6 @@ QMap<QString,QString> HorizonFrequenciesDialog::params(){
 
     p.insert( QString("window-samples"), ui->cbWindowSamples->currentText() );
 
-    p.insert( QString("window-position"), ui->cbPosition->currentText());
 
     if( ui->cbDisplay->isChecked()){
         p.insert(QString("display-grid"), fullAmplitudeGridName);

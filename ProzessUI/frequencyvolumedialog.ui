@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>362</width>
-    <height>445</height>
+    <height>411</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -111,44 +111,34 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Horizon / Window Position:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QComboBox" name="cbPosition"/>
-      </item>
-      <item row="4" column="0" colspan="2">
        <widget class="QCheckBox" name="cbTimeWindow">
         <property name="text">
          <string>Use a Time Window</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Window Start [Milliseconds]:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="2">
+      <item row="4" column="2">
        <widget class="QLineEdit" name="leWindowStart">
         <property name="enabled">
          <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>Window End [Milliseconds]:</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="2">
+      <item row="5" column="2">
        <widget class="QLineEdit" name="leWindowEnd">
         <property name="enabled">
          <bool>false</bool>
