@@ -20,5 +20,6 @@ SUBDIRS += \
     ProjectViewer \
     Crypt \
     SEGYCrypt \
-    Viewer3D
+    Viewer3D \
+    GenerateTestdata
 
