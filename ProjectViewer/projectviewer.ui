@@ -28,7 +28,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="datasetsTab">
        <attribute name="title">
@@ -54,6 +54,12 @@
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
          </widget>
         </item>
        </layout>
@@ -67,6 +73,12 @@
          <widget class="QListView" name="attributesView">
           <property name="alternatingRowColors">
            <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
           </property>
          </widget>
         </item>
@@ -82,6 +94,12 @@
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
          </widget>
         </item>
        </layout>
@@ -95,6 +113,12 @@
          <widget class="QListView" name="volumesView">
           <property name="alternatingRowColors">
            <bool>true</bool>
+          </property>
+          <property name="selectionMode">
+           <enum>QAbstractItemView::ExtendedSelection</enum>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
           </property>
          </widget>
         </item>
@@ -210,8 +234,9 @@
     <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Frequencies"/>
     <addaction name="actionHorizon_Semblance"/>
-    <addaction name="actionCompute_Intercept_Gradient"/>
+    <addaction name="actionHorizon_Curvature"/>
     <addaction name="separator"/>
+    <addaction name="actionCompute_Intercept_Gradient"/>
     <addaction name="actionTrend_Based_Attribute_Grids"/>
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
@@ -256,6 +281,7 @@
     <addaction name="actionVolume_Amplitudes"/>
     <addaction name="actionVolume_Frequencies"/>
     <addaction name="actionVolume_Semblance"/>
+    <addaction name="actionVolume_Curvature"/>
     <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
     <addaction name="actionTrend_Based_Attribute_Volumes"/>
@@ -263,7 +289,6 @@
     <addaction name="separator"/>
     <addaction name="actionRun_Volume_Script"/>
     <addaction name="separator"/>
-    <addaction name="actionVolume_Curvature"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
@@ -551,6 +576,9 @@
    </property>
   </action>
   <action name="actionVolume_Curvature">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Volume Curvature</string>
    </property>
@@ -573,6 +601,11 @@
   <action name="actionFrequency_Spectrum_Plot">
    <property name="text">
     <string>Frequency &amp;Spectrum Plot</string>
+   </property>
+  </action>
+  <action name="actionHorizon_Curvature">
+   <property name="text">
+    <string>&amp;Horizon Curvature</string>
    </property>
   </action>
  </widget>

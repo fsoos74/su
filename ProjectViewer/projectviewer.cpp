@@ -68,6 +68,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <horizonfrequenciesdialog.h>
 #include <horizonsemblanceprocess.h>
 #include <horizonsemblancedialog.h>
+#include <horizoncurvatureprocess.h>
+#include <horizoncurvaturedialog.h>
 #include <semblancevolumeprocess.h>
 #include <semblancevolumedialog.h>
 #include <computeinterceptgradientdialog.h>
@@ -994,6 +996,20 @@ void ProjectViewer::on_actionHorizon_Semblance_triggered()
 
 }
 
+void ProjectViewer::on_actionHorizon_Curvature_triggered()
+{
+    Q_ASSERT( m_project );
+
+    HorizonCurvatureDialog dlg;
+    dlg.setHorizons( m_project->gridList(GridType::Horizon));
+    //dlg.setReservedGrids(m_project->gridList(GridType::Other));
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new HorizonCurvatureProcess( m_project, this ), params );
+
+}
+
 void ProjectViewer::on_actionCompute_Intercept_Gradient_triggered()
 {
 
@@ -1495,7 +1511,18 @@ void ProjectViewer::runGridContextMenu( GridType gridType, QListView* view, cons
         renameGrid( gridType,gridName);
      }
     else if( selectedAction->text()=="remove" ){
-        removeGrid( gridType,gridName);
+
+        // if items are selected remove all
+        if( view->selectionModel()->selectedIndexes().size()>0 ){
+            QStringList names;
+            for( auto idx : view->selectionModel()->selectedIndexes()){
+                names.push_back(view->model()->itemData(idx)[Qt::DisplayRole].toString() );
+            }
+            removeGrids( gridType, names);
+        }
+        else{   // no items selected remove only one at pos
+            removeGrid( gridType,gridName);
+        }
     }
 }
 
@@ -1587,7 +1614,18 @@ void ProjectViewer::runVolumeContextMenu( const QPoint& pos){
         renameVolume( volumeName);
      }
     else if( selectedAction->text()=="remove" ){
-        removeVolume( volumeName);
+
+        // if items are selected remove all
+        if( view->selectionModel()->selectedIndexes().size()>0 ){
+            QStringList names;
+            for( auto idx : view->selectionModel()->selectedIndexes()){
+                names.push_back(view->model()->itemData(idx)[Qt::DisplayRole].toString() );
+            }
+            removeVolumes( names);
+        }
+        else{   // no items selected remove only one at pos
+            removeVolume( volumeName);
+        }
     }
 }
 
@@ -1743,6 +1781,25 @@ void ProjectViewer::removeGrid( GridType t, const QString& name){
          }
 
          //updateProjectViews();
+    }
+}
+
+void ProjectViewer::removeGrids( GridType t, const QStringList& names){
+
+    if( QMessageBox::question(this, QString("Remove Grids"),
+             QString("Are you sure you want to remove %1 grids?").arg(names.size()), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
+        return;
+    }
+
+    QString typeName=toQString(t);
+
+    int nfail=0;
+    for( auto name : names){
+        if( !m_project->removeGrid( t, name)) nfail++;
+    }
+
+    if( nfail>0 ){
+        QMessageBox::critical(this, QString("Remove Grids"), QString("Removing %1 grids of type %2 failed!").arg(QString::number(nfail), typeName));
     }
 }
 
@@ -2161,6 +2218,23 @@ void ProjectViewer::removeVolume( const QString& name){
          }
 
          //updateProjectViews();
+    }
+}
+
+void ProjectViewer::removeVolumes( const QStringList& names){
+
+    if( QMessageBox::question(this, QString("Remove Grids"),
+             QString("Are you sure you want to remove %1 volumes?").arg(names.size()), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
+        return;
+    }
+
+    int nfail=0;
+    for( auto name : names){
+        if( !m_project->removeVolume( name)) nfail++;
+    }
+
+    if( nfail>0 ){
+        QMessageBox::critical(this, QString("Remove Volumes"), QString("Removing %1 volumes failed!").arg(QString::number(nfail)));
     }
 }
 
@@ -2711,6 +2785,7 @@ void ProjectViewer::updateMenu(){
     ui->actionHorizon_Amplitudes->setEnabled(isProject);
     ui->actionHorizon_Frequencies->setEnabled(isProject);
     ui->actionHorizon_Semblance->setEnabled(isProject);
+    ui->actionHorizon_Curvature->setEnabled(isProject);
     ui->actionCompute_Intercept_Gradient->setEnabled(isProject);
     ui->actionTrend_Based_Attribute_Grids->setEnabled(isProject);
     ui->actionSecondary_Attribute_Grids->setEnabled(isProject);
@@ -2735,8 +2810,10 @@ void ProjectViewer::updateMenu(){
     ui->actionColor_Composite_Grids->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 
-    ui->actionVolume_Curvature->setEnabled(isProject);
+    //ui->actionVolume_Curvature->setEnabled(isProject); // NOT IMPLEMENTED YET
 }
+
+
 
 
 

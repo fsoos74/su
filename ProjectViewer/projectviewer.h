@@ -90,6 +90,8 @@ private slots:
 
      void on_actionHorizon_Frequencies_triggered();
 
+     void on_actionHorizon_Curvature_triggered();
+
     void on_actionCrossplot_Grids_triggered();
 
     void on_actionCrossplot_Volumes_triggered();
@@ -193,6 +195,7 @@ private:
     void displayGridHistogram( GridType t, const QString&);
     void renameGrid( GridType t, const QString&);
     void removeGrid( GridType t, const QString&);
+    void removeGrids( GridType t, const QStringList&);
     void importGrid(GridType);
     void selectAndExportGrid(GridType);
     void exportGrid(GridType, QString);
@@ -204,6 +207,7 @@ private:
     void displayVolumeHistogram( const QString&);
     void renameVolume( const QString&);
     void removeVolume( const QString&);
+    void removeVolumes( const QStringList&);
     void selectAndExportVolume();
     void exportVolume(QString);
     void exportVolumeSeisware(QString);
