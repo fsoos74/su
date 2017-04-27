@@ -226,7 +226,7 @@ void SpectrumViewer::updateScene(){
         scene->setSceneRect(bounds);
     }
     else{
-        //bounds=scene->itemsBoundingRect();  // don't use this because need to eclude datapoints
+        //bounds=scene->itemsBoundingRect();  // don't use this because need to exclude datapoints
        bounds=bb;
     }
 
