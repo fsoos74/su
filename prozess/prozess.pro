@@ -6,6 +6,7 @@
 
 #need gui for QTransform
 #QT       -= gui
+QT+=widgets     #qApp
 
 win32{
     CONFIG+=staticlib
@@ -59,7 +60,8 @@ SOURCES += prozess.cpp \
     horizonwindowposition.cpp \
     frequencyvolumeprocess.cpp \
     frequencyspectra.cpp \
-    spectrum.cpp
+    spectrum.cpp \
+    horizoncurvatureprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -97,7 +99,8 @@ HEADERS += prozess.h\
     fft.h \
     frequencyvolumeprocess.h \
     frequencyspectra.h \
-    spectrum.h
+    spectrum.h \
+    horizoncurvatureprocess.h
 
 unix {
     target.path = /usr/lib

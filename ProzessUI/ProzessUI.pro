@@ -42,7 +42,8 @@ SOURCES += prozessui.cpp \
     cropgriddialog.cpp \
     curvaturevolumedialog.cpp \
     horizonfrequenciesdialog.cpp \
-    frequencyvolumedialog.cpp
+    frequencyvolumedialog.cpp \
+    horizoncurvaturedialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -68,7 +69,8 @@ HEADERS += prozessui.h\
     cropgriddialog.h \
     curvaturevolumedialog.h \
     horizonfrequenciesdialog.h \
-    frequencyvolumedialog.h
+    frequencyvolumedialog.h \
+    horizoncurvaturedialog.h
 
 unix {
     target.path = /usr/lib
@@ -97,7 +99,8 @@ FORMS += \
     cropgriddialog.ui \
     curvaturevolumedialog.ui \
     horizonfrequenciesdialog.ui \
-    frequencyvolumedialog.ui
+    frequencyvolumedialog.ui \
+    horizoncurvaturedialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

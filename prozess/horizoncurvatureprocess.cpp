@@ -1,51 +1,39 @@
-#include "horizonamplitudesprocess.h"
+#include "horizoncurvatureprocess.h"
 
-#include <seismicdatasetreader.h>
+#include<QApplication>
 
-#include "utilities.h"
+#include<cmath>
+using std::pow;
+using std::sqrt;
 
-// necessary to speed up slow segy input
-const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns" };
-
-HorizonAmplitudesProcess::HorizonAmplitudesProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Horizon Amplitudes"), project, parent){
+HorizonCurvatureProcess::HorizonCurvatureProcess( AVOProject* project, QObject* parent) :
+    ProjectProcess( QString("Horizon Curvature"), project, parent){
 
 }
 
-ProjectProcess::ResultCode HorizonAmplitudesProcess::init( const QMap<QString, QString>& parameters ){
+ProjectProcess::ResultCode HorizonCurvatureProcess::init( const QMap<QString, QString>& parameters ){
 
-    if( !parameters.contains(QString("dataset"))){
-        setErrorString("Parameters contain no dataset!");
+    if( !parameters.contains(QString("basename"))){
+
+        setErrorString("Parameters contain no basename!");
         return ResultCode::Error;
     }
-    QString dataset=parameters.value(QString("dataset"));
+    m_baseName=parameters.value( QString("basename") );
 
-    if( !parameters.contains(QString("grid"))){
-        setErrorString("Parameters contain no output grid!");
-        return ResultCode::Error;
+    QString attributes[]={ MEAN_CURVATURE_STR, GAUSS_CURVATURE_STR, MIN_CURVATURE_STR, MAX_CURVATURE_STR,
+                           MAX_POS_CURVATURE_STR, MAX_NEG_CURVATURE_STR, DIP_CURVATURE_STR, STRIKE_CURVATURE_STR };
+    for( auto attr : attributes){
+        if( parameters.contains(attr) && parameters.value(attr).toInt()>0){ // positive is assumed true
+            m_output_attributes.insert(attr);
+        }
     }
-    m_gridName=parameters.value(QString("grid"));
 
-    if( !parameters.contains(QString("method"))){
-
-        setErrorString("Parameters contain no summation method!");
-        return ResultCode::Error;
-    }
-    m_method=string2ReductionMethod( parameters.value("method"));
-
-    if( !parameters.contains(QString("half-samples"))){
-
-        setErrorString("Parameters contain no operator length!");
-        return ResultCode::Error;
-    }
-    m_halfSamples=parameters.value("half-samples").toUInt();
 
     if( !parameters.contains(QString("horizon"))){
 
         setErrorString("Parameters contain no horizon!");
         return ResultCode::Error;
     }
-
     m_horizonName=parameters.value( QString("horizon") );
     m_horizon=project()->loadGrid( GridType::Horizon, m_horizonName);
     if( !m_horizon ){
@@ -53,88 +41,124 @@ ProjectProcess::ResultCode HorizonAmplitudesProcess::init( const QMap<QString, Q
         return ResultCode::Error;
     }
 
-    m_reader= project()->openSeismicDataset( dataset);
-    if( !m_reader){
-        setErrorString(QString("Open dataset \"%1\" failed!").arg(dataset) );
-        return ResultCode::Error;
-    }
-    if( m_reader->info().mode()!=SeismicDatasetInfo::Mode::Poststack ){
-        setErrorString("This process was designed for stacked data!");
-        return ResultCode::Error;
-    }
-
-
-    Grid2DBounds bounds( m_reader->minInline(), m_reader->minCrossline(),
-                       m_reader->maxInline(), m_reader->maxCrossline() );
-    m_grid=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
-
-
-    if( !m_grid){
-        setErrorString("Allocating grid failed!");
-        return ResultCode::Error;
-    }
-
-    m_reductionFunction=reductionFunctionFactory(m_method);
-
-
     return ResultCode::Ok;
 }
 
-ProjectProcess::ResultCode HorizonAmplitudesProcess::run(){
+// computation according to paper from Andy Roberts, Enterprise Oil
+ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
-    std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
-    if( !reader){
-        setErrorString("Invalid segyreader!");
-        return ResultCode::Error;
-    }
+    Grid2DBounds bounds=m_horizon->bounds();
 
-    // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
-    setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
+    std::shared_ptr<Grid2D<float>> gmean( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> ggauss( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> gmin( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> gmax( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> gpos( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> gneg( new Grid2D<float>(bounds) );
 
-    emit started(reader->trace_count());
-    reader->seek_trace(0);
+    emit started(bounds.height()-2); // don't use first/last row/column because we need 8 surrounding cdp for each output cdp
+    qApp->processEvents();
 
-    int n_null=0;
-    int n_out=0;
+    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
 
-    while( reader->current_trace() < reader->trace_count() ){
+        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
 
-        seismic::Trace trace=reader->read_trace();
-        const seismic::Header& header=trace.header();
-        int iline=header.at("iline").intValue();
-        int xline=header.at("xline").intValue();
+            // XXX need to handle NULL values
 
-        //if( !m_horizon->bounds().isInside(iline, xline)) continue;  //valueAt does the job
-        Grid2D<float>::value_type v=m_horizon->valueAt(iline, xline);
-        if( v != m_horizon->NULL_VALUE ){
+            float Z1=(*m_horizon)(i-1, j-1);
+            float Z2=(*m_horizon)(i-1, j);
+            float Z3=(*m_horizon)(i-1, j+1);
 
-            qreal t=0.001 * v;      // horizon is in millis
+            float Z4=(*m_horizon)(i, j-1);
+            float Z5=(*m_horizon)(i, j);
+            float Z6=(*m_horizon)(i, j+1);
 
-            size_t horizonIndex=trace.time_to_index(t); // returns trace.samples.size() if time is out of trace bounds
+            float Z7=(*m_horizon)(i+1, j-1);
+            float Z8=(*m_horizon)(i+1, j);
+            float Z9=(*m_horizon)(i+1, j+1);
 
-            if( ( horizonIndex >= m_halfSamples ) && ( horizonIndex + m_halfSamples <trace.samples().size() ) ){
-                seismic::Trace::Samples::const_iterator begin=trace.samples().cbegin() + horizonIndex - m_halfSamples;
-                seismic::Trace::Samples::const_iterator end=trace.samples().cbegin() + horizonIndex + m_halfSamples + 1;
-                (*m_grid)(iline, xline)= (*m_reductionFunction)(begin, end);
-            }else{
-                n_out++;
-                //std::cout<<"!!! "<<horizonIndex<<" out of "<<m_halfSamples<<" - "<<trace.samples().size()<<std::endl;
-            }
-       }else{
-            n_null++;
+            if( Z1==m_horizon->NULL_VALUE || Z2==m_horizon->NULL_VALUE || Z3==m_horizon->NULL_VALUE ||
+                Z4==m_horizon->NULL_VALUE || Z5==m_horizon->NULL_VALUE || Z6==m_horizon->NULL_VALUE ||
+                Z7==m_horizon->NULL_VALUE || Z8==m_horizon->NULL_VALUE || Z9==m_horizon->NULL_VALUE) continue;
+
+            float a = (Z1+Z3+Z4+Z6+Z7+Z9)/12 - (Z2+Z5+Z8)/6;
+            float b = (Z1+Z2+Z3+Z7+Z8+Z9)/12 - (Z4+Z5+Z6)/6;
+            float c = (Z3+Z7-Z1-Z9)/4;
+            float d = (Z3+Z6+Z9-Z1-Z4-Z7)/6;
+            float e = (Z1+Z2+Z3-Z7-Z8-Z9)/6;
+            float f = ( 2*(Z2+Z4+Z6+Z8) - (Z1+Z3+Z7+Z9) +5*Z5) / 9;
+//std::cout<<i<<" "<<j<<" "<<a<<" "<<b<<" "<<c<<" "<<d<<" "<<e<<" "<<f<<std::endl;
+            float kmean  = ( a*(1+e*e) -c*d*e + b*(1+d*d) ) / std::pow( 1 + d*d + e*e, 1.5);
+            float kgauss = ( 4*a*b - c*c) / std::pow( 1+d*d+e*e, 2);
+            float kmax = kmean + sqrt( kmean*kmean - kgauss );
+            float kmin = kmean - sqrt( kmean*kmean - kgauss );
+            float kpos = a+b+sqrt( std::pow(a-b, 2) + c*c );
+            float kneg = a+b-sqrt( std::pow(a-b, 2) + c*c );
+
+            (*gmean)(i,j)=kmean;
+            (*ggauss)(i,j)=kgauss;
+            (*gmax)(i,j)=kmax;
+            (*gmin)(i,j)=kmin;//kmin;
+            (*gpos)(i,j)=kpos;
+            (*gneg)(i,j)=kneg;
         }
-        emit progress( reader->current_trace());
+
+        emit progress(i-1);
         qApp->processEvents();
         if( isCanceled()) return ResultCode::Canceled;
     }
 
-    std::cout<<"Number of null horizon values: "<<n_null<<std::endl;
-    std::cout<<"Number of out of trace windows: "<<n_out<<std::endl;
-    std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
-    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid)){
-        setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gridName) );
-        return ResultCode::Error;
+    // write output grids
+    // need to add check whether those grids exist and reserve in init function!!!
+
+    if( m_output_attributes.contains(MIN_CURVATURE_STR)){
+        QString name=QString("%1-minimum").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gmin ) ) {
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
     }
+
+    if( m_output_attributes.contains(MAX_CURVATURE_STR)){
+        QString name=QString("%1-maximum").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gmax ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
+    if( m_output_attributes.contains(MEAN_CURVATURE_STR)){
+        QString name=QString("%1-mean").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gmean ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
+    if( m_output_attributes.contains(GAUSS_CURVATURE_STR)){
+        QString name=QString("%1-gaussian").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, ggauss ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
+    if( m_output_attributes.contains(MAX_POS_CURVATURE_STR)){
+        QString name=QString("%1-maximum-positive").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gpos ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
+    if( m_output_attributes.contains(MAX_NEG_CURVATURE_STR)){
+        QString name=QString("%1-maximum-negative").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gneg ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
     emit finished();
 
     return ResultCode::Ok;
