@@ -230,7 +230,6 @@
      <string>Process(&amp;Grid)</string>
     </property>
     <addaction name="actionCreateTimeslice"/>
-    <addaction name="actionCrop_Grid"/>
     <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Frequencies"/>
     <addaction name="actionHorizon_Semblance"/>
@@ -241,9 +240,11 @@
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
     <addaction name="actionConvert_Grid"/>
+    <addaction name="actionCrop_Grid"/>
+    <addaction name="actionGrid_Math"/>
     <addaction name="actionSmooth_Grid"/>
-    <addaction name="actionRun_Grid_User_Script"/>
     <addaction name="separator"/>
+    <addaction name="actionRun_Grid_User_Script"/>
    </widget>
    <widget class="QMenu" name="menu_Analyze">
     <property name="title">
@@ -606,6 +607,11 @@
   <action name="actionHorizon_Curvature">
    <property name="text">
     <string>&amp;Horizon Curvature</string>
+   </property>
+  </action>
+  <action name="actionGrid_Math">
+   <property name="text">
+    <string>Grid Math</string>
    </property>
   </action>
  </widget>

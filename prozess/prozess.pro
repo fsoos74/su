@@ -57,11 +57,11 @@ SOURCES += prozess.cpp \
     curvaturevolumeprocess.cpp \
     horizonfrequenciesprocess.cpp \
     fft.cpp \
-    horizonwindowposition.cpp \
     frequencyvolumeprocess.cpp \
     frequencyspectra.cpp \
     spectrum.cpp \
-    horizoncurvatureprocess.cpp
+    horizoncurvatureprocess.cpp \
+    gridmathprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -100,7 +100,8 @@ HEADERS += prozess.h\
     frequencyvolumeprocess.h \
     frequencyspectra.h \
     spectrum.h \
-    horizoncurvatureprocess.h
+    horizoncurvatureprocess.h \
+    gridmathprocess.h
 
 unix {
     target.path = /usr/lib

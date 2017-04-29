@@ -16,6 +16,8 @@ const QString MAX_POS_CURVATURE_STR("curv-max-pos");
 const QString MAX_NEG_CURVATURE_STR("curv-max-neg");
 const QString DIP_CURVATURE_STR("curv-dip");
 const QString STRIKE_CURVATURE_STR("curv-strike");
+const QString DIP_ANGLE_STR("dip-angle");
+const QString DIP_AZIMUTH_STR("dip-azimuth");
 
 class HorizonCurvatureProcess : public ProjectProcess
 {

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>304</width>
-    <height>465</height>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -119,6 +119,20 @@
         </property>
         <property name="text">
          <string>Strike</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbDipAngle">
+        <property name="text">
+         <string>Dip Angle</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cbDipAzimuth">
+        <property name="text">
+         <string>Dip Azimuth</string>
         </property>
        </widget>
       </item>

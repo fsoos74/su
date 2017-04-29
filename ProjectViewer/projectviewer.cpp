@@ -98,6 +98,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <convertgridprocess.h>
 #include <smoothgriddialog.h>
 #include <smoothgridprocess.h>
+#include <gridmathdialog.h>
+#include <gridmathprocess.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
 #include <runvolumescriptdialog.h>
@@ -1260,6 +1262,22 @@ void ProjectViewer::on_actionSmooth_Grid_triggered()
     runProcess( new SmoothGridProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionGrid_Math_triggered()
+{
+    Q_ASSERT( m_project );
+
+    GridMathDialog dlg;
+    dlg.setWindowTitle(tr("Grid Math"));
+
+    dlg.setInputGrids( toQString(GridType::Attribute), m_project->gridList(GridType::Attribute));
+    dlg.setInputGrids( toQString(GridType::Horizon), m_project->gridList(GridType::Horizon));
+    dlg.setInputGrids( toQString(GridType::Other), m_project->gridList(GridType::Other));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new GridMathProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
 {
@@ -2791,6 +2809,7 @@ void ProjectViewer::updateMenu(){
     ui->actionSecondary_Attribute_Grids->setEnabled(isProject);
     ui->actionConvert_Grid->setEnabled(isProject);
     ui->actionSmooth_Grid->setEnabled(isProject);
+    ui->actionGrid_Math->setEnabled(isProject);
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
 
     ui->action_Crop_Volume->setEnabled(isProject);
@@ -2812,6 +2831,8 @@ void ProjectViewer::updateMenu(){
 
     //ui->actionVolume_Curvature->setEnabled(isProject); // NOT IMPLEMENTED YET
 }
+
+
 
 
 

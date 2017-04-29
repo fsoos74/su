@@ -41,6 +41,8 @@ QMap<QString,QString> HorizonCurvatureDialog::params(){
     p.insert( MAX_CURVATURE_STR, QString::number( ui->cbKMax->isChecked() ) );
     p.insert( MAX_POS_CURVATURE_STR, QString::number( ui->cbKMaxPos->isChecked() ) );
     p.insert( MAX_NEG_CURVATURE_STR, QString::number( ui->cbKMaxNeg->isChecked() ) );
+    p.insert( DIP_ANGLE_STR, QString::number( ui->cbDipAngle->isChecked() ) );
+    p.insert( DIP_AZIMUTH_STR, QString::number( ui->cbDipAzimuth->isChecked() ) );
 
     return p;
 }

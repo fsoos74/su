@@ -143,7 +143,7 @@ void RulerGraphicsView::resizeEvent(QResizeEvent *){
         QRectF bounds = sceneRect();//scene()->itemsBoundingRect();
         //bounds.setWidth(bounds.width()*0.9);         // to tighten-up margins
         //bounds.setHeight(bounds.height()*0.9);       // same as above
-        fitInView(bounds);
+        fitInView(bounds, aspectRatioMode() );
         centerOn(bounds.center());
     }
 
@@ -331,7 +331,7 @@ bool RulerGraphicsView::eventFilter(QObject *obj, QEvent *ev){
 
         selectedRectInScene=selectedRectInScene.intersected(sceneRect());
 
-        fitInView(selectedRectInScene );//.normalized());
+        fitInView(selectedRectInScene, m_aspectRatioMode );//.normalized());
         m_leftRuler->update();
         m_topRuler->update();
     }

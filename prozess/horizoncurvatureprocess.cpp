@@ -21,7 +21,8 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::init( const QMap<QString, QS
     m_baseName=parameters.value( QString("basename") );
 
     QString attributes[]={ MEAN_CURVATURE_STR, GAUSS_CURVATURE_STR, MIN_CURVATURE_STR, MAX_CURVATURE_STR,
-                           MAX_POS_CURVATURE_STR, MAX_NEG_CURVATURE_STR, DIP_CURVATURE_STR, STRIKE_CURVATURE_STR };
+                           MAX_POS_CURVATURE_STR, MAX_NEG_CURVATURE_STR, DIP_CURVATURE_STR, STRIKE_CURVATURE_STR,
+                           DIP_ANGLE_STR, DIP_AZIMUTH_STR};
     for( auto attr : attributes){
         if( parameters.contains(attr) && parameters.value(attr).toInt()>0){ // positive is assumed true
             m_output_attributes.insert(attr);
@@ -55,6 +56,8 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
     std::shared_ptr<Grid2D<float>> gmax( new Grid2D<float>(bounds) );
     std::shared_ptr<Grid2D<float>> gpos( new Grid2D<float>(bounds) );
     std::shared_ptr<Grid2D<float>> gneg( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> gangle( new Grid2D<float>(bounds) );
+    std::shared_ptr<Grid2D<float>> gazimuth( new Grid2D<float>(bounds) );
 
     emit started(bounds.height()-2); // don't use first/last row/column because we need 8 surrounding cdp for each output cdp
     qApp->processEvents();
@@ -94,6 +97,8 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
             float kmin = kmean - sqrt( kmean*kmean - kgauss );
             float kpos = a+b+sqrt( std::pow(a-b, 2) + c*c );
             float kneg = a+b-sqrt( std::pow(a-b, 2) + c*c );
+            float kangle = std::atan( std::sqrt( d*d + e*e ) );
+            float kazimuth = std::atan2( d, e);
 
             (*gmean)(i,j)=kmean;
             (*ggauss)(i,j)=kgauss;
@@ -101,6 +106,8 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
             (*gmin)(i,j)=kmin;//kmin;
             (*gpos)(i,j)=kpos;
             (*gneg)(i,j)=kneg;
+            (*gangle)(i,j)=kangle;
+            (*gazimuth)(i,j)=kazimuth;
         }
 
         emit progress(i-1);
@@ -154,6 +161,22 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
     if( m_output_attributes.contains(MAX_NEG_CURVATURE_STR)){
         QString name=QString("%1-maximum-negative").arg(m_baseName);
         if( !project()->addGrid( GridType::Other, name, gneg ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
+    if( m_output_attributes.contains(DIP_ANGLE_STR)){
+        QString name=QString("%1-dip-angle").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gangle ) ){
+            setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
+            return ResultCode::Error;
+        }
+    }
+
+    if( m_output_attributes.contains(DIP_AZIMUTH_STR)){
+        QString name=QString("%1-dip-azimuth").arg(m_baseName);
+        if( !project()->addGrid( GridType::Other, name, gazimuth ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }

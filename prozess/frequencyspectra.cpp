@@ -1,8 +1,10 @@
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "frequencyspectra.h"
 
 #include <fft.h>
 #include <vector>
-#include <cmath>
 #include <algorithm>
 #include <functional>
 

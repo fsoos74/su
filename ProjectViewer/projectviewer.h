@@ -160,6 +160,8 @@ private slots:
 
     void on_actionSmooth_Grid_triggered();
 
+    void on_actionGrid_Math_triggered();
+
     void on_actionCrop_Grid_triggered();
 
     void on_actionVolume_Curvature_triggered();

@@ -62,7 +62,8 @@ void ColorCompositeViewer::setProject(AVOProject* project ){
     // adjust graphicsview geometry
     auto bbox=m_project->geometry().bboxCoords();
     ui->graphicsView->setSceneRect(bbox);
-    ui->graphicsView->fitInView(bbox, Qt::KeepAspectRatioByExpanding);
+    //ui->graphicsView->fitInView(bbox, ui->graphicsView->aspectRatioMode() );
+    ui->graphicsView->zoomFitWindow();
 
     // invert y-axis
     QTransform stf=ui->graphicsView->transform();
