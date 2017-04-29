@@ -3,11 +3,12 @@
 
 #include<QGraphicsPixmapItem>
 #include<QMessageBox>
+#include<cmath>
 
 const QString NoneString("NONE");
 
 ColorCompositeViewer::ColorCompositeViewer(QWidget *parent) :
-    QDialog(parent),
+    BaseViewer(parent),
     ui(new Ui::ColorCompositeViewer)
 {
     ui->setupUi(this);
@@ -16,6 +17,9 @@ ColorCompositeViewer::ColorCompositeViewer(QWidget *parent) :
     ui->graphicsView->topRuler()->setMinimumPixelIncrement(100);
 
     ui->graphicsView->setAspectRatioMode(Qt::KeepAspectRatio);
+
+    ui->graphicsView->setMouseTracking(true);  // also send mouse move events when no button is pressed
+    connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
 
     // build color arrays
     QVector<QRgb> reds, greens, blues;
@@ -79,6 +83,48 @@ void ColorCompositeViewer::setProject(AVOProject* project ){
     updateScene();
 }
 
+
+void ColorCompositeViewer::receivePoint( SelectionPoint pt, int code ){
+
+    return; // NOP
+}
+
+void ColorCompositeViewer::receivePoints( QVector<SelectionPoint> points, int code){
+
+    return; // NOP
+}
+
+void ColorCompositeViewer::onMouseOver(QPointF scenePos){
+
+   QString message=QString("x=%1,  y=%2").arg(scenePos.x()).arg(scenePos.y());
+
+   QTransform ilxl_to_xy, xy_to_ilxl;
+   if( m_project && m_project->geometry().computeTransforms( xy_to_ilxl, ilxl_to_xy ) ){
+       auto ilxl=xy_to_ilxl.map(scenePos);
+       int il=std::round(ilxl.x());
+       int xl=std::round(ilxl.y());
+       message+=QString(", iline*=%1, xline*=%2").arg(il).arg(xl);
+
+       if(m_red){
+           float r=m_red->valueAt(il,xl);
+           message+=QString(", red=");
+           message+=(r==m_red->NULL_VALUE)?QString("NULL"):QString::number(r);
+       }
+       if(m_green){
+           float g=m_green->valueAt(il,xl);
+           message+=QString(", green=");
+           message+=(g==m_green->NULL_VALUE)?QString("NULL"):QString::number(g);
+       }
+       if(m_blue){
+           float b=m_blue->valueAt(il,xl);
+           message+=QString(", blue=");
+           message+=(b==m_blue->NULL_VALUE)?QString("NULL"):QString::number(b);
+       }
+   }
+
+   statusBar()->showMessage(message);
+}
+
 void ColorCompositeViewer::setRed(std::shared_ptr<Grid2D<float>> g){
     if( g==m_red) return;
 
@@ -132,6 +178,7 @@ void ColorCompositeViewer::setBlue(std::shared_ptr<Grid2D<float>> g){
 
     updateScene();
 }
+
 
 std::pair<Grid2DBounds,  QImage>  ColorCompositeViewer::buildImage( Grid2D<float>* red, Grid2D<float>* green, Grid2D<float>* blue){
 

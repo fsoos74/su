@@ -1,6 +1,7 @@
 #ifndef COLORCOMPOSITEVIEWER_H
 #define COLORCOMPOSITEVIEWER_H
 
+#include<baseviewer.h>
 #include <QDialog>
 #include <QGraphicsPixmapItem>
 #include <avoproject.h>
@@ -12,7 +13,7 @@ namespace Ui {
 class ColorCompositeViewer;
 }
 
-class ColorCompositeViewer : public QDialog
+class ColorCompositeViewer : public BaseViewer
 {
     Q_OBJECT
 
@@ -23,7 +24,13 @@ public:
 public slots:
     void setProject(AVOProject* );
 
+protected:
+    void receivePoint( SelectionPoint, int code );
+    void receivePoints( QVector<SelectionPoint>, int code);
+
+
 private slots:
+    void onMouseOver(QPointF);
     void setRed(std::shared_ptr<Grid2D<float>>);
     void setGreen(std::shared_ptr<Grid2D<float>>);
     void setBlue(std::shared_ptr<Grid2D<float>>);
