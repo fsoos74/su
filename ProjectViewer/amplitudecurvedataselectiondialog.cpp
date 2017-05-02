@@ -137,6 +137,12 @@ void AmplitudeCurveDataSelectionDialog::setReductionMethods( const QStringList& 
     ui->cbMethod->addItems(h);
 }
 
+// will only select existing method
+void AmplitudeCurveDataSelectionDialog::setCurrentReductionMethod(QString s){
+    auto idx=ui->cbMethod->findText(s);
+    if( idx >= 0) ui->cbMethod->setCurrentIndex(idx);
+}
+
 void AmplitudeCurveDataSelectionDialog::setNumberOfSamples( int n ){
     ui->sbSamples->setValue(n);
 }

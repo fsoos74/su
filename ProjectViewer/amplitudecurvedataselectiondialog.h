@@ -38,6 +38,7 @@ public slots:
     void setMinimumAzimuth( const double);
     void setMaximumAzimuth( const double);
     void setReductionMethods( const QStringList&);
+    void setCurrentReductionMethod(QString);
     void setNumberOfSamples( int );
     void setInlineNumber(int);
     void setCrosslineNumber(int);

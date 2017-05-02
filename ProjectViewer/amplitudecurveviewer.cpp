@@ -547,6 +547,7 @@ void AmplitudeCurveViewer::showSelector(){
             methods.append( ReductionMethodsAndNames.value(method));
         }
         selector->setReductionMethods(methods);
+        selector->setCurrentReductionMethod( ReductionMethodsAndNames.value(ReductionMethod::Mean));
 
         connect(selector, SIGNAL(curveDataSelected(AmplitudeCurveDefinition)),
                 this, SLOT(addCurve(AmplitudeCurveDefinition)) );
