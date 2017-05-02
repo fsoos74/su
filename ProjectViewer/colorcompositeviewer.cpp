@@ -3,7 +3,9 @@
 
 #include<QGraphicsPixmapItem>
 #include<QMessageBox>
+#include<QToolBar>
 #include<cmath>
+#include<dynamicmousemodeselector.h>
 
 const QString NoneString("NONE");
 
@@ -13,6 +15,8 @@ ColorCompositeViewer::ColorCompositeViewer(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    setupMouseModes();
+
     // prevent overlapping of tick labels, need to make this automatic
     ui->graphicsView->topRuler()->setMinimumPixelIncrement(100);
 
@@ -20,6 +24,39 @@ ColorCompositeViewer::ColorCompositeViewer(QWidget *parent) :
 
     ui->graphicsView->setMouseTracking(true);  // also send mouse move events when no button is pressed
     connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
+
+    connect(ui->hwRed, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene() ) );
+    connect( ui->hwRed, SIGNAL(powerChanged(double)), this, SLOT(updateScene() ) );
+    connect(ui->hwGreen, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene()  ) );
+    connect( ui->hwGreen, SIGNAL(powerChanged(double)), this, SLOT(updateScene() ) );
+    connect(ui->hwBlue, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene() ) );
+    connect( ui->hwBlue, SIGNAL(powerChanged(double)), this, SLOT(updateScene() ) );
+
+    setupColorTables();
+
+    updateScene();
+}
+
+ColorCompositeViewer::~ColorCompositeViewer()
+{
+    delete ui;
+}
+
+
+void ColorCompositeViewer::setupMouseModes(){
+
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    mm->addMode(MouseMode::Select);
+
+    QToolBar* mouseToolBar=addToolBar("mouse toolbar");
+    mouseToolBar->addWidget( mm);
+    mouseToolBar->show();
+}
+
+void ColorCompositeViewer::setupColorTables(){
 
     // build color arrays
     QVector<QRgb> reds, greens, blues;
@@ -41,20 +78,6 @@ ColorCompositeViewer::ColorCompositeViewer(QWidget *parent) :
     ColorTable* ctBlue=new ColorTable(this);
     ctBlue->setColors( blues );
     ui->hwBlue->setColorTable(ctBlue);
-
-    connect(ui->hwRed, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene() ) );
-    connect( ui->hwRed, SIGNAL(powerChanged(double)), this, SLOT(updateScene() ) );
-    connect(ui->hwGreen, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene()  ) );
-    connect( ui->hwGreen, SIGNAL(powerChanged(double)), this, SLOT(updateScene() ) );
-    connect(ui->hwBlue, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateScene() ) );
-    connect( ui->hwBlue, SIGNAL(powerChanged(double)), this, SLOT(updateScene() ) );
-
-    updateScene();
-}
-
-ColorCompositeViewer::~ColorCompositeViewer()
-{
-    delete ui;
 }
 
 
@@ -69,10 +92,11 @@ void ColorCompositeViewer::setProject(AVOProject* project ){
     //ui->graphicsView->fitInView(bbox, ui->graphicsView->aspectRatioMode() );
     ui->graphicsView->zoomFitWindow();
 
-    // invert y-axis
     QTransform stf=ui->graphicsView->transform();
+    // invert y-axis
     stf.scale( 1, -1);
     stf.translate( 0, -bbox.bottom() );
+
     ui->graphicsView->setTransform(stf);
 
     // reset grids because they are from other project

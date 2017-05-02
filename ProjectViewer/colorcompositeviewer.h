@@ -46,6 +46,8 @@ private slots:
     void on_cbBlue_currentIndexChanged(const QString &arg1);
 
 private:
+    void setupColorTables();
+    void setupMouseModes();
     std::pair<Grid2DBounds, QImage> buildImage( Grid2D<float>* red, Grid2D<float>* green, Grid2D<float>* blue);
 
     Ui::ColorCompositeViewer *ui;
