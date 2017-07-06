@@ -23,7 +23,7 @@ private:
     double m_maximumFrequency;
     QString m_volumeName;
 
-    std::shared_ptr<SeismicDatasetReader> m_reader;
+    std::shared_ptr<Grid3D<float> > m_inputVolume;
     Grid3DBounds  m_bounds;
     std::shared_ptr<Grid3D<float> > m_volume;
 };

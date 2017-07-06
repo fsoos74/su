@@ -26,11 +26,11 @@ public:
 private:
 
     QString m_volumeName;
-    size_t m_halfIlines;
-    size_t m_halfXlines;
-    size_t m_halfSamples;
+    int m_halfIlines;
+    int m_halfXlines;
+    int m_halfSamples;
 
-    std::shared_ptr<SeismicDatasetReader> m_reader;
+    std::shared_ptr<Grid3D<float> > m_inputVolume;
     Grid3DBounds m_bounds;
     std::shared_ptr<Grid3D<float> > m_volume;
 

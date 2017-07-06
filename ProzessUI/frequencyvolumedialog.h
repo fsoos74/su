@@ -22,9 +22,7 @@ public:
     QMap<QString,QString> params();
 
 public slots:
-    void setDatasets( const QStringList&);
-    void setWindowStartMS( int );
-    void setWindowEndMS( int );
+    void setInputs( const QStringList&);
 
 private slots:
     void updateOkButton();

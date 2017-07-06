@@ -12,9 +12,6 @@ FrequencyVolumeDialog::FrequencyVolumeDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QIntValidator* windowValidator=new QIntValidator(this);
-    ui->leWindowStart->setValidator(windowValidator);
-    ui->leWindowEnd->setValidator(windowValidator);
 
     QDoubleValidator* dvalidator=new QDoubleValidator(this);
     ui->leMinimumFrequency->setValidator(dvalidator);
@@ -25,12 +22,6 @@ FrequencyVolumeDialog::FrequencyVolumeDialog(QWidget *parent) :
     connect( ui->leMaximumFrequency, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
 
     connect( ui->leVolumeName, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->leWindowStart, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->leWindowEnd, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->cbTimeWindow, SIGNAL( toggled(bool)), this, SLOT(updateOkButton()) );
-
-    connect( ui->cbTimeWindow, SIGNAL(toggled(bool)), ui->leWindowStart, SLOT(setEnabled(bool)) );
-    connect( ui->cbTimeWindow, SIGNAL(toggled(bool)), ui->leWindowEnd, SLOT(setEnabled(bool)) );
 }
 
 FrequencyVolumeDialog::~FrequencyVolumeDialog()
@@ -38,35 +29,20 @@ FrequencyVolumeDialog::~FrequencyVolumeDialog()
     delete ui;
 }
 
-void FrequencyVolumeDialog::setDatasets( const QStringList& h){
-    ui->cbDataset->clear();
-    ui->cbDataset->addItems(h);
+void FrequencyVolumeDialog::setInputs( const QStringList& h){
+    ui->cbInputVolume->clear();
+    ui->cbInputVolume->addItems(h);
 }
 
-void FrequencyVolumeDialog::setWindowStartMS( int t ){
-    ui->leWindowStart->setText(QString::number(t));
-}
-
-void FrequencyVolumeDialog::setWindowEndMS( int t ){
-    ui->leWindowEnd->setText(QString::number(t));
-}
 
 QMap<QString,QString> FrequencyVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
 
-    p.insert( QString("volume"), ui->leVolumeName->text() );
+    p.insert( QString("output-volume"), ui->leVolumeName->text() );
 
-    p.insert( QString("dataset"), ui->cbDataset->currentText());
-
-    if( ui->cbTimeWindow->isChecked()){
-
-        p.insert("window-mode", "TRUE");
-        p.insert("window-start", ui->leWindowStart->text());
-        p.insert("window-end", ui->leWindowEnd->text());
-
-    }
+    p.insert( QString("input-volume"), ui->cbInputVolume->currentText());
 
     p.insert( QString("minimum-frequency"), ui->leMinimumFrequency->text() );
 
@@ -89,23 +65,6 @@ void FrequencyVolumeDialog::updateOkButton(){
         volumePalette.setColor(QPalette::Text, Qt::red);
     }
     ui->leVolumeName->setPalette(volumePalette);
-
-    if( ui->cbTimeWindow->isChecked() ){
-        if( ui->leWindowStart->text().isEmpty()){
-            ok=false;
-        }
-        if( ui->leWindowEnd->text().isEmpty()){
-            ok=false;
-        }
-
-        QPalette windowPalette;
-        if( ui->leWindowStart->text().toInt()>ui->leWindowEnd->text().toInt()){
-            windowPalette.setColor(QPalette::Text, Qt::red);
-        }
-        ui->leWindowStart->setPalette(windowPalette);
-        ui->leWindowEnd->setPalette(windowPalette);
-
-    }
 
     {
     QPalette palette;

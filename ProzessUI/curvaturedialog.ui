@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>HorizonCurvatureDialog</class>
- <widget class="QDialog" name="HorizonCurvatureDialog">
+ <class>CurvatureDialog</class>
+ <widget class="QDialog" name="CurvatureDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,14 +17,14 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="lbInput">
        <property name="text">
         <string>Horizon:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="cbHorizon">
+      <widget class="QComboBox" name="cbInput">
        <property name="minimumSize">
         <size>
          <width>200</width>
@@ -169,7 +169,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>HorizonCurvatureDialog</receiver>
+   <receiver>CurvatureDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -185,7 +185,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>HorizonCurvatureDialog</receiver>
+   <receiver>CurvatureDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

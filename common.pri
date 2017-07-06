@@ -1,6 +1,6 @@
 DEFINES += COMPANY=\\\"SeismicUtensils\\\"
 DEFINES += PROGRAM=\\\"AVO-Detect\\\"
-DEFINES += VERSION=\\\"1.7.6\\\"
+DEFINES += VERSION=\\\"1.8.1\\\"
 
 CONFIG += c++11
 

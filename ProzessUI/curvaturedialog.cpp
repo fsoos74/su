@@ -1,13 +1,13 @@
-#include "horizoncurvaturedialog.h"
-#include "ui_horizoncurvaturedialog.h"
+#include "curvaturedialog.h"
+#include "ui_curvaturedialog.h"
 #include<QPushButton>
 
 #include<horizoncurvatureprocess.h> // need this to get same attriute strings
 
 
-HorizonCurvatureDialog::HorizonCurvatureDialog(QWidget *parent) :
+CurvatureDialog::CurvatureDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
-    ui(new Ui::HorizonCurvatureDialog)
+    ui(new Ui::CurvatureDialog)
 {
     ui->setupUi(this);
 
@@ -16,22 +16,31 @@ HorizonCurvatureDialog::HorizonCurvatureDialog(QWidget *parent) :
     updateOkButton();
 }
 
-HorizonCurvatureDialog::~HorizonCurvatureDialog()
+CurvatureDialog::~CurvatureDialog()
 {
     delete ui;
 }
 
-void HorizonCurvatureDialog::setHorizons( const QStringList& h){
-    ui->cbHorizon->clear();
-    ui->cbHorizon->addItems(h);
+void CurvatureDialog::setMode( CurvatureDialog::Mode m){
+
+    if( m==m_mode ) return;
+
+    m_mode=m;
+
+    ui->lbInput->setText( (m_mode==Mode::Volume) ? "Volume" : "Horizon" );
+}
+
+void CurvatureDialog::setInputs( const QStringList& h){
+    ui->cbInput->clear();
+    ui->cbInput->addItems(h);
 }
 
 
-QMap<QString,QString> HorizonCurvatureDialog::params(){
+QMap<QString,QString> CurvatureDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("horizon"), ui->cbHorizon->currentText() );
+    p.insert( (m_mode==Mode::Horizon) ? QString("horizon") : QString("volume"), ui->cbInput->currentText() );
     p.insert( QString("basename"), ui->leBaseName->text() );
 
     // attributes, maybe find better way later
@@ -47,11 +56,11 @@ QMap<QString,QString> HorizonCurvatureDialog::params(){
     return p;
 }
 
-void HorizonCurvatureDialog::updateOkButton(){
+void CurvatureDialog::updateOkButton(){
 
     bool ok=true;
 
-    if( ui->cbHorizon->currentText().isNull() ){
+    if( ui->cbInput->currentText().isNull() ){
         ok=false;
     }
 

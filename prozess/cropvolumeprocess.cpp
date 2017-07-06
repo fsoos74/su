@@ -12,8 +12,8 @@ CropVolumeProcess::CropVolumeProcess( AVOProject* project, QObject* parent) :
 
 ProjectProcess::ResultCode CropVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
-    if( !parameters.contains(QString("output-volume"))){
-        setErrorString("Parameters contain no output volume!");
+    if( !parameters.contains(QString("volume"))){
+        setErrorString("Parameters contain no input volume!");
         return ResultCode::Error;
     }
     m_outputName=parameters.value(QString("output-volume"));

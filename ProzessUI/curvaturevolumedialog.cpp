@@ -1,7 +1,9 @@
 #include "curvaturevolumedialog.h"
 #include "ui_curvaturevolumedialog.h"
-
 #include<QPushButton>
+
+#include<curvature_attributes.h>
+
 
 CurvatureVolumeDialog::CurvatureVolumeDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
@@ -9,8 +11,9 @@ CurvatureVolumeDialog::CurvatureVolumeDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect( ui->cbInputVolume, SIGNAL(currentTextChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->leOutputVolume, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leBaseName, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()));
+
+    updateOkButton();
 }
 
 CurvatureVolumeDialog::~CurvatureVolumeDialog()
@@ -18,49 +21,44 @@ CurvatureVolumeDialog::~CurvatureVolumeDialog()
     delete ui;
 }
 
-
-void CurvatureVolumeDialog::setInputVolumes( const QStringList& l){
-
-    m_inputVolumes=l;
-
-    ui->cbInputVolume->clear();
-    ui->cbInputVolume->addItems(m_inputVolumes);
-
-    updateOkButton();
+void CurvatureVolumeDialog::setInputs( const QStringList& h){
+    ui->cbInput->clear();
+    ui->cbInput->addItems(h);
 }
-
 
 
 QMap<QString,QString> CurvatureVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("input-volume"), ui->cbInputVolume->currentText() );
-    p.insert( QString("output-volume"), ui->leOutputVolume->text() );
+    p.insert( QString("volume"), ui->cbInput->currentText() );
+    p.insert( QString("basename"), ui->leBaseName->text() );
+    p.insert( QString("window-length"), QString::number(ui->sbWindowLen->value()) );
+    p.insert( QString("maximum-shift"), QString::number(ui->sbMaximumShift->value()) );
+    // attributes, maybe find better way later
+    p.insert( MEAN_CURVATURE_STR, QString::number( ui->cbKMean->isChecked() ) );
+    p.insert( GAUSS_CURVATURE_STR, QString::number( ui->cbKGauss->isChecked() ) );
+    p.insert( MIN_CURVATURE_STR, QString::number( ui->cbKMin->isChecked() ) );
+    p.insert( MAX_CURVATURE_STR, QString::number( ui->cbKMax->isChecked() ) );
+    p.insert( MAX_POS_CURVATURE_STR, QString::number( ui->cbKMaxPos->isChecked() ) );
+    p.insert( MAX_NEG_CURVATURE_STR, QString::number( ui->cbKMaxNeg->isChecked() ) );
+    p.insert( DIP_ANGLE_STR, QString::number( ui->cbDipAngle->isChecked() ) );
+    p.insert( DIP_AZIMUTH_STR, QString::number( ui->cbDipAzimuth->isChecked() ) );
 
     return p;
 }
-
 
 void CurvatureVolumeDialog::updateOkButton(){
 
     bool ok=true;
 
-    if( ui->leOutputVolume->text().isEmpty()){
+    if( ui->cbInput->currentText().isNull() ){
         ok=false;
     }
 
-    // output grid
-    {
-    QPalette palette;
-    if( m_inputVolumes.contains(ui->leOutputVolume->text() ) ){
+    if( ui->leBaseName->text().isEmpty()){
         ok=false;
-        palette.setColor(QPalette::Text, Qt::red);
-    }
-    ui->leOutputVolume->setPalette(palette);
-
     }
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(ok);
 }
-

@@ -29,7 +29,8 @@ SOURCES += project.cpp \
     xdireader.cpp \
     seismicdatasetreader.cpp \
     projectgeometry.cpp \
-    axxisorientation.cpp
+    axxisorientation.cpp \
+    seismicdatasetwriter.cpp
 
 HEADERS += project.h\
         project_global.h \
@@ -41,7 +42,8 @@ HEADERS += project.h\
     xdireader.h \
     seismicdatasetreader.h \
     projectgeometry.h \
-    axxisorientation.h
+    axxisorientation.h \
+    seismicdatasetwriter.h
 
 unix {
     target.path = /usr/lib

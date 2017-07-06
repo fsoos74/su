@@ -61,7 +61,10 @@ SOURCES += prozess.cpp \
     frequencyspectra.cpp \
     spectrum.cpp \
     horizoncurvatureprocess.cpp \
-    gridmathprocess.cpp
+    gridmathprocess.cpp \
+    hilbert.cpp \
+    instantaneousattributesprocess.cpp \
+    extracttimesliceprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -101,7 +104,11 @@ HEADERS += prozess.h\
     frequencyspectra.h \
     spectrum.h \
     horizoncurvatureprocess.h \
-    gridmathprocess.h
+    gridmathprocess.h \
+    curvature_attributes.h \
+    hilbert.h \
+    instantaneousattributesprocess.h \
+    extracttimesliceprocess.h
 
 unix {
     target.path = /usr/lib

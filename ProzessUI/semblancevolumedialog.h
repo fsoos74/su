@@ -21,7 +21,7 @@ public:
     QMap<QString,QString> params();
 
 public slots:
-    void setDatasets( const QStringList&);
+    void setInputVolumes( const QStringList&);
 
 private slots:
     void updateOkButton();

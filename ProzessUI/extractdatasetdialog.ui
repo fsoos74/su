@@ -1,114 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FrequencyVolumeDialog</class>
- <widget class="QDialog" name="FrequencyVolumeDialog">
+ <class>ExtractDatasetDialog</class>
+ <widget class="QDialog" name="ExtractDatasetDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>312</width>
-    <height>311</height>
+    <width>277</width>
+    <height>451</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Extract Dataset</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_7">
        <property name="text">
         <string>Input Volume:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="cbInputVolume">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="cbInputVolume"/>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Output Volume:</string>
+        <string>Output Dataset:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="leVolumeName"/>
+      <widget class="QLineEdit" name="leOutputDataset"/>
      </item>
     </layout>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Parameters</string>
+      <string>Boundaries</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="1" colspan="2">
-       <widget class="QLineEdit" name="leMaximumFrequency">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
         <property name="text">
-         <string>40.0</string>
+         <string>Minimum Inline:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QSpinBox" name="sbMinIline">
+        <property name="maximum">
+         <number>1000</number>
         </property>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Maximum Frequency:</string>
+         <string>Maximum Inline:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Minimum Frequency:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" colspan="2">
-       <widget class="QLineEdit" name="leMinimumFrequency">
-        <property name="text">
-         <string>30.0</string>
-        </property>
-       </widget>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="sbMaxIline"/>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Window Samples:</string>
+         <string>Minimum Crossline:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QComboBox" name="cbWindowSamples">
-        <item>
-         <property name="text">
-          <string>32</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>64</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>128</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>256</string>
-         </property>
-        </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="sbMinXline"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Maximum Crossline:</string>
+        </property>
        </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="sbMaxXline"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Minimum Time [ms]:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QSpinBox" name="sbMinMsec"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Maximum Time [ms]:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QSpinBox" name="sbMaxMsec"/>
       </item>
      </layout>
     </widget>
@@ -121,7 +119,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>68</height>
       </size>
      </property>
     </spacer>
@@ -143,7 +141,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>FrequencyVolumeDialog</receiver>
+   <receiver>ExtractDatasetDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -159,7 +157,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>FrequencyVolumeDialog</receiver>
+   <receiver>ExtractDatasetDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -16,11 +16,11 @@ CreateTimesliceProcess::CreateTimesliceProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QString>& parameters ){
 
-    if( !parameters.contains(QString("dataset"))){
+    if( !parameters.contains(QString("input"))){
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
     }
-    QString dataset=parameters.value(QString("dataset"));
+    QString dataset=parameters.value(QString("input"));
 
     if( !parameters.contains(QString("slice"))){
         setErrorString("Parameters contain no output slice!");
@@ -79,8 +79,6 @@ ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QSt
 
 ProjectProcess::ResultCode CreateTimesliceProcess::run(){
 
-    auto start = std::chrono::steady_clock::now();
-
     std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
     if( !reader){
         setErrorString("Invalid segyreader!");
@@ -129,10 +127,6 @@ ProjectProcess::ResultCode CreateTimesliceProcess::run(){
         return ResultCode::Error;
     }
     emit finished();
-
-    auto end = std::chrono::steady_clock::now();
-    auto diff = end - start;
-    std::cout<<"Process  took "<< std::chrono::duration <double, std::milli> (diff).count() << " ms" << std::endl;
 
     return ResultCode::Ok;
 }

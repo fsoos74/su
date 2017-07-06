@@ -21,7 +21,8 @@ public:
     QMap<QString,QString> params();
 
 public slots:
-    void setDatasets( const QStringList&);
+    void setInputs( const QStringList&);
+    void setInputLabel( const QString& );
     void setHorizons( const QStringList&);
 
 private slots:

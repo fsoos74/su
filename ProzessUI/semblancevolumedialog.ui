@@ -29,12 +29,12 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Dataset:</string>
+           <string>Input Volume:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="cbDataset">
+         <widget class="QComboBox" name="cbInputVolume">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
             <horstretch>1</horstretch>

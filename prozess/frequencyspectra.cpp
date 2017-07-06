@@ -14,6 +14,39 @@ auto hanning=[](int n, int N){
     return 0.5*(1.-cos(2*M_PI*n/(N-1)));
 };
 
+// window starts at p
+// *p ... *(p+window_len) must be valid
+Spectrum computeSpectrum( const float* p, size_t window_len, double dt){
+
+    auto window_center=window_len/2;
+
+    // find fft window len, must be power of 2
+    size_t fftlen = 1;
+    while( fftlen < window_len ) fftlen *= 2;
+
+    // fill input buffer for fft, apply window taper function
+    std::vector<float> ibuf(fftlen);
+    std::copy( p, p+window_len+1, ibuf.begin() );
+    //apply window function
+    auto wf=std::bind( hanning, _1, window_len);
+    for( int i=0; i<window_len; i++){
+        ibuf[i]*=wf(i);
+    }
+
+    // ADD additional code here for window len not power of 2 (e.g. padding)
+    //
+    //
+
+    // fft
+    auto obuf=fft(ibuf);
+
+    // compute frequency step
+    auto df = 1. / ( fftlen * dt );
+
+    return Spectrum( 0, df, obuf.begin(), obuf.end() );
+}
+
+
 Spectrum computeSpectrum( const seismic::Trace& trc, size_t window_center, size_t window_len){
 
     if( window_center <  window_len/2 || window_center+window_len/2>=trc.size() ) return Spectrum();    // return NULL spectrum is window out of trace

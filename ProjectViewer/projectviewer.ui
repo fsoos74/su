@@ -36,11 +36,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QListView" name="datasetsView">
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-         </widget>
+         <widget class="QListView" name="datasetsView"/>
         </item>
        </layout>
       </widget>
@@ -229,13 +225,10 @@
     <property name="title">
      <string>Process(&amp;Grid)</string>
     </property>
-    <addaction name="actionCreateTimeslice"/>
-    <addaction name="actionHorizon_Amplitudes"/>
     <addaction name="actionHorizon_Frequencies"/>
     <addaction name="actionHorizon_Semblance"/>
     <addaction name="actionHorizon_Curvature"/>
     <addaction name="separator"/>
-    <addaction name="actionCompute_Intercept_Gradient"/>
     <addaction name="actionTrend_Based_Attribute_Grids"/>
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
@@ -278,21 +271,33 @@
      <string>Process(&amp;Volume)</string>
     </property>
     <addaction name="action_Crop_Volume"/>
+    <addaction name="actionExtract_Timeslice"/>
+    <addaction name="actionExtract_Dataset"/>
     <addaction name="separator"/>
-    <addaction name="actionVolume_Amplitudes"/>
     <addaction name="actionVolume_Frequencies"/>
     <addaction name="actionVolume_Semblance"/>
     <addaction name="actionVolume_Curvature"/>
+    <addaction name="actionInstantaneous_Attribute_Volumes"/>
     <addaction name="separator"/>
-    <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
     <addaction name="actionTrend_Based_Attribute_Volumes"/>
     <addaction name="actionSecondary_Attribute_Volumes"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Volume_Script"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menuProcess_Seismic">
+    <property name="title">
+     <string>Process(Seis&amp;mic)</string>
+    </property>
+    <addaction name="actionCreateTimeslice"/>
+    <addaction name="actionHorizon_Amplitudes"/>
+    <addaction name="actionVolume_Amplitudes"/>
+    <addaction name="actionCompute_Intercept_Gradient"/>
+    <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
+   <addaction name="menuProcess_Seismic"/>
    <addaction name="menuProcess"/>
    <addaction name="menuProcess_Volume"/>
    <addaction name="menu_Analyze"/>
@@ -392,7 +397,7 @@
   </action>
   <action name="actionHorizon_Amplitudes">
    <property name="text">
-    <string>Horizon &amp;Amplitudes</string>
+    <string>&amp;Horizon Amplitudes</string>
    </property>
   </action>
   <action name="actionCrossplot_Grids">
@@ -417,7 +422,7 @@
   </action>
   <action name="actionCompute_Intercept_and_Gradient_Volumes">
    <property name="text">
-    <string>&amp;Intercept and Gradient Volumes</string>
+    <string>Intercept and &amp;Gradient Volumes</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Grid">
@@ -578,7 +583,7 @@
   </action>
   <action name="actionVolume_Curvature">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Volume Curvature</string>
@@ -611,7 +616,22 @@
   </action>
   <action name="actionGrid_Math">
    <property name="text">
-    <string>Grid Math</string>
+    <string>Grid &amp;Math</string>
+   </property>
+  </action>
+  <action name="actionInstantaneous_Attribute_Volumes">
+   <property name="text">
+    <string>&amp;Instantaneous Attribute Volumes</string>
+   </property>
+  </action>
+  <action name="actionExtract_Timeslice">
+   <property name="text">
+    <string>&amp;Extract Timeslice</string>
+   </property>
+  </action>
+  <action name="actionExtract_Dataset">
+   <property name="text">
+    <string>Extract &amp;Dataset</string>
    </property>
   </action>
  </widget>

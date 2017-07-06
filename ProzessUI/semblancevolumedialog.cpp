@@ -20,18 +20,18 @@ SemblanceVolumeDialog::~SemblanceVolumeDialog()
     delete ui;
 }
 
-void SemblanceVolumeDialog::setDatasets( const QStringList& h){
-    ui->cbDataset->clear();
-    ui->cbDataset->addItems(h);
+void SemblanceVolumeDialog::setInputVolumes( const QStringList& h){
+    ui->cbInputVolume->clear();
+    ui->cbInputVolume->addItems(h);
 }
 
 QMap<QString,QString> SemblanceVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("volume"), ui->leVolume->text() );
+    p.insert( QString("output-volume"), ui->leVolume->text() );
 
-    p.insert( QString("dataset"), ui->cbDataset->currentText());
+    p.insert( QString("input-volume"), ui->cbInputVolume->currentText());
 
     p.insert( QString("half-ilines"), QString::number(ui->sbInlines->value()/2) );
     p.insert( QString("half-xlines"), QString::number(ui->sbCrosslines->value()/2) );

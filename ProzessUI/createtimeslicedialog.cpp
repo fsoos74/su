@@ -26,9 +26,13 @@ CreateTimesliceDialog::~CreateTimesliceDialog()
     delete ui;
 }
 
-void CreateTimesliceDialog::setDatasets( const QStringList& h){
-    ui->cbDataset->clear();
-    ui->cbDataset->addItems(h);
+void CreateTimesliceDialog::setInputs( const QStringList& h){
+    ui->cbInput->clear();
+    ui->cbInput->addItems(h);
+}
+
+void CreateTimesliceDialog::setInputLabel(const QString & s){
+    ui->lbInput->setText(s);
 }
 
 void CreateTimesliceDialog::setHorizons( const QStringList& h){
@@ -45,7 +49,7 @@ QMap<QString,QString> CreateTimesliceDialog::params(){
 
     p.insert( QString("slice"), fullSliceName );
 
-    p.insert( QString("dataset"), ui->cbDataset->currentText());
+    p.insert( QString("input"), ui->cbInput->currentText());
 
     if( ui->cbUseHorizon->isChecked()){
         p.insert( QString("horizon"), ui->cbHorizon->currentText() );

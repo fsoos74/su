@@ -170,6 +170,8 @@ public:
 
     SeismicDatasetInfo getSeismicDatasetInfo( const QString& datasetName);
 
+    QFileInfo getSeismicDatasetFileInfo( const QString& datasetName );
+
     bool setSeismicDatasetInfo( const QString& datasetName, const SeismicDatasetInfo& info);
 
     bool addSeismicDataset( const QString& name, const QString& path, const seismic::SEGYInfo& info);

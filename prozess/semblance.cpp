@@ -1,5 +1,7 @@
 #include "semblance.h"
 
+#include <grid3d.h>
+
 double semblance( const seismic::Gather& g, size_t halfSamples, double tt){
 
     const size_t& hw=halfSamples;
@@ -29,6 +31,42 @@ double semblance( const seismic::Gather& g, size_t halfSamples, double tt){
         for( size_t t=t1; t<=t2; t++){
             const double& ft=trc[t];
             st[t-t1]+=ft;
+            fnt2+=ft*ft;
+        }
+    }
+
+    double s2=0;
+    for( auto s : st ){
+        s2+=s*s;
+    }
+
+    if( !fnt2 ) return -1;
+
+    return ( s2 - fnt2)/( (N-1)*fnt2);
+}
+
+double semblance( const Grid3D<float>& vol, const std::vector<std::pair<int,int>>& locations, int halfSamples, int k){
+
+    const size_t& hw=halfSamples;
+
+    size_t N=locations.size();
+
+    if( N<2 ) return 1;
+
+    std::vector<double> st;
+    st.assign( 2*hw + 1 , 0);
+    double fnt2=0;
+
+    int k1((k>=hw)?k - hw : 0);
+    int k2((k+hw<vol.bounds().sampleCount()) ? k+hw : vol.bounds().sampleCount()-1);
+
+    for( auto loc : locations ){
+
+        const float* sam=&vol(loc.first, loc.second, 0);
+
+        for( auto t=k1; t<=k2; t++){
+            const double& ft=sam[t];
+            st[t-k1]+=ft;
             fnt2+=ft*ft;
         }
     }

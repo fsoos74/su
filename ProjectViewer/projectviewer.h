@@ -6,6 +6,7 @@
 #include <avoproject.h>
 #include<memory>
 #include<QVector>
+#include<QStandardItemModel>
 #include<QPoint>
 #include<QLockFile>
 #include<pointdispatcher.h>
@@ -170,6 +171,13 @@ private slots:
 
     void on_actionFrequency_Spectrum_Plot_triggered();
 
+    void on_actionInstantaneous_Attribute_Volumes_triggered();
+
+    void on_actionExtract_Timeslice_triggered();
+
+    void on_actionExtract_Dataset_triggered();
+
+
 protected:
 
     void closeEvent(QCloseEvent*);
@@ -183,6 +191,8 @@ private:
     void setProjectFileName( const QString& fileName);
     bool openProject( const QString& fileName);
     bool saveProject( const QString& fileName);
+
+    QStandardItemModel* buildDatesetsModel();
 
     void displaySeismicDataset( const QString& name);
     void displaySeismicDatasetSlice( const QString& name);

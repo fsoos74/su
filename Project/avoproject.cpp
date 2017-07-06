@@ -331,6 +331,7 @@ SeismicDatasetInfo AVOProject::getSeismicDatasetInfo(const QString& datasetName)
 
     SeismicDatasetInfo datasetInfo;
     QString datasetInfoPath=getSeismicDatasetPath(datasetName);
+    //std::cout<<"Dataset= "<<datasetName.toStdString()<<" Info path="<<datasetInfoPath.toStdString()<<std::endl;
     QFile datasetInfoFile(datasetInfoPath);
     if( !datasetInfoFile.exists() || !datasetInfoFile.open(QFile::ReadOnly | QFile::Text)){
         throw std::runtime_error("Cannot read dataset info file");
@@ -364,6 +365,11 @@ SeismicDatasetInfo AVOProject::getSeismicDatasetInfo(const QString& datasetName)
     std::cout<<"path:"<<datasetInfo.path().toStdString()<<std::endl<<std::flush;
 */
     return datasetInfo;
+}
+
+QFileInfo AVOProject::getSeismicDatasetFileInfo( const QString& datasetName ){
+    QString path=getSeismicDatasetInfo(datasetName).path();
+    return QFileInfo(path);
 }
 
 QStringList AVOProject::seismicDatasetList(SeismicDatasetInfo::Mode mode){
@@ -430,6 +436,7 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& path, co
     QFile datasetInfoFile(xdiPath);     // xdi
 
     if( datasetInfoFile.exists() || !datasetInfoFile.open(QFile::WriteOnly | QFile::Text)){
+        std::cout<<"dataset info file exists!!!"<<std::endl<<std::flush;
         segyInfoFile.remove();
         return false;
     }
@@ -439,6 +446,7 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& path, co
     ptr=std::shared_ptr<seismic::SEGYReader>(new seismic::SEGYReader(path.toStdString(), segyInfo) );  // we need the absolute path here
     if( !ptr || !createDatasetIndex(indexPath, ptr) ) return false;                                     // needabs path
 
+//std::cout<<"BEFORE WRITING DATASET INDEX"<<std::endl<<std::flush;
 
     XDIWriter datasetInfoWriter(datasetInfo);
     if( ! datasetInfoWriter.writeFile(&datasetInfoFile) ){
@@ -448,7 +456,9 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& path, co
         return false;
     }
 
-    syncSeismicDatasetList();
+//    std::cout<<"Wrote Dataset info file"<<std::endl<<std::flush;
+
+    //syncSeismicDatasetList();
 
     emit changed();
 

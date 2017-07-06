@@ -6,6 +6,7 @@
 #include<grid3d.h>
 #include <seismicdatasetreader.h>   // this gives qApp
 #include<memory>
+#include<QSet>
 
 class CurvatureVolumeProcess : public ProjectProcess
 {
@@ -21,10 +22,11 @@ public:
 
 private:
 
-    QString m_inputName;
-    QString m_outputName;
-
-    std::shared_ptr<Grid3D<float> > m_inputVolume;
+    QString m_baseName;
+    int m_windowLength;
+    int m_maximumShift;
+    QSet<QString> m_output_attributes;
+     QString m_volumeName;
     std::shared_ptr<Grid3D<float> > m_volume;
 };
 

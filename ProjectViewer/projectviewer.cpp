@@ -69,7 +69,9 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <horizonsemblanceprocess.h>
 #include <horizonsemblancedialog.h>
 #include <horizoncurvatureprocess.h>
-#include <horizoncurvaturedialog.h>
+#include <curvaturedialog.h>
+#include <instantaneousattributesdialog.h>
+#include <instantaneousattributesprocess.h>
 #include <semblancevolumeprocess.h>
 #include <semblancevolumedialog.h>
 #include <computeinterceptgradientdialog.h>
@@ -88,6 +90,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <secondaryavoattributesdialog.h>
 #include <cropvolumedialog.h>
 #include <cropvolumeprocess.h>
+#include <extracttimesliceprocess.h>
+#include <extractdatasetdialog.h>
 #include <amplitudevolumedialog.h>
 #include <amplitudevolumeprocess.h>
 #include <frequencyvolumedialog.h>
@@ -166,6 +170,8 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
     ui->datasetsView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->datasetsView, SIGNAL(customContextMenuRequested(const QPoint&)),
         this, SLOT(runDatasetContextMenu(const QPoint&)));
+    //ui->datasetsView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    //ui->datasetsView->horizontalHeader()->setStretchLastSection(true);
 
     ui->horizonsView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->horizonsView, SIGNAL(customContextMenuRequested(const QPoint&)),
@@ -907,7 +913,8 @@ void ProjectViewer::on_actionCreateTimeslice_triggered()
     Q_ASSERT( m_project );
 
     CreateTimesliceDialog dlg;
-    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setInputs( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setInputLabel(tr("Dataset:"));
     dlg.setHorizons( m_project->gridList( GridType::Horizon));
     dlg.setReservedGrids(m_project->gridList(GridType::Other));
     if( dlg.exec()!=QDialog::Accepted) return;
@@ -1002,8 +1009,8 @@ void ProjectViewer::on_actionHorizon_Curvature_triggered()
 {
     Q_ASSERT( m_project );
 
-    HorizonCurvatureDialog dlg;
-    dlg.setHorizons( m_project->gridList(GridType::Horizon));
+    CurvatureDialog dlg;
+    dlg.setInputs( m_project->gridList(GridType::Horizon));
     //dlg.setReservedGrids(m_project->gridList(GridType::Other));
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
@@ -1026,6 +1033,7 @@ void ProjectViewer::on_actionCompute_Intercept_Gradient_triggered()
         methods.append( ReductionMethodsAndNames.value(method));
     }
     dlg.setReductionMethods(methods);
+
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
@@ -1069,6 +1077,49 @@ void ProjectViewer::on_action_Crop_Volume_triggered()
     runProcess( new CropVolumeProcess( m_project, this ), params );
 }
 
+
+void ProjectViewer::on_actionExtract_Timeslice_triggered()
+{
+    Q_ASSERT( m_project );
+
+    CreateTimesliceDialog dlg;
+    dlg.setInputs( m_project->volumeList());
+    dlg.setInputLabel(tr("Volume:"));
+    dlg.setHorizons( m_project->gridList( GridType::Horizon));
+    dlg.setReservedGrids(m_project->gridList(GridType::Other));
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new ExtractTimesliceProcess( m_project, this ), params );
+}
+
+
+void ProjectViewer::on_actionExtract_Dataset_triggered()
+{
+    Q_ASSERT( m_project );
+
+    ExtractDatasetDialog dlg;
+
+    dlg.setInputVolumes( m_project->volumeList());
+
+    auto geom=m_project->geometry();
+    auto min=geom.linesRange().first;
+    auto max=geom.linesRange().second;
+    dlg.setInlineRange( min.x(), max.x() );
+    dlg.setCrosslineRange( min.y(), max.y() );
+    dlg.setTimeRange( 0, 99999 );
+
+    dlg.setReservedDatasets( m_project->seismicDatasetList() );
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    //runProcess( new ExtractTimesliceProcess( m_project, this ), params );
+}
+
+
 void ProjectViewer::on_actionVolume_Amplitudes_triggered()
 {
     AmplitudeVolumeDialog dlg;
@@ -1085,7 +1136,7 @@ void ProjectViewer::on_actionVolume_Frequencies_triggered()
 {
     FrequencyVolumeDialog dlg;
     dlg.setWindowTitle(tr("Volume Frequencies"));
-    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setInputs( m_project->volumeList());
     dlg.setReservedVolumes(m_project->volumeList());
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
@@ -1097,7 +1148,7 @@ void ProjectViewer::on_actionVolume_Frequencies_triggered()
 void ProjectViewer::on_actionVolume_Semblance_triggered()
 {
     SemblanceVolumeDialog dlg;
-    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setInputVolumes( m_project->volumeList());
     dlg.setReservedVolumes(m_project->volumeList());
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
@@ -1108,13 +1159,23 @@ void ProjectViewer::on_actionVolume_Semblance_triggered()
 void ProjectViewer::on_actionVolume_Curvature_triggered()
 {
     CurvatureVolumeDialog dlg;
-    dlg.setInputVolumes(m_project->volumeList());
+    dlg.setInputs(m_project->volumeList());
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
     runProcess( new CurvatureVolumeProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionInstantaneous_Attribute_Volumes_triggered()
+{
+    InstantaneousAttributesDialog dlg;
+    dlg.setInputVolumes(m_project->volumeList());
+    dlg.setReservedVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new InstantaneousAttributesProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionFluid_Factor_Grid_triggered()
 {
@@ -2638,6 +2699,32 @@ bool ProjectViewer::saveProject( const QString& fileName){
     return true;
 }
 
+QStandardItemModel* ProjectViewer::buildDatesetsModel(){
+
+    QStringList labels;
+    labels<<"Name"<<"Size(MB)"<<"Modified";
+
+    auto names=m_project->seismicDatasetList();
+    QStandardItemModel* model=new QStandardItemModel(names.size(), labels.size(), this);
+    model->setHorizontalHeaderLabels(labels);
+
+    int row=0;
+    for( auto name : names ){
+
+        QFileInfo finfo=m_project->getSeismicDatasetFileInfo(name);
+
+        int column=0;
+
+        model->setItem(row, column++, new QStandardItem(name) );
+        model->setItem(row, column++, new QStandardItem(QString::number(finfo.size()/1024/1024)));
+        model->setItem(row, column++, new QStandardItem(finfo.lastModified().toString(tr("yyyy.MM.dd hh:mm:ss")) ) );
+
+        row++;
+    }
+
+    return model;
+}
+
 void ProjectViewer::updateProjectViews(){
 
     if( !m_project ){
@@ -2649,8 +2736,8 @@ void ProjectViewer::updateProjectViews(){
         return;
     }
 
-    QStringListModel* datasetsModel=new QStringListModel( m_project->seismicDatasetList(), this);
-    ui->datasetsView->setModel(datasetsModel);
+    ui->datasetsView->setModel(buildDatesetsModel());
+    //ui->datasetsView->resizeColumnsToContents();
 
     QStringList horizonsList= m_project->gridList( GridType::Horizon);
 
@@ -2813,11 +2900,14 @@ void ProjectViewer::updateMenu(){
     ui->actionRun_Grid_User_Script->setEnabled(isProject);
 
     ui->action_Crop_Volume->setEnabled(isProject);
+    ui->actionExtract_Timeslice->setEnabled(isProject);
+    ui->actionExtract_Dataset->setEnabled(isProject);
     ui->actionVolume_Amplitudes->setEnabled(isProject);
     ui->actionVolume_Frequencies->setEnabled(isProject);
     ui->actionVolume_Semblance->setEnabled(isProject);
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
-    //ui->actionFluid_Factor_Volume->setEnabled(isProject);
+    ui->actionVolume_Curvature->setEnabled(isProject);
+    ui->actionInstantaneous_Attribute_Volumes->setEnabled(isProject);
     ui->actionTrend_Based_Attribute_Volumes->setEnabled(isProject);
     ui->actionSecondary_Attribute_Volumes->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
@@ -2829,12 +2919,5 @@ void ProjectViewer::updateMenu(){
     ui->actionColor_Composite_Grids->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
 
-    //ui->actionVolume_Curvature->setEnabled(isProject); // NOT IMPLEMENTED YET
 }
-
-
-
-
-
-
 
