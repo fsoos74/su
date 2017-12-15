@@ -9,7 +9,7 @@
 
 
 ExportVolumeProcess::ExportVolumeProcess(AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Export Seismic Dataset"), project, parent){
+    ProjectProcess( QString("Export Volume"), project, parent){
 
 }
 
@@ -29,22 +29,22 @@ ProjectProcess::ResultCode ExportVolumeProcess::init( const QMap<QString, QStrin
 
     Grid3DBounds bounds=m_volume->bounds();
 
-    m_minInline=bounds.inline1();
+    m_minInline=bounds.i1();
     if( parameters.contains(QString("min-inline"))){
         m_minInline=std::max(m_minInline, parameters.value(QString("min-inline")).toInt() );
     }
 
-    m_maxInline=bounds.inline2();
+    m_maxInline=bounds.i2();
     if( parameters.contains(QString("max-inline"))){
         m_maxInline=std::min(m_maxInline, parameters.value(QString("max-inline")).toInt() );
     }
 
-    m_minCrossline=bounds.crossline1();
+    m_minCrossline=bounds.j1();
     if( parameters.contains(QString("min-crossline"))){
         m_minCrossline=std::max(m_minCrossline, parameters.value(QString("min-crossline")).toInt() );
     }
 
-    m_maxCrossline=bounds.crossline2();
+    m_maxCrossline=bounds.j2();
     if( parameters.contains(QString("max-crossline"))){
         m_maxCrossline=std::min(m_maxCrossline, parameters.value(QString("max-crossline")).toInt() );
     }
@@ -129,7 +129,7 @@ ProjectProcess::ResultCode ExportVolumeProcess::run(){
             qreal x=p.x();
             qreal y=p.y();
 
-            int cdp=1 + (iline-bounds.inline1())*bounds.crosslineCount() + xline - bounds.crossline1();
+            int cdp=1 + (iline-bounds.i1())*bounds.nj() + xline - bounds.j1();
 
             thdr["cdp"]=seismic::HeaderValue::makeIntValue(cdp);                                        // XXX, maybe read from db once
             thdr["tracr"]=seismic::HeaderValue::makeIntValue(n);

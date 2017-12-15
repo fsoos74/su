@@ -26,10 +26,10 @@ public:
 private:
 
     QString m_volumeName;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_volume;
 
     QVector<QString> m_inputVolumeName;
-    QVector< std::shared_ptr<Grid3D<float> > > m_inputVolume;
+    QVector< std::shared_ptr<Volume > > m_inputVolume;
 
     QVector<QString> m_inputGridName;
     QVector< std::shared_ptr<Grid2D<float> > > m_inputGrid;

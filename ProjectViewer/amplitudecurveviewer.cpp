@@ -111,6 +111,7 @@ void AmplitudeCurveViewer::receivePoint( SelectionPoint pt, int code ){
         showSelector();
         selector->setInlineNumber(pt.iline);
         selector->setCrosslineNumber(pt.xline);
+        if( pt.time!=SelectionPoint::NO_TIME ) selector->setTime(pt.time);
     }
 
 }
@@ -127,7 +128,6 @@ void AmplitudeCurveViewer::setProject( AVOProject* project){
     m_project=project;
     if( selector){      // need to update this
         selector->setDatasetNames(m_project->seismicDatasetList());
-        selector->setHorizonNames(m_project->gridList(GridType::Horizon));
     }
 }
 
@@ -163,8 +163,8 @@ void AmplitudeCurveViewer::onMouseOver(QPointF scenePos){
         if(datapointItem ){
             int curveIndex=datapointItem->data(CURVE_INDEX_KEY).toInt();
             const AmplitudeCurveDefinition& info=m_curveInfos.value(curveIndex);
-            message.append(QString(", Inline=%1, Crossline=%2, Dataset=%3, Horizon=%4").arg(info.inlineNumber)
-                           .arg(info.crosslineNumber).arg(info.dataset).arg(info.horizon));
+            message.append(QString(", Inline=%1, Crossline=%2, Time=%3 msec, Dataset=%4")
+                           .arg(info.inlineNumber).arg(info.crosslineNumber).arg(1000*info.time).arg(info.dataset) );
         }
     }
 
@@ -174,7 +174,6 @@ void AmplitudeCurveViewer::onMouseOver(QPointF scenePos){
 
 QVector<QPointF> AmplitudeCurveViewer::buildCurve( AmplitudeCurveDefinition def){
 
-    ReductionMethod reductionMethod=string2ReductionMethod(def.reductionMethod);
     QVector<QPointF> curve;
 
     std::shared_ptr<SeismicDatasetReader> reader=m_project->openSeismicDataset(def.dataset);
@@ -196,42 +195,16 @@ QVector<QPointF> AmplitudeCurveViewer::buildCurve( AmplitudeCurveDefinition def)
         return curve;
     }
 
-    std::shared_ptr<Grid2D<float> > horizon=m_project->loadGrid( GridType::Horizon, def.horizon);
-    if( !horizon ){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve",
-                              QString("Loading horizon %1 failed!").arg(def.horizon) );
-        return curve;
-    }
-
-    if( !horizon->bounds().isInside(def.inlineNumber, def.crosslineNumber)){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Horizon %1 does not contain inline %2 crossline %3!").
-                              arg(def.horizon).arg(def.inlineNumber).arg(def.crosslineNumber) );
-        return curve;
-    }
-
-    Grid2D<float>::value_type v=(*horizon)(def.inlineNumber, def.crosslineNumber);
-    if( v == horizon->NULL_VALUE ){
-        QMessageBox::critical(this, "Add Amplitude vs Offset Curve", QString("Horizon %1 has NULL value at inline %2 crossline %3!").
-                              arg(def.horizon).arg(def.inlineNumber).arg(def.crosslineNumber) );
-        return curve;
-    }
-
-    double t=0.001 * v;    // horizon in millis
-
-    std::unique_ptr<ReductionFunction> rf=reductionFunctionFactory(reductionMethod);
-
-    //curve=buildAmplitudeOffsetCurve( *gather, t, def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth, rf.get(), def.windowSize );
-
     // do trace selection
-    GatherFilter filter(def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth );
+    GatherFilter filter(def.minimumOffset, def.maximumOffset, def.minimumAzimuth, def.maximumAzimuth );
     gather=filter.filter(gather);
     if( gather->empty() ){
         QMessageBox::critical(this, "Add Amplitude vs Offset Curve", "No traces in offset and azimuth range!");
         return curve;
     }
 
-
-    curve=buildAmplitudeOffsetCurve( *gather, t, rf.get(), def.windowSize );
+    auto idx=gather->front().time_to_index(def.time);
+    curve=buildAmplitudeOffsetCurve( *gather, idx );
 
 
     return curve;
@@ -464,13 +437,6 @@ void AmplitudeCurveViewer::updateScene(){
     scene->setSceneRect(sceneRect);
     ui->graphicsView->setScene(scene);
     ui->graphicsView->fitInView(sceneRect);
-
-    std::cout<<"graphicsview scenerect: ";dumpRect(ui->graphicsView->sceneRect());
-
-    //ui->graphicsView->zoomFitWindow();
-
-    std::cout<<"viewport geometry: ";dumpRect(ui->graphicsView->viewport()->geometry());
-
 }
 
 void AmplitudeCurveViewer::updateTable(){
@@ -478,8 +444,8 @@ void AmplitudeCurveViewer::updateTable(){
     QStandardItemModel* model=new QStandardItemModel(m_curves.size(), 15, this);
 
     QStringList labels;
-    labels<<"Color"<<"Inline"<<"Crossline"<<"Dataset"<<"Horizon"<<"Method"<<"Window Length"<<"Inlines"
-         <<"Crosslines"<<"Max Offset"<<"Min Azimuth"<<"Max Azimuth"<<"Average Depth"
+    labels<<"Color"<<"Inline"<<"Crossline"<<"Time[msec]"<<"Dataset"<<"Inlines"
+         <<"Crosslines"<<"Min Offset"<<"Max Offset"<<"Min Azimuth"<<"Max Azimuth"<<"Average Depth"
         <<"Intercept"<<"Gradient"<<"Quality";
     model->setHorizontalHeaderLabels(labels);
 
@@ -499,12 +465,11 @@ void AmplitudeCurveViewer::updateTable(){
 
         model->setItem(row, column++, new QStandardItem(QString::number(info.inlineNumber)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.crosslineNumber)));
+        model->setItem(row, column++, new QStandardItem(QString::number(1000*info.time)));
         model->setItem(row, column++, new QStandardItem(info.dataset));
-        model->setItem(row, column++, new QStandardItem(info.horizon));
-        model->setItem(row, column++, new QStandardItem(info.reductionMethod));
-        model->setItem(row, column++, new QStandardItem(QString::number(info.windowSize)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.inlineSize)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.crosslineSize)));
+        model->setItem(row, column++, new QStandardItem(QString::number(info.minimumOffset)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.maximumOffset)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.minimumAzimuth)));
         model->setItem(row, column++, new QStandardItem(QString::number(info.maximumAzimuth)));
@@ -541,13 +506,6 @@ void AmplitudeCurveViewer::showSelector(){
         selector=new AmplitudeCurveDataSelectionDialog(this);
         selector->setWindowTitle("Amplitude Curve");
         selector->setDatasetNames(m_project->seismicDatasetList());
-        selector->setHorizonNames(m_project->gridList(GridType::Horizon));
-        QStringList methods;
-        for( auto method : ReductionMethodsAndNames.keys() ){
-            methods.append( ReductionMethodsAndNames.value(method));
-        }
-        selector->setReductionMethods(methods);
-        selector->setCurrentReductionMethod( ReductionMethodsAndNames.value(ReductionMethod::Mean));
 
         connect(selector, SIGNAL(curveDataSelected(AmplitudeCurveDefinition)),
                 this, SLOT(addCurve(AmplitudeCurveDefinition)) );

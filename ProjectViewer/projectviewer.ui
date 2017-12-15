@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>597</width>
+    <width>836</width>
     <height>564</height>
    </rect>
   </property>
@@ -36,7 +36,20 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QListView" name="datasetsView"/>
+         <widget class="QTableView" name="datasetsView">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="gridStyle">
+           <enum>Qt::SolidLine</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -46,15 +59,15 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QListView" name="horizonsView">
+         <widget class="QTableView" name="horizonsView">
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -66,15 +79,15 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
-         <widget class="QListView" name="attributesView">
+         <widget class="QTableView" name="attributesView">
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -86,15 +99,15 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QListView" name="gridsView">
+         <widget class="QTableView" name="gridsView">
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
-          </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -106,15 +119,35 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QListView" name="volumesView">
+         <widget class="QTableView" name="volumesView">
           <property name="alternatingRowColors">
            <bool>true</bool>
           </property>
-          <property name="selectionMode">
-           <enum>QAbstractItemView::ExtendedSelection</enum>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="wellsTab">
+       <attribute name="title">
+        <string>Wells</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <widget class="QTableView" name="wellsView">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
           </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -157,6 +190,14 @@
    </attribute>
    <addaction name="actionOpenProject"/>
    <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionOpen_2DViewer"/>
+   <addaction name="actionOpen_Slice_Viewer"/>
+   <addaction name="actionOpen_3D_Viewer"/>
+   <addaction name="actionOpen_Log_Viewer"/>
+   <addaction name="actionCrossplot_Grids"/>
+   <addaction name="actionCrossplot_Volumes"/>
+   <addaction name="actionCrossplot_Logs"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -164,7 +205,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>597</width>
+     <width>836</width>
      <height>25</height>
     </rect>
    </property>
@@ -183,6 +224,12 @@
      <addaction name="actionImportOtherGrid"/>
      <addaction name="separator"/>
      <addaction name="actionImportVolume"/>
+     <addaction name="separator"/>
+     <addaction name="actionImportLogs"/>
+     <addaction name="action_Logs_Bulk_Mode"/>
+     <addaction name="actionWellpath"/>
+     <addaction name="actionWellpaths_Bulk_Mode"/>
+     <addaction name="actionWell_Markers"/>
     </widget>
     <widget class="QMenu" name="menu_Open">
      <property name="title">
@@ -216,6 +263,7 @@
     <addaction name="separator"/>
     <addaction name="menuImport"/>
     <addaction name="menuExport"/>
+    <addaction name="actionImport_Attached_Datasets"/>
     <addaction name="separator"/>
     <addaction name="menu_Recent_Projects"/>
     <addaction name="actionCloseProject"/>
@@ -225,17 +273,16 @@
     <property name="title">
      <string>Process(&amp;Grid)</string>
     </property>
-    <addaction name="actionHorizon_Frequencies"/>
-    <addaction name="actionHorizon_Semblance"/>
+    <addaction name="actionCreate_New_Grid"/>
+    <addaction name="actionConvert_Grid"/>
+    <addaction name="actionCrop_Grid"/>
+    <addaction name="actionSmooth_Grid"/>
+    <addaction name="actionGrid_Math"/>
     <addaction name="actionHorizon_Curvature"/>
     <addaction name="separator"/>
     <addaction name="actionTrend_Based_Attribute_Grids"/>
     <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
-    <addaction name="actionConvert_Grid"/>
-    <addaction name="actionCrop_Grid"/>
-    <addaction name="actionGrid_Math"/>
-    <addaction name="actionSmooth_Grid"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Grid_User_Script"/>
    </widget>
@@ -245,11 +292,16 @@
     </property>
     <addaction name="actionCrossplot_Grids"/>
     <addaction name="actionCrossplot_Volumes"/>
+    <addaction name="actionCrossplot_Logs"/>
     <addaction name="separator"/>
     <addaction name="actionAmplitude_vs_Offset_Plot"/>
     <addaction name="actionFrequency_Spectrum_Plot"/>
     <addaction name="separator"/>
     <addaction name="actionColor_Composite_Grids"/>
+    <addaction name="actionOpen_2DViewer"/>
+    <addaction name="actionOpen_Slice_Viewer"/>
+    <addaction name="actionOpen_3D_Viewer"/>
+    <addaction name="actionOpen_Log_Viewer"/>
    </widget>
    <widget class="QMenu" name="menuPro_ject">
     <property name="title">
@@ -270,12 +322,19 @@
     <property name="title">
      <string>Process(&amp;Volume)</string>
     </property>
+    <addaction name="actionCreate_New_Volume"/>
     <addaction name="action_Crop_Volume"/>
+    <addaction name="actionVolume_Math"/>
+    <addaction name="actionFlatten_Volume"/>
+    <addaction name="actionUnflatten_Volume"/>
+    <addaction name="separator"/>
     <addaction name="actionExtract_Timeslice"/>
     <addaction name="actionExtract_Dataset"/>
     <addaction name="separator"/>
+    <addaction name="actionVolume_Dip"/>
     <addaction name="actionVolume_Frequencies"/>
     <addaction name="actionVolume_Semblance"/>
+    <addaction name="actionVolume_Statistics"/>
     <addaction name="actionVolume_Curvature"/>
     <addaction name="actionInstantaneous_Attribute_Volumes"/>
     <addaction name="separator"/>
@@ -289,17 +348,37 @@
     <property name="title">
      <string>Process(Seis&amp;mic)</string>
     </property>
+    <addaction name="actionCrop_Dataset"/>
     <addaction name="actionCreateTimeslice"/>
     <addaction name="actionHorizon_Amplitudes"/>
+    <addaction name="actionHorizon_Frequencies"/>
+    <addaction name="actionHorizon_Semblance"/>
     <addaction name="actionVolume_Amplitudes"/>
+    <addaction name="separator"/>
     <addaction name="actionCompute_Intercept_Gradient"/>
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
+    <addaction name="separator"/>
+    <addaction name="action_Offset_Stack"/>
+   </widget>
+   <widget class="QMenu" name="menuProcess_Well">
+    <property name="title">
+     <string>Process(&amp;Log)</string>
+    </property>
+    <addaction name="action_Smooth_Log"/>
+    <addaction name="actionLog_Math"/>
+    <addaction name="actionLog_Integration"/>
+    <addaction name="separator"/>
+    <addaction name="actionBuild_Volume"/>
+    <addaction name="separator"/>
+    <addaction name="actionRun_Log_Script"/>
+    <addaction name="actionTest"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
    <addaction name="menuProcess_Seismic"/>
    <addaction name="menuProcess"/>
    <addaction name="menuProcess_Volume"/>
+   <addaction name="menuProcess_Well"/>
    <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
   </widget>
@@ -401,6 +480,10 @@
    </property>
   </action>
   <action name="actionCrossplot_Grids">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/crossplot-grids-32x32.png</normaloff>:/icons/images/crossplot-grids-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Crossplot &amp;Grids</string>
    </property>
@@ -476,6 +559,10 @@
    </property>
   </action>
   <action name="actionCrossplot_Volumes">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/crossplot-volumes-32x32.png</normaloff>:/icons/images/crossplot-volumes-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Crossplot &amp;Volumes</string>
    </property>
@@ -507,7 +594,7 @@
   </action>
   <action name="actionVolume_Amplitudes">
    <property name="text">
-    <string>Volume &amp;Amplitudes</string>
+    <string>Convert to &amp;Volume</string>
    </property>
   </action>
   <action name="actionVolume_Semblance">
@@ -568,7 +655,7 @@
   </action>
   <action name="actionConvert_Grid">
    <property name="text">
-    <string>&amp;Convert Grid</string>
+    <string>&amp;Convert Grid Type</string>
    </property>
   </action>
   <action name="actionSmooth_Grid">
@@ -631,7 +718,176 @@
   </action>
   <action name="actionExtract_Dataset">
    <property name="text">
-    <string>Extract &amp;Dataset</string>
+    <string>Convert to &amp;Dataset</string>
+   </property>
+  </action>
+  <action name="action_Offset_Stack">
+   <property name="text">
+    <string>&amp;Offset Stack </string>
+   </property>
+  </action>
+  <action name="actionCrop_Dataset">
+   <property name="text">
+    <string>&amp;Crop Dataset</string>
+   </property>
+  </action>
+  <action name="actionReplace_Bad_Traces">
+   <property name="text">
+    <string>&amp;Replace Bad Traces</string>
+   </property>
+  </action>
+  <action name="actionOpen_2DViewer">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/2dviewer-32x32.png</normaloff>:/icons/images/2dviewer-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open &amp;2D Viewer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
+  </action>
+  <action name="actionVolume_Variance">
+   <property name="text">
+    <string>V&amp;olume Variance</string>
+   </property>
+  </action>
+  <action name="actionFlatten_Volume">
+   <property name="text">
+    <string>F&amp;latten Volume</string>
+   </property>
+  </action>
+  <action name="actionUnflatten_Volume">
+   <property name="text">
+    <string>&amp;Unflatten Volume</string>
+   </property>
+  </action>
+  <action name="actionVolume_Statistics">
+   <property name="text">
+    <string>V&amp;olume Statistics</string>
+   </property>
+  </action>
+  <action name="actionImportLogs">
+   <property name="text">
+    <string>&amp;Logs</string>
+   </property>
+  </action>
+  <action name="actionCrossplot_Logs">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/crossplot-logs-32x32.png</normaloff>:/icons/images/crossplot-logs-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Crossplot &amp;Logs</string>
+   </property>
+  </action>
+  <action name="actionOpen_3D_Viewer">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/3dviewer-32x32.png</normaloff>:/icons/images/3dviewer-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open &amp;3D Viewer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
+   </property>
+  </action>
+  <action name="actionBuild_Volume">
+   <property name="text">
+    <string>Build &amp;Volume</string>
+   </property>
+  </action>
+  <action name="actionVolume_Math">
+   <property name="text">
+    <string>Volume &amp;Math</string>
+   </property>
+  </action>
+  <action name="action_Logs_Bulk_Mode">
+   <property name="text">
+    <string>Logs (&amp;Bulk Mode)</string>
+   </property>
+  </action>
+  <action name="actionWellpaths_Bulk_Mode">
+   <property name="text">
+    <string>Wellpaths (Bulk &amp;Mode)</string>
+   </property>
+  </action>
+  <action name="actionWellpath">
+   <property name="text">
+    <string>&amp;Wellpath</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>&amp;test</string>
+   </property>
+  </action>
+  <action name="actionOpen_Log_Viewer">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/logviewer-32x32.png</normaloff>:/icons/images/logviewer-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open Log Viewer</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionCreate_New_Volume">
+   <property name="text">
+    <string>Create &amp;New Volume </string>
+   </property>
+  </action>
+  <action name="actionCreate_New_Grid">
+   <property name="text">
+    <string>Create &amp;New Grid</string>
+   </property>
+  </action>
+  <action name="actionLog_Math">
+   <property name="text">
+    <string>Log &amp;Math</string>
+   </property>
+  </action>
+  <action name="actionRun_Log_Script">
+   <property name="text">
+    <string>&amp;Run Log Script</string>
+   </property>
+  </action>
+  <action name="action_Smooth_Log">
+   <property name="text">
+    <string>&amp;Smooth Log</string>
+   </property>
+  </action>
+  <action name="actionLog_Integration">
+   <property name="text">
+    <string>Log &amp;Integration</string>
+   </property>
+  </action>
+  <action name="actionVolume_Dip">
+   <property name="text">
+    <string>Volume &amp;Dip</string>
+   </property>
+  </action>
+  <action name="actionWell_Markers">
+   <property name="text">
+    <string>&amp;Tops</string>
+   </property>
+  </action>
+  <action name="actionImport_Attached_Datasets">
+   <property name="text">
+    <string>Import Attached &amp;Datasets</string>
+   </property>
+  </action>
+  <action name="actionOpen_Slice_Viewer">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/2dvolumeviewer-32x32.png</normaloff>:/icons/images/2dvolumeviewer-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>O&amp;pen Slice Viewer</string>
    </property>
   </action>
  </widget>

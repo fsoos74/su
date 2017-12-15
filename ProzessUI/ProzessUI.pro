@@ -46,7 +46,25 @@ SOURCES += prozessui.cpp \
     gridmathdialog.cpp \
     curvaturedialog.cpp \
     instantaneousattributesdialog.cpp \
-    extractdatasetdialog.cpp
+    extractdatasetdialog.cpp \
+    offsetstackdialog.cpp \
+    cropdatasetdialog.cpp \
+    replacebadtracesdialog.cpp \
+    flattenvolumedialog.cpp \
+    unflattenvolumedialog.cpp \
+    volumestatisticsdialog.cpp \
+    buildwellvolumedialog.cpp \
+    volumemathdialog.cpp \
+    createvolumedialog.cpp \
+    creategriddialog.cpp \
+    exportgriddialog.cpp \
+    importgriddialog.cpp \
+    logmathdialog.cpp \
+    logscriptdialog.cpp \
+    smoothlogdialog.cpp \
+    logintegrationdialog.cpp \
+    volumedipdialog.cpp \
+    importmarkersdialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -76,7 +94,25 @@ HEADERS += prozessui.h\
     gridmathdialog.h \
     curvaturedialog.h \
     instantaneousattributesdialog.h \
-    extractdatasetdialog.h
+    extractdatasetdialog.h \
+    offsetstackdialog.h \
+    cropdatasetdialog.h \
+    replacebadtracesdialog.h \
+    flattenvolumedialog.h \
+    unflattenvolumedialog.h \
+    volumestatisticsdialog.h \
+    buildwellvolumedialog.h \
+    volumemathdialog.h \
+    createvolumedialog.h \
+    creategriddialog.h \
+    exportgriddialog.h \
+    importgriddialog.h \
+    logmathdialog.h \
+    logscriptdialog.h \
+    smoothlogdialog.h \
+    logintegrationdialog.h \
+    volumedipdialog.h \
+    importmarkersdialog.h
 
 unix {
     target.path = /usr/lib
@@ -109,7 +145,25 @@ FORMS += \
     gridmathdialog.ui \
     curvaturedialog.ui \
     instantaneousattributesdialog.ui \
-    extractdatasetdialog.ui
+    extractdatasetdialog.ui \
+    offsetstackdialog.ui \
+    cropdatasetdialog.ui \
+    replacebadtracesdialog.ui \
+    flattenvolumedialog.ui \
+    unflattenvolumedialog.ui \
+    volumestatisticsdialog.ui \
+    buildwellvolumedialog.ui \
+    volumemathdialog.ui \
+    createvolumedialog.ui \
+    creategriddialog.ui \
+    exportgriddialog.ui \
+    importgriddialog.ui \
+    logmathdialog.ui \
+    logscriptdialog.ui \
+    smoothlogdialog.ui \
+    logintegrationdialog.ui \
+    volumedipdialog.ui \
+    importmarkersdialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
@@ -126,6 +180,15 @@ else:unix: LIBS += -L$$OUT_PWD/../Grid/ -lGrid
 INCLUDEPATH += $$PWD/../Grid
 DEPENDPATH += $$PWD/../Grid
 
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Well/release/ -lWell
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Well/debug/ -lWell
+else:unix: LIBS += -L$$OUT_PWD/../Well/ -lWell
+
+INCLUDEPATH += $$PWD/../Well
+DEPENDPATH += $$PWD/../Well
+
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../prozess/release/ -lprozess
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../prozess/debug/ -lprozess
 else:unix: LIBS += -L$$OUT_PWD/../prozess/ -lprozess
@@ -133,9 +196,15 @@ else:unix: LIBS += -L$$OUT_PWD/../prozess/ -lprozess
 INCLUDEPATH += $$PWD/../prozess
 DEPENDPATH += $$PWD/../prozess
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#INCLUDEPATH += $$PWD/../util
+#DEPENDPATH += $$PWD/../util
 
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
+
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs

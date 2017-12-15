@@ -59,6 +59,7 @@ void XSIReader::readXSI(){
     else{
         m_info.setScalco(xml.attributes().value("scalco").toDouble());
     }
+    //std::cout<<"XSI: scalco="<<xml.attributes().value("scalco").toString().toStdString()<<" m_info="<<m_info.scalco()<<std::endl<<std::flush;
 
     if( xml.attributes().value("scalel")=="header"){
         m_info.setFixedScalel(false);

@@ -57,9 +57,9 @@ Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2,
 
     Data data;
 
-    Grid2DBounds bounds(volume1->bounds().inline1(), volume1->bounds().crossline1(),
-                        volume1->bounds().inline2(), volume1->bounds().crossline2());
-    int nt=volume1->bounds().sampleCount();
+    Grid2DBounds bounds(volume1->bounds().i1(), volume1->bounds().j1(),
+                        volume1->bounds().i2(), volume1->bounds().j2());
+    int nt=volume1->bounds().nt();
 
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
@@ -88,9 +88,9 @@ Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
 
     Data data;
 
-    Grid2DBounds bounds(volume1->bounds().inline1(), volume1->bounds().crossline1(),
-                        volume1->bounds().inline2(), volume1->bounds().crossline2());
-    int nt=volume1->bounds().sampleCount();
+    Grid2DBounds bounds(volume1->bounds().i1(), volume1->bounds().j1(),
+                        volume1->bounds().i2(), volume1->bounds().j2());
+    int nt=volume1->bounds().nt();
 
     size_t numInputPoints=volume1->size();
 
@@ -128,6 +128,50 @@ Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
 }
 
 
+Data createFromLogs( Log* log1, Log* log2, int iline, int xline ){
 
+    Data data;
+
+    if( !log1 ) return data;
+    if( !log2 ) return data;
+    if( log1->nz() != log2->nz() ) return data;
+
+    for( int i=0; i<log1->nz(); i++){
+
+        auto z = 0.001 * ( log1->z0() + i * log1->dz() );
+
+        double v1=(*log1)[i];
+        double v2=(*log2)[i];
+        if( v1==log1->NULL_VALUE || v2==log2->NULL_VALUE) continue;
+
+        data.push_back( DataPoint( v1, v2, iline, xline, z, 0));
+    }
+    return data;
+}
+
+
+Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline, int xline ){
+
+    Data data;
+
+    if( !loga ) return createFromLogs( log1, log2, iline, xline );
+    if( !log1 ) return data;
+    if( !log2 ) return data;
+
+    if( log1->nz() != log2->nz() ) return data;
+
+    for( int i=0; i<log1->nz(); i++){
+
+        auto z = 0.001 * ( log1->z0() + i * log1->dz() );
+
+        double v1=(*log1)[i];
+        double v2=(*log2)[i];
+        double va=(*loga)[i];
+        if( v1==log1->NULL_VALUE || v2==log2->NULL_VALUE || va==loga->NULL_VALUE) continue;
+
+        data.push_back( DataPoint( v1, v2, iline, xline, z, va));
+    }
+    return data;
+}
 
 }

@@ -33,7 +33,7 @@
      <x>0</x>
      <y>0</y>
      <width>637</width>
-     <height>28</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -80,9 +80,8 @@
      <string>&amp;Data</string>
     </property>
     <addaction name="actionEdit_Slices"/>
-    <addaction name="separator"/>
-    <addaction name="separator"/>
     <addaction name="actionEdit_Horizons"/>
+    <addaction name="actionSetup_Wells"/>
     <addaction name="separator"/>
     <addaction name="actionReset_Highlighted_Points"/>
     <addaction name="actionLimit_Highlighted_Points"/>
@@ -483,6 +482,14 @@
   <action name="action_Close_Volume">
    <property name="text">
     <string>&amp;Close Volume</string>
+   </property>
+  </action>
+  <action name="actionSetup_Wells">
+   <property name="text">
+    <string>Setup &amp;Wells</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>

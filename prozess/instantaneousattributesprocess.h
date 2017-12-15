@@ -22,7 +22,7 @@ public:
 
 private:
 
-    std::shared_ptr<Grid3D<float> > m_inputVolume;
+    std::shared_ptr<Volume > m_inputVolume;
 
     QString m_amplitudeVolumeName;
     QString m_phaseVolumeName;

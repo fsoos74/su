@@ -23,6 +23,8 @@ public:
 
     SeismicDatasetReader(const SeismicDatasetInfo&);
 
+    void close();
+
     std::shared_ptr<seismic::SEGYReader> segyReader()const{
         return m_reader;
     }
@@ -42,6 +44,7 @@ public:
     int maxInline();
     int minCrossline();
     int maxCrossline();
+
     std::pair<int, int> firstTraceInlineCrossline();
     bool extractGeometry(ProjectGeometry&);
 
@@ -51,6 +54,8 @@ private:
 
     void openDatabase();
     void openSEGYFile();
+    void closeDatabase();
+    void closeSEGYFile();
 
     SeismicDatasetInfo                      m_info;
     QSqlDatabase                            m_db;

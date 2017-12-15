@@ -1,6 +1,6 @@
 DEFINES += COMPANY=\\\"SeismicUtensils\\\"
 DEFINES += PROGRAM=\\\"AVO-Detect\\\"
-DEFINES += VERSION=\\\"1.8.1\\\"
+DEFINES += VERSION=\\\"1.9.18\\\"
 
 CONFIG += c++11
 
@@ -25,4 +25,12 @@ win32{
 unix{
     QMAKE_CXXFLAGS += -fopenmp
     QMAKE_LFLAGS += -fopenmp
+}
+
+
+# static build on windows
+# need this define because q_decl_export creates linkage errors when used with static libraries!!!! NEVER forget this!!!
+win32{
+    #CONFIG+=staticlib      # NEVER DO THIS FOR EXECUTABLE!!!!
+    DEFINES+=STATICBUILD
 }

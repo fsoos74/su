@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LogViewer</class>
+ <widget class="QMainWindow" name="LogViewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>274</width>
+    <height>641</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QScrollArea" name="tracksArea">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>254</width>
+         <height>532</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>274</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menuSpectrum">
+    <property name="title">
+     <string>&amp;Items</string>
+    </property>
+    <addaction name="action_Add_Log"/>
+    <addaction name="actionAdd_Logs_by_Log"/>
+    <addaction name="action_Remove_Log"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetup_Tops"/>
+    <addaction name="actionSetup_Horizons"/>
+   </widget>
+   <widget class="QMenu" name="menu_Options">
+    <property name="title">
+     <string>&amp;Options</string>
+    </property>
+    <widget class="QMenu" name="menuSort">
+     <property name="title">
+      <string>&amp;Sort</string>
+     </property>
+     <addaction name="actionSort_By_Log"/>
+     <addaction name="actionSort_By_Well"/>
+    </widget>
+    <addaction name="actionConfigure_X_Axis_2"/>
+    <addaction name="actionConfigure_Z_Axis"/>
+    <addaction name="actionConfigure_Track_Labels"/>
+    <addaction name="separator"/>
+    <addaction name="menuSort"/>
+   </widget>
+   <widget class="QMenu" name="menu_Broadcast">
+    <property name="title">
+     <string>&amp;Broadcast</string>
+    </property>
+    <addaction name="action_Receive"/>
+    <addaction name="action_Send"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menuSpectrum"/>
+   <addaction name="menu_Options"/>
+   <addaction name="menu_Broadcast"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Receive"/>
+   <addaction name="action_Send"/>
+  </widget>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="action_Add_Log">
+   <property name="text">
+    <string>&amp;Add Logs by Well</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Z_Axis">
+   <property name="text">
+    <string>Configure &amp;Z-Axis</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionConfigure_X_Axis">
+   <property name="text">
+    <string>Configure X-Axis</string>
+   </property>
+  </action>
+  <action name="action_Remove_Log">
+   <property name="text">
+    <string>&amp;Remove Logs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="action_Receive">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/receive-icon-32x32.png</normaloff>:/icons/images/receive-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Receive</string>
+   </property>
+  </action>
+  <action name="action_Send">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/send-icon-32x32.png</normaloff>:/icons/images/send-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Send</string>
+   </property>
+  </action>
+  <action name="actionAdd_Logs_by_Log">
+   <property name="text">
+    <string>Add &amp;Logs by Log</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Track_Labels">
+   <property name="text">
+    <string>&amp;Configure Track Labels</string>
+   </property>
+  </action>
+  <action name="action_Open_Horizon">
+   <property name="text">
+    <string>&amp;Open Horizon</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Close_Horizon">
+   <property name="text">
+    <string>&amp;Close Horizon</string>
+   </property>
+  </action>
+  <action name="actionSort_By_Log">
+   <property name="text">
+    <string>&amp;Sort By Log</string>
+   </property>
+  </action>
+  <action name="actionSort_By_Well">
+   <property name="text">
+    <string>Sort &amp;By Well</string>
+   </property>
+  </action>
+  <action name="actionConfigure_X_Axis_2">
+   <property name="text">
+    <string>Configure &amp;X-Axis</string>
+   </property>
+  </action>
+  <action name="actionSetup_Horizons">
+   <property name="text">
+    <string>Setup &amp;Horizons</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionSetup_Tops">
+   <property name="text">
+    <string>Setup &amp;Tops</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionE_xit</sender>
+   <signal>triggered()</signal>
+   <receiver>LogViewer</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

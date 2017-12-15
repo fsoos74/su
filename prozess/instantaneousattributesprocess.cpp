@@ -14,6 +14,8 @@ InstantaneousAttributesProcess::InstantaneousAttributesProcess( AVOProject* proj
 
 ProjectProcess::ResultCode InstantaneousAttributesProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("input-volume"))){
 
         setErrorString("Parameters contain no input volume!");
@@ -54,25 +56,25 @@ ProjectProcess::ResultCode InstantaneousAttributesProcess::init( const QMap<QStr
 ProjectProcess::ResultCode InstantaneousAttributesProcess::run(){
 
     Grid3DBounds bounds=m_inputVolume->bounds();
-    const Grid3D<float>& vol=*m_inputVolume;
+    const Volume& vol=*m_inputVolume;
 
-    std::shared_ptr<Grid3D<float>> amplitudeVolume( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> phaseVolume( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> frequencyVolume( new Grid3D<float>(bounds) );
+    std::shared_ptr<Volume> amplitudeVolume( new Volume(bounds) );
+    std::shared_ptr<Volume> phaseVolume( new Volume(bounds) );
+    std::shared_ptr<Volume> frequencyVolume( new Volume(bounds) );
 
     emit currentTask("Computing output volumes");
-    emit started(bounds.inlineCount());
+    emit started(bounds.ni());
     qApp->processEvents();
 
-    for( int i=bounds.inline1(); i<=bounds.inline2(); i++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
-        for( int j=bounds.crossline1(); j<=bounds.crossline2(); j++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
-            std::vector<float> trc(bounds.sampleCount());
-            std::copy( &vol( i, j, 0 ), &vol( i, j, 0 ) + bounds.sampleCount(), trc.begin() );
+            std::vector<float> trc(bounds.nt());
+            std::copy( &vol( i, j, 0 ), &vol( i, j, 0 ) + bounds.nt(), trc.begin() );
             auto ctrc = hilbert_trace(trc);
 
-            for( int k=0; k<bounds.sampleCount(); k++){
+            for( int k=0; k<bounds.nt(); k++){
                 (*amplitudeVolume)(i,j,k)=abs(ctrc[k]);
                 (*phaseVolume)(i,j,k)=abs(ctrc[k]);
             }
@@ -87,13 +89,13 @@ ProjectProcess::ResultCode InstantaneousAttributesProcess::run(){
 
             // second order approx.
             (*frequencyVolume)(i,j,0)=-(abs(ctrc[1])-abs(ctrc[0]))/bounds.dt();
-            (*frequencyVolume)(i,j,bounds.sampleCount()-1)=(abs(ctrc[bounds.sampleCount()-1])-abs(ctrc[bounds.sampleCount()-2]))/bounds.dt();
-            for( int k=1; k+1<bounds.sampleCount(); k++){
+            (*frequencyVolume)(i,j,bounds.nt()-1)=(abs(ctrc[bounds.nt()-1])-abs(ctrc[bounds.nt()-2]))/bounds.dt();
+            for( int k=1; k+1<bounds.nt(); k++){
                 (*frequencyVolume)(i,j,k)=(abs(ctrc[k+1])-abs(ctrc[k-1]))/(2*bounds.dt());
             }
         }
 
-        emit progress(i-bounds.inline1() );
+        emit progress(i-bounds.i1() );
         qApp->processEvents();
 
     }
@@ -109,7 +111,7 @@ ProjectProcess::ResultCode InstantaneousAttributesProcess::run(){
 
             if( p.first.isEmpty()) continue;
 
-            if( !project()->addVolume( p.first, p.second ) ) {
+            if( !project()->addVolume( p.first, p.second, params() ) ) {
             setErrorString( QString("Could not add volume \"%1\" to project!").arg(p.first) );
             return ResultCode::Error;
         }

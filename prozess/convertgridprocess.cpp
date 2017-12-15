@@ -9,6 +9,7 @@ ConvertGridProcess::ConvertGridProcess( AVOProject* project, QObject* parent) :
 
 ProjectProcess::ResultCode ConvertGridProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
 
     if( !parameters.contains(QString("output-type"))){
         setErrorString("Parameters contain no output grid type!");
@@ -78,7 +79,7 @@ ProjectProcess::ResultCode ConvertGridProcess::run(){
     emit started(1);
     emit progress(0);
     qApp->processEvents();
-    if( !project()->addGrid( m_outputType, m_outputName, m_outputGrid)){
+    if( !project()->addGrid( m_outputType, m_outputName, m_outputGrid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_outputName) );
         return ResultCode::Error;
     }

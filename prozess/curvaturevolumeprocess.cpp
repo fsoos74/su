@@ -14,6 +14,8 @@ CurvatureVolumeProcess::CurvatureVolumeProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode CurvatureVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("basename"))){
 
         setErrorString("Parameters contain no basename!");
@@ -49,7 +51,7 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::init( const QMap<QString, QSt
     return ResultCode::Ok;
 }
 
-
+namespace{
 // correlation of two sequences
 template< class FIT1, class FIT2>
 double corr( FIT1 first1, FIT1 last1, FIT2 first2 ){
@@ -68,14 +70,14 @@ double corr( FIT1 first1, FIT1 last1, FIT2 first2 ){
 }
 
 // returns how trc1 (i1,j1)  must be shifted (in samples) for best fit with trc2 (i2,j2) in wnd
-int optimum_shift( const Grid3D<float>& vol, int i1, int j1, int i2, int j2,
+int optimum_shift( const Volume& vol, int i1, int j1, int i2, int j2,
             int wnd_start, int wnd_len=5, int max_abs_shift=5 ){
 
     auto trc1 = &vol(i1, j1, 0);
     auto trc2 = &vol(i2, j2, 0);
 
     int min_shift = std::max( -wnd_start, -max_abs_shift );
-    int max_shift = std::min( max_abs_shift, vol.bounds().sampleCount() - wnd_start - wnd_len -1 );
+    int max_shift = std::min( max_abs_shift, vol.bounds().nt() - wnd_start - wnd_len -1 );
     auto best_shift=min_shift;
     auto best_cor = corr( &trc1[wnd_start], &trc1[wnd_start+wnd_len],
                 &trc2[wnd_start+best_shift] );
@@ -90,7 +92,7 @@ int optimum_shift( const Grid3D<float>& vol, int i1, int j1, int i2, int j2,
 
     return best_shift;
 }
-
+}
 
 ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
 
@@ -99,28 +101,36 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
 
     Grid3DBounds bounds=m_volume->bounds();
 
-    std::shared_ptr<Grid3D<float>> gmean( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> ggauss( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> gmin( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> gmax( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> gpos( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> gneg( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> gangle( new Grid3D<float>(bounds) );
-    std::shared_ptr<Grid3D<float>> gazimuth( new Grid3D<float>(bounds) );
+    std::shared_ptr<Volume> gmean;
+    std::shared_ptr<Volume> ggauss;
+    std::shared_ptr<Volume> gmin;
+    std::shared_ptr<Volume> gmax;
+    std::shared_ptr<Volume> gpos;
+    std::shared_ptr<Volume> gneg;
+    std::shared_ptr<Volume> gangle;
+    std::shared_ptr<Volume> gazimuth;
 
+    if( m_output_attributes.contains(MIN_CURVATURE_STR)) gmin=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(MAX_CURVATURE_STR)) gmax=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(MEAN_CURVATURE_STR)) gmean=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(GAUSS_CURVATURE_STR)) ggauss=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(MAX_POS_CURVATURE_STR)) gpos=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(MAX_NEG_CURVATURE_STR)) gneg=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(DIP_ANGLE_STR)) gangle=std::make_shared<Volume>(bounds);
+    if( m_output_attributes.contains(DIP_AZIMUTH_STR)) gazimuth=std::make_shared<Volume>(bounds);
 
-    int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
+    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
 
     emit currentTask("Computing output volume");
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.inline1()+1; i<=bounds.inline2()-1; i++){
+    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
 
-        for( int j=bounds.crossline1()+1; j<=bounds.crossline2()-1; j++){
+        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
 
             #pragma omp parallel for
-            for( int k=wnd_len/2+1; k<bounds.sampleCount()-wnd_len/2-1; k++){
+            for( int k=wnd_len/2+1; k<bounds.nt()-wnd_len/2-1; k++){
 
                 int s1 = optimum_shift( *m_volume, i-1, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
                 int s2 = optimum_shift( *m_volume, i-1, j, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
@@ -162,19 +172,19 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
                 float kangle = std::atan( std::sqrt( d*d + e*e ) );
                 float kazimuth = std::atan2( d, e);
 
-                (*gmean)(i,j,k)=kmean;
-                (*ggauss)(i,j,k)=kgauss;
-                (*gmax)(i,j,k)=kmax;
-                (*gmin)(i,j,k)=kmin;//kmin;
-                (*gpos)(i,j,k)=kpos;
-                (*gneg)(i,j,k)=kneg;
-                (*gangle)(i,j,k)=kangle;
-                (*gazimuth)(i,j,k)=kazimuth;
+                if( gmean ) (*gmean)(i,j,k)=kmean;
+                if( ggauss) (*ggauss)(i,j,k)=kgauss;
+                if( gmax ) (*gmax)(i,j,k)=kmax;
+                if( gmin ) (*gmin)(i,j,k)=kmin;//kmin;
+                if( gpos ) (*gpos)(i,j,k)=kpos;
+                if( gneg ) (*gneg)(i,j,k)=kneg;
+                if( gangle ) (*gangle)(i,j,k)=kangle;
+                if( gazimuth ) (*gazimuth)(i,j,k)=kazimuth;
             }
         }
 
-        if( (i-bounds.inline1()) % onePercent==0 ){
-            emit progress((i-bounds.inline1()) / onePercent);
+        if( (i-bounds.i1()) % onePercent==0 ){
+            emit progress((i-bounds.i1()) / onePercent);
             qApp->processEvents();
         }
     }
@@ -184,65 +194,65 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
     emit progress(0);
     qApp->processEvents();
 
-    if( m_output_attributes.contains(MIN_CURVATURE_STR)){
+    if( gmin){
         QString name=QString("%1-minimum").arg(m_baseName);
-        if( !project()->addVolume( name, gmin ) ) {
+        if( !project()->addVolume( name, gmin, params() ) ) {
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(MAX_CURVATURE_STR)){
+    if( gmax ){
         QString name=QString("%1-maximum").arg(m_baseName);
-        if( !project()->addVolume( name, gmax ) ){
+        if( !project()->addVolume( name, gmax, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(MEAN_CURVATURE_STR)){
+    if( gmean ){
         QString name=QString("%1-mean").arg(m_baseName);
-        if( !project()->addVolume( name, gmean ) ){
+        if( !project()->addVolume( name, gmean, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(GAUSS_CURVATURE_STR)){
+    if( ggauss ){
         QString name=QString("%1-gaussian").arg(m_baseName);
-        if( !project()->addVolume( name, ggauss ) ){
+        if( !project()->addVolume( name, ggauss, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(MAX_POS_CURVATURE_STR)){
+    if( gpos ){
         QString name=QString("%1-maximum-positive").arg(m_baseName);
-        if( !project()->addVolume( name, gpos ) ){
+        if( !project()->addVolume( name, gpos, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(MAX_NEG_CURVATURE_STR)){
+    if( gneg ){
         QString name=QString("%1-maximum-negative").arg(m_baseName);
-        if( !project()->addVolume( name, gneg ) ){
+        if( !project()->addVolume( name, gneg, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(DIP_ANGLE_STR)){
+    if( gangle ){
         QString name=QString("%1-dip-angle").arg(m_baseName);
-        if( !project()->addVolume( name, gangle ) ){
+        if( !project()->addVolume( name, gangle, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
     }
 
-    if( m_output_attributes.contains(DIP_AZIMUTH_STR)){
+    if( gazimuth ){
         QString name=QString("%1-dip-azimuth").arg(m_baseName);
-        if( !project()->addVolume( name, gazimuth ) ){
+        if( !project()->addVolume( name, gazimuth, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }

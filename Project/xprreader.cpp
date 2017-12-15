@@ -26,11 +26,11 @@ bool XPRReader::read(QIODevice *device)
             else{
                 QString projectDirectory=xml.readElementText();
 
-                if( QDir(projectDirectory).isRelative() ){
-
-                    QDir pdir=QFileInfo(m_projectFilePath).absoluteDir();
-
-                    projectDirectory=pdir.absoluteFilePath(projectDirectory);
+                if( QDir(projectDirectory).isRelative()  ){
+                    // make relative (to xpr file) project directory absolute
+                    QString pdir=QFileInfo(m_projectFilePath).path()+QDir::separator()+projectDirectory;
+                    projectDirectory=QDir(pdir).canonicalPath();
+                    //std::cout<<"project dir: "<<projectDirectory.toStdString()<<std::endl<<std::flush;
                 }
 
                 try{  // ADD: setProjectDirectory should remember old value and restore it upon failure!!!

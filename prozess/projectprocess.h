@@ -5,7 +5,7 @@
 #include <memory>
 
 #include <avoproject.h>
-
+#include <processparams.h>
 
 class ProjectProcess : public QObject
 {
@@ -28,6 +28,10 @@ public:
         return m_name;
     }
 
+    const ProcessParams& params()const{
+        return m_params;
+    }
+
     AVOProject* project()const{
 
         return m_project;
@@ -41,8 +45,11 @@ public:
         return m_errorString;
     }
 
+    void setParams( const ProcessParams&);
+
     virtual ResultCode init(const QMap<QString, QString>& parameters)=0;
     virtual ResultCode run() = 0;
+
 
 signals:
 
@@ -63,6 +70,8 @@ protected:
 private:
 
     QString m_name;
+
+    ProcessParams m_params;
 
     AVOProject* m_project;
 

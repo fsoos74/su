@@ -27,8 +27,20 @@ public:
         return m_dispatcher;
     }
 
+    QVector<qreal> intersectionTimes()const{
+        return m_intersectionTimes;
+    }
+
+    QVector<SelectionPoint> intersectionPoints()const{
+        return m_intersectionPoints;
+    }
+
     void sendPoint(SelectionPoint, int code);
     void sendPoints(QVector<SelectionPoint>, int code);
+
+signals:
+    void intersectionTimesChanged( QVector<qreal>);
+    void intersectionPointsChanged( QVector<SelectionPoint>);
 
 protected:
     virtual void receivePoint( SelectionPoint, int code )=0;
@@ -39,6 +51,8 @@ public slots:
     void setDispatcher(std::shared_ptr<PointDispatcher>);
     void setReceptionEnabled(bool);
     void setBroadcastEnabled(bool);
+    void setIntersectionTimes(QVector<qreal>);
+    void setIntersectionPoints(QVector<SelectionPoint>);
 
 signals:
 
@@ -53,6 +67,8 @@ private:
     std::shared_ptr<PointDispatcher> m_dispatcher;
     bool m_receptionEnabled=true;
     bool m_broadcastEnabled=true;
+    QVector<qreal> m_intersectionTimes;
+    QVector<SelectionPoint> m_intersectionPoints;
 };
 
 #endif // BASEVIEWER_H

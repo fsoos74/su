@@ -160,6 +160,7 @@ private slots:
 
     void on_actionGather_Histogram_triggered();
 
+
 private:
 
     void saveSettings();
@@ -170,7 +171,7 @@ private:
     void createDockWidgets();
     void setupMouseModes();
 
-    QString createStatusMessage( SelectionPoint);
+    QString createStatusMessage( int trace, qreal secs);
 
     QVector<int> computeIntersections();
     void updateIntersections();

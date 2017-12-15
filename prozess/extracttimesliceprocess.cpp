@@ -11,6 +11,8 @@ ExtractTimesliceProcess::ExtractTimesliceProcess( AVOProject* project, QObject* 
 
 ProjectProcess::ResultCode ExtractTimesliceProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("input"))){
         setErrorString("Parameters contain no input volume!");
         return ResultCode::Error;
@@ -52,8 +54,8 @@ ProjectProcess::ResultCode ExtractTimesliceProcess::init( const QMap<QString, QS
     }
     else{
         Grid3DBounds vbounds=m_volume->bounds();
-        Grid2DBounds bounds( vbounds.inline1(), vbounds.crossline1(),
-                           vbounds.inline2(), vbounds.crossline2() );
+        Grid2DBounds bounds( vbounds.i1(), vbounds.j1(),
+                           vbounds.i2(), vbounds.j2() );
         m_slice=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
     }
 
@@ -70,12 +72,12 @@ ProjectProcess::ResultCode ExtractTimesliceProcess::run(){
     Grid3DBounds bounds=m_volume->bounds();
 
     emit currentTask("Extracting Slice");
-    emit started(bounds.inlineCount());
+    emit started(bounds.ni());
     qApp->processEvents();
 
-    for( int i=bounds.inline1(); i<=bounds.inline2(); i++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
-        for( int j=bounds.crossline1(); j<=bounds.crossline2(); j++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             qreal t=0.001*m_sliceTime;  // slicetime in millisecs
             if( m_horizon){ // we are using a horizon and not constant time
@@ -90,14 +92,14 @@ ProjectProcess::ResultCode ExtractTimesliceProcess::run(){
 
         }
 
-        emit progress( i - bounds.inline1());
+        emit progress( i - bounds.i1());
         qApp->processEvents();
         if( isCanceled()) return ResultCode::Canceled;
     }
 
 
     std::pair<GridType, QString> sliceTypeAndName = splitFullGridName( m_sliceName );
-    if( !project()->addGrid( sliceTypeAndName.first, sliceTypeAndName.second, m_slice)){
+    if( !project()->addGrid( sliceTypeAndName.first, sliceTypeAndName.second, m_slice, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_sliceName) );
         return ResultCode::Error;
     }

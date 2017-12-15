@@ -58,7 +58,7 @@ double semblance( const Grid3D<float>& vol, const std::vector<std::pair<int,int>
     double fnt2=0;
 
     int k1((k>=hw)?k - hw : 0);
-    int k2((k+hw<vol.bounds().sampleCount()) ? k+hw : vol.bounds().sampleCount()-1);
+    int k2((k+hw<vol.bounds().nt()) ? k+hw : vol.bounds().nt()-1);
 
     for( auto loc : locations ){
 
@@ -80,3 +80,45 @@ double semblance( const Grid3D<float>& vol, const std::vector<std::pair<int,int>
 
     return ( s2 - fnt2)/( (N-1)*fnt2);
 }
+
+double semblance( const Grid3D<float>& vol, const std::vector<std::tuple<int,int,double>>& path, int hw){
+
+    size_t N=path.size();
+
+    if( N<2 ) return 1;
+
+    std::vector<double> st;//( 2*hw + 1 , 0);
+    st.assign( 2*hw + 1 , 0);
+    //double st[2*hw+1];
+    //std::fill(st, st+2*hw,0);
+    double fnt2=0;
+
+    //int k1((k>=hw)?k - hw : 0);
+    //int k2((k+hw<vol.bounds().nt()) ? k+hw : vol.bounds().nt()-1);
+
+    for( auto loc : path ){
+
+        for( auto it=-hw; it<=hw; it++){
+
+            double t=std::get<2>(loc) + it*vol.dt();
+            //std::cout<<"i="<<std::get<0>(loc)<<" j="<<std::get<1>(loc)<<" t="<<t<<std::endl<<std::flush;
+            double ft=vol.value(std::get<0>(loc), std::get<1>(loc), t );
+
+            //std::cout<<"i="<<std::get<0>(loc)<<" j="<<std::get<1>(loc)<<" t="<<t<<" ft="<<ft<<std::endl<<std::flush;
+
+            if( ft==vol.NULL_VALUE) return 0;//vol.NULL_VALUE;
+            st[hw + it]+=ft;
+            fnt2+=ft*ft;
+        }
+    }
+
+    double s2=0;
+    for( auto s : st ){
+        s2+=s*s;
+    }
+
+    if( !fnt2 ) return 0; //vol.NULL_VALUE;
+
+    return ( s2 - fnt2)/( (N-1)*fnt2);
+}
+

@@ -18,7 +18,17 @@ bool XPRWriter::writeFile(QIODevice *device){
     xml.writeStartElement("xpr");
     xml.writeAttribute("version", "1.0");
 
-    xml.writeTextElement("project-directory", m_project->projectDirectory());
+    // make absolute project-directory relative to xpr file if xpr file is inside of it
+    QString pdir=m_project->projectDirectory();
+    QFileDevice* fd=dynamic_cast<QFileDevice*>(device);
+    if( fd ){   // we have a file name
+        //std::cout<<"filename: "<<fd->fileName().toStdString()<<std::endl<<std::flush;
+        if( QFileInfo(fd->fileName()).path() == m_project->projectDirectory() ){
+            pdir=".";
+        }
+    }
+
+    xml.writeTextElement("project-directory", pdir);
 
     const ProjectGeometry& geom=m_project->geometry();
 

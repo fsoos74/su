@@ -9,4 +9,10 @@
 #  define PROZESSUISHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+#ifdef STATICBUILD
+#define PROZESSUISHARED_EXPORT
+#endif
+
+
 #endif // PROZESSUI_GLOBAL_H

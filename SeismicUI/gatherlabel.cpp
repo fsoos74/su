@@ -247,6 +247,7 @@ void GatherLabel::drawHorizons( QPainter& painter ){
        if( !horizon ) continue;
 
         QPen thePen( color, 2);
+        thePen.setCosmetic(true);
 
         drawHorizon( painter, horizon, thePen  );
   }
@@ -784,7 +785,7 @@ void GatherLabel::updateVolumePixmap(){
     const seismic::Gather& gather=*m_view->gather();
     const ColorTable* colorTable=volumeColorTable();
 
-    QImage image( gather.size(), volume.bounds().sampleCount(), QImage::Format_ARGB32);
+    QImage image( gather.size(), volume.bounds().nt(), QImage::Format_ARGB32);
     image.fill(qRgba(0,0,0,0));     // make transparent
 
     int a=255;
@@ -805,7 +806,7 @@ void GatherLabel::updateVolumePixmap(){
             //std::cout<<"OUT OF VOLUME : il="<<iline<<" xl="<<xline<<std::endl<<std::flush;
             continue;
         }
-        for( size_t i=0; i<volume.bounds().sampleCount(); i++ ){
+        for( size_t i=0; i<volume.bounds().nt(); i++ ){
 
 
             float value=volume(iline, xline, i);

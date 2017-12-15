@@ -13,16 +13,21 @@ AmplitudeVolumeDialog::AmplitudeVolumeDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QIntValidator* windowValidator=new QIntValidator(this);
-    ui->leWindowStart->setValidator(windowValidator);
-    ui->leWindowEnd->setValidator(windowValidator);
+    ui->leMinIline->setValidator(windowValidator);
+    ui->leMaxIline->setValidator(windowValidator);
+    ui->leMinXline->setValidator(windowValidator);
+    ui->leMaxXline->setValidator(windowValidator);
+    ui->leMinZ->setValidator(windowValidator);
+    ui->leMaxZ->setValidator(windowValidator);
 
     connect( ui->leVolumeName, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->leWindowStart, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->leWindowEnd, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->cbTimeWindow, SIGNAL( toggled(bool)), this, SLOT(updateOkButton()) );
-
-    connect( ui->cbTimeWindow, SIGNAL(toggled(bool)), ui->leWindowStart, SLOT(setEnabled(bool)) );
-    connect( ui->cbTimeWindow, SIGNAL(toggled(bool)), ui->leWindowEnd, SLOT(setEnabled(bool)) );
+    connect( ui->leMinIline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leMaxIline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leMinXline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leMaxXline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leMinZ, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leMaxZ, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->cbCrop, SIGNAL( toggled(bool)), this, SLOT(updateOkButton()) );
 }
 
 AmplitudeVolumeDialog::~AmplitudeVolumeDialog()
@@ -30,38 +35,88 @@ AmplitudeVolumeDialog::~AmplitudeVolumeDialog()
     delete ui;
 }
 
-void AmplitudeVolumeDialog::setDatasets( const QStringList& h){
-    ui->cbDataset->clear();
-    ui->cbDataset->addItems(h);
-}
-
-void AmplitudeVolumeDialog::setWindowStartMS( int t ){
-    ui->leWindowStart->setText(QString::number(t));
-}
-
-void AmplitudeVolumeDialog::setWindowEndMS( int t ){
-    ui->leWindowEnd->setText(QString::number(t));
-}
 
 QMap<QString,QString> AmplitudeVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
 
-    p.insert( QString("volume"), ui->leVolumeName->text() );
+    p.insert( "volume", ui->leVolumeName->text() );
 
-    p.insert( QString("dataset"), ui->cbDataset->currentText());
+    p.insert( "dataset", ui->cbDataset->currentText());
 
-    if( ui->cbTimeWindow->isChecked()){
+    p.insert( "crop", QString::number(static_cast<int>(ui->cbCrop->isChecked())));
 
-        p.insert("window-mode", "TRUE");
-        p.insert("window-start", ui->leWindowStart->text());
-        p.insert("window-end", ui->leWindowEnd->text());
-
-    }
+    p.insert( "min-iline", QString::number(minIline()));
+    p.insert( "max-iline", QString::number(maxIline()));
+    p.insert( "min-xline", QString::number(minXline()));
+    p.insert( "max-xline", QString::number(maxXline()));
+    p.insert( "min-z", QString::number(minZ()));
+    p.insert( "max-z", QString::number(maxZ()));
 
     return p;
 }
+
+
+
+int AmplitudeVolumeDialog::minIline(){
+    return ui->leMinIline->text().toInt();
+}
+
+int AmplitudeVolumeDialog::maxIline(){
+    return ui->leMaxIline->text().toInt();
+}
+
+int AmplitudeVolumeDialog::minXline(){
+    return ui->leMinXline->text().toInt();
+}
+
+int AmplitudeVolumeDialog::maxXline(){
+    return ui->leMaxXline->text().toInt();
+}
+
+int AmplitudeVolumeDialog::minZ(){
+    return ui->leMinZ->text().toInt();
+}
+
+int AmplitudeVolumeDialog::maxZ(){
+    return ui->leMaxZ->text().toInt();
+}
+
+
+void AmplitudeVolumeDialog::setProject(AVOProject *p){
+    if( p==m_project) return;
+    m_project=p;
+    updateDatasets();
+    updateOkButton();
+}
+
+
+void AmplitudeVolumeDialog::setMinIline( int i ){
+    ui->leMinIline->setText(QString::number(i));
+}
+
+void AmplitudeVolumeDialog::setMaxIline( int i ){
+    ui->leMaxIline->setText(QString::number(i));
+}
+
+void AmplitudeVolumeDialog::setMinXline( int i ){
+    ui->leMinXline->setText(QString::number(i));
+}
+
+void AmplitudeVolumeDialog::setMaxXline( int i ){
+    ui->leMaxXline->setText(QString::number(i));
+}
+
+
+void AmplitudeVolumeDialog::setMinZ( int i ){
+    ui->leMinZ->setText(QString::number(i));
+}
+
+void AmplitudeVolumeDialog::setMaxZ( int i ){
+    ui->leMaxZ->setText(QString::number(i));
+}
+
 
 
 void AmplitudeVolumeDialog::updateOkButton(){
@@ -70,28 +125,49 @@ void AmplitudeVolumeDialog::updateOkButton(){
 
     QPalette volumePalette;
     if( ui->leVolumeName->text().isEmpty() ||
-            reservedVolumes().contains(ui->leVolumeName->text() ) ){
+            (m_project && m_project->volumeList().contains(ui->leVolumeName->text() ) ) ){
         ok=false;
         volumePalette.setColor(QPalette::Text, Qt::red);
     }
     ui->leVolumeName->setPalette(volumePalette);
 
-    if( ui->cbTimeWindow->isChecked() ){
-        if( ui->leWindowStart->text().isEmpty()){
+    {
+        QPalette palette;
+        if( minIline()>maxIline()){
+            palette.setColor(QPalette::Text, Qt::red);
             ok=false;
         }
-        if( ui->leWindowEnd->text().isEmpty()){
+        ui->leMinIline->setPalette(palette);
+        ui->leMaxIline->setPalette(palette);
+    }
+
+    {
+        QPalette palette;
+        if( minXline()>maxXline()){
+            palette.setColor(QPalette::Text, Qt::red);
             ok=false;
         }
+        ui->leMinXline->setPalette(palette);
+        ui->leMaxXline->setPalette(palette);
+    }
 
-        QPalette windowPalette;
-        if( ui->leWindowStart->text().toInt()>ui->leWindowEnd->text().toInt()){
-            windowPalette.setColor(QPalette::Text, Qt::red);
+    {
+        QPalette palette;
+        if( minZ()>maxZ()){
+            palette.setColor(QPalette::Text, Qt::red);
+            ok=false;
         }
-        ui->leWindowStart->setPalette(windowPalette);
-        ui->leWindowEnd->setPalette(windowPalette);
-
+        ui->leMinZ->setPalette(palette);
+        ui->leMaxZ->setPalette(palette);
     }
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(ok);
+}
+
+
+void AmplitudeVolumeDialog::updateDatasets(){
+
+    ui->cbDataset->clear();
+    if(!m_project) return;
+    ui->cbDataset->addItems(m_project->seismicDatasetList());
 }

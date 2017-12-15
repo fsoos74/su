@@ -2,7 +2,7 @@
 
 #include<iostream>
 
-XGRReader::XGRReader( Grid2D<float>& grid) : m_grid(grid)
+XGRReader::XGRReader( Grid2D<float>* grid) : m_grid(grid)
 {
 }
 
@@ -45,7 +45,11 @@ void XGRReader::readXGR(){
     int i2=xml.attributes().value("i2").toInt();
     int j1=xml.attributes().value("j1").toInt();
     int j2=xml.attributes().value("j2").toInt();
-    m_grid=Grid2D<float>( Grid2DBounds( i1, j1, i2, j2), Grid2D<float>::NULL_VALUE );
+    m_bounds=Grid2DBounds( i1, j1, i2, j2);
+
+    if(!m_grid) return; // read bounds only
+
+    *m_grid=Grid2D<float>( m_bounds, Grid2D<float>::NULL_VALUE );
     xml.skipCurrentElement();
 
     xml.readNextStartElement();
@@ -64,6 +68,7 @@ void XGRReader::readXGR(){
             qWarning("Skipping unexpected element!");
         }
     }
+
 }
 
 void XGRReader::readPoint(){
@@ -72,14 +77,14 @@ void XGRReader::readPoint(){
     int j=xml.attributes().value("j").toInt();
     double value=xml.attributes().value("value").toDouble();
 
-    if( ! m_grid.bounds().isInside( i, j) ){
-        std::cout<<"i="<<i<<" j="<<j<<" i1="<<m_grid.bounds().i1()<<" i2="<<m_grid.bounds().i2();
-        std::cout<<" j1="<<m_grid.bounds().j1()<<" j2="<<m_grid.bounds().j2()<<std::endl<<std::flush;
+    if( ! m_bounds.isInside( i, j) ){
+        //std::cout<<"i="<<i<<" j="<<j<<" i1="<<m_grid.bounds().i1()<<" i2="<<m_grid.bounds().i2();
+        //std::cout<<" j1="<<m_grid.bounds().j1()<<" j2="<<m_grid.bounds().j2()<<std::endl<<std::flush;
         xml.raiseError("Point is outside grid bounds!");
         return;
     }
 
-    m_grid(i,j)=value;
+    (*m_grid)(i,j)=value;
 
     xml.skipCurrentElement();
 }

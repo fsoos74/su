@@ -9,4 +9,10 @@
 #  define SEISMICSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+#ifdef STATICBUILD
+#define SEISMICSHARED_EXPORT
+#endif
+
+
 #endif // SEISMIC_GLOBAL_H

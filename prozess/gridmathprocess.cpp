@@ -9,76 +9,60 @@
 using namespace std::placeholders;
 
 GridMathProcess::GridMathProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Crop Grid"), project, parent){
+    ProjectProcess( QString("Grid Math"), project, parent){
 
 }
 
 ProjectProcess::ResultCode GridMathProcess::init( const QMap<QString, QString>& parameters ){
 
-    if( !parameters.contains(QString("function"))){
-        setErrorString("Parameters contain no function!");
+    setParams(parameters);
+
+    QString func;
+    QString iname1;
+    GridType itype1;
+    QString iname2;
+    GridType itype2;
+    double value=0;
+
+
+    try{
+        func=getParam(parameters, "function");
+
+        m_outputName=getParam(parameters, "output-name");
+        auto ots=getParam(parameters, "output-type");
+        m_outputType=toGridType(ots);
+
+        iname1=getParam(parameters, "input-grid1");
+        auto it1s=getParam(parameters, "input-grid1-type");
+        itype1=toGridType(it1s);
+
+        iname2=getParam(parameters, "input-grid2");
+        auto it2s=getParam(parameters, "input-grid2-type");
+        itype2=toGridType(it2s);
+
+        value=getParam(parameters, "value").toDouble();
+    }
+    catch(std::exception& ex){
+        setErrorString(ex.what());
         return ResultCode::Error;
     }
-    int f=parameters.value(QString("function")).toInt();
 
-    switch(f){
-
-    case 0: m_func= std::bind(&GridMathProcess::add_gv, this, _1, _2) ; break;
-    case 1: m_func= std::bind(&GridMathProcess::mul_gv, this, _1, _2) ; break;
-    case 2: m_func= std::bind(&GridMathProcess::add_gg, this, _1, _2) ; break;
-    case 3: m_func= std::bind(&GridMathProcess::mul_gg, this, _1, _2) ; break;
-
-    default:
-        setErrorString("Invalid function!");
-        return ResultCode::Error;
-        break;
-    }
-
-    if( parameters.contains(QString("value"))){
-        m_value=parameters.value(QString("value")).toDouble();
-    }
-
-    if( !parameters.contains(QString("output-type"))){
-        setErrorString("Parameters contain no output grid type!");
+    std::cout<<"path="<<project()->getGridPath(itype1,iname1).toStdString()<<std::endl<<std::flush;
+    m_inputGrid1=project()->loadGrid(itype1, iname1);
+    if( !m_inputGrid1){
+        setErrorString(QString("Loading grid \"%1\" failed!").arg(iname1));
         return ResultCode::Error;
     }
-    m_outputType = toGridType(parameters.value(QString("output-type") ) );
+    auto bounds=m_inputGrid1->bounds();
+    std::cout<<"il="<<bounds.i1()<<"-"<<bounds.i2()<<" xl="<<bounds.j1()<<"-"<<bounds.j2()<<" NULL="<<m_inputGrid1->NULL_VALUE<<std::endl<<std::flush;
 
-    if( !parameters.contains(QString("output-grid"))){
-        setErrorString("Parameters contain no output grid!");
-        return ResultCode::Error;
-    }
-    m_outputName=parameters.value(QString("output-grid"));
 
-    if( parameters.contains(QString("input-grid1-type"))){
-        GridType type1=toGridType(parameters.value(QString("input-grid1-type")));
-        if(!parameters.contains(QString("input-grid1"))){
-            setErrorString("Parameters contain no input grid 1!");
-            return ResultCode::Error;
-        }
-        m_inputGrid1=project()->loadGrid(type1, parameters.value(QString("input-grid1")));
-        if( !m_inputGrid1){
-            setErrorString(QString("Loading input grid 1 failed!"));
-            return ResultCode::Error;
-        }
-    }
-
-    if( parameters.contains(QString("input-grid2-type"))){
-        GridType type2=toGridType(parameters.value(QString("input-grid2-type")));
-        if(!parameters.contains(QString("input-grid2"))){
-            setErrorString("Parameters contain no input grid 2!");
-            return ResultCode::Error;
-        }
-        m_inputGrid2=project()->loadGrid(type2, parameters.value(QString("input-grid2")));
+    if( !iname2.isEmpty()){
+        m_inputGrid2=project()->loadGrid(itype2, iname2);
         if( !m_inputGrid2){
-            setErrorString(QString("Loading input grid 1 failed!"));
+            setErrorString(QString("Loading grid \"%2\" failed!").arg(iname1));
             return ResultCode::Error;
         }
-    }
-
-    if( !m_inputGrid1 ){
-        setErrorString(QString("No input grid loaded!!!"));
-        return ResultCode::Error;
     }
 
     if( m_inputGrid2 && m_inputGrid1->bounds()!=m_inputGrid2->bounds() ){
@@ -93,36 +77,13 @@ ProjectProcess::ResultCode GridMathProcess::init( const QMap<QString, QString>& 
         return ResultCode::Error;
     }
 
+    m_processor.setOP(MathProcessor::toOP(func));
+    m_processor.setValue(value);
+    m_processor.setInputNullValue(m_inputGrid1->NULL_VALUE);
+
     return ResultCode::Ok;
 }
 
-float GridMathProcess::add_gv(int i, int j){
-    float v1=m_inputGrid1->valueAt(i,j);
-    if( v1==m_inputGrid1->NULL_VALUE) return v1;
-    return v1+m_value;
-}
-
-float GridMathProcess::mul_gv(int i, int j){
-    float v1=m_inputGrid1->valueAt(i,j);
-    if( v1==m_inputGrid1->NULL_VALUE) return v1;
-    return v1*m_value;
-}
-
-float GridMathProcess::add_gg(int i, int j){
-    float v1=m_inputGrid1->valueAt(i,j);
-    if( v1==m_inputGrid1->NULL_VALUE) return v1;
-    float v2=m_inputGrid2->valueAt(i,j);
-    if( v2==m_inputGrid2->NULL_VALUE) return v2;
-    return v1+v2;
-}
-
-float GridMathProcess::mul_gg(int i, int j){
-    float v1=m_inputGrid1->valueAt(i,j);
-    if( v1==m_inputGrid1->NULL_VALUE) return v1;
-    float v2=m_inputGrid2->valueAt(i,j);
-    if( v2==m_inputGrid2->NULL_VALUE) return v2;
-    return v1*v2;
-}
 
 ProjectProcess::ResultCode GridMathProcess::run(){
 
@@ -137,7 +98,17 @@ ProjectProcess::ResultCode GridMathProcess::run(){
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
-            (*m_outputGrid)(i,j)=m_func( i, j );
+            auto ivalue1=(*m_inputGrid1)(i,j);
+            m_processor.setInput1(ivalue1);
+
+            if(m_inputGrid2){
+                auto ivalue2=(*m_inputGrid2)(i,j);
+                m_processor.setInput2(ivalue2);
+            }
+
+            auto res=m_processor.compute();
+
+            if( res!=m_processor.NULL_VALUE) (*m_outputGrid)(i,j)=res;
 
         }
 
@@ -151,7 +122,7 @@ ProjectProcess::ResultCode GridMathProcess::run(){
     emit progress(0);
     qApp->processEvents();
 
-    if( !project()->addGrid( m_outputType, m_outputName, m_outputGrid)){
+    if( !project()->addGrid( m_outputType, m_outputName, m_outputGrid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_outputName) );
         return ResultCode::Error;
     }

@@ -3,9 +3,11 @@
 
 #include<QFontMetricsF>
 #include<QPainter>
+#include<cmath>
 
 AlignedTextGraphicsItem::AlignedTextGraphicsItem( QString text, QGraphicsItem* parent)
     : QGraphicsItem( parent), m_text(text){
+    //setFlag(QGraphicsItem::ItemIgnoresTransformations);
 
 }
 
@@ -63,6 +65,15 @@ QRectF AlignedTextGraphicsItem::boundingRect()const{
 
 void AlignedTextGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
 
-    painter->setFont(m_font);
-    painter->drawText(boundingRect(), m_text);
+
+    painter->save();
+
+    QTransform tf=transform();
+
+    painter->scale(1./tf.m11(), 1./tf.m22());
+
+    painter->drawText( boundingRect(), m_text);
+
+    painter->restore();
 }
+

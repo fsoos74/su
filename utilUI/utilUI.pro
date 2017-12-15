@@ -41,7 +41,18 @@ SOURCES += utilui.cpp \
     linelabelgraphicsitem.cpp \
     pixmaputils.cpp \
     dynamicmousemodeselector.cpp \
-    volumedataselectiondialog.cpp
+    volumedataselectiondialog.cpp \
+    multiitemselectiondialog.cpp \
+    xyzimportdialog.cpp \
+    vscaleview.cpp \
+    hscaleview.cpp \
+    axis.cpp \
+    axisview.cpp \
+    axisconfigdialog.cpp \
+    alignedtextitem.cpp \
+    ruleraxisview.cpp \
+    multiinputdialog.cpp \
+    selecttypeanditemdialog.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -62,7 +73,18 @@ HEADERS += utilui.h\
     linelabelgraphicsitem.h \
     pixmaputils.h \
     dynamicmousemodeselector.h \
-    volumedataselectiondialog.h
+    volumedataselectiondialog.h \
+    multiitemselectiondialog.h \
+    xyzimportdialog.h \
+    hscaleview.h \
+    axisview.h \
+    vscaleview.h \
+    axis.h \
+    alignedtextitem.h \
+    axisconfigdialog.h \
+    ruleraxisview.h \
+    multiinputdialog.h \
+    selecttypeanditemdialog.h
 
 unix {
     target.path = /usr/lib
@@ -74,7 +96,11 @@ FORMS += \
     twocombosdialog.ui \
     pointdisplayoptionsdialog.ui \
     mousemodeselector.ui \
-    volumedataselectiondialog.ui
+    volumedataselectiondialog.ui \
+    multiitemselectiondialog.ui \
+    xyzimportdialog.ui \
+    axisconfigdialog.ui \
+    selecttypeanditemdialog.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
@@ -83,12 +109,19 @@ else:unix: LIBS += -L$$OUT_PWD/../ColorUI/ -lColorUI
 INCLUDEPATH += $$PWD/../ColorUI
 DEPENDPATH += $$PWD/../ColorUI
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#INCLUDEPATH += $$PWD/../util
+#DEPENDPATH += $$PWD/../util
 
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
+
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs
+
 
 RESOURCES += \
     ../icons.qrc

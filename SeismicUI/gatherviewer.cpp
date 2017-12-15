@@ -24,7 +24,7 @@
 //#include<mousemodeselector.h>
 #include<dynamicmousemodeselector.h>
 #include <QActionGroup>
-#include<gridviewer.h>
+//#include<gridviewer.h>
 #include <histogramdialog.h>
 #include <QMessageBox>
 
@@ -65,6 +65,10 @@ GatherViewer::GatherViewer(QWidget *parent) :
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomInAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomOutAct, SLOT(setDisabled(bool)) );
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomFitWindowAct, SLOT(setDisabled(bool)) );
+
+    // allow display of intersection times with grid viewers
+    connect( this, SIGNAL(intersectionTimesChanged(QVector<qreal>)), gatherView, SLOT(setIntersectionTimes(QVector<qreal>)) );
+
 
     createDockWidgets();
 
@@ -186,7 +190,10 @@ void GatherViewer::receivePoint(SelectionPoint point, int code){
     case PointCode::VIEWER_CURRENT_CDP:
         if( ui->actionShare_Current_Position->isChecked()){
             gatherView->setCursorPosition(point);
-            QString msg=createStatusMessage(point);
+
+            int tno=gatherView->lookupTrace(point.iline, point.xline); // find trace number, -1 if not found
+
+            QString msg=createStatusMessage(tno, point.time);
             statusBar()->showMessage(msg);
         }
         break;
@@ -408,18 +415,17 @@ void GatherViewer::on_zoomFitWindowAct_triggered()
 void GatherViewer::onMouseOver(int trace, qreal secs){
 
 
-    if( !m_gather || trace>=static_cast<int>(m_gather->size() ) ) return;
+    if( !m_gather || trace<0 || trace>=static_cast<int>(m_gather->size() ) ) return;
 
-    const seismic::Trace& trc=(*m_gather)[trace];
-
-    int iline=trc.header().at("iline").intValue();
-    int xline=trc.header().at("xline").intValue();
-    SelectionPoint sp(iline, xline, secs);
-    QString message=createStatusMessage( sp );
-
+    QString message=createStatusMessage( trace, secs );
     statusBar()->showMessage( message );
 
     if( ui->actionShare_Current_Position->isChecked()){
+
+        const seismic::Trace& trc=(*m_gather)[trace];
+        int iline=trc.header().at("iline").intValue();
+        int xline=trc.header().at("xline").intValue();
+        SelectionPoint sp(iline, xline, secs);
 
         gatherView->setCursorPosition(sp);      // need to set this because the send point will not be received by this viewer
         sendPoint( sp, PointCode::VIEWER_CURRENT_CDP);
@@ -521,7 +527,7 @@ void GatherViewer::on_actionVolume_Display_Range_triggered()
 {
     if( ! gatherView->volume() ) return;
 
-    Grid3D<float>* pvolume=gatherView->volume().get();
+    Volume* pvolume=gatherView->volume().get();
     if(!pvolume) return;
 
     ColorTable* colorTable=gatherView->gatherLabel()->volumeColorTable();
@@ -532,7 +538,7 @@ void GatherViewer::on_actionVolume_Display_Range_triggered()
         m_volumeDisplayRangeDialog=new HistogramRangeSelectionDialog(this);
         m_volumeDisplayRangeDialog->setHistogram(createHistogram( std::begin(*pvolume), std::end(*pvolume),
                                                           pvolume->NULL_VALUE, 100 ));
-        m_volumeDisplayRangeDialog->setDefaultRange( pvolume->valueRange());
+        m_volumeDisplayRangeDialog->setRange( pvolume->valueRange());
         m_volumeDisplayRangeDialog->setColorTable( colorTable );   // all updating through colortable
 
         m_volumeDisplayRangeDialog->setWindowTitle(QString("Overlay Volume") );
@@ -603,7 +609,7 @@ void GatherViewer::on_actionVolume_Histogram_triggered()
 {
     if( ! gatherView->volume() ) return;
 
-    std::shared_ptr<Grid3D<float>> volume=gatherView->volume();
+    std::shared_ptr<Volume> volume=gatherView->volume();
 
     QVector<double> data;
     data.reserve(volume->size());
@@ -690,7 +696,7 @@ void GatherViewer::on_actionOpenVolume_triggered()
 
     if( !volumeName.isEmpty() && ok ){
 
-        std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume(volumeName);
+        std::shared_ptr<Volume > volume=m_project->loadVolume(volumeName);
 
         if( !volume ) return;
 
@@ -715,7 +721,7 @@ void GatherViewer::on_actionOpenVolume_triggered()
 
 void GatherViewer::on_actionCloseVolume_triggered()
 {
-    gatherView->setVolume(std::shared_ptr<Grid3D<float>>());
+    gatherView->setVolume(std::shared_ptr<Volume>());
 }
 
 
@@ -846,7 +852,7 @@ void GatherViewer::closeEvent(QCloseEvent *event)
 void GatherViewer::leaveEvent(QEvent *){
 
     gatherView->setCursorPosition(SelectionPoint::NONE);
-    QString msg=createStatusMessage(SelectionPoint::NONE);
+    QString msg=createStatusMessage(-1, 0);
     statusBar()->showMessage(msg);
     sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );
 }
@@ -877,23 +883,27 @@ void GatherViewer::loadSettings(){
 }
 
 
-QString GatherViewer::createStatusMessage( SelectionPoint sp){
+QString GatherViewer::createStatusMessage( int tno, qreal secs){
 
-    if( sp==SelectionPoint::NONE) return QString();
-
-    int tno=gatherView->lookupTrace(sp.iline, sp.xline); // find trace number, -1 if not found
-    if( tno<0 ) return QString();
+    if( tno<0 || tno>=static_cast<int>(m_gather->size())) return QString();
 
     const seismic::Trace& trc=(*m_gather)[tno];
 
     QString message;
+
+    /* old generic version
     for( auto anno : m_traceAnnotations ){
 
-        message += anno.second + "=" + toQString( trc.header().at( anno.first) ) + ", ";
+        //message += anno.second + "=" + toQString( trc.header().at( anno.first) ) + ", ";
+        message += anno.second + "=" + QString::number( trc.header().at( anno.first).toFloat() ) + ", ";
     }
+    */
 
     int iline=trc.header().at("iline").intValue();
     int xline=trc.header().at("xline").intValue();
+    float offset=trc.header().at("offset").floatValue();
+
+    message+=QString::asprintf("iline=%d, xline=%d, offset=%.1lf", iline, xline, offset);
 
     // compute x,y from inline/crossline rather than taking from header from header
     // possible improvement: poststack disp cdpx, cdpy; prestack: sx,sy,gx,gy from header, if not present use computed as fallback
@@ -906,19 +916,17 @@ QString GatherViewer::createStatusMessage( SelectionPoint sp){
             qreal x=p.x();
             qreal y=p.y();
 
-            message+=QString::asprintf("x*=%.1lf, y*=%.1lf, ", x, y);
+            message+=QString::asprintf(", x*=%.1lf, y*=%.1lf, ", x, y);
     }
 
-    if( sp.time==SelectionPoint::NO_TIME ) return message;  // that's all we can do without valid time
-
-    size_t i=trc.time_to_index(sp.time);
+    size_t i=trc.time_to_index(secs);
     QString amp=(i<trc.size()) ? QString::number(trc[i]) : QString("n/a");
-    QString mills=QString::number( int(1000*sp.time) );
+    QString mills=QString::number( int(1000*secs) );
 
     message+=QString( " Time=") + mills + QString(", Amplitude= ")+ amp;
     if( gatherView->volume()){
 
-        float attr=gatherView->volume()->value(iline,xline,sp.time);
+        float attr=gatherView->volume()->value(iline, xline, secs);
         message+=QString(", Attibute=");
         if( attr!=gatherView->volume()->NULL_VALUE){
             message+=QString::number(attr);
@@ -1006,7 +1014,7 @@ void GatherViewer::updateIntersections(){
 
     // prosecc grid viewers
     for( BaseViewer* v : dispatcher()->viewers() ){
-
+/*
         GridViewer* gv=dynamic_cast<GridViewer*>(v);
 
         if( gv ){
@@ -1015,6 +1023,8 @@ void GatherViewer::updateIntersections(){
                 gv->gridView()->setIntersectionPoints(allTraces);
             }
         }
+ */
+        v->setIntersectionPoints(allTraces);
     }
 }
 
@@ -1085,6 +1095,5 @@ bool GatherViewer::picksSaved(){
                                         QMessageBox::Yes | QMessageBox::No );
     return reply == QMessageBox::Yes;
 }
-
 
 

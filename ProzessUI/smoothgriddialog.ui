@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>255</width>
-    <height>312</height>
+    <width>362</width>
+    <height>379</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Horizon Semblance</string>
+   <string>Smooth Grid</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../ProjectViewer/icons.qrc">
@@ -57,21 +57,58 @@
      <property name="title">
       <string>Parameters</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
+     <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Method:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cbMethod">
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>Mean</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Mean (Distance Weighted)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Mean (Trimmed 80%)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Median</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Inlines:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="1">
        <widget class="QSpinBox" name="sbInlines">
         <property name="minimum">
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>99</number>
+         <number>999</number>
         </property>
         <property name="singleStep">
          <number>2</number>
@@ -81,26 +118,33 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Crosslines:</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QSpinBox" name="sbCrosslines">
         <property name="minimum">
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>99</number>
+         <number>999</number>
         </property>
         <property name="singleStep">
          <number>2</number>
         </property>
         <property name="value">
          <number>5</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="cbRetain">
+        <property name="text">
+         <string>Retain Values</string>
         </property>
        </widget>
       </item>

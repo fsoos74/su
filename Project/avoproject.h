@@ -13,16 +13,24 @@
 #include<stdexcept>
 #include<memory>
 #include<iostream>
+class QProgressBar;
 
 #include "projectgeometry.h"
 #include "axxisorientation.h"
 #include<grid2d.h>
 #include<grid3d.h>
+#include<volume.h>
 #include"seismicdatasetinfo.h"
-//#include<cdpdatabase.h>
+#include"wellinfo.h"
+#include<processparams.h>
+#include<gridtype.h>
+#include <wellmarkers.h>
 
-
+class WellPath;
 class CDPDatebase;
+class Log;
+class TopsDBManager;
+//typedef QVector<QVector3D> WellPath;
 
 namespace seismic{
 class SEGYInfo;
@@ -30,20 +38,6 @@ class SEGYReader;
 }
 
 class SeismicDatasetReader;
-
-
-enum class GridType{ Horizon, Attribute, Other };
-
-static const QMap<GridType, QString> GridTypesAndNames{
-    {GridType::Horizon, "Horizon"},
-    {GridType::Attribute, "Attribute"},
-    {GridType::Other, "Other"}
-};
-
-//GridType string2GridType( const QString& );
-//QString gridType2String( GridType );
-GridType toGridType(const QString& );
-QString toQString( GridType );
 
 QString createFullGridName( GridType, QString );
 std::pair<GridType, QString> splitFullGridName(const QString&);
@@ -57,8 +51,13 @@ public:
     QString GridSuffix="xgr";
     QString DatabaseSuffix="db3";
     QString SeismicDatasetSuffix="xdi";
+    QString SegyInfoSuffix="xsi";
     QString VolumeSuffix="vol";
-
+    QString ProcessParamsSuffix="xpp";
+    QString WellSuffix="xwi";
+    QString LogSuffix="log";
+    QString WellPathSuffix="wpt";
+    //QString WellMarkersSuffix="xwm";
 
     class PathException : public std::runtime_error{
     public:
@@ -119,11 +118,21 @@ public:
     //std::shared_ptr<CDPDatabase> cdpDatabase();
 
 
+    // grids
+
     QString gridDirectory(GridType)const;
 
     QStringList gridList(GridType)const;
 
     QString getGridPath(GridType, const QString& gridName);
+
+    QString getGridPPPath(GridType, const QString& gridName);
+
+    Grid2DBounds getGridBounds( GridType, const QString& name);
+
+    QFileInfo getGridFileInfo( GridType, const QString& name );
+
+    ProcessParams getGridProcessParams( GridType, const QString& name);
 
     std::shared_ptr<Grid2D<float>> loadGrid(GridType, const QString& name);
 
@@ -131,12 +140,14 @@ public:
 
     bool existsGrid( GridType, const QString& name );
 
-    bool addGrid( GridType, const QString& name, std::shared_ptr<Grid2D<float>> grid);
+    bool addGrid( GridType, const QString& name, std::shared_ptr<Grid2D<float>> grid, const ProcessParams& params=ProcessParams());
 
     bool removeGrid( GridType, const QString& name);
 
     bool renameGrid( GridType, const QString& name, const QString& newName);
 
+
+    // Volumes
 
     QString volumeDirectory()const;
 
@@ -146,17 +157,78 @@ public:
 
     QString getVolumePath( const QString& volumeName);
 
-    std::shared_ptr<Grid3D<float>> loadVolume(const QString& name);
+    QString getVolumePPPath(const QString& name);
+
+    std::shared_ptr<Volume> loadVolume(const QString& name, bool showProgessDialog);
+
+    std::shared_ptr<Volume> loadVolume(const QString& name, QProgressBar* progressBar=nullptr);
+
+    bool saveVolume(const QString& name, std::shared_ptr<Volume>);
+
+    Grid3DBounds getVolumeBounds(const QString& name, Domain* domain=nullptr, VolumeType* type=nullptr);
+
+    QFileInfo getVolumeFileInfo( const QString& name );
+
+    ProcessParams getVolumeProcessParams(const QString& name);
 
     bool existsVolume( const QString& name );
 
-    bool addVolume( const QString& name, std::shared_ptr<Grid3D<float>> volume);
+    bool addVolume( const QString& name, std::shared_ptr<Volume> volume, const ProcessParams& params=ProcessParams()); // enforced only during refactor
 
     bool removeVolume( const QString& name);
 
     bool renameVolume( const QString& name, const QString& newName);
 
 
+    // Wells
+
+    const QString& wellDirectory()const{
+        return m_wellDirectory;
+    }
+
+    const QStringList& wellList()const{
+        return m_wellList;
+    }
+
+    QString getWellPath( const QString&);
+    WellInfo getWellInfo( const QString&);
+    bool setWellInfo( const QString& name, const WellInfo&);
+    QFileInfo getWellFileInfo( const QString&);
+    bool existsWell( const QString& );
+    bool addWell( const QString& name, const WellInfo&);
+    void removeWell( const QString& name);
+
+    QStringList logList( const QString& well);
+    QString logDirectory( const QString& well )const;
+    QString getLogPath( const QString& well, const QString& name );
+    bool existsLog(const QString& well, const QString& name );
+    bool addLog( const QString& well, const QString& name, const Log&);
+    bool saveLog( const QString& well, const QString& name, const Log&);
+    void removeLog( const QString& well, const QString& name);
+    std::shared_ptr<Log> loadLog( const QString& well, const QString& name );
+
+    QString getWellPathPath(const QString& well);
+    bool existsWellPath(const QString& well);
+    bool saveWellPath(const QString& well, const WellPath& path);
+    std::shared_ptr<WellPath> loadWellPath(const QString& well);
+
+    /*
+    QString getWellMarkersPath( const QString& well);
+    bool existsWellMarkers( const QString& well);
+    bool saveWellMarkers(const QString& well, const WellMarkers& wm);
+    std::shared_ptr<WellMarkers> loadWellMarkers(const QString& well);
+    */
+
+    std::unique_ptr<TopsDBManager> openTopsDatabase();
+
+    bool saveWellMarkers(const QString& well, const WellMarkers& wm);
+    std::shared_ptr<WellMarkers> loadWellMarkersByWell(const QString& name);
+    std::shared_ptr<WellMarkers> loadWellMarkersByName(const QString& well);
+    void removeWellMarkersByWell(const QString& name);
+    void removeWellMarkersByName(const QString& name);
+
+
+    // Seismic Datasets
 
     const QString& seismicDirectory()const{
         return m_seismicDirectory;
@@ -167,25 +239,33 @@ public:
     }
 
     QStringList seismicDatasetList(SeismicDatasetInfo::Mode);
-
     SeismicDatasetInfo getSeismicDatasetInfo( const QString& datasetName);
-
     QFileInfo getSeismicDatasetFileInfo( const QString& datasetName );
-
+    ProcessParams getSeismicDatasetProcessParams(const QString& name);
+    QString getSeismicDatasetPPPath( const QString& name);
     bool setSeismicDatasetInfo( const QString& datasetName, const SeismicDatasetInfo& info);
-
-    bool addSeismicDataset( const QString& name, const QString& path, const seismic::SEGYInfo& info);
-
+    SeismicDatasetInfo genericDatasetInfo( const QString& name, SeismicDatasetInfo::Domain domain, SeismicDatasetInfo::Mode mode,
+                                           double ft, double dt, size_t nt);
+    bool addSeismicDataset( const QString& name, const QString& path, const seismic::SEGYInfo& info);  // from SEGY
+    bool addSeismicDataset( const QString& name, SeismicDatasetInfo info, const ProcessParams& pp=ProcessParams() );
     bool removeSeismicDataset( const QString& name);
-
     bool renameSeismicDataset( const QString& name, const QString& newName);
 
     std::shared_ptr<SeismicDatasetReader> openSeismicDataset(const QString& datasetName);
-    //std::shared_ptr<seismic::SEGYReader> openSeismicDataset(const QString& datasetName);
-
+    bool isAttachedSeismicDataset(const QString& datasetName);
+    bool importAttachedSeismicDataset( const QString& datasetName);
 
 signals:
-    void changed();
+    //void changed();
+    void geometryChanged();
+    void datasetsChanged();
+    void datasetChanged(QString);
+    void gridsChanged(GridType);
+    void gridChanged(GridType, QString);
+    void volumesChanged();
+    void volumeChanged(QString);
+    void wellsChanged();
+    void wellChanged(QString name);
 
 private:
     // made these private because external access must be through datasetinfo which handles relative paths!!!!
@@ -206,7 +286,7 @@ private:
     void syncGridList(GridType);
     void syncVolumeList();
     void syncSeismicDatasetList();
-
+    void syncWellList();
 
     ProjectGeometry m_geometry;
 
@@ -219,11 +299,13 @@ private:
     QString m_gridDirectory;
     QString m_volumeDirectory;
     QString m_databaseDirectory;
+    QString m_wellDirectory;
 
     QStringList m_databaseList;
     QMap<GridType, QStringList> m_gridLists;
     QStringList m_volumeList;
     QStringList m_seismicDatasetList;
+    QStringList m_wellList;
 };
 
 #endif // AVOPROJECT_H

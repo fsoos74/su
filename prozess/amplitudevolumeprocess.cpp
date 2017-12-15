@@ -18,17 +18,32 @@ AmplitudeVolumeProcess::AmplitudeVolumeProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode AmplitudeVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
-    if( !parameters.contains(QString("dataset"))){
-        setErrorString("Parameters contain no dataset!");
-        return ResultCode::Error;
-    }
-    QString dataset=parameters.value(QString("dataset"));
+    setParams(parameters);
 
-    if( !parameters.contains(QString("volume"))){
-        setErrorString("Parameters contain no output volume name!");
+    QString dataset;
+    bool crop;
+    int cminil;
+    int cmaxil;
+    int cminxl;
+    int cmaxxl;
+    int cminz;
+    int cmaxz;
+
+    try{
+        dataset=getParam(parameters, "dataset");
+        m_volumeName=getParam(parameters, "volume");
+        crop=static_cast<bool>(getParam(parameters, "crop").toInt());
+        cminil=getParam(parameters, "min-iline").toInt();
+        cmaxil=getParam(parameters, "max-iline").toInt();
+        cminxl=getParam(parameters, "min-xline").toInt();
+        cmaxxl=getParam(parameters, "max-xline").toInt();
+        cminz=getParam(parameters, "min-z").toInt();
+        cmaxz=getParam(parameters, "max-z").toInt();
+    }
+    catch(std::exception& ex){
+        setErrorString(ex.what());
         return ResultCode::Error;
     }
-    m_volumeName=parameters.value(QString("volume"));
 
     m_reader= project()->openSeismicDataset( dataset);
     if( !m_reader){
@@ -40,30 +55,29 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::init( const QMap<QString, QSt
         return ResultCode::Error;
     }
 
-    double ft=0;    // need to get this from dataset
-    double dt=m_reader->segyReader()->dt();
-    int nt=m_reader->segyReader()->nt();        // from binary header, need to call this after open
-    int startMillis=static_cast<int>(1000*ft);
-    int endMillis=static_cast<int>(1000*(ft+nt*dt) );
+    auto dz=1000*m_reader->info().dt();          // sec -> msec
+    auto minz=static_cast<int>( 1000*m_reader->info().ft()); // sec -> msec
+    auto maxz=static_cast<int>(1000*(m_reader->info().ft()+m_reader->info().nt()*m_reader->info().dt()));   // sec -> msec
+    auto minil=m_reader->minInline();
+    auto maxil=m_reader->maxInline();
+    auto minxl=m_reader->minCrossline();
+    auto maxxl=m_reader->maxCrossline();
 
-    if( parameters.contains("window-mode")){
+    if( crop ){
 
-        startMillis=parameters.value("window-start").toInt();
-        endMillis=parameters.value("window-end").toInt();
-
-        if( startMillis>endMillis) std::swap(startMillis, endMillis);
-
-        if( startMillis<0 ) startMillis=0;
-
-        nt=static_cast<int>(0.001*(endMillis-startMillis)/dt)+1;
+        minil=std::max(minil, cminil);
+        maxil=std::min(maxil, cmaxil);
+        minxl=std::max(minxl, cminxl);
+        maxxl=std::min(maxxl, cmaxxl);
+        minz=std::max(minz, cminz);
+        maxz=std::min(maxz, cmaxz);
     }
 
+    auto nz = static_cast<int>(std::round(double(maxz-minz)/dz+1));
 
-    m_bounds=Grid3DBounds( m_reader->minInline(), m_reader->maxInline(),
-                           m_reader->minCrossline(), m_reader->maxCrossline(),
-                           nt, 0.001*startMillis, dt);
+    m_bounds=Grid3DBounds( minil, maxil, minxl, maxxl, nz, 0.001*minz, 0.001*dz );  // msec -> sec
 
-    m_volume=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));
+    m_volume=std::shared_ptr<Volume>(new Volume(m_bounds));
 
     return ResultCode::Ok;
 }
@@ -80,8 +94,11 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
     // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
     setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
 
+    auto vbounds=m_volume->bounds();
+
     emit started(reader->trace_count());
     reader->seek_trace(0);
+
 
     while( reader->current_trace() < reader->trace_count() ){
 
@@ -90,22 +107,22 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
 
-        for( int i=0; i<m_bounds.sampleCount(); i++){
+        if( vbounds.isInside(iline, xline) ){
 
-            double t=m_bounds.sampleToTime(i);
+            for( int i=0; i<m_bounds.nt(); i++){
 
-            // interpolate between nearest samples, should add this to trace
-            qreal x=(t - trace.ft() )/trace.dt();
-            size_t j=std::truncf(x);
-            x-=j;
-            if( x<0 ) x=0;
-            if( x>=0 && j<trace.samples().size()){
-                (*m_volume)(iline, xline, i)=( 1.-x) * trace.samples()[j] + x*trace.samples()[j+1];
+                double t=m_bounds.sampleToTime(i);
+
+                // interpolate between nearest samples, should add this to trace
+                qreal x=(t - trace.ft() )/trace.dt();
+                size_t j=std::truncf(x);
+                x-=j;
+                if( x<0 ) x=0;
+                if( x>=0 && j<trace.samples().size()){
+                    (*m_volume)(iline, xline, i)=( 1.-x) * trace.samples()[j] + x*trace.samples()[j+1];
+                }
+
             }
-            else{
-                std::cout<<"t="<<t<<"x="<<x<<" j="<<j<<std::endl;
-            }
-            // no else required because volume is filled with NULL
 
         }
 
@@ -115,7 +132,7 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
     }
 
 
-    if( !project()->addVolume( m_volumeName, m_volume)){
+    if( !project()->addVolume( m_volumeName, m_volume, params() ) ){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_volumeName) );
         return ResultCode::Error;
     }

@@ -27,7 +27,7 @@ private:
     int m_maximumShift;
     QSet<QString> m_output_attributes;
      QString m_volumeName;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_volume;
 };
 
 #endif // CURVATUREVOLUMEPROCESS_H

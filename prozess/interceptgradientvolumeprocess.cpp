@@ -34,6 +34,8 @@ InterceptGradientVolumeProcess::InterceptGradientVolumeProcess( AVOProject* proj
 
 ProjectProcess::ResultCode InterceptGradientVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("dataset"))){
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
@@ -55,6 +57,13 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::init( const QMap<QStr
     if( parameters.contains(QString("quality"))){
         m_qualityName=parameters.value(QString("quality"));
     }
+
+    if( !parameters.contains(QString("minimum-offset"))){
+        setErrorString("Parameters contain no minimum offset!");
+        return ResultCode::Error;
+    }
+    m_minimumOffset=parameters.value(QString("minimum-offset")).toDouble();
+
 
     if( !parameters.contains(QString("maximum-offset"))){
         setErrorString("Parameters contain no maximum offset!");
@@ -123,9 +132,9 @@ std::cout<<"endMillis="<<endMillis<<std::endl;
 std::cout<<"startTraceSample="<<m_startTraceSample<<std::endl;
 std::cout<<"Volumes: ft"<<m_bounds.ft()<<" lt="<<m_bounds.lt()<<" dt="<<m_bounds.dt()<<" nt="<<m_bounds.sampleCount()<<std::endl;
 */
-    m_intercept=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));
-    m_gradient=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));
-    m_quality=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));      // allways compute quality, just don't save it if not desired
+    m_intercept=std::shared_ptr<Volume>(new Volume(m_bounds));
+    m_gradient=std::shared_ptr<Volume>(new Volume(m_bounds));
+    m_quality=std::shared_ptr<Volume>(new Volume(m_bounds));      // allways compute quality, just don't save it if not desired
 
     return ResultCode::Ok;
 }
@@ -148,9 +157,9 @@ struct Job{
 
 
     Grid3DBounds            bounds;
-    Grid3D<float>*          intercept;
-    Grid3D<float>*          gradient;
-    Grid3D<float>*          quality;
+    Volume*          intercept;
+    Volume*          gradient;
+    Volume*          quality;
 };
 
 
@@ -170,7 +179,7 @@ private:
         Grid3DBounds bounds=m_job.bounds;
 
         int firstCrossline=m_job.buffer->firstXline();
-        int lastCrossline=std::min(firstCrossline+m_job.buffer->xlineCount()-1, m_job.bounds.crossline2());
+        int lastCrossline=std::min(firstCrossline+m_job.buffer->xlineCount()-1, m_job.bounds.j2());
 
         for( int iline=m_job.firstInline; iline<=m_job.lastInline; iline+=m_job.inlineIncrement ){
 
@@ -184,7 +193,7 @@ private:
 
                 const seismic::Trace& trace=gather.front();
 
-                for( size_t sampleno=0; sampleno<bounds.sampleCount(); sampleno++){
+                for( size_t sampleno=0; sampleno<bounds.nt(); sampleno++){
 
                     QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather,
                                                  m_job.startTraceSample + sampleno);
@@ -292,7 +301,7 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
     reader->seek_trace(0);
     GatherBuffer buffer( m_reader->minInline(), m_reader->minCrossline(), BufferInlineSize, m_reader->maxCrossline()-m_reader->minCrossline()+1);
     int lastFullDataIline=buffer.lastIline()-m_supergatherInlineSize+1;
-    GatherFilter filter(m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
+    GatherFilter filter(m_minimumOffset, m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
 
     while( reader->current_trace()<reader->trace_count() ){
 
@@ -306,6 +315,8 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
+
+        gather=filter.filter(gather);  // XXX
 
         // buffer full, now process
         if( iline>lastFullDataIline){
@@ -339,19 +350,19 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
 
     // store result grids
-    if( !project()->addVolume( m_interceptName, m_intercept)){
+    if( !project()->addVolume( m_interceptName, m_intercept, params() )){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_interceptName) );
         return ResultCode::Error;
     }
 
-    if( !project()->addVolume( m_gradientName, m_gradient)){
+    if( !project()->addVolume( m_gradientName, m_gradient, params() )){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_gradientName) );
         return ResultCode::Error;
     }
 
     if( !m_qualityName.isEmpty() ){    // only save quality if name is specified
 
-        if( !project()->addVolume( m_qualityName, m_quality)){
+        if( !project()->addVolume( m_qualityName, m_quality, params() )){
             setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_qualityName) );
             return ResultCode::Error;
         }

@@ -47,6 +47,8 @@ public:
         return m_dirty;
     }
 
+    void deleteSingle( int traceNo);
+
 signals:
 
     void gatherChanged();
@@ -72,14 +74,14 @@ public slots:
 
 private:
 
-    float pick1( int traceNo, float secs);  // helper, does not check valid traceno and does not emit change
+    float pick1( int traceNo, float secs, bool adjust=true);  // helper, does not check valid traceno and does not emit change
     void pickSingle( int firstTraceNo, float firstTraceTime);
     void pickFillLeftNext( int firstTraceNo, float firstTraceTime);
     void pickFillLeftNearest( int firstTraceNo, float firstTraceTime);
     void pickFillRightNearest( int firstTraceNo, float firstTraceTime);
     void pickFillRightNext( int firstTraceNo, float firstTraceTime);
     bool delete1(int traceNo);  // helper, does not check valid traceno and does not emit change
-    void deleteSingle( int traceNo);
+
     void deleteLeft( int traceNo );
     void deleteRight( int traceNo );
 
@@ -99,7 +101,9 @@ private:
     PickMode m_mode=PickMode::Single;
     PickType m_type=PickType::Minimum;
     PickFillMode m_fillMode=PickFillMode::Nearest;
-    bool m_conservative=true;
+    bool m_conservative=false;
+    int m_correlationWindow=11;
+    int m_searchWindow=11;
 
     std::vector<std::pair<int,int>> m_ilxlBuffer;
     std::function<void (int,float)> pickFunc;

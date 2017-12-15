@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>292</width>
-    <height>348</height>
+    <width>266</width>
+    <height>508</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Horizon Semblance</string>
+   <string>Volume Semblance</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../ProjectViewer/icons.qrc">
@@ -137,6 +137,45 @@
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="cbTrack">
+     <property name="text">
+      <string>Track Dips</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="gbTrack">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Track Parameters</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Crossline Dip:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="cbXlDip"/>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Inline Dip:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="cbIlDip"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -194,6 +233,22 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbTrack</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>gbTrack</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>282</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>115</x>
+     <y>365</y>
     </hint>
    </hints>
   </connection>

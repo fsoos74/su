@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LogEditor</class>
+ <widget class="QMainWindow" name="LogEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>389</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QLabel" name="trackLabel">
+      <property name="text">
+       <string>Log</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="TrackRulerView" name="trackView"/>
+    </item>
+    <item>
+     <widget class="QLabel" name="trackValueLabel">
+      <property name="text">
+       <string>value</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>389</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_Open_Log"/>
+    <addaction name="action_Save_Log_As"/>
+    <addaction name="separator"/>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit">
+    <property name="title">
+     <string>&amp;Math</string>
+    </property>
+    <addaction name="actionClip"/>
+    <addaction name="action_Median"/>
+    <addaction name="actionMean_Filter"/>
+    <addaction name="actionRunning_Average"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Constant"/>
+    <addaction name="actionMultiply_Constant"/>
+    <addaction name="actionAdd_Log"/>
+    <addaction name="actionSubtract_Log"/>
+    <addaction name="actionMultiply_Log"/>
+    <addaction name="actionDivide_Log"/>
+    <addaction name="action_Invert"/>
+   </widget>
+   <widget class="QMenu" name="menu_View">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="actionHistogram"/>
+   </widget>
+   <widget class="QMenu" name="menu_Edit_2">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <addaction name="actionEdit_Name"/>
+    <addaction name="actionEdit_Unit"/>
+    <addaction name="actionEdit_Description"/>
+    <addaction name="actionEdit_Sampling"/>
+   </widget>
+   <widget class="QMenu" name="menu_Convert">
+    <property name="title">
+     <string>&amp;Convert</string>
+    </property>
+    <addaction name="actionDepth_to_Time"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Edit_2"/>
+   <addaction name="menu_Edit"/>
+   <addaction name="menu_Convert"/>
+   <addaction name="menu_View"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_Open_Log"/>
+   <addaction name="action_Save_Log_As"/>
+   <addaction name="separator"/>
+   <addaction name="actionHistogram"/>
+  </widget>
+  <action name="action_Open_Log">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/open-icon-32x32.png</normaloff>:/icons/images/open-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open Log</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Save_Log_As">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/save-as-icon-32x32.png</normaloff>:/icons/images/save-as-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save Log As</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+  </action>
+  <action name="action_Median">
+   <property name="text">
+    <string>&amp;Median Filter</string>
+   </property>
+  </action>
+  <action name="actionMean_Filter">
+   <property name="text">
+    <string>Mean &amp;Filter</string>
+   </property>
+  </action>
+  <action name="actionClip">
+   <property name="text">
+    <string>&amp;Clip</string>
+   </property>
+  </action>
+  <action name="actionDescription">
+   <property name="text">
+    <string>Description</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionHistogram">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/histogram-icon-32x32.png</normaloff>:/icons/images/histogram-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Histogram</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionAdd_Log">
+   <property name="text">
+    <string>Add &amp;Log</string>
+   </property>
+  </action>
+  <action name="actionSubtract_Log">
+   <property name="text">
+    <string>&amp;Subtract Log</string>
+   </property>
+  </action>
+  <action name="actionMultiply_Log">
+   <property name="text">
+    <string>Multi&amp;ply Log</string>
+   </property>
+  </action>
+  <action name="actionDivide_Log">
+   <property name="text">
+    <string>&amp;Divide Log</string>
+   </property>
+  </action>
+  <action name="actionAdd_Constant">
+   <property name="text">
+    <string>&amp;Add Constant</string>
+   </property>
+  </action>
+  <action name="actionMultiply_Constant">
+   <property name="text">
+    <string>M&amp;ultiply Constant</string>
+   </property>
+  </action>
+  <action name="actionEdit_Name">
+   <property name="text">
+    <string>Change &amp;Name</string>
+   </property>
+  </action>
+  <action name="actionEdit_Unit">
+   <property name="text">
+    <string>Change &amp;Unit</string>
+   </property>
+  </action>
+  <action name="actionEdit_Description">
+   <property name="text">
+    <string>Edit &amp;Description</string>
+   </property>
+  </action>
+  <action name="action_Invert">
+   <property name="text">
+    <string>&amp;Inverse</string>
+   </property>
+  </action>
+  <action name="actionEdit_Sampling">
+   <property name="text">
+    <string>&amp;Edit Sampling</string>
+   </property>
+  </action>
+  <action name="actionRunning_Average">
+   <property name="text">
+    <string>&amp;Running Average</string>
+   </property>
+  </action>
+  <action name="actionDepth_to_Time">
+   <property name="text">
+    <string>&amp;Depth to Time</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TrackRulerView</class>
+   <extends>QGraphicsView</extends>
+   <header>trackrulerview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../ProjectViewer/icons.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionE_xit</sender>
+   <signal>triggered()</signal>
+   <receiver>LogEditor</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

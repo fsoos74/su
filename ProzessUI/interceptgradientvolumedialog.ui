@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>642</width>
-    <height>557</height>
+    <width>590</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,15 +26,8 @@
         <string>Parameters</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_2">
-        <item row="11" column="0">
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Window End [Milliseconds]:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="10" column="2">
-         <widget class="QLineEdit" name="leWindowStart">
+        <item row="12" column="2">
+         <widget class="QLineEdit" name="leWindowEnd">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -61,26 +54,68 @@
           </item>
          </layout>
         </item>
-        <item row="3" column="2">
-         <widget class="QSpinBox" name="sbCrosslines">
+        <item row="8" column="1" colspan="2">
+         <widget class="QLineEdit" name="leMinAzimuth">
           <property name="enabled">
            <bool>false</bool>
           </property>
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>9</number>
-          </property>
-          <property name="value">
-           <number>2</number>
+          <property name="text">
+           <string>0</string>
           </property>
          </widget>
         </item>
-        <item row="9" column="0">
+        <item row="3" column="0">
+         <widget class="QLabel" name="label_9">
+          <property name="text">
+           <string>Crosslines to Combine:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QLabel" name="label_23">
+          <property name="text">
+           <string>Minimum Azimuth:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Maximum Offset:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="cbRestrictOffset">
+          <property name="text">
+           <string>Restrict Offsets</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
          <widget class="QCheckBox" name="cbTimeWindow">
           <property name="text">
            <string>Use a Time Window</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="1" colspan="2">
+         <widget class="QLineEdit" name="leMaxAzimuth">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>180</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="2">
+         <widget class="QLineEdit" name="leWindowStart">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -100,34 +135,33 @@
           </property>
          </widget>
         </item>
-        <item row="11" column="2">
-         <widget class="QLineEdit" name="leWindowEnd">
+        <item row="3" column="2">
+         <widget class="QSpinBox" name="sbCrosslines">
           <property name="enabled">
            <bool>false</bool>
           </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QLabel" name="label_24">
-          <property name="text">
-           <string>Maximum Azimuth:</string>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>9</number>
+          </property>
+          <property name="value">
+           <number>2</number>
           </property>
          </widget>
         </item>
-        <item row="10" column="0" colspan="2">
+        <item row="12" column="0">
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Window End [Milliseconds]:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0" colspan="2">
          <widget class="QLabel" name="label_2">
           <property name="text">
            <string>Window Start [Milliseconds]:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="cbRestrictOffset">
-          <property name="text">
-           <string>Restrict Offsets</string>
-          </property>
-          <property name="checked">
-           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -138,30 +172,6 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="2">
-         <widget class="QLineEdit" name="leMaxOffset">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>1000</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QCheckBox" name="cbRestrictAzimuth">
-          <property name="text">
-           <string>Restrict Azimuths</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_9">
-          <property name="text">
-           <string>Crosslines to Combine:</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="0">
          <widget class="QCheckBox" name="cbSuperGather">
           <property name="text">
@@ -169,37 +179,44 @@
           </property>
          </widget>
         </item>
-        <item row="7" column="1" colspan="2">
-         <widget class="QLineEdit" name="leMinAzimuth">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+        <item row="9" column="0">
+         <widget class="QLabel" name="label_24">
           <property name="text">
-           <string>0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QLabel" name="label_8">
-          <property name="text">
-           <string>Maximum Absolute Offset:</string>
+           <string>Maximum Azimuth:</string>
           </property>
          </widget>
         </item>
         <item row="7" column="0">
-         <widget class="QLabel" name="label_23">
+         <widget class="QCheckBox" name="cbRestrictAzimuth">
           <property name="text">
-           <string>Minimum Azimuth:</string>
+           <string>Restrict Azimuths</string>
           </property>
          </widget>
         </item>
-        <item row="8" column="1" colspan="2">
-         <widget class="QLineEdit" name="leMaxAzimuth">
+        <item row="6" column="2">
+         <widget class="QLineEdit" name="leMaxOffset">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>180</string>
+           <string>2000</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="label_10">
+          <property name="text">
+           <string>Minimum Offset:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <widget class="QLineEdit" name="leMinOffset">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>-2000</string>
           </property>
          </widget>
         </item>
@@ -210,8 +227,6 @@
        <zorder>label_9</zorder>
        <zorder>sbCrosslines</zorder>
        <zorder>cbRestrictOffset</zorder>
-       <zorder>label_8</zorder>
-       <zorder>leMaxOffset</zorder>
        <zorder>cbRestrictAzimuth</zorder>
        <zorder>label_23</zorder>
        <zorder>leMinAzimuth</zorder>
@@ -222,7 +237,10 @@
        <zorder>leWindowStart</zorder>
        <zorder>label_6</zorder>
        <zorder>leWindowEnd</zorder>
-       <zorder>groupBox</zorder>
+       <zorder>label_8</zorder>
+       <zorder>leMaxOffset</zorder>
+       <zorder>label_10</zorder>
+       <zorder>leMinOffset</zorder>
       </widget>
      </item>
      <item>
@@ -453,6 +471,22 @@
     <hint type="destinationlabel">
      <x>299</x>
      <y>333</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>cbRestrictOffset</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>leMinOffset</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>112</x>
+     <y>195</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>279</x>
+     <y>228</y>
     </hint>
    </hints>
   </connection>

@@ -56,7 +56,7 @@ signals:
 public slots:
 
     void setColors( const QVector<QRgb>& );
-    void setRange( const  std::pair<double,double> & );
+    void setRange( std::pair<double,double> );
     void setRange(double, double);
     void setPower(double);
     void setLocked(bool);

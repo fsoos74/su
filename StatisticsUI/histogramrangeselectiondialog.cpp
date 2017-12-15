@@ -4,6 +4,9 @@
 #include <QDoubleValidator>
 #include <QKeyEvent>
 
+#include<iostream>
+#include<iomanip>
+
 HistogramRangeSelectionDialog::HistogramRangeSelectionDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::HistogramRangeSelectionDialog)
@@ -13,6 +16,13 @@ HistogramRangeSelectionDialog::HistogramRangeSelectionDialog(QWidget *parent) :
     QDoubleValidator* validator=new QDoubleValidator(this);
     ui->leMinimum->setValidator(validator);
     ui->leMaximum->setValidator(validator);
+
+    QButtonGroup* btGroup=new QButtonGroup(this);
+    btGroup->addButton(ui->rbMinMax);
+    btGroup->addButton(ui->rb3Sigma);
+    btGroup->addButton(ui->rb6Sigma);
+    btGroup->setExclusive(true);
+    connect( btGroup, SIGNAL(buttonToggled(int,bool)), this, SLOT(updateRange()) );
 
     connect( ui->histogramWidget, SIGNAL(rangeChanged(std::pair<double,double>)),
              this, SLOT(setRange(std::pair<double,double>)) );                      // colortable via this
@@ -56,15 +66,51 @@ bool HistogramRangeSelectionDialog::isInstantUpdates(){
     return ui->cbInstantUpdates->isChecked();
 }
 
+void HistogramRangeSelectionDialog::updateRange(){
+
+    auto h=ui->histogramWidget->histogram();
+
+    double rmin=0;
+    double rmax=0;
+    if( ui->rbMinMax->isChecked()){
+        rmin=h.minimum();
+        rmax=h.maximum();
+    }
+    else if( ui->rb3Sigma->isChecked()){
+        rmin=h.mean()-3*h.sigma();
+        rmax=h.mean()+3*h.sigma();
+    }
+    else if( ui->rb6Sigma->isChecked()){
+        rmin=h.mean()-6*h.sigma();
+        rmax=h.mean()+6*h.sigma();
+    }
+
+    setRange(std::make_pair(std::max(rmin,h.minimum()), std::min(rmax, h.maximum())));
+}
+
 void HistogramRangeSelectionDialog::setHistogram(const Histogram & h){
+
     ui->histogramWidget->setHistogram(h);
+    /*
+    std::cout<<"HistogramRangeSelectionDialog::setHistogram"<<std::endl;
+    std::cout<<"min="<<h.minimum()<<std::endl;
+    std::cout<<"max="<<h.maximum()<<std::endl;
+    std::cout<<"mean="<<h.mean()<<std::endl;
+    std::cout<<"variance="<<h.variance()<<std::endl;
+    std::cout<<"sigma="<<h.sigma()<<std::endl;
+    std::cout<<std::flush;
+*/
+    updateRange();
 }
 
 void HistogramRangeSelectionDialog::setColorTable(ColorTable * ct){
     ui->histogramWidget->setColorTable(ct);
     connect( ct, SIGNAL(lockedChanged(bool)), this, SLOT(setLocked(bool)) );
     connect( this, SIGNAL(lockChanged(bool)), ct, SLOT(setLocked(bool)) );
-    setDefaultRange(ct->range());
+    connect( ct, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(setRange(std::pair<double,double>)) );
+    connect( this, SIGNAL(rangeChanged(std::pair<double,double>)), ct, SLOT(setRange(std::pair<double,double>)) );
+
+    setRange(ct->range());
     setLocked(ct->isLocked());
 }
 
@@ -80,21 +126,23 @@ void HistogramRangeSelectionDialog::setRange(std::pair<double, double> r){
     ui->leMaximum->setText(QString::number(r.second));
 
     emit rangeChanged(r);
+    emit rangeChanged(r.first, r.second);
 }
 
-void HistogramRangeSelectionDialog::setDefaultRange(std::pair<double, double> r){
-
-    m_defaultRange = r;
-
-    setRange(r);
+void HistogramRangeSelectionDialog::setRange(double min, double max){
+    setRange(std::make_pair(min, max));
 }
 
 void HistogramRangeSelectionDialog::setLocked(bool on){
+
+//    std::cout<<"HistogramRangeSelectionDialog::setLocked "<<std::boolalpha<<on<<std::endl;
+//    if( on == ui->cbLock->isChecked()) return;
 
     ui->cbLock->setChecked(on);
     ui->leMinimum->setEnabled(!on);
     ui->leMaximum->setEnabled(!on);
     ui->dsPower->setEnabled(!on);
+    emit lockChanged(on);
 }
 
 void HistogramRangeSelectionDialog::setInstantUpdates(bool on){
@@ -125,10 +173,11 @@ void HistogramRangeSelectionDialog::on_leMaximum_returnPressed()
 
 void HistogramRangeSelectionDialog::on_pbResetMinimum_clicked()
 {
-    setRange( std::make_pair( m_defaultRange.first, range().second));
+    setRange( std::make_pair( ui->histogramWidget->histogram().minimum(), range().second));
 }
 
 void HistogramRangeSelectionDialog::on_pbResetMaximum_clicked()
 {
-    setRange( std::make_pair( range().first, m_defaultRange.second ) );
+    setRange( std::make_pair( range().first, ui->histogramWidget->histogram().maximum() ) );
 }
+

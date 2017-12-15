@@ -30,6 +30,7 @@ private:
     QString m_interceptName;
     QString m_gradientName;
     QString m_qualityName;
+    double m_minimumOffset;
     double m_maximumOffset;
     double m_minimumAzimuth;
     double m_maximumAzimuth;
@@ -40,9 +41,9 @@ private:
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
     Grid3DBounds  m_bounds;
-    std::shared_ptr<Grid3D<float> > m_intercept;
-    std::shared_ptr<Grid3D<float> > m_gradient;
-    std::shared_ptr<Grid3D<float> > m_quality;
+    std::shared_ptr<Volume > m_intercept;
+    std::shared_ptr<Volume > m_gradient;
+    std::shared_ptr<Volume > m_quality;
 };
 
 #endif // INTERCEPTGRADIENTVOLUMEPROCESS_H

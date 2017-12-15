@@ -9,4 +9,10 @@
 #  define PROJECTSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+#ifdef STATICBUILD
+#define PROJECTSHARED_EXPORT
+#endif
+
+
 #endif // PROJECT_GLOBAL_H

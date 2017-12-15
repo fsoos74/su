@@ -9,4 +9,10 @@
 #  define GRIDUISHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+#ifdef STATICBUILD
+#define GRIDUISHARED_EXPORT
+#endif
+
+
 #endif // GRIDUI_GLOBAL_H

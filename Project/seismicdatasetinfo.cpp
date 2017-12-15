@@ -3,12 +3,6 @@
 #include <stdexcept>
 #include<QDir>
 
-SeismicDatasetInfo::SeismicDatasetInfo()
-{
-
-}
-
-
 void SeismicDatasetInfo::makeRelative( const QString& dir){
 
     // make abolute paths relative to dir
@@ -72,6 +66,18 @@ void SeismicDatasetInfo::setDomain( SeismicDatasetInfo::Domain domain){
 
 void SeismicDatasetInfo::setMode( SeismicDatasetInfo::Mode mode){
     m_mode=mode;
+}
+
+void SeismicDatasetInfo::setDT(double dt){
+    m_dt=dt;
+}
+
+void SeismicDatasetInfo::setFT(double ft){
+    m_ft=ft;
+}
+
+void SeismicDatasetInfo::setNT(size_t nt){
+    m_nt=nt;
 }
 
 const QString TimeStr="Time";

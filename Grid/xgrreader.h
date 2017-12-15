@@ -9,11 +9,15 @@ class XGRReader
 {
 public:
 
-    XGRReader(Grid2D<float>& grid);
+    XGRReader(Grid2D<float>* grid=nullptr);
 
     bool read(QIODevice *device);
 
     QString errorString() const;
+
+    Grid2DBounds bounds()const{
+        return m_bounds;
+    }
 
 private:
 
@@ -22,7 +26,8 @@ private:
     void readPoint();
 
     QXmlStreamReader xml;
-    Grid2D<float>& m_grid;
+    Grid2DBounds m_bounds;
+    Grid2D<float>* m_grid;
 };
 
 

@@ -16,6 +16,8 @@ CreateTimesliceProcess::CreateTimesliceProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("input"))){
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
@@ -122,7 +124,7 @@ ProjectProcess::ResultCode CreateTimesliceProcess::run(){
 
 
     std::pair<GridType, QString> sliceTypeAndName = splitFullGridName( m_sliceName );
-    if( !project()->addGrid( sliceTypeAndName.first, sliceTypeAndName.second, m_slice)){
+    if( !project()->addGrid( sliceTypeAndName.first, sliceTypeAndName.second, m_slice, params())){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_sliceName) );
         return ResultCode::Error;
     }

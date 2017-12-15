@@ -47,8 +47,8 @@ void ColorTable::setColors( const QVector<color_type>& col){
     emit colorsChanged();
 }
 
-void ColorTable::setRange( const  std::pair<double,double>& r ){
-
+void ColorTable::setRange( std::pair<double,double> r ){
+//std::cout<<"ColorTable::setRange locked="<<std::boolalpha<<m_lock<<std::endl;
     if( m_lock ) return;
 
     if( r==m_range ) return;
@@ -71,6 +71,8 @@ void ColorTable::setPower( double power){
 }
 
 void ColorTable::setRange( double min,double max ){
+
+    if( m_lock ) return;
 
     setRange( std::make_pair(min,max) );
 }

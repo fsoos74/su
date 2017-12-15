@@ -33,6 +33,7 @@ private:
     QString m_gradientName;
     QString m_qualityName;
     size_t m_windowSize;
+    double m_minimumOffset;
     double m_maximumOffset;
     double m_minimumAzimuth;
     double m_maximumAzimuth;

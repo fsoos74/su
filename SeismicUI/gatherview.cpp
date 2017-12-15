@@ -215,12 +215,12 @@ QStringList GatherView::horizonList(){
    return m_horizons.keys();
 }
 
-std::shared_ptr< Grid3D<float> > GatherView::volume()const{
+std::shared_ptr< Volume > GatherView::volume()const{
 
     return m_volume;
 }
 
-void GatherView::setVolume( std::shared_ptr<Grid3D<float>> volume){    // set null for closing
+void GatherView::setVolume( std::shared_ptr<Volume> volume){    // set null for closing
 
     m_volume=volume;
     m_gatherLabel->updateBuffers();
@@ -609,7 +609,7 @@ bool GatherView::eventFilterPick(QWidget* widget, QMouseEvent *mouseEvent){
     // pick
     if( widget!=m_gatherLabel ) return false;
 
-    if(mouseEvent->type()==QEvent::MouseButtonPress ||
+    if( (QEvent::MouseButtonPress && mouseEvent->buttons()&Qt::LeftButton) ||
             (mouseEvent->type()==QEvent::MouseMove &&
              mouseEvent->buttons()&Qt::LeftButton &&
              m_picker->mode()==PickMode::Single) ){
@@ -617,6 +617,15 @@ bool GatherView::eventFilterPick(QWidget* widget, QMouseEvent *mouseEvent){
         int trace=static_cast<int>(p.x()/m_pixelPerTrace);
         qreal secs=m_ft + p.y()/m_pixelPerSecond;
         m_picker->pick(trace, secs);
+    }
+
+    // short cut for delete picks in pick mode
+    if( (QEvent::MouseButtonPress && mouseEvent->buttons()&Qt::MiddleButton) ||
+            (mouseEvent->type()==QEvent::MouseMove &&
+             mouseEvent->buttons()&Qt::MiddleButton) ){
+        QPoint p=mouseEvent->pos();
+        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+        m_picker->deleteSingle(trace);  // don't use pichmode
     }
 
     return true;

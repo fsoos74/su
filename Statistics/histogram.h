@@ -6,6 +6,7 @@
 #include<cstddef>   //size_t
 #include<algorithm>
 #include<limits>
+#include<cmath>
 
 class Histogram
 {
@@ -39,7 +40,7 @@ public:
     }
 
     size_t totalCount()const{
-        return m_totalCount;
+        return m_n;
     }
 
     std::pair<double, double> range()const{
@@ -86,28 +87,46 @@ public:
         return m_bins.cend();
     }
 
+
+    double minimum()const{
+        return (m_n>0) ? m_min:0;
+    }
+
+    double maximum()const{
+        return (m_n>0)? m_max:0;
+    }
+
+    double variance()const{
+        return ( (m_n > 1) ? m_newS/(m_n - 1) : 0.0 );
+    }
+
+    double sigma()const{
+        return std::sqrt(variance());
+    }
+
+    double mean()const{
+        return (m_n > 0) ? m_newM : 0.0;
+    }
+
 private:
 
+    // histogram bins
     double m_firstBin;
     double m_binWidth;
     size_t m_binCount;
     size_t m_underflowCount=0;
     size_t m_overflowCount=0;
-    size_t m_totalCount=0;
-
     std::vector<size_t> m_bins;
+
+    // statistics
+    size_t m_n=0;
+    double m_min=std::numeric_limits<double>::max(), m_max=std::numeric_limits<double>::lowest();
+    double m_oldM=0, m_newM=0, m_oldS=0, m_newS=0;  // mean and variance computation
 };
 
-template<typename ITERATOR, typename VALUE>
-Histogram createHistogram( ITERATOR begin, ITERATOR end, VALUE NULL_VALUE, size_t STEPS ){
 
-    auto min=std::numeric_limits<VALUE>::max();
-    auto max=std::numeric_limits<VALUE>::min();
-    for( auto it = begin; it!=end; ++it ){
-        if( *it==NULL_VALUE) continue;
-        if( *it<min ) min=*it;
-        if( *it>max ) max=*it;
-    }
+template<typename ITERATOR, typename VALUE>
+Histogram createHistogram( ITERATOR begin, ITERATOR end, VALUE NULL_VALUE, VALUE min, VALUE max, size_t STEPS ){
 
     if( min>=max ) return Histogram();
 
@@ -116,6 +135,22 @@ Histogram createHistogram( ITERATOR begin, ITERATOR end, VALUE NULL_VALUE, size_
     histogram.addValues( begin, end, NULL_VALUE );
 
     return histogram;
+}
+
+
+
+template<typename ITERATOR, typename VALUE>
+Histogram createHistogram( ITERATOR begin, ITERATOR end, VALUE NULL_VALUE, size_t STEPS ){
+
+    auto min=std::numeric_limits<VALUE>::max();
+    auto max=std::numeric_limits<VALUE>::lowest();
+    for( auto it = begin; it!=end; ++it ){
+        if( *it==NULL_VALUE) continue;
+        if( *it<min ) min=*it;
+        if( *it>max ) max=*it;
+    }
+
+    return createHistogram( begin, end, NULL_VALUE, min, max, STEPS);
 }
 
 

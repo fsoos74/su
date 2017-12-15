@@ -155,7 +155,8 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
     }
 
     // adjust widget width
-    maxWidth+=BOX_WIDTH + label_size.width() + 20;
+    //maxWidth+=BOX_WIDTH + label_size.width() + 20;
+    maxWidth+=BOX_WIDTH + label_size.height() + 20;
     setMinimumWidth(maxWidth);
 
 
@@ -209,14 +210,21 @@ void ColorBarWidget::paintEvent( QPaintEvent * ev){
 
     qreal dybottom=height() - ( PAD_Y + (ybottom-m_range.first) * size_pix / absRange );
     qreal dytop=height() - ( PAD_Y + (ytop-m_range.first) * size_pix / absRange );
-
     qreal sytop=( ytop - m_colorTable->range().first )*m_image.height() / (m_colorTable->range().second - m_colorTable->range().first);
     qreal sybottom=( ybottom- m_colorTable->range().first )*m_image.height() / (m_colorTable->range().second - m_colorTable->range().first);
 
+    if( !absRange){
+        dytop=PAD_Y;
+        dybottom=height()-PAD_Y;
+    }
+
+    if( m_colorTable->range().first == m_colorTable->range().second){
+        sytop=ytop;
+        sybottom=ybottom;
+    }
+
     painter.drawPixmap( boxX, dytop, BOX_WIDTH, std::fabs(dybottom-dytop),
                         QPixmap::fromImage(m_image), 0, sybottom, m_image.width(), std::fabs(sytop-sybottom));
-
-
 
     painter.setPen(boxPen);
     painter.drawRect( boxX, PAD_Y, BOX_WIDTH, height() - 2*PAD_Y );

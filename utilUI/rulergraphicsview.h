@@ -205,7 +205,10 @@ public slots:
     void setAspectRatioMode( Qt::AspectRatioMode);
 signals:
     void mouseModeChanged(MouseMode);
+    void mouseDoubleClick(QPointF);
     void mouseOver( QPointF);
+
+    void zoomRectangleSelected(QRect);
 
 protected:
 

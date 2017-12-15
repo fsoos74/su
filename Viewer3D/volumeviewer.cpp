@@ -18,12 +18,12 @@
 #include <algorithm>
 #include <random>
 #include<horizondef.h>
-
+#include <multiitemselectiondialog.h>
 
 VolumeDimensions toVolumeDimensions(Grid3DBounds bounds){
 
     return VolumeDimensions(
-        bounds.inline1(), bounds.inline2(), bounds.crossline1(), bounds.crossline2(),
+        bounds.i1(), bounds.i2(), bounds.j1(), bounds.j2(),
                 static_cast<int>(1000*bounds.ft()), static_cast<int>(1000*bounds.lt() )
     );
 }
@@ -131,13 +131,17 @@ void VolumeViewer::setDimensions(VolumeDimensions dim){
 
     m_dimensions=dim;
 
+    // change to front view with new dims
+    defaultPositionAndScale();
+    ui->openGLWidget->setRotation(QVector3D(0,0,0));
+
     refreshView();
 
     emit dimensionsChanged(dim);
 }
 
 
-void VolumeViewer::addVolume(QString name, std::shared_ptr<Grid3D<float> > volume){
+void VolumeViewer::addVolume(QString name, std::shared_ptr<Volume > volume){
 
     if( m_volumes.contains(name)) return;   // no dupes
 
@@ -308,8 +312,8 @@ void VolumeViewer::refreshView(){
     ui->openGLWidget->makeCurrent(); // need this to access currect VBOs
 
     RenderScene* scene=view->scene();
-    //if( !scene ) return;
-    Q_ASSERT(scene);
+    if( !scene ) return;
+    //Q_ASSERT(scene);  // XXXX
 
     scene->clear();
 
@@ -399,6 +403,11 @@ void VolumeViewer::refreshView(){
     // highlighted points
     pointsToView( m_highlightedPoints, m_highlightedPointColor, m_highlightedPointSize );
 
+
+    // wells
+    foreach( QString name , m_wellPaths.keys()){
+        wellPathToView(*m_wellPaths.value(name), Qt::red, 5);
+    }
 
     // compasses / north indicators
     if( ui->actionShow_Compass->isChecked()){
@@ -521,7 +530,7 @@ void VolumeViewer::outlineToView(VolumeDimensions dims, QColor color){
 void VolumeViewer::directionIndicatorPlanesToView( Grid3DBounds bounds){
 
     // add planes of min x=blue, min y=red, min z=green
-    QRect br_ilxl( bounds.inline1(), bounds.crossline1(), bounds.inlineCount(), bounds.crosslineCount() );
+    QRect br_ilxl( bounds.i1(), bounds.j1(), bounds.ni(), bounds.nj() );
     QRectF br_xy=ilxl_to_xy.mapRect(br_ilxl);
 
     qreal xmin=br_xy.left();
@@ -614,9 +623,9 @@ QColor mix(QColor color1, QColor color2, qreal r){
 
 void VolumeViewer::inlineSliceToView( const SliceDef& def){
 
-    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(def.volume);
+    std::shared_ptr<Volume> pvolume=m_volumes.value(def.volume);
     if( !pvolume) return;
-    Grid3D<float>& volume=*pvolume;
+    Volume& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
     VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
@@ -633,7 +642,7 @@ void VolumeViewer::inlineSliceToView( const SliceDef& def){
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
 
-            Grid3D<float>::value_type value=volume(iline, dims.crossline1+i, sample1+j);
+            Volume::value_type value=volume(iline, dims.crossline1+i, sample1+j);
             ColorTable::color_type color=(value!=volume.NULL_VALUE) ? colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(i,j, color );
         }
@@ -659,9 +668,9 @@ void VolumeViewer::inlineSliceToView( const SliceDef& def){
 
 void VolumeViewer::crosslineSliceToView(  const SliceDef& def){
 
-    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(def.volume);
+    std::shared_ptr<Volume> pvolume=m_volumes.value(def.volume);
     if( !pvolume) return;
-    Grid3D<float>& volume=*pvolume;
+    Volume& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
     VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
@@ -678,7 +687,7 @@ void VolumeViewer::crosslineSliceToView(  const SliceDef& def){
     for( int i=0; i<img.width(); i++){
         for( int j=0; j<img.height(); j++){
 
-            Grid3D<float>::value_type value=volume(dims.inline1+i, xline, sample1+j);
+            Volume::value_type value=volume(dims.inline1+i, xline, sample1+j);
             ColorTable::color_type color=(value!=volume.NULL_VALUE) ? colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(i,j, color );
 
@@ -707,9 +716,9 @@ void VolumeViewer::crosslineSliceToView(  const SliceDef& def){
 
 void VolumeViewer::timeSliceToView( const SliceDef& def ){
 
-    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(def.volume);
+    std::shared_ptr<Volume> pvolume=m_volumes.value(def.volume);
     if( !pvolume) return;
-    Grid3D<float>& volume=*pvolume;
+    Volume& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
     VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
@@ -726,7 +735,7 @@ void VolumeViewer::timeSliceToView( const SliceDef& def ){
             int xi=il-dims.inline1;
             int yi=xl-dims.crossline1;
 
-            Grid3D<float>::value_type value=volume.value(il, xl, time);
+            Volume::value_type value=volume.value(il, xl, time);
             ColorTable::color_type color=(value!=volume.NULL_VALUE) ? colorTable->map(value) : qRgba(0,0,0,0);
             img.setPixel(xi, yi, color );
         }
@@ -760,7 +769,84 @@ void VolumeViewer::timeSliceToView( const SliceDef& def ){
 }
 
 
+/*
+// project volume on horizon
+// new version horizon covers whole bounding rect and null values are made transparent
+void VolumeViewer::horizonToView(const HorizonDef& hdef){
 
+    if(!hdef.horizon) return;
+    auto hrz = hdef.horizon.get();
+
+    if(!m_volumes.contains(hdef.volume)) return;
+    auto volume=m_volumes.value(hdef.volume).get();
+
+    auto colorTable=m_colorTables.value(hdef.volume, nullptr);
+    if( !colorTable ) return;
+
+    Grid2DBounds hbounds=hrz->bounds();
+
+    //auto range=valueRange(*hrz);
+    QVector3D nullColor{0,0,0};
+    QVector<VIC::Vertex> vertices;
+
+    for( int iline=hbounds.i1(); iline<=hbounds.i2(); iline++){
+
+        for( int xline=hbounds.j1(); xline<=hbounds.j2(); xline++){
+
+            float tms=(*hrz)(iline, xline);  // horizon is in millis
+            QPointF xy=ilxl_to_xy.map(QPoint(iline, xline));
+
+            if(tms!=hrz->NULL_VALUE){
+
+ //std::cout<<"il="<<iline<<" xl="<<xline<<" tms="<<tms<<std::endl;
+
+
+                // scale colour according to relative depth, deeper->darker
+                //float x=(tms-range.first)/(range.second-range.first);
+                qreal t = 0.001*(hdef.delay+tms);        // convert time to seconds
+
+                QVector3D color = nullColor;
+
+                float value = volume->value(iline, xline, t);
+
+                if( value != volume->NULL_VALUE ){
+
+                    QColor c = colorTable->map(value);
+                    float red=static_cast<float>(c.redF());
+                    float green=static_cast<float>(c.greenF());
+                    float blue=static_cast<float>(c.blueF());
+                    color = QVector3D{ red, green , blue };
+                }
+
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
+            }
+            else{
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), 0, xy.y() ), nullColor } );
+            }
+
+        }
+    }
+
+    QVector<VIC::Index> indices;
+
+    for( int i=hbounds.i1(); i<hbounds.i2(); i++){  // 1 less
+
+        for( int j=hbounds.j1(); j<=hbounds.j2(); j++){
+
+            int l=(i-hbounds.i1())*hbounds.width()+j-hbounds.j1();
+            int r=l+hbounds.width();
+            indices.append(l);
+            indices.append(r);
+            indices.append(indices.back());
+        }
+        indices.append(indices.back()); // duplicate point marks end of part
+    }
+
+    ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
+}
+
+*/
+//* original
 // project volume on horizon
 void VolumeViewer::horizonToView(const HorizonDef& hdef){
 
@@ -787,6 +873,10 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
             QPointF xy=ilxl_to_xy.map(QPoint(iline, xline));
 
             if(tms!=hrz->NULL_VALUE){
+
+ //std::cout<<"il="<<iline<<" xl="<<xline<<" tms="<<tms<<std::endl;
+
+
                 // scale colour according to relative depth, deeper->darker
                 //float x=(tms-range.first)/(range.second-range.first);
                 qreal t = 0.001*(hdef.delay+tms);        // convert time to seconds
@@ -858,9 +948,7 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
 
     ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
 }
-
-
-
+//*/
 
 void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qreal SIZE){
 
@@ -924,6 +1012,24 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
 
         ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
     }
+}
+
+
+void VolumeViewer::wellPathToView( const WellPath& wp, QColor color, qreal SIZE){
+
+    QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
+    QVector<VIC::Vertex> vertices;
+    QVector<VIC::Index> indices;
+
+    for( int i=0; i<wp.size(); i++){
+
+        //std::cout<<wp[i].x()<<" "<<wp[i].y()<<" "<<wp[i].z()<<std::endl;
+        vertices.append(VIC::Vertex{ QVector3D(wp[i].x(), -0.001*wp[i].z(), wp[i].y() ), drawColor});
+        indices.append(i);
+
+        ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_LINE_STRIP) );
+    }
+    std::cout<<flush;
 }
 
 
@@ -1042,20 +1148,22 @@ void VolumeViewer::initialVolumeDisplay(){
     QString name=m_volumes.keys().first();
     Grid3DBounds bounds=m_volumes.value(name)->bounds();
 
-    setDimensions( VolumeDimensions(bounds.inline1(), bounds.inline2(), bounds.crossline1(), bounds.crossline2(),
+    if( !m_dimensions.isValid()){
+        setDimensions( VolumeDimensions(bounds.i1(), bounds.i2(), bounds.j1(), bounds.j2(),
                                     static_cast<int>(1000*bounds.ft()), static_cast<int>(1000*bounds.lt()) ) );
+    }
 
-    int iline=(bounds.inline1()+bounds.inline2())/2;
+    int iline=(bounds.i1()+bounds.i2())/2;
     m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{name, SliceType::INLINE, iline});
 
-    int xline=(bounds.crossline1()+bounds.crossline2())/2;
+    int xline=(bounds.j1()+bounds.j2())/2;
     m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{name, SliceType::CROSSLINE, xline});
 
     int msec=static_cast<int>(1000*(bounds.ft() + bounds.lt() )/2);
     m_sliceModel->addSlice( m_sliceModel->generateName(), SliceDef{name, SliceType::TIME, msec});
 
-    defaultPositionAndScale();
-    ui->openGLWidget->setRotation(QVector3D(0,0,0));
+    //defaultPositionAndScale();
+    //ui->openGLWidget->setRotation(QVector3D(0,0,0));
 
     refreshView();
 
@@ -1107,7 +1215,7 @@ void VolumeViewer::on_actionVolume_Range_triggered()
     QString volume=selectVolume();
     if( volume.isEmpty() ) return;
 
-    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(volume, nullptr);
+    std::shared_ptr<Volume> pvolume=m_volumes.value(volume, nullptr);
     if(!pvolume) return;
 
     ColorTable* colorTable=m_colorTables.value(volume, nullptr);
@@ -1120,7 +1228,7 @@ void VolumeViewer::on_actionVolume_Range_triggered()
         displayRangeDialog=new HistogramRangeSelectionDialog(this);
         displayRangeDialog->setHistogram(createHistogram( std::begin(*pvolume), std::end(*pvolume),
                                                           pvolume->NULL_VALUE, 100 ));
-        displayRangeDialog->setDefaultRange( pvolume->valueRange());
+        displayRangeDialog->setRange( pvolume->valueRange());
         displayRangeDialog->setColorTable( colorTable );   // all updating through colortable
 
         displayRangeDialog->setWindowTitle(QString("Range %1").arg(volume) );
@@ -1243,7 +1351,7 @@ void VolumeViewer::on_actionHistogram_triggered()
     QString volume=selectVolume();
     if( volume.isEmpty() ) return;
 
-    std::shared_ptr<Grid3D<float>> pvolume=m_volumes.value(volume, nullptr);
+    std::shared_ptr<Volume> pvolume=m_volumes.value(volume, nullptr);
     if(!pvolume) return;
 
     ColorTable* colorTable=m_colorTables.value(volume, nullptr);
@@ -1340,6 +1448,31 @@ void VolumeViewer::on_actionEdit_Horizons_triggered()
     editHorizonsDialog->show();
 }
 
+void VolumeViewer::on_actionSetup_Wells_triggered()
+{
+    QStringList avail;
+    for( auto name : m_project->wellList() ){
+        if( m_project->existsWellPath(name)) avail<<name;
+    }
+
+    bool ok=false;
+    auto selected =MultiItemSelectionDialog::getItems(this, tr("Setup Wells"), tr("Select Wells:"), avail, &ok,
+                                                      m_wellPaths.keys() );
+
+    m_wellPaths.clear();
+
+    for( auto name : selected ){
+        auto p = m_project->loadWellPath(name);
+        if( !p ){
+            QMessageBox::warning(this, tr("Setup Wells"), QString("Loading path %1 failed!").arg(name), QMessageBox::Ok);
+            continue;
+        }
+        m_wellPaths.insert(name, p);
+    }
+
+    refreshView();
+}
+
 void VolumeViewer::on_action_Open_Volume_triggered()
 {
     if( !m_project )return;
@@ -1350,7 +1483,7 @@ void VolumeViewer::on_action_Open_Volume_triggered()
 
     if( !ok || name.isNull() ) return;
 
-    std::shared_ptr<Grid3D<float> > volume=m_project->loadVolume( name);
+    std::shared_ptr<Volume > volume=m_project->loadVolume( name);
     if( !volume ){
         QMessageBox::critical(this, tr("Open Volume"), tr("Loading Volume failed!"));
         return;
@@ -1460,3 +1593,5 @@ void VolumeViewer::on_action_Close_Volume_triggered()
 
     removeVolume(volume);
 }
+
+

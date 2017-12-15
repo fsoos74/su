@@ -19,6 +19,8 @@ ProjectProcess::ResultCode SecondaryAttributesProcess::init( const QMap<QString,
 
     using namespace std::placeholders;
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("output"))){
         setErrorString("Parameters contain no output grid!");
         return ResultCode::Error;
@@ -138,7 +140,7 @@ ProjectProcess::ResultCode SecondaryAttributesProcess::run(){
     emit progress(0);
     qApp->processEvents();
     std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_outputName );
-    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid)){
+    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_outputName) );
         return ResultCode::Error;
     }

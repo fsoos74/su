@@ -5,7 +5,7 @@
 
 #include "grid2d.h"
 #include "grid3d.h"
-
+#include "log.h"
 
 namespace crossplot{
 
@@ -36,6 +36,10 @@ Data createFromVolumes( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
 // used only n random selected points (inline,xline,sample number)
 Data createFromVolumesReduced( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
                                size_t n, Grid3D<float>* volume_attr=nullptr );
+
+Data createFromLogs( Log* log1, Log* log2, int iline=1, int xline=1 );
+
+Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline=1, int xline=1 );
 
 
 }

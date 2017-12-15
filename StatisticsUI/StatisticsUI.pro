@@ -20,13 +20,17 @@ DEFINES += STATISTICSUI_LIBRARY
 SOURCES += statisticsui.cpp\
             histogramdialog.cpp \
     histogramrangeselectiondialog.cpp \
-    histogramwidget.cpp
+    histogramwidget.cpp \
+    histogramcolorbarwidget.cpp \
+    histogramcreator.cpp
 
 HEADERS += statisticsui.h\
         statisticsui_global.h\
         histogramdialog.h \
     histogramrangeselectiondialog.h \
-    histogramwidget.h
+    histogramwidget.h \
+    histogramcolorbarwidget.h \
+    histogramcreator.h
 
 FORMS += histogramdialog.ui \
     histogramrangeselectiondialog.ui

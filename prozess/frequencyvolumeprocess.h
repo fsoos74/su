@@ -23,9 +23,9 @@ private:
     double m_maximumFrequency;
     QString m_volumeName;
 
-    std::shared_ptr<Grid3D<float> > m_inputVolume;
+    std::shared_ptr<Volume > m_inputVolume;
     Grid3DBounds  m_bounds;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_volume;
 };
 
 #endif // FrequencyVolumeProcess_H

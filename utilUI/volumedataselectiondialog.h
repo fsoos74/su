@@ -40,6 +40,9 @@ public slots:
     void setMinMSec(int);
     void setMaxMSec(int);
     void setDimensions( VolumeDimensions );
+    void setInlineSelectionEnabled(bool);
+    void setCrosslineSelectionEnabled(bool);
+    void setMSecSelectionEnabled(bool);
 
 signals:
     void areaModeChanged(bool);

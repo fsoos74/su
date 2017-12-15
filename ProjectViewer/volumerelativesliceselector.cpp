@@ -167,14 +167,14 @@ void VolumeRelativeSliceSelector::apply(){
     double t=0.001 * time();  // convert msecs to seconds
 
     Grid3DBounds vbounds=m_volume->bounds();
-    Grid2DBounds gbounds(vbounds.inline1(), vbounds.crossline1(), vbounds.inline2(), vbounds.crossline2());
+    Grid2DBounds gbounds(vbounds.i1(), vbounds.j1(), vbounds.i2(), vbounds.j2());
     std::shared_ptr< Grid2D<float> > g( new Grid2D<float>(gbounds) );
 
     for( int iline=gbounds.i1(); iline<=gbounds.i2(); iline++){
 
         for( int xline=gbounds.j1(); xline<=gbounds.j2(); xline++ ){
 
-            float horizonTime=(*m_horizon)(iline, xline);
+            float horizonTime=m_horizon->valueAt(iline, xline);
             if( horizonTime==m_horizon->NULL_VALUE ) continue;
 
             horizonTime*=0.001;     // convert to seconds

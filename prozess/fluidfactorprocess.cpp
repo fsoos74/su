@@ -17,6 +17,7 @@ FluidFactorProcess::FluidFactorProcess( AVOProject* project, QObject* parent) :
 
 ProjectProcess::ResultCode FluidFactorProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
 
     if( !parameters.contains(QString("grid"))){
         setErrorString("Parameters contain no output grid!");
@@ -156,7 +157,7 @@ ProjectProcess::ResultCode FluidFactorProcess::run(){
     emit progress(0);
     qApp->processEvents();
     std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
-    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid)){
+    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gridName) );
         return ResultCode::Error;
     }

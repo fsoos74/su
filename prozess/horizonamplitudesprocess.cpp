@@ -14,6 +14,8 @@ HorizonAmplitudesProcess::HorizonAmplitudesProcess( AVOProject* project, QObject
 
 ProjectProcess::ResultCode HorizonAmplitudesProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("dataset"))){
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
@@ -131,7 +133,7 @@ ProjectProcess::ResultCode HorizonAmplitudesProcess::run(){
     std::cout<<"Number of null horizon values: "<<n_null<<std::endl;
     std::cout<<"Number of out of trace windows: "<<n_out<<std::endl;
     std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
-    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid)){
+    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gridName) );
         return ResultCode::Error;
     }

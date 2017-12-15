@@ -24,6 +24,8 @@ HorizonSemblanceProcess::HorizonSemblanceProcess( AVOProject* project, QObject* 
 
 ProjectProcess::ResultCode HorizonSemblanceProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("half-ilines"))){
         setErrorString("Parameters contain no half-ilines");
         return ResultCode::Error;
@@ -284,7 +286,7 @@ ProjectProcess::ResultCode HorizonSemblanceProcess::run(){
     if( stopped) return ResultCode::Canceled;
 
     std::pair<GridType, QString> sliceTypeAndName = splitFullGridName( m_sliceName );
-    if( !project()->addGrid( sliceTypeAndName.first, sliceTypeAndName.second, m_slice)){
+    if( !project()->addGrid( sliceTypeAndName.first, sliceTypeAndName.second, m_slice, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_sliceName) );
         return ResultCode::Error;
     }

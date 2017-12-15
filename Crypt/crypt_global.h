@@ -9,4 +9,9 @@
 #  define CRYPTSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+#ifdef STATICBUILD
+#define CRYPTSHARED_EXPORT
+#endif
+
 #endif // CRYPT_GLOBAL_H

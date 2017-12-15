@@ -7,7 +7,7 @@
 #include<QLabel>
 #include<QSettings>
 #include<QDir>
-
+#include<QDockWidget>
 #include<memory>
 #include<functional>
 #include<grid2d.h>
@@ -91,7 +91,6 @@ private slots:
     void onViewPolylineSelected( QVector<QPoint>);  // see above
 
     void onGridViewMouseOver( int, int );
-
 
     void on_zoomInAct_triggered();
 

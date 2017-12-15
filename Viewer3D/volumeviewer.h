@@ -9,7 +9,8 @@
 
 #include<baseviewer.h>
 #include<avoproject.h>
-#include<grid3d.h>
+#include<volume.h>
+#include<wellpath.h>
 #include<colortable.h>
 #include<selectionpoint.h>
 #include <slicedef.h>
@@ -49,7 +50,7 @@ public slots:
 
     void setDimensions(VolumeDimensions);
 
-    void addVolume( QString, std::shared_ptr<Grid3D<float> >);
+    void addVolume( QString, std::shared_ptr<Volume >);
     void removeVolume( QString );
 
     void setHighlightedPoints(QVector<SelectionPoint> rpoints);
@@ -125,6 +126,8 @@ private slots:
 
     void on_action_Close_Volume_triggered();
 
+    void on_actionSetup_Wells_triggered();
+
 protected:
 
     void receivePoint( SelectionPoint, int code );
@@ -144,6 +147,7 @@ private:
     void timeSliceToView(const SliceDef&);
     void horizonToView(const HorizonDef&);
     void pointsToView( QVector<SelectionPoint> points, QColor color, qreal SIZE );
+    void wellPathToView( const WellPath& wp, QColor color, qreal SIZE);
     void compassToView( QVector3D pos, qreal SIZE, QColor color);
     void textToView( QVector3D pos1, QVector3D pos2, QString text,  Qt::Alignment valign=Qt::AlignVCenter );
     void initialVolumeDisplay();
@@ -171,9 +175,9 @@ private:
 
     VolumeDimensions m_dimensions;
 
-    QMap<QString, std::shared_ptr<Grid3D<float> > > m_volumes;
+    QMap<QString, std::shared_ptr<Volume > > m_volumes;
     QMap<QString, ColorTable* > m_colorTables;
-
+    QMap<QString, std::shared_ptr<WellPath> > m_wellPaths;
     HorizonModel* m_horizonModel;
     SliceModel* m_sliceModel;
 

@@ -32,9 +32,9 @@ private:
     QString m_gradientName;
     QString m_outputName;
 
-    std::shared_ptr<Grid3D<float> > m_intercept;
-    std::shared_ptr<Grid3D<float> > m_gradient;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_intercept;
+    std::shared_ptr<Volume > m_gradient;
+    std::shared_ptr<Volume > m_volume;
 
     float m_trendIntercept;
     float m_trendAngle;

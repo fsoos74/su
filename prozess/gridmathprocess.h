@@ -6,6 +6,8 @@
 #include<grid2d.h>
 #include<memory>
 #include<functional>
+#include<mathprocessor.h>
+
 
 class GridMathProcess : public ProjectProcess
 {
@@ -21,19 +23,13 @@ public:
 
 private:
 
-    float add_gv(int i, int j);
-    float add_gg(int i, int j);
-    float mul_gv(int i, int j);
-    float mul_gg(int i, int j);
-
     float m_value=0;
     GridType m_outputType;
     QString m_outputName;
     std::shared_ptr<Grid2D<float> > m_inputGrid1;
     std::shared_ptr<Grid2D<float> > m_inputGrid2;
     std::shared_ptr<Grid2D<float> > m_outputGrid;
-
-    std::function<float(int,int)> m_func;
+    MathProcessor m_processor;
 };
 
 #endif // GRIDMATHPROCESS_H

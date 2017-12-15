@@ -27,6 +27,41 @@ std::function<void(void*, size_t)> SEGYWriter::preWriteFunc=[](void*, size_t){re
 
 void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, const std::vector<SEGYHeaderWordDef>& defs ){
 
+    double coordfac=1.;
+    if( m_info.isFixedScalco()){
+        coordfac=m_info.scalco();
+    }
+    else{
+        auto it=header.find("scalco");
+        if( it!=header.end()){
+            auto h=it->second.intValue();
+            if( h<0 ){
+                coordfac=-1./h;
+            }
+            else if(h>0){
+                coordfac=h;
+            }
+        }
+    }
+
+    double elevfac=1.;
+    if( m_info.isFixedScalel()){
+        coordfac=m_info.scalel();
+    }
+    else{
+        auto it=header.find("scalel");
+        if( it!=header.end()){
+            auto h=it->second.intValue();
+            if( h<0 ){
+                elevfac=-1./h;
+            }
+            else if(h>0){
+                elevfac=h;
+            }
+        }
+    }
+    //std::cout<<"SEGYWriter coordfac="<<coordfac<<std::endl<<std::flush;
+
     for( auto def : defs ){
 
         // skip non existent headerword
@@ -125,6 +160,109 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
 
     } // for
 
+
+    // apply scalco
+    for( auto def : defs ){
+
+        if( def.ctype!=SEGYHeaderWordConvType::COORD) continue;
+
+        Header::const_iterator it=header.find(def.name);
+        if( it==header.end()) continue; // EXCEPTION
+
+        const HeaderValue& value=it->second;
+
+        switch(def.dtype){
+
+        case SEGYHeaderWordDataType::INT16:{
+            std::int16_t i=static_cast<std::int16_t>(std::round( value.floatValue()/coordfac) );
+            put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+            break;
+        }
+        case SEGYHeaderWordDataType::INT32:{
+            std::int32_t i=static_cast<std::int32_t>(std::round( value.floatValue()/coordfac) );
+            put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+            break;
+        }
+        default:
+            throw SEGYFormatError("Coordinate header words must be integers!");
+            break;
+        }
+    }
+
+    // write scalco to rawheader if defined
+    for( auto def : defs ){
+        if( def.name=="scalco" ){
+            int h = coordfac<1 ? static_cast<int>(-1./coordfac) : coordfac;
+            switch(def.dtype){
+
+                case SEGYHeaderWordDataType::INT16:{
+                    std::int16_t i(h);
+                    put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+                    break;
+                }
+                case SEGYHeaderWordDataType::INT32:{
+                    std::int32_t i(h);
+                    put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+                    break;
+                }
+                default:
+                    throw SEGYFormatError("scalco header word must be integer!");
+                    break;
+                }
+        }
+    }
+
+    // apply scalel
+    for( auto def : defs ){
+
+        if( def.ctype!=SEGYHeaderWordConvType::ELEV) continue;
+
+        Header::const_iterator it=header.find(def.name);
+        if( it==header.end()) continue; // EXCEPTION
+
+        const HeaderValue& value=it->second;
+
+        switch(def.dtype){
+
+        case SEGYHeaderWordDataType::INT16:{
+            std::int16_t i=static_cast<std::int16_t>(std::round( value.floatValue()/elevfac) );
+            put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+            break;
+        }
+        case SEGYHeaderWordDataType::INT32:{
+            std::int32_t i=static_cast<std::int32_t>(std::round( value.floatValue()/elevfac) );
+            put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+            break;
+        }
+        default:
+            throw SEGYFormatError("Elevation header words must be integers!");
+            break;
+        }
+    }
+
+    // write scalel to rawheader if defined
+    for( auto def : defs ){
+        if( def.name=="scalel" ){
+            int h = coordfac<1 ? static_cast<int>(-1./coordfac) : coordfac;
+            switch(def.dtype){
+
+                case SEGYHeaderWordDataType::INT16:{
+                    std::int16_t i(h);
+                    put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+                    break;
+                }
+                case SEGYHeaderWordDataType::INT32:{
+                    std::int32_t i(h);
+                    put_to_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
+                    break;
+                }
+                default:
+                    throw SEGYFormatError("scalel header word must be integer!");
+                    break;
+                }
+        }
+    }
+
 }
 
 
@@ -145,7 +283,7 @@ SEGYWriter::SEGYWriter( const std::string& name,
         m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t)),
         m_preWriteFunc(preWriteFunc)
 {
-    std::cout<<"SEGYWriter::SEGYWriter"<<std::endl<<std::flush;
+    //std::cout<<"SEGYWriter::SEGYWriter scalco="<<m_info.scalco()<<std::endl<<std::flush;
 
     if( !m_ofile) throw( SEGYFormatError("Open file failed!"));
 
@@ -179,7 +317,7 @@ void SEGYWriter::convert_trace_header(){
 
 //just a dummy for standard segy
 void SEGYWriter::process_raw_binary_header(std::vector<char> &){
-    std::cout<<"SEGYWriter::process_raw_binary_header(std::vector<char> &)"<<std::endl<<std::flush;
+    //std::cout<<"SEGYWriter::process_raw_binary_header(std::vector<char> &)"<<std::endl<<std::flush;
 }
 
 void SEGYWriter::write_leading_headers(){
@@ -250,7 +388,7 @@ void SEGYWriter::write_trace(const Trace& trace){
 
     convert_trace_header();
     write_trace_header();
-//std::cout<<"NT="<<trace.size()<<std::endl<<std::flush;
+//std::<<"NT="<<trace.size()<<std::endl<<std::flush;
     convert_samples(trace);
     write_samples(trace.size());
 

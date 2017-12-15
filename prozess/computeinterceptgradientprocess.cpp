@@ -37,6 +37,8 @@ ComputeInterceptGradientProcess::ComputeInterceptGradientProcess( AVOProject* pr
 
 ProjectProcess::ResultCode ComputeInterceptGradientProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("dataset"))){
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
@@ -71,6 +73,12 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::init( const QMap<QSt
         return ResultCode::Error;
     }
     m_windowSize=parameters.value(QString("samples")).toInt();
+
+    if( !parameters.contains(QString("minimum-offset"))){
+        setErrorString("Parameters contain no minimum offset!");
+        return ResultCode::Error;
+    }
+    m_minimumOffset=parameters.value(QString("minimum-offset")).toDouble();
 
     if( !parameters.contains(QString("maximum-offset"))){
         setErrorString("Parameters contain no maximum offset!");
@@ -317,7 +325,7 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
     // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
     setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
 
-    GatherFilter filter(m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
+    GatherFilter filter( m_minimumOffset, m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
 
     int firstInline=m_reader->minInline();
     int lastInline=m_reader->maxInline();
@@ -384,13 +392,13 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
 
     // store result grids
     std::pair<GridType, QString> interceptTypeAndName=splitFullGridName(m_interceptName);
-    if( !project()->addGrid( interceptTypeAndName.first, interceptTypeAndName.second, m_intercept)){
+    if( !project()->addGrid( interceptTypeAndName.first, interceptTypeAndName.second, m_intercept, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_interceptName) );
         return ResultCode::Error;
     }
 
     std::pair<GridType, QString> gradientTypeAndName=splitFullGridName(m_gradientName);
-    if( !project()->addGrid( gradientTypeAndName.first, gradientTypeAndName.second, m_gradient)){
+    if( !project()->addGrid( gradientTypeAndName.first, gradientTypeAndName.second, m_gradient, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gradientName) );
         return ResultCode::Error;
     }
@@ -398,7 +406,7 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
 
     if( !m_qualityName.isEmpty()){
         std::pair<GridType, QString> qualityTypeAndName=splitFullGridName(m_qualityName);
-        if( !project()->addGrid( qualityTypeAndName.first, qualityTypeAndName.second, m_quality)){
+        if( !project()->addGrid( qualityTypeAndName.first, qualityTypeAndName.second, m_quality, params() )){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_qualityName) );
             return ResultCode::Error;
         }

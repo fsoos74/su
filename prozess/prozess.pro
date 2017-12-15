@@ -7,6 +7,7 @@
 #need gui for QTransform
 #QT       -= gui
 QT+=widgets     #qApp
+QT+=sql
 
 win32{
     CONFIG+=staticlib
@@ -56,15 +57,38 @@ SOURCES += prozess.cpp \
     cropgridprocess.cpp \
     curvaturevolumeprocess.cpp \
     horizonfrequenciesprocess.cpp \
-    fft.cpp \
     frequencyvolumeprocess.cpp \
-    frequencyspectra.cpp \
-    spectrum.cpp \
     horizoncurvatureprocess.cpp \
     gridmathprocess.cpp \
     hilbert.cpp \
     instantaneousattributesprocess.cpp \
-    extracttimesliceprocess.cpp
+    extracttimesliceprocess.cpp \
+    extractdatasetprocess.cpp \
+    offsetstackprocess.cpp \
+    cropdatasetprocess.cpp \
+    replacebadtracesprocess.cpp \
+    variancevolumeprocess.cpp \
+    flattenvolumeprocess.cpp \
+    unflattenvolumeprocess.cpp \
+    volumestatisticsprocess.cpp \
+    buildwellvolumeprocess.cpp \
+    volumemathprocess.cpp \
+    frequencyspectra.cpp \
+    createvolumeprocess.cpp \
+    mathprocessor.cpp \
+    creategridprocess.cpp \
+    exportgridprocess.cpp \
+    gridformat.cpp \
+    importgridprocess.cpp \
+    logmathprocess.cpp \
+    logscriptprocess.cpp \
+    smoothprocessor.cpp \
+    smoothlogprocess.cpp \
+    integrationprocessor.cpp \
+    logintegrationprocess.cpp \
+    volumedipprocess.cpp \
+    volumediptracker.cpp \
+    importmarkersprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -99,16 +123,40 @@ HEADERS += prozess.h\
     cropgridprocess.h \
     curvaturevolumeprocess.h \
     horizonfrequenciesprocess.h \
-    fft.h \
     frequencyvolumeprocess.h \
-    frequencyspectra.h \
-    spectrum.h \
     horizoncurvatureprocess.h \
     gridmathprocess.h \
     curvature_attributes.h \
     hilbert.h \
     instantaneousattributesprocess.h \
-    extracttimesliceprocess.h
+    extracttimesliceprocess.h \
+    processparams.h \
+    extractdatasetprocess.h \
+    offsetstackprocess.h \
+    cropdatasetprocess.h \
+    replacebadtracesprocess.h \
+    variancevolumeprocess.h \
+    flattenvolumeprocess.h \
+    unflattenvolumeprocess.h \
+    volumestatisticsprocess.h \
+    buildwellvolumeprocess.h \
+    volumemathprocess.h \
+    frequencyspectra.h \
+    createvolumeprocess.h \
+    mathprocessor.h \
+    creategridprocess.h \
+    exportgridprocess.h \
+    gridformat.h \
+    importgridprocess.h \
+    logmathprocess.h \
+    logscriptprocess.h \
+    smoothprocessor.h \
+    smoothlogprocess.h \
+    integrationprocessor.h \
+    logintegrationprocess.h \
+    volumedipprocess.h \
+    volumediptracker.h \
+    importmarkersprocess.h
 
 unix {
     target.path = /usr/lib
@@ -124,6 +172,20 @@ unix {
 win32{
     INCLUDEPATH += C:\Python27\include
 }
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
+
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#INCLUDEPATH += $$PWD/../util
+#DEPENDPATH += $$PWD/../util
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Project/debug/ -lProject
@@ -153,12 +215,12 @@ else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
 INCLUDEPATH += $$PWD/../Seismic
 DEPENDPATH += $$PWD/../Seismic
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Well/release/ -lWell
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Well/debug/ -lWell
+else:unix: LIBS += -L$$OUT_PWD/../Well/ -lWell
 
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
+INCLUDEPATH += $$PWD/../Well
+DEPENDPATH += $$PWD/../Well
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Statistics/release/ -lStatistics
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Statistics/debug/ -lStatistics

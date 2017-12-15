@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Grid Math</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -24,28 +24,7 @@
       </widget>
      </item>
      <item row="0" column="1" colspan="2">
-      <widget class="QComboBox" name="cbFunction">
-       <item>
-        <property name="text">
-         <string>Grid1 + Value</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Grid1 * Value</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Grid1 + Grid2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Grid1 * Grid2</string>
-        </property>
-       </item>
-      </widget>
+      <widget class="QComboBox" name="cbFunction"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">

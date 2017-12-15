@@ -24,9 +24,9 @@ private:
     QString m_gradientName;
     QString m_volumeName;
 
-    std::shared_ptr<Grid3D<float> > m_intercept;
-    std::shared_ptr<Grid3D<float> > m_gradient;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_intercept;
+    std::shared_ptr<Volume > m_gradient;
+    std::shared_ptr<Volume > m_volume;
 
     bool m_computeAngle=true;
     double m_angle=0;             // radians

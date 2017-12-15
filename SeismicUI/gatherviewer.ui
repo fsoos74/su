@@ -247,7 +247,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -259,7 +259,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -514,7 +514,7 @@
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>C&amp;onservative</string>
@@ -541,7 +541,17 @@
      <normaloff>:/icons/images/select-range-icon-32x32.png</normaloff>:/icons/images/select-range-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Volume Display Range</string>
+    <string>Volume &amp;Display Range</string>
+   </property>
+  </action>
+  <action name="actionSet_Correlation_Window">
+   <property name="text">
+    <string>S&amp;et Correlation Window</string>
+   </property>
+  </action>
+  <action name="actionSet_Search_Window">
+   <property name="text">
+    <string>Set Search &amp;Window</string>
    </property>
   </action>
  </widget>
@@ -555,6 +565,7 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

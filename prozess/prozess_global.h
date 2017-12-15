@@ -9,4 +9,9 @@
 #  define PROZESSSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+#ifdef STATICBUILD
+#define PROZESSSHARED_EXPORT
+#endif
+
+
 #endif // PROZESS_GLOBAL_H

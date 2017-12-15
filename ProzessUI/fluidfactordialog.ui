@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Fluid Factor</string>
+   <string>Fluid Factor Grid</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../ProjectViewer/icons.qrc">

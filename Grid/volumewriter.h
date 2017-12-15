@@ -7,12 +7,13 @@
 #include<fstream>
 #include<QString>
 
+#include<volume.h>
 
 class VolumeWriter
 {
 public:
 
-    VolumeWriter(const Grid3D<float>&);
+    VolumeWriter(const Volume&);
 
     bool hasError()const{
         return m_error;
@@ -28,10 +29,11 @@ private:
 
    bool writeMagic(std::ofstream&);
    bool writeBounds(std::ofstream&);
+   bool writeDomainAndType(std::ofstream&);
    bool writeData(std::ofstream&);
    void setError(const QString& msg);
 
-   const  Grid3D<float>& m_volume;
+   const  Volume& m_volume;
    bool m_error=false;
    QString m_errorString;
 };

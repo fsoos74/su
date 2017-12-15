@@ -18,11 +18,10 @@ public:
     ~AmplitudeCurveDataSelectionDialog();
 
     QString datasetName();
-    QString horizonName();
     int inlineNumber();
     int crosslineNumber();
-    QString reductionMethod();
-    int numberOfSamples();
+    double time();
+    double minimumOffset();
     double maximumOffset();
     double minimumAzimuth();
     double maximumAzimuth();
@@ -33,15 +32,13 @@ public:
 public slots:
 
     void setDatasetNames( const QStringList&);
-    void setHorizonNames( const QStringList&);
+    void setMinimumOffset( const double&);
     void setMaximumOffset( const double&);
     void setMinimumAzimuth( const double);
     void setMaximumAzimuth( const double);
-    void setReductionMethods( const QStringList&);
-    void setCurrentReductionMethod(QString);
-    void setNumberOfSamples( int );
     void setInlineNumber(int);
     void setCrosslineNumber(int);
+    void setTime( double );
     void setDepth( double );
 
 signals:

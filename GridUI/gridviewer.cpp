@@ -12,7 +12,6 @@
 #include<algorithm>
 #include<limits>
 
-#include<gridimportdialog.h>
 #include<colortabledialog.h>
 #include<isolinedialog.h>
 #include<orientationdialog.h>
@@ -21,8 +20,8 @@
 #include<isolinecomputer.h>
 #include"griddisplayoptionsdialog.h"
 
-#include<gatherviewer.h>
-#include<gatherview.h>
+//#include<gatherviewer.h>
+//#include<gatherview.h>
 
 #include <dynamicmousemodeselector.h>
 
@@ -65,6 +64,8 @@ GridViewer::GridViewer(QWidget *parent) :
     connect( m_gridView, SIGNAL(polylineSelected(QVector<QPoint>)), this, SLOT(onViewPolylineSelected(QVector<QPoint>)) );
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
+
+    connect( this, SIGNAL( intersectionPointsChanged(QVector<SelectionPoint>)), m_gridView, SLOT(setIntersectionPoints(QVector<SelectionPoint>)) );
 
     loadSettings();
 
@@ -221,22 +222,19 @@ void GridViewer::setGrid( std::shared_ptr<Grid2D<float> > grid){
     }
 
     if( displayRangeDialog ){
-        displayRangeDialog->setHistogram(
-            createHistogram( std::begin(*m_grid), std::end(*m_grid), m_grid->NULL_VALUE, 100 )
-            );
-        //displayRangeDialog->setHistogram(createHistogram(m_grid.get()));
-        displayRangeDialog->setRange(valueRange(*m_grid));
+        auto histogram=createHistogram( std::begin(*m_grid), std::end(*m_grid), m_grid->NULL_VALUE, 100 );
+        displayRangeDialog->setHistogram(histogram);
     }
 }
 
 void GridViewer::setGridInfos( GridType type, QString name ){
-std::cout<<"0 name="<<name.toStdString()<<std::endl<<std::flush;
+//std::cout<<"0 name="<<name.toStdString()<<std::endl<<std::flush;
     if( type==m_gridType && name==m_gridName ) return;
 
     ui->actionReload->setEnabled(false);
-std::cout<<"1"<<std::endl<<std::flush;
+//std::cout<<"1"<<std::endl<<std::flush;
     //if( !m_project || !m_project->existsGrid( type, name ) ) return;
-std::cout<<"2"<<std::endl<<std::flush;
+//std::cout<<"2"<<std::endl<<std::flush;
     m_gridType=type;
     m_gridName=name;
 
@@ -415,9 +413,11 @@ void GridViewer::on_displayRangeAct_triggered()
     if(!displayRangeDialog){
 
         displayRangeDialog=new HistogramRangeSelectionDialog(this);
-        HistogramRangeSelectionDialog* dialog=new HistogramRangeSelectionDialog();
-        displayRangeDialog->setHistogram(createHistogram( std::begin(*m_grid), std::end(*m_grid), m_grid->NULL_VALUE, 100 ));
-        displayRangeDialog->setDefaultRange(valueRange(*m_grid));
+        //HistogramRangeSelectionDialog* dialog=new HistogramRangeSelectionDialog();
+        auto histogram=createHistogram( std::begin(*m_grid), std::end(*m_grid), m_grid->NULL_VALUE, 100 );
+        //std::cout<<"created histogram(2) min="<<histogram.minimum()<<" max="<<histogram.maximum()<<std::endl<<std::flush;
+        displayRangeDialog->setHistogram(histogram);
+        displayRangeDialog->setRange(valueRange(*m_grid));
         displayRangeDialog->setColorTable(gridView()->colorTable() );   // all updating through colortable
 
         displayRangeDialog->setWindowTitle("Configure Display Range" );
@@ -762,7 +762,7 @@ void GridViewer::updateIntersectionTimes(){
 
     // set times in gather viewers
     for( BaseViewer* v : dispatcher()->viewers() ){
-
+/*
         GatherViewer* gv=dynamic_cast<GatherViewer*>(v);
 
         if( gv ){
@@ -771,6 +771,8 @@ void GridViewer::updateIntersectionTimes(){
                 gv->view()->setIntersectionTimes(allTimes);
             }
         }
+        */
+        v->setIntersectionTimes(allTimes);
     }
 }
 

@@ -14,6 +14,25 @@ BaseViewer::~BaseViewer(){
     }
 }
 
+
+void BaseViewer::setIntersectionTimes(QVector<qreal> times){
+
+    if( times==m_intersectionTimes) return;
+
+    m_intersectionTimes=times;
+
+    emit intersectionTimesChanged(times);
+}
+
+void BaseViewer::setIntersectionPoints(QVector<SelectionPoint> points){
+
+    if( points==m_intersectionPoints) return;
+
+    m_intersectionPoints=points;
+
+    emit intersectionPointsChanged(points);
+}
+
 void BaseViewer::setDispatcher(std::shared_ptr<PointDispatcher> pd){
 
     // disconnect from old if exists

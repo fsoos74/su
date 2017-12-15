@@ -1,0 +1,76 @@
+#ifndef MATHPROCESSOR_H
+#define MATHPROCESSOR_H
+
+#include <functional>
+#include <QString>
+
+
+class MathProcessor
+{
+public:
+
+    enum class OP{ SET_V, SET_G1, SET_G2, ADD_GV, SUB_GV, MUL_GV, DIV_GV, POW_GV, ADD_GG, SUB_GG, MUL_GG, DIV_GG, ADD_MUL_GVG, NORM_GG };
+
+    static const double NULL_VALUE;
+
+    MathProcessor();
+
+    OP op()const{
+        return m_op;
+    }
+
+    double input1()const{
+        return m_input1;
+    }
+
+    double input2()const{
+        return m_input2;
+    }
+
+    double value()const{
+        return m_value;
+    }
+
+    double inputNullValue(){
+        return m_inputNullValue;
+    }
+
+    void setOP(OP);
+    void setInput1(const double&);
+    void setInput2(const double&);
+    void setValue(const double&);
+    void setInputNullValue(const double&);
+
+    double compute();
+
+    static QStringList opList();
+    static QString toQString(OP);
+    static OP toOP(QString);
+
+private:
+
+    double set_v();
+    double set_g1();
+    double set_g2();
+    double add_gv();
+    double sub_gv();
+    double mul_gv();
+    double div_gv();
+    double pow_gv();
+    double add_gg();
+    double sub_gg();
+    double mul_gg();
+    double div_gg();
+    double add_mul_gvg();
+    double norm_gg();
+    void updateFunc();
+
+    OP m_op;
+    std::function<double()> m_func;
+    double m_input1;
+    double m_input2;
+    double m_value;
+    double m_inputNullValue;
+};
+
+#endif // MATHPROCESSOR_H

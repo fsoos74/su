@@ -9,4 +9,8 @@
 #  define COLORUISHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+#ifdef STATICBUILD
+#define COLORUISHARED_EXPORT
+#endif
+
 #endif // COLORUI_GLOBAL_H

@@ -15,6 +15,8 @@ HorizonFrequenciesProcess::HorizonFrequenciesProcess( AVOProject* project, QObje
 
 ProjectProcess::ResultCode HorizonFrequenciesProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("dataset"))){
         setErrorString("Parameters contain no dataset!");
         return ResultCode::Error;
@@ -135,7 +137,7 @@ ProjectProcess::ResultCode HorizonFrequenciesProcess::run(){
     }
 
     std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
-    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid)){
+    if( !project()->addGrid( gridTypeAndName.first, gridTypeAndName.second, m_grid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gridName) );
         return ResultCode::Error;
     }

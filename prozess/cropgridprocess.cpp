@@ -12,6 +12,8 @@ CropGridProcess::CropGridProcess( AVOProject* project, QObject* parent) :
 
 ProjectProcess::ResultCode CropGridProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("grid-type"))){
         setErrorString("Parameters contain no grid type!");
         return ResultCode::Error;
@@ -126,7 +128,7 @@ ProjectProcess::ResultCode CropGridProcess::run(){
     emit progress(0);
     qApp->processEvents();
 
-    if( !project()->addGrid( m_gridType, m_outputName, m_outputGrid)){
+    if( !project()->addGrid( m_gridType, m_outputName, m_outputGrid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_outputName) );
         return ResultCode::Error;
     }

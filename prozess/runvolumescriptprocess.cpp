@@ -24,6 +24,7 @@ RunVolumeScriptProcess::RunVolumeScriptProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode RunVolumeScriptProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
 
     if( !parameters.contains(QString("result"))){
         setErrorString("Parameters contain no output volume!");
@@ -103,8 +104,8 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::init( const QMap<QString, QSt
 
 
     // verify that all grids have the correct geometry
-    Grid2DBounds bounds2(bounds.inline1(), bounds.crossline1(),
-                         bounds.inline2(), bounds.crossline2());
+    Grid2DBounds bounds2(bounds.i1(), bounds.j1(),
+                         bounds.i2(), bounds.j2());
     for( int i=0; i<m_inputGrid.size(); i++){
         if( !(m_inputGrid[i]->bounds()==bounds2) ){
             setErrorString(QString::asprintf(
@@ -113,7 +114,7 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::init( const QMap<QString, QSt
         }
     }
 
-    m_volume=std::shared_ptr<Grid3D<float> >( new Grid3D<float>(bounds));
+    m_volume=std::shared_ptr<Volume >( new Volume(bounds));
 
 
     if( !m_volume){
@@ -182,22 +183,22 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
 
    // add common variables for execution envronment
    // define environment before running the script - vars can be accessed on startup
-   PyObject* iline1=PyInt_FromLong(bounds.inline1());
+   PyObject* iline1=PyInt_FromLong(bounds.i1());
    if( iline1==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE1", iline1) ){
            throw std::runtime_error("Adding execution environment variable failed!");
    }
 
-   PyObject* iline2=PyInt_FromLong(bounds.inline2());
+   PyObject* iline2=PyInt_FromLong(bounds.i2());
    if( iline2==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE2", iline2) ){
            throw std::runtime_error("Adding execution environment variable failed!");
    }
 
-   PyObject* xline1=PyInt_FromLong(bounds.crossline1());
+   PyObject* xline1=PyInt_FromLong(bounds.j1());
    if( xline1==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE1", xline1) ){
            throw std::runtime_error("Adding execution environment variable failed!");
    }
 
-   PyObject* xline2=PyInt_FromLong(bounds.crossline2());
+   PyObject* xline2=PyInt_FromLong(bounds.j2());
    if( xline2==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE2", xline2) ){
            throw std::runtime_error("Adding execution environment variable failed!");
    }
@@ -212,7 +213,7 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
            throw std::runtime_error("Adding execution environment variable failed!");
    }
 
-   PyObject* nt=PyInt_FromLong(bounds.sampleCount());
+   PyObject* nt=PyInt_FromLong(bounds.nt());
    if( nt==NULL || -1==PyObject_SetAttrString(mainModule,"NT", nt) ){
            throw std::runtime_error("Adding execution environment variable failed!");
    }
@@ -227,11 +228,11 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
     // iterate over all cdps and samples
 
     emit currentTask("Iterating cdps");
-    emit started(bounds.inlineCount());
+    emit started(bounds.ni());
     qApp->processEvents();
 
 
-    for( int i=bounds.inline1(); i<=bounds.inline2(); i++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
         // add inline as variable for script execution
         PyObject* iline=PyInt_FromLong(i);
@@ -239,7 +240,7 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
                 throw std::runtime_error("Adding execution environment variable failed!");
         }
 
-        for( int j=bounds.crossline1(); j<=bounds.crossline2(); j++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             // add crossline as variable for script execution
             PyObject* xline=PyInt_FromLong(j);
@@ -249,7 +250,7 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
 
 
 
-            for( int k=0; k<bounds.sampleCount(); k++){
+            for( int k=0; k<bounds.nt(); k++){
 
                 // add sample time as variable for script execution
                 double t=bounds.sampleToTime(k);
@@ -336,7 +337,7 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
 
         Py_DECREF(iline);
 
-        emit progress(i-bounds.inline1());
+        emit progress(i-bounds.i1());
         qApp->processEvents();
 
     }
@@ -379,7 +380,7 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
     emit progress(0);
     qApp->processEvents();
 
-    if( !project()->addVolume( m_volumeName, m_volume)){
+    if( !project()->addVolume( m_volumeName, m_volume, params() )){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_volumeName) );
         return ResultCode::Error;
     }

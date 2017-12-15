@@ -23,6 +23,12 @@ SemblanceVolumeDialog::~SemblanceVolumeDialog()
 void SemblanceVolumeDialog::setInputVolumes( const QStringList& h){
     ui->cbInputVolume->clear();
     ui->cbInputVolume->addItems(h);
+
+    ui->cbIlDip->clear();
+    ui->cbIlDip->addItems(h);
+
+    ui->cbXlDip->clear();
+    ui->cbXlDip->addItems(h);
 }
 
 QMap<QString,QString> SemblanceVolumeDialog::params(){
@@ -37,6 +43,9 @@ QMap<QString,QString> SemblanceVolumeDialog::params(){
     p.insert( QString("half-xlines"), QString::number(ui->sbCrosslines->value()/2) );
     p.insert( QString("half-samples"), QString::number(ui->sbSamples->value()/2) );
 
+    p.insert( "track-dips", QString::number( static_cast<int>(ui->cbTrack->isChecked())));
+    p.insert( "iline-dip", ui->cbIlDip->currentText());
+    p.insert( "xline-dip", ui->cbXlDip->currentText());
 
     return p;
 }

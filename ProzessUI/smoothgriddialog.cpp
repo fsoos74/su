@@ -30,10 +30,10 @@ QMap<QString,QString> SmoothGridDialog::params(){
     p.insert( QString("grid-type"), ui->cbGridType->currentText() );
     p.insert( QString("input-name"), ui->cbInputName->currentText() );
     p.insert( QString("output-name"), ui->leOutputName->text() );
-
+    p.insert( QString("method"), QString::number(ui->cbMethod->currentIndex() ) );
     p.insert( QString("half-ilines"), QString::number(ui->sbInlines->value()/2) );
     p.insert( QString("half-xlines"), QString::number(ui->sbCrosslines->value()/2) );
-
+    p.insert( QString("retain-values"), QString::number((ui->cbRetain->isChecked()) ? 1 : 0));
     return p;
 }
 

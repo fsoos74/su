@@ -118,6 +118,24 @@ void VolumeDataSelectionDialog::setAreaMode(bool on){
     emit areaModeChanged(m_areaMode);
 }
 
+void VolumeDataSelectionDialog::setInlineSelectionEnabled(bool on){
+    ui->lbInline->setEnabled(on);
+    ui->leMinInline->setEnabled(on);
+    ui->leMaxInline->setEnabled(on);
+}
+
+void VolumeDataSelectionDialog::setCrosslineSelectionEnabled(bool on){
+    ui->lbCrossline->setEnabled(on);
+    ui->leMinCrossline->setEnabled(on);
+    ui->leMaxCrossline->setEnabled(on);
+}
+
+void VolumeDataSelectionDialog::setMSecSelectionEnabled(bool on){
+    ui->lbMSec->setEnabled(on);
+    ui->leMaxMSec->setEnabled(on);
+    ui->leMaxMSec->setEnabled(on);
+}
+
 void VolumeDataSelectionDialog::checkOk(){
 
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(

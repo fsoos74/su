@@ -11,7 +11,7 @@
 #include<functional>
 #include<gather.h>
 #include<gatherscaler.h>
-#include<grid3d.h>
+#include<volume.h>
 #include <mousemode.h>
 
 #include "gathersortkey.h"
@@ -59,7 +59,7 @@ public:
 
     QColor horizonColor(QString);
 
-    std::shared_ptr< Grid3D<float> > volume()const;
+    std::shared_ptr< Volume > volume()const;
 
     Picker* picker()const{
         return m_picker;
@@ -162,7 +162,7 @@ public slots:
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
     //void setPicks( std::shared_ptr<Grid2D<float>>);
-    void setVolume( std::shared_ptr<Grid3D<float>>);    // set null for closing
+    void setVolume( std::shared_ptr<Volume>);    // set null for closing
     void setAnnotationKeys( const std::vector<std::string>&);
     void setPixelPerTrace( qreal );
     void setPixelPerSecond( qreal );
@@ -202,7 +202,7 @@ private:
     QMap<QString, std::shared_ptr<Grid2D<float> > > m_horizons;
     QMap<QString, QColor> m_horizonColors;
 
-    std::shared_ptr<Grid3D<float>> m_volume;
+    std::shared_ptr<Volume> m_volume;
 
     Picker* m_picker=nullptr;
 

@@ -4,6 +4,8 @@
 #include<QGraphicsItem>
 #include<QFont>
 
+// issues with rotation and itemignorestransformations
+
 class AlignedTextGraphicsItem : public QGraphicsItem{
 
 public:

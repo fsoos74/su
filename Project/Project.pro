@@ -30,7 +30,13 @@ SOURCES += project.cpp \
     seismicdatasetreader.cpp \
     projectgeometry.cpp \
     axxisorientation.cpp \
-    seismicdatasetwriter.cpp
+    seismicdatasetwriter.cpp \
+    xppreader.cpp \
+    xppwriter.cpp \
+    wellinfo.cpp \
+    xwiwriter.cpp \
+    xwireader.cpp \
+    topsdbmanager.cpp
 
 HEADERS += project.h\
         project_global.h \
@@ -43,7 +49,14 @@ HEADERS += project.h\
     seismicdatasetreader.h \
     projectgeometry.h \
     axxisorientation.h \
-    seismicdatasetwriter.h
+    seismicdatasetwriter.h \
+    xppreader.h \
+    xppwriter.h \
+    processparams.h \
+    wellinfo.h \
+    xwiwriter.h \
+    xwireader.h \
+    topsdbmanager.h
 
 unix {
     target.path = /usr/lib
@@ -59,12 +72,18 @@ else:unix: LIBS += -L$$OUT_PWD/../Database/ -lDatabase
 INCLUDEPATH += $$PWD/../Database
 DEPENDPATH += $$PWD/../Database
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#INCLUDEPATH += $$PWD/../util
+#DEPENDPATH += $$PWD/../util
 
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
+
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Grid/release/ -lGrid
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Grid/debug/ -lGrid
@@ -79,3 +98,10 @@ else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
 
 INCLUDEPATH += $$PWD/../Seismic
 DEPENDPATH += $$PWD/../Seismic
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Well/release/ -lWell
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Well/debug/ -lWell
+else:unix: LIBS += -L$$OUT_PWD/../Well/ -lWell
+
+INCLUDEPATH += $$PWD/../Well
+DEPENDPATH += $$PWD/../Well

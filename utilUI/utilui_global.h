@@ -9,4 +9,10 @@
 #  define UTILUISHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+
+#ifdef STATICBUILD
+#define UTILUISHARED_EXPORT
+#endif
+
 #endif // UTILUI_GLOBAL_H

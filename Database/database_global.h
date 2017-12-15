@@ -9,4 +9,8 @@
 #  define DATABASESHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+#ifdef STATICBUILD
+#define DATABASESHARED_EXPORT
+#endif
+
 #endif // DATABASE_GLOBAL_H

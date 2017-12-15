@@ -23,7 +23,7 @@ RulerGraphicsView::RulerGraphicsView(QWidget *parent) : QGraphicsView(parent){
 
     m_topRuler=new GVRuler( this, GVRuler::HORIZONTAL_RULER);
     connect( horizontalScrollBar(), SIGNAL(valueChanged(int)), m_topRuler, SLOT( update()) );
-    connect( horizontalScrollBar(), SIGNAL(rangeChanged(int,int)), m_topRuler, SLOT( update()) );
+    //connect( horizontalScrollBar(), SIGNAL(rangdrawBeChanged(int,int)), m_topRuler, SLOT( update()) );
 
 
     setDragMode(QGraphicsView::RubberBandDrag);
@@ -279,6 +279,16 @@ bool RulerGraphicsView::eventFilter(QObject *obj, QEvent *ev){
 
     if( !(widget==viewport() || widget==m_leftRuler || widget==m_topRuler)) return QObject::eventFilter(obj,ev);
 
+
+    // forward double clicks
+    if( mouseEvent->type()==QEvent::MouseButtonDblClick && widget==viewport() ){
+        auto p=mapToScene(mouseEvent->pos());
+        emit mouseDoubleClick(p);
+        ev->accept();
+        return true;
+    }
+
+
     if ( (mouseEvent->modifiers() != Qt::ControlModifier) && (m_mouseMode!=MouseMode::Zoom) &&
          !m_mouseSelection ) return QObject::eventFilter(obj,ev);
 
@@ -331,14 +341,16 @@ bool RulerGraphicsView::eventFilter(QObject *obj, QEvent *ev){
 
         selectedRectInScene=selectedRectInScene.intersected(sceneRect());
 
+
         fitInView(selectedRectInScene, m_aspectRatioMode );//.normalized());
+
         m_leftRuler->update();
         m_topRuler->update();
     }
 
-
-    ev->accept();// return QObject::eventFilter(obj,ev);
-    return true;
+    return QObject::eventFilter(obj,ev);    // XXX changed this 13.9.17
+    //ev->accept();// return QObject::eventFilter(obj,ev);
+    //return true;
 }
 
 

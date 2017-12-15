@@ -14,7 +14,7 @@ bool XDIWriter::writeFile(QIODevice *device){
     xml.writeDTD("<!DOCTYPE seismic-dataset-info>");
 
     xml.writeStartElement("xdi");
-    xml.writeAttribute("version", "1.0");
+    xml.writeAttribute("version", "1.1");
 
     xml.writeTextElement("name", m_info.name());
     xml.writeTextElement("path", m_info.path());
@@ -22,6 +22,9 @@ bool XDIWriter::writeFile(QIODevice *device){
     xml.writeTextElement("index-path", m_info.indexPath());
     xml.writeTextElement("domain", datasetDomainToString( m_info.domain() ) );
     xml.writeTextElement("mode", datasetModeToString( m_info.mode() ) );
+    xml.writeTextElement("ft", QString::number(m_info.ft()));
+    xml.writeTextElement("dt", QString::number(m_info.dt()));
+    xml.writeTextElement("nt", QString::number(m_info.nt()));
     xml.writeEndElement();
 
     xml.writeEndDocument();

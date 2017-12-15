@@ -9,4 +9,10 @@
 #  define SEISMICUISHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+
+#ifdef STATICBUILD
+#define SEISMICUISHARED_EXPORT
+#endif
+
+
 #endif // SEISMICUI_GLOBAL_H

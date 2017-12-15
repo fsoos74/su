@@ -4,22 +4,24 @@ CONFIG += ordered
 
 SUBDIRS += \
     ColorUI \
+    Crypt \
     Database \
     DatabaseUI \
-    util \
+    utilfs \
     utilUI \
     Statistics \
     StatisticsUI \
     Grid \
     Seismic \
+    Well \
     Project \
     prozess \
     GridUI \
     SeismicUI \
+    WellUI \
     ProzessUI \
-    ProjectViewer \
-    Crypt \
-    SEGYCrypt \
+    Viewer2D \
     Viewer3D \
-    GenerateTestdata
+    ProjectViewer \
+    SEGYCrypt
 

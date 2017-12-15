@@ -108,7 +108,7 @@ void Picker::pick( int traceNo, float secs ){
     pickFunc(traceNo, secs);
 }
 
-float Picker::pick1(int traceNo, float secs){
+float Picker::pick1(int traceNo, float secs, bool adjust){
 
     const seismic::Trace& trace=(*m_gather)[traceNo];
     const seismic::Header& header=trace.header();
@@ -131,7 +131,7 @@ float Picker::pick1(int traceNo, float secs){
         if( m_conservative && (*m_picks)(iline,xline)!=m_picks->NULL_VALUE ) return m_picks->NULL_VALUE;
 
         m_dirty=true;
-        secs = adjustPick(trace, secs);
+        if( adjust ) secs = adjustPick(trace, secs);
         (*m_picks)(iline, xline) = 1000 * secs;     // picks are stored in milliseconds
         return secs;
     }
@@ -154,35 +154,32 @@ void Picker::pickFillRightNearest(int firstTraceNo, float traceTime){
 
     if( !m_gather || !m_picks || firstTraceNo<0 ) return;
 
-    for( int traceNo = firstTraceNo; traceNo<m_gather->size(); traceNo++){
+    // pick first trace
+    pick1(firstTraceNo, traceTime);
 
-        if( traceNo == firstTraceNo ){ //|| m_ilxlBuffer[traceNo].first==m_ilxlBuffer[traceNo-1].first){
+    for( int traceNo = firstTraceNo+1; traceNo<m_gather->size(); traceNo++){
 
-            traceTime = pick1(traceNo, traceTime);
-        }
-       else{  // search for nearest trace that has been picked
+        int iline = m_ilxlBuffer[traceNo].first;
+        int xline = m_ilxlBuffer[traceNo].second;
 
-            int iline = m_ilxlBuffer[traceNo].first;
-            int xline = m_ilxlBuffer[traceNo].second;
-            int near_trace = traceNo - 1;   // first guess previous trace
-            int near_dist2 = SQR(m_ilxlBuffer[near_trace].first - iline) + SQR(m_ilxlBuffer[near_trace].second - xline);
-
-            for( int i = near_trace - 1; i > firstTraceNo; i--){
-                int dist2 = SQR(m_ilxlBuffer[i].first - iline ) + SQR(m_ilxlBuffer[i].second - xline);
-                if( dist2 < near_dist2 ){
-                    near_trace = i;
-                    near_dist2 = dist2;
-                }
+        // search for nearest trace that has been picked
+        int near_trace = traceNo - 1;   // first guess previous trace
+        int near_dist2 = SQR(m_ilxlBuffer[near_trace].first - iline) + SQR(m_ilxlBuffer[near_trace].second - xline);
+        for( int i = near_trace - 1; i > firstTraceNo; i--){
+            int dist2 = SQR(m_ilxlBuffer[i].first - iline ) + SQR(m_ilxlBuffer[i].second - xline);
+            if( dist2 < near_dist2 ){
+                near_trace = i;
+                near_dist2 = dist2;
             }
-
-
-            float prev_time=(*m_picks)( m_ilxlBuffer[near_trace].first, m_ilxlBuffer[near_trace].second);
-            prev_time*=0.001;   // ms -> sec
-
-            traceTime = pick1(traceNo, prev_time);
         }
 
+        float prev_time=(*m_picks)( m_ilxlBuffer[near_trace].first, m_ilxlBuffer[near_trace].second);
+        prev_time*=0.001;   // ms -> sec
+
+        traceTime = prev_time;//maxcorr( (*m_gather)[traceNo], (*m_gather)[near_trace], prev_time );
+        traceTime=pick1(traceNo, traceTime, true);//false);
         if( traceTime == m_picks->NULL_VALUE) break;
+        //(*m_picks)(iline,xline)=1000*traceTime;  // store picks in msecs
     }
 
     emit picksChanged();
@@ -193,9 +190,13 @@ void Picker::pickFillRightNext(int firstTraceNo, float traceTime){
 
     if( !m_gather || !m_picks || firstTraceNo<0 ) return;
 
-    for( int traceNo = firstTraceNo; traceNo<m_gather->size(); traceNo++){
+    // pick first trace
+    traceTime=pick1(firstTraceNo, traceTime);
 
-        traceTime = pick1(traceNo, traceTime);
+    for( int traceNo = firstTraceNo+1; traceNo<m_gather->size(); traceNo++){
+
+        //traceTime = maxcorr( (*m_gather)[traceNo], (*m_gather)[traceNo-1], traceTime );
+        traceTime=pick1(traceNo, traceTime); //, false);
 
         if( traceTime == m_picks->NULL_VALUE) break;
     }
@@ -208,33 +209,27 @@ void Picker::pickFillLeftNearest(int firstTraceNo, float traceTime){
 
     if( !m_gather || !m_picks || firstTraceNo<0 ) return;
 
-    for( int traceNo = firstTraceNo; traceNo>=0; traceNo--){
+    // pick first trace
+    pick1(firstTraceNo, traceTime);
 
-        if( traceNo == firstTraceNo ){      // pick first trace
+    for( int traceNo = firstTraceNo-1; traceNo>=0; traceNo--){
 
-            traceTime = pick1(traceNo, traceTime);
-        }
-       else{  // search for nearest trace that has been picked
-
-            int iline = m_ilxlBuffer[traceNo].first;
-            int xline = m_ilxlBuffer[traceNo].second;
-            int near_trace = traceNo + 1;   // first guess previous trace
-            int near_dist2 = SQR(m_ilxlBuffer[near_trace].first - iline) + SQR(m_ilxlBuffer[near_trace].second - xline);
-
-            for( int i = near_trace + 1; i <=firstTraceNo; i++){
-                int dist2 = SQR(m_ilxlBuffer[i].first - iline ) + SQR(m_ilxlBuffer[i].second - xline);
-                if( dist2 < near_dist2 ){
-                    near_trace = i;
-                    near_dist2 = dist2;
-                }
+        // search for nearest trace that has been picked
+        int iline = m_ilxlBuffer[traceNo].first;
+        int xline = m_ilxlBuffer[traceNo].second;
+        int near_trace = traceNo + 1;   // first guess previous trace
+        int near_dist2 = SQR(m_ilxlBuffer[near_trace].first - iline) + SQR(m_ilxlBuffer[near_trace].second - xline);
+        for( int i = near_trace + 1; i <=firstTraceNo; i++){
+            int dist2 = SQR(m_ilxlBuffer[i].first - iline ) + SQR(m_ilxlBuffer[i].second - xline);
+            if( dist2 < near_dist2 ){
+                near_trace = i;
+                near_dist2 = dist2;
             }
-
-            float prev_time=(*m_picks)( m_ilxlBuffer[near_trace].first, m_ilxlBuffer[near_trace].second);
-            prev_time*=0.001;   // ms -> sec
-
-            traceTime = pick1(traceNo, prev_time);
         }
 
+        float prev_time=(*m_picks)( m_ilxlBuffer[near_trace].first, m_ilxlBuffer[near_trace].second);
+        prev_time*=0.001;   // ms -> sec
+        traceTime=pick1(traceNo, traceTime);//, false);
         if( traceTime == m_picks->NULL_VALUE) break;
     }
 
@@ -247,9 +242,12 @@ void Picker::pickFillLeftNext(int firstTraceNo, float traceTime){
 
     if( !m_gather || !m_picks || firstTraceNo<0 ) return;
 
-    for( int traceNo = firstTraceNo; traceNo>=0; traceNo--){
+    // pick first trace
+    traceTime=pick1(firstTraceNo, traceTime);
 
-        traceTime = pick1( traceNo, traceTime);
+    for( int traceNo = firstTraceNo-1; traceNo>=0; traceNo--){
+
+        traceTime=pick1(traceNo, traceTime);//, false);
 
         if( traceTime == m_picks->NULL_VALUE) break;
     }
@@ -316,12 +314,12 @@ void Picker::deleteRight( int traceNo ){
     emit picksChanged();
 }
 
-
 float Picker::adjustPick(const seismic::Trace & trace, float t){
 
     return adjustFunc(trace, t);
 }
 
+/*
 // testing to find "real" minimum in both directions
 float Picker::adjustMinimum(const seismic::Trace & trace, float t){
 
@@ -376,8 +374,9 @@ float Picker::adjustMinimum(const seismic::Trace & trace, float t){
 
     return trace.ft() + it * trace.dt();
 }
+*/
 
-/* ORIGINAL
+//* ORIGINAL
   float Picker::adjustMinimum(const seismic::Trace & trace, float t){
 
     if( t<trace.ft() || t>trace.lt() ) return t;
@@ -385,7 +384,7 @@ float Picker::adjustMinimum(const seismic::Trace & trace, float t){
     const seismic::Trace::Samples& sam = trace.samples();
 
     // sample index for t
-    int it = ( t - trace.ft() ) / trace.dt();
+    int it = trace.time_to_index(t); // t - trace.ft() ) / trace.dt();
 
     // move up
     int iup=it;
@@ -395,23 +394,13 @@ float Picker::adjustMinimum(const seismic::Trace & trace, float t){
     int idown=it;
     while( (idown+1<sam.size()) && (sam[idown+1]<sam[idown]) ) idown++;
 
-    // no up movement and start time is not min
-    if( iup == it && sam[idown]<sam[it]){
-        it=idown;
-    }
-    else if( idown == it && sam[iup]<sam[it]){
-        it=iup;
-    }
-    else{ // select closest
-        it =  ( it-iup < idown-it ) ? iup : idown;
-    }
-
+    if( iup == idown ) it=iup;      // we are already there, it==iup==idown
+    else if( iup==it ) it=idown;    // only down movement
+    else if( idown==it) it=iup;     // only up movement
     return trace.ft() + it * trace.dt();
 }
 
-*/
-
-/* ORIGINAL
+// ORIGINAL
 float Picker::adjustMaximum(const seismic::Trace & trace, float t){
 
     if( t<trace.ft() || t>trace.lt() ) return t;
@@ -419,7 +408,7 @@ float Picker::adjustMaximum(const seismic::Trace & trace, float t){
     const seismic::Trace::Samples& sam = trace.samples();
 
     // sample index for t
-    int it = ( t - trace.ft() ) / trace.dt();
+    int it = trace.time_to_index(t); // t - trace.ft() ) / trace.dt();
 
     // move up
     int iup=it;
@@ -429,21 +418,13 @@ float Picker::adjustMaximum(const seismic::Trace & trace, float t){
     int idown=it;
     while( (idown+1<sam.size()) && (sam[idown+1]>sam[idown]) ) idown++;
 
-    // no up movement and start time is not min
-    if( iup == it && sam[idown]>sam[it]){
-        it=idown;
-    }
-    else if( idown == it && sam[iup]>sam[it]){
-        it=iup;
-    }
-    else{ // select closest
-        it =  ( it-iup < idown-it ) ? iup : idown;
-    }
-
+    if( iup == idown ) it=iup;      // we are already there, it==iup==idown
+    else if( iup==it ) it=idown;    // only down movement
+    else if( idown==it) it=iup;     // only up movement
     return trace.ft() + it * trace.dt();
 }
-*/
 
+/*
 // testing to find "real" maximum in both directions
 float Picker::adjustMaximum(const seismic::Trace & trace, float t){
 
@@ -498,6 +479,7 @@ float Picker::adjustMaximum(const seismic::Trace & trace, float t){
 
     return trace.ft() + it * trace.dt();
 }
+*/
 
 float Picker::adjustZero(const seismic::Trace & trace, float t){
 

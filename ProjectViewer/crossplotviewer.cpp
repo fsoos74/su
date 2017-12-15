@@ -32,42 +32,35 @@
 
 #include<cmath>
 
-const int DATA_INDEX_KEY=1;
 
 CrossplotViewer::CrossplotViewer(QWidget *parent) :
     BaseViewer(parent),
-    ui(new Ui::CrossplotViewer),
-    m_colorTable(new ColorTable(this))
+    ui(new Ui::CrossplotViewer)
 {
     ui->setupUi(this);
 
-    updateScene();
-
-
-    ui->graphicsView->setDragMode(QGraphicsView::RubberBandDrag);
-
-    ui->graphicsView->topRuler()->setAnnotationFunction( [](qreal value){return QString::number(value, 'g', 6);} );
-    ui->graphicsView->topRuler()->setMinimumPixelIncrement(100);
-
-    ui->graphicsView->setSelectionMode(RulerGraphicsView::SelectionMode::Polygon);
-
-     ui->graphicsView->scale(1,-1); // flip vertical axxis, smallest at bottom, greatest top
-
-     ui->graphicsView->setMouseTracking(true);  // also send mouse move events when no button is pressed
-    connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
+    ui->crossplotView->setZoomMode(AxisView::ZOOMMODE::BOTH);
+    ui->crossplotView->setCursorMode(AxisView::CURSORMODE::BOTH);
+    ui->crossplotView->setDragMode(QGraphicsView::RubberBandDrag);
+    ui->crossplotView->setSelectionMode(AxisView::SELECTIONMODE::Polygon);
+    ui->crossplotView->setXMesh(true);
+    ui->crossplotView->setZMesh(true);
+     //ui->crossplotView->setMouseTracking(true);  // also send mouse move events when no button is pressed
+    connect( ui->crossplotView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
 
     connect( ui->action_Receive_CDPs, SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Dispatch_CDPs, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
-    //connect( ui->action_Flatten_Trend, SIGNAL(toggled(bool)), this, SLOT(updateScene()) );
-    connect( ui->actionDisplay_Trend_Line, SIGNAL(toggled(bool)), this, SLOT(updateScene()) );
+    connect( ui->actionDisplay_Trend_Line, SIGNAL(toggled(bool)), ui->crossplotView, SLOT(setDisplayTrendLine(bool)) );
+    connect( ui->action_Flatten_Trend, SIGNAL(toggled(bool)), ui->crossplotView, SLOT(setFlattenTrend(bool)) );
 
-    connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(updateScene()) );
-    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
-             this, SLOT(updateScene()) );
+    connect( ui->actionZoom_In, SIGNAL(triggered(bool)), ui->crossplotView, SLOT(zoomIn()) );
+    connect( ui->actionZoom_Out, SIGNAL(triggered(bool)), ui->crossplotView, SLOT(zoomOut()) );
+    connect( ui->actionZoom_Fit_Window, SIGNAL(triggered(bool)), ui->crossplotView, SLOT(zoomFitWindow()) );
 
+    connect( ui->crossplotView, SIGNAL(selectionChanged()), this, SLOT(sceneSelectionChanged()) );
 
-    m_colorTable->setColors(ColorTable::defaultColors());
+    connect( ui->crossplotView, SIGNAL(lineSelected(QLineF)), this, SLOT(onTrendLineSelected(QLineF)) );
 
     setupMouseModes();
     createDockWidgets();
@@ -88,7 +81,7 @@ void CrossplotViewer::populateWindowMenu(){
 void CrossplotViewer::setupMouseModes(){
 
     DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
-    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->graphicsView, SLOT(setMouseMode(MouseMode)));
+    connect( mm, SIGNAL(modeChanged(MouseMode)), ui->crossplotView, SLOT(setMouseMode(MouseMode)));
     mm->addMode(MouseMode::Explore);
     mm->addMode(MouseMode::Zoom);
     mm->addMode(MouseMode::Select);
@@ -99,14 +92,6 @@ void CrossplotViewer::setupMouseModes(){
 CrossplotViewer::~CrossplotViewer()
 {
     delete ui;
-}
-
-bool CrossplotViewer::isFlattenTrend(){
-    return ui->action_Flatten_Trend->isChecked();
-}
-
-bool CrossplotViewer::isDisplayTrendLine(){
-    return ui->actionDisplay_Trend_Line->isChecked();
 }
 
 bool CrossplotViewer::isDetailedPointInformation(){
@@ -120,12 +105,12 @@ void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
     if( pt.iline==SelectionPoint::NO_LINE || pt.xline==SelectionPoint::NO_LINE) return;  // only proceed on valid inline and crossline
                                                                                          // this is for selecting lines on sidelabels
 
-    for( QGraphicsItem* item : m_scene->items()){
+    for( QGraphicsItem* item : ui->crossplotView->scene()->items()){
 
         DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
         if( datapointItem){
-            int idx=datapointItem->data( DATA_INDEX_KEY ).toInt();
-            const crossplot::DataPoint& d=m_data.at(idx);
+            int idx=datapointItem->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
+            const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
             int iline=d.iline;
             int xline=d.xline;
 
@@ -144,7 +129,7 @@ void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
     }
 
     // clear selection polygon
-    ui->graphicsView->setSelectionPolygon(QPolygonF());
+    ui->crossplotView->setSelectionPolygon(QPolygonF());
 }
 
 void CrossplotViewer::receivePoints( QVector<SelectionPoint> points, int code){
@@ -159,205 +144,86 @@ void CrossplotViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
 }
 
-void CrossplotViewer::scanBounds(){
-
-    // better add progress dialog
-
-    int minil=std::numeric_limits<int>::max();
-    int maxil=std::numeric_limits<int>::min();
-    int minxl=std::numeric_limits<int>::max();
-    int maxxl=std::numeric_limits<int>::min();
-    float mint=std::numeric_limits<float>::max();
-    float maxt=std::numeric_limits<float>::lowest();
-
-    for( crossplot::DataPoint point:m_data){
-        if(point.iline<minil) minil=point.iline;
-        if(point.iline>maxil) maxil=point.iline;
-        if(point.xline<minxl) minxl=point.xline;
-        if(point.xline>maxxl) maxxl=point.xline;
-        if(point.time<mint) mint=point.time;
-        if(point.time>maxt) maxt=point.time;
-    }
-
-    setRegion( VolumeDimensions(minil, maxil, minxl, maxxl, static_cast<int>(1000*mint), static_cast<int>(1000*maxt)));
-    //m_geometryBounds=Grid2DBounds(minil, minxl, maxil, maxxl);
-    //m_timeRange=Range<float>(mint, maxt);
-}
-
-void CrossplotViewer::scanAttribute(){
-
-    if(m_data.empty()) return;
-
-    float mina=m_data[0].attribute;
-    float maxa=mina;
-
-    for( int i=1; i<m_data.size(); i++ ){
-            float &a=m_data[i].attribute;
-            if(a<mina) mina=a;
-            if(a>maxa) maxa=a;
-    }
-
-    m_attributeRange=Range<float>(mina, maxa);
-}
 
 void CrossplotViewer::setData( crossplot::Data data){
 
     const int ASK_SELECT_LINES_LIMIT=200000;
 
-    m_data=data;
-
-    scanBounds();
-
-    scanAttribute();
-
-    if( m_data.size() > ASK_SELECT_LINES_LIMIT ){
+    if( data.size() > ASK_SELECT_LINES_LIMIT ){
         int ret=QMessageBox::question(this, "Crossplot Attributes",
             QString("Number of datapoints is %1. This will significantly slow down operation.\n"
-                    "Select inline/crossline ranges to reduce the number of plotted points?").arg(m_data.size()),
+                    "Select inline/crossline ranges to reduce the number of plotted points?").arg(ui->crossplotView->data().size()),
                     QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes );
 
         if( ret==QMessageBox::Yes ){
            ui->actionSelect_By_Inline_Crossline_Ranges->trigger();
         }
-
     }
 
-
-
-    m_colorTable->setRange(m_attributeRange.minimum, m_attributeRange.maximum);  // this triggers updateScene by emitting rangeChanged
-
-    emit dataChanged();
-
-    //updateScene();
+    ui->crossplotView->setData(data);
 }
-
 
 void CrossplotViewer::setDetailedPointInformation(bool on){
 
     ui->actionDetailed_Point_Information->setChecked(on);
 }
 
-void CrossplotViewer::setTrend(QPointF t){
+void CrossplotViewer::setInlinesSelectable(bool on){
+    m_inlinesSelectable=on;
+}
 
-    if( t==m_trend) return;
+void CrossplotViewer::setCrosslinesSelectable(bool on){
+    m_crosslinesSelectable=on;
+}
 
-    m_trend=t;
-
-    // remove selection polygon because it refers to other transform
-    // XXX better transform the polygon
-    if( isFlattenTrend() ){
-        ui->graphicsView->setSelectionPolygon(QPolygonF());
-    }
-
-    updateScene();
+void CrossplotViewer::setMSecsSelectable(bool on){
+    m_msecsSelectable=on;
 }
 
 void CrossplotViewer::setAxisLabels( const QString& xAxisAnnotation, const QString& yAxisAnnotation ){
-
-    ui->graphicsView->topRuler()->setLabel(xAxisAnnotation);
-    ui->graphicsView->leftRuler()->setLabel(yAxisAnnotation);
+    ui->crossplotView->xAxis()->setName(xAxisAnnotation);
+    ui->crossplotView->zAxis()->setName(yAxisAnnotation);
 }
 
+void CrossplotViewer::setFixedColor(bool on){
+    ui->crossplotView->setFixedColor(on);
+}
 
 void CrossplotViewer::setRegion(VolumeDimensions dims){
 
-    if( dims == m_region) return;
-
-    m_region=dims;
-
-    updateScene();
+    ui->crossplotView->setRegion(dims);
 }
 
-void CrossplotViewer::setFlattenTrend(bool on){
 
-    if( on==isFlattenTrend()) return;
+void CrossplotViewer::onTrendLineSelected(QLineF axisline){
 
-    ui->graphicsView->setSelectionPolygon(QPolygonF());
-
-    ui->action_Flatten_Trend->setChecked(on);
+    QVector<QPointF> points;
+    points<<axisline.p1();
+    points<<axisline.p2();
+    auto trend=linearRegression(points);
+    ui->crossplotView->setTrend(trend);
+    ui->crossplotView->setSelectionMode(AxisView::SELECTIONMODE::Polygon);  // only select one line, after switch back to polygon selection!
 }
 
-void CrossplotViewer::setDisplayTrendLine(bool on){
+void CrossplotViewer::onMouseOver(QPointF axisPos){
 
-    if( on==isDisplayTrendLine()) return;
+   QString message=QString("x=%1, z=%2").arg(axisPos.x()).arg(axisPos.y());
+   //QString message=QString("%1=%2,  %3=%4").arg(ui->crossplotView->topRuler()->label()).arg(scenePos.x()).
+   //        arg(ui->crossplotView->leftRuler()->label()).arg(scenePos.y());
 
-    ui->actionDisplay_Trend_Line->setChecked(on);
-}
-
-void CrossplotViewer::setDatapointSize(int size){
-
-    if( size==m_datapointSize) return;
-
-    m_datapointSize=size;
-
-    ui->graphicsView->setSelectionPolygon(QPolygonF()); // clear selection
-
-    updateScene();
-}
-
-void CrossplotViewer::setFixedColor(bool fixed){
-
-    if( fixed==m_fixedColor) return;
-
-    m_fixedColor=fixed;
-
-    emit fixedColorChanged(m_fixedColor);
-
-    updateScene();
-}
-
-void CrossplotViewer::setPointColor(QColor color){
-
-    if( color==m_pointColor) return;
-
-    m_pointColor=color;
-
-    emit pointColorChanged(m_pointColor);
-
-    updateScene();
-}
-
-void CrossplotViewer::setColorMapping( const std::pair<double,double>& m){
-    Q_ASSERT( m_colorTable);
-    m_colorTable->setRange(m);
-}
-
-void CrossplotViewer::setColors(const QVector<QRgb>& c){
-
-    Q_ASSERT( m_colorTable);
-    m_colorTable->setColors(c);
-}
-
-void CrossplotViewer::setTrendlineColor(QColor color){
-
-    if( color==m_trendlineColor) return;
-
-    m_trendlineColor=color;
-
-    emit trendlineColorChanged(m_trendlineColor);
-
-    updateScene();
-}
-
-void CrossplotViewer::onMouseOver(QPointF scenePos){
-
-   // QString message=QString("x=%1, y=%2").arg(scenePos.x()).arg(scenePos.y());
-   QString message=QString("%1=%2,  %3=%4").arg(ui->graphicsView->topRuler()->label()).arg(scenePos.x()).
-           arg(ui->graphicsView->leftRuler()->label()).arg(scenePos.y());
-
-
+/*
    // THIS IS TOO SLOW FOR MANY ITEMS therefore only do it on user request
     if( ui->actionDetailed_Point_Information->isChecked() ){
 
-        QPoint viewPos=ui->graphicsView->mapFromScene(scenePos);
-        QGraphicsItem* item=ui->graphicsView->itemAt(viewPos);
+        QPoint viewPos=ui->crossplotView->mapFromScene(scenePos);
+        QGraphicsItem* item=ui->crossplotView->itemAt(viewPos);
 
         if( item ){
 
             DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
             int index=datapointItem->data(DATA_INDEX_KEY).toInt();
-            if( index>0 && index<m_data.size() ){
-                crossplot::DataPoint p = m_data[index];
+            if( index>0 && index<ui->crossplotView->data().size() ){
+                crossplot::DataPoint p = ui->crossplotView->data()[index];
 
                 message.append(QString(",  Inline=%1,  Crossline=%2,  Time[ms]=%3,  Attribute=%4").
                                arg(p.iline).arg(p.xline).arg(1000*p.time).arg(p.attribute));
@@ -368,7 +234,7 @@ void CrossplotViewer::onMouseOver(QPointF scenePos){
         }
 
     }
-
+*/
     statusBar()->showMessage(message);
 }
 
@@ -378,149 +244,18 @@ void dumpRect( const RECT& rect ){
 }
 
 
-
-void CrossplotViewer::updateScene(){
-
-    if( m_data.size()<1){
-        return;
-    }
-
-    const qreal ACTIVE_SIZE_FACTOR=2;           // datapoints grow by this factor on hoover enter events
-
-    QGraphicsScene* scene=new QGraphicsScene(this);
-
-
-    // ellipse size in pixel, we are scaled to pixel on init and forbit further scaling of items
-    int w=12;
-    int h=12;
-    QPen thePen(Qt::black,0);
-
-    qreal minX=std::numeric_limits<qreal>::max();
-    qreal maxX=std::numeric_limits<qreal>::lowest();
-    qreal minY=std::numeric_limits<qreal>::max();
-    qreal maxY=std::numeric_limits<qreal>::lowest();
-
-    QProgressDialog progress(this);
-    progress.setWindowTitle("Volume Crossplot");
-    progress.setRange(0,100);
-    progress.setLabelText("Populating Crossplot");
-    progress.show();
-    int perc=0;
-
-    bool flattenTrend=isFlattenTrend();
-
-
-
-    for( int i=0; i<m_data.size(); i++){
-
-        crossplot::DataPoint p = m_data[i];
-
-        // check if point is within the inline/crossline/time selection for display
-        int msec=static_cast<int>(1000*p.time);
-        if( !m_region.isInside(p.iline,p.xline, msec)) continue;
-
-
-        // NULL values are filtered before the data is set, thus they are not checked for
-
-        QPointF pt(p.x, p.y);
-
-        DatapointItem* item=new DatapointItem( m_datapointSize, ACTIVE_SIZE_FACTOR);
-        item->setFlag(QGraphicsItem::ItemIgnoresTransformations,true);
-        item->setFlag(QGraphicsItem::ItemIsSelectable, true);
-
-        if( flattenTrend){
-
-            qreal dy=m_trend.x() + pt.x()*m_trend.y();
-            pt.setY(pt.y()-dy);
-
-        }
-
-        item->setPos( pt );
-
-        if(m_fixedColor){
-            item->setRegularColor(m_pointColor);
-        }
-        else{
-            QRgb rgb=m_colorTable->map(p.attribute);
-            item->setRegularColor(rgb);
-        }
-
-        // add user data inline and crossline
-        //item->setData( INLINE_DATA_KEY, p.iline);
-        //item->setData( CROSSLINE_DATA_KEY, p.xline);
-        //item->setData( TIME_DATA_KEY, p.time);
-        item->setData( DATA_INDEX_KEY, i);
-        scene->addItem(item);
-
-        //std::cout<<item->x()<<","<<item->y()<<std::endl;
-
-        if(pt.x()<minX) minX=pt.x();
-        if(pt.x()>maxX) maxX=pt.x();
-        if(pt.y()<minY) minY=pt.y();
-        if(pt.y()>maxY) maxY=pt.y();
-
-        int pp=100*i/m_data.size();
-        if(pp>perc){
-            perc=pp;
-            progress.setValue(perc);
-            qApp->processEvents();
-            if(progress.wasCanceled()){
-                delete scene;
-                return;
-            }
-        }
-    }
-
-
-    QRectF sceneRect=QRectF(minX,minY, maxX-minX, maxY-minY);
-    // scene->itemsBoundingRect() does not work, maybe because items ignore transformations and not connected to view?
-
-    std::cout<<"SceneRect: ";dumpRect(sceneRect);
-
-    qreal xMargin=sceneRect.width()*X_PADDING_FACTOR;
-    qreal yMargin=sceneRect.height()*Y_PADDING_FACTOR;
-    sceneRect=sceneRect.marginsAdded(QMarginsF(xMargin, yMargin, xMargin, yMargin));
-    scene->setSceneRect(sceneRect);
-    //std::cout<<"SceneRect width margins: ";dumpRect(sceneRect);
-
-    m_scene=scene;
-    connect( m_scene, SIGNAL(selectionChanged()), this, SLOT(sceneSelectionChanged()) );
-    ui->graphicsView->setScene(m_scene);
-
-    ui->graphicsView->zoomFitWindow(); // need this, otherwise rulers are not updated!!!
-
-    if( isDisplayTrendLine()){
-        double x1=sceneRect.left();
-        double x2=sceneRect.right();
-        double y1=m_trend.x() + x1*m_trend.y();
-        double y2=m_trend.x() + x2*m_trend.y();
-
-        if( flattenTrend){
-
-            y1=y1 - ( m_trend.x() + x1 *m_trend.y() );
-            y2=y2 - ( m_trend.x() + x2 *m_trend.y() );
-        }
-        m_scene->addLine(x1,y1,x2,y2,QPen(m_trendlineColor, 0));
-    }
-}
-
-
 void CrossplotViewer::on_actionCompute_Trend_From_Loaded_Data_triggered()
 {
-
-    if( ! m_scene ){
-        setTrend(QPointF(0,0));
-        return;
-    }
-
     QVector<QPointF > points;
 
-    for( crossplot::DataPoint point : m_data){
+    for( crossplot::DataPoint point : ui->crossplotView->data()){
 
         points.append(QPointF( point.x, point.y));
     }
 
-    setTrend(linearRegression(points));
+    auto trend=linearRegression(points);
+
+    ui->crossplotView->setTrend(trend);
 }
 
 void CrossplotViewer::on_actionCompute_Trend_From_Displayed_Data_triggered()
@@ -528,16 +263,16 @@ void CrossplotViewer::on_actionCompute_Trend_From_Displayed_Data_triggered()
 
     QVector<QPointF > points;
 
-    for( QGraphicsItem* item : m_scene->items() ){
-        int idx=item->data( DATA_INDEX_KEY ).toInt();
-        const crossplot::DataPoint& d=m_data.at(idx);
-        //int iline=d.iline;
-        //int xline=d.xline;
+    for( QGraphicsItem* item : ui->crossplotView->scene()->items() ){
+        int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
+        const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
 
         points.push_back(QPointF(d.x,d.y));
     }
 
-    setTrend( linearRegression(points) );
+    auto trend=linearRegression(points);
+
+    ui->crossplotView->setTrend(trend);
 }
 
 void CrossplotViewer::on_actionCompute_Trend_From_Selected_Data_triggered()
@@ -545,76 +280,48 @@ void CrossplotViewer::on_actionCompute_Trend_From_Selected_Data_triggered()
 
     QVector<QPointF > points;
 
-    for( QGraphicsItem* item : m_scene->selectedItems() ){
-        int idx=item->data( DATA_INDEX_KEY ).toInt();
-        const crossplot::DataPoint& d=m_data.at(idx);
+    for( QGraphicsItem* item : ui->crossplotView->scene()->selectedItems() ){
+        int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
+        const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
 
         points.push_back(QPointF(d.x, d.y));
     }
 
-    setTrend( linearRegression(points) );
+    auto trend=linearRegression(points);
+
+    ui->crossplotView->setTrend(trend);
 }
 
 void CrossplotViewer::on_action_Pick_Trend_triggered()
 {
-    QPolygonF poly=ui->graphicsView->selectionPolygon();
-
-    if( poly.size()<2 ) return;
-
-    ui->graphicsView->setSelectionPolygon(QPolygonF());
-    QVector<QPointF > points;
-    for( QPointF p : poly ){
-         points.push_back(p);
-    }
-
-    setTrend( linearRegression(points) );
-
+    ui->crossplotView->setMouseMode(MouseMode::Select);
+    ui->crossplotView->setSelectionMode(AxisView::SELECTIONMODE::Line);
 }
 
 void CrossplotViewer::on_actionSet_Angle_triggered()
 {
-    double phi=std::fabs(180.*std::atan( m_trend.y())/M_PI);  // in degrees, must be positive
+    double phi=std::fabs(180.*std::atan( ui->crossplotView->trend().y())/M_PI);  // in degrees, must be positive
 
     EditTrendDialog dlg(this);
     dlg.setAngle(phi);
-    dlg.setIntercept(m_trend.x());
+    dlg.setIntercept(ui->crossplotView->trend().x());
     dlg.setWindowTitle(tr("Edit Trend"));
 
     if( dlg.exec()==QDialog::Accepted){
         phi=-std::tan(M_PI*dlg.angle()/180.);    // negative, angle is clockwise x-axxis to trend
-        setTrend(QPointF(dlg.intercept(), phi));
+        ui->crossplotView->setTrend(QPointF(dlg.intercept(), phi));
     }
-    /*
-    bool ok=false;
-    double d=QInputDialog::getDouble(this, "Crossplot Angle", "angle [degrees]", phi, 0, 90, 4, &ok );
-
-    if( ok && d!=phi ){
-        double y=-std::tan(M_PI*d/180.);    // negative, angle is clockwise x-axxis to trend
-        setTrend(QPointF(m_trend.x(), y));
-    }
-    */
 }
-
-
-void CrossplotViewer::on_action_Flatten_Trend_toggled(bool arg1)
-{
-    // remove selection polygon because it refers to other transform
-    // XXX better transform the polygon
-    ui->graphicsView->setSelectionPolygon(QPolygonF());
-
-    updateScene();
-}
-
 
 void CrossplotViewer::sceneSelectionChanged(){
 
     QVector<SelectionPoint> points;
-    points.reserve( m_scene->selectedItems().size() );
+    points.reserve( ui->crossplotView->scene()->selectedItems().size() );
 
-    for( QGraphicsItem* item : m_scene->selectedItems() ){
+    for( QGraphicsItem* item : ui->crossplotView->scene()->selectedItems() ){
 
-        int idx=item->data( DATA_INDEX_KEY ).toInt();
-        const crossplot::DataPoint& d=m_data.at(idx);
+        int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
+        const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
         int iline=d.iline;
         int xline=d.xline;
         float time=d.time;
@@ -628,38 +335,17 @@ void CrossplotViewer::sceneSelectionChanged(){
     }
 
     sendPoints(points, CODE_SINGLE_POINTS);
-
 }
-
-void CrossplotViewer::on_actionZoom_In_triggered()
-{
-
-    ui->graphicsView->zoomBy(ZOOM_IN_FACTOR);
-
-}
-
-void CrossplotViewer::on_actionZoom_Out_triggered()
-{
-    ui->graphicsView->zoomBy(ZOOM_OUT_FACTOR);
-
-}
-
-
-
-void CrossplotViewer::on_actionZoom_Fit_Window_triggered()
-{
-
-    ui->graphicsView->zoomFitWindow();
-}
-
 
 void CrossplotViewer::on_actionSelect_By_Inline_Crossline_Ranges_triggered()
 {
     VolumeDataSelectionDialog dlg(this);
 
     dlg.setWindowTitle( "Select Line Ranges and Time Range");
-
-    dlg.setDimensions(m_region);
+    dlg.setInlineSelectionEnabled(m_inlinesSelectable);
+    dlg.setCrosslineSelectionEnabled(m_crosslinesSelectable);
+    dlg.setMSecSelectionEnabled(m_msecsSelectable);
+    dlg.setDimensions(ui->crossplotView->region());
 
     if( dlg.exec()==QDialog::Accepted){
 
@@ -672,21 +358,21 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
     if( !displayOptionsDialog){
 
         displayOptionsDialog=new CrossplotViewerDisplayOptionsDialog(this);
-        displayOptionsDialog->setDatapointSize(m_datapointSize);
-        displayOptionsDialog->setFixedColor(m_fixedColor);
-        displayOptionsDialog->setPointColor(m_pointColor);
-        displayOptionsDialog->setTrendlineColor(m_trendlineColor);
+        displayOptionsDialog->setDatapointSize(ui->crossplotView->datapointSize());
+        displayOptionsDialog->setFixedColor(ui->crossplotView->isFixedColor());
+        displayOptionsDialog->setPointColor(ui->crossplotView->pointColor());
+        displayOptionsDialog->setTrendlineColor(ui->crossplotView->trendlineColor());
 
         displayOptionsDialog->setWindowTitle("Crossplot Display Options");
 
         connect( displayOptionsDialog, SIGNAL(datapointSizeChanged(int)),
-                 this, SLOT(setDatapointSize(int)) );
+                 ui->crossplotView, SLOT(setDatapointSize(int)) );
         connect( displayOptionsDialog, SIGNAL(fixedColorChanged(bool)),
-                 this, SLOT(setFixedColor(bool)) );
+                 ui->crossplotView, SLOT(setFixedColor(bool)) );
         connect( displayOptionsDialog, SIGNAL( pointColorChanged(QColor)),
-                 this, SLOT( setPointColor(QColor)) );
+                 ui->crossplotView, SLOT( setPointColor(QColor)) );
         connect( displayOptionsDialog, SIGNAL(trendlineColorChanged(QColor)),
-                this, SLOT(setTrendlineColor(QColor)) );
+                ui->crossplotView, SLOT(setTrendlineColor(QColor)) );
     }
 
     displayOptionsDialog->show();
@@ -694,19 +380,19 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
 
 void CrossplotViewer::on_actionAttribute_Colortable_triggered()
 {
-    QVector<QRgb> oldColors=m_colorTable->colors();
+    QVector<QRgb> oldColors=ui->crossplotView->colorTable()->colors();
 
     ColorTableDialog* colorTableDialog=new ColorTableDialog( oldColors);
 
     Q_ASSERT(colorTableDialog);
 
     connect( colorTableDialog, SIGNAL(colorsChanged(QVector<QRgb>)),
-             m_colorTable, SLOT(setColors(QVector<QRgb>)));
+             ui->crossplotView->colorTable(), SLOT(setColors(QVector<QRgb>)));
 
     if( colorTableDialog->exec()==QDialog::Accepted ){
-        m_colorTable->setColors( colorTableDialog->colors());
+        ui->crossplotView->colorTable()->setColors( colorTableDialog->colors());
     }else{
-        m_colorTable->setColors( oldColors );
+        ui->crossplotView->colorTable()->setColors( oldColors );
     }
 
     delete colorTableDialog;
@@ -717,8 +403,8 @@ void CrossplotViewer::on_actionAttribute_Range_triggered()
     if(!displayRangeDialog){
 
         std::vector< float > tmp;
-        tmp.reserve(m_data.size());
-        for( auto p : m_data ){
+        tmp.reserve(ui->crossplotView->data().size());
+        for( auto p : ui->crossplotView->data() ){
             if( p.attribute!=Grid2D<float>::NULL_VALUE) tmp.push_back(p.attribute);
         }
 
@@ -730,8 +416,7 @@ void CrossplotViewer::on_actionAttribute_Range_triggered()
                                                           Grid2D<float>::NULL_VALUE, 100 ));
         auto mm = std::minmax_element(tmp.begin(), tmp.end() );
 
-        displayRangeDialog->setDefaultRange( std::make_pair( static_cast<double>(*mm.first), static_cast<double>(*mm.second)));
-        displayRangeDialog->setColorTable(m_colorTable );   // all updating through colortable
+        displayRangeDialog->setColorTable(ui->crossplotView->colorTable() );   // all updating through colortable
 
         displayRangeDialog->setWindowTitle("Configure Volume Display Range" );
     }
@@ -745,16 +430,16 @@ QVector<double> CrossplotViewer::collectHistogramData( std::function<double(cons
 
     QVector<double> data;
 
-    if( m_scene->selectedItems().empty()){
-        for( crossplot::DataPoint point : m_data){
+    if( ui->crossplotView->scene()->selectedItems().empty()){
+        for( crossplot::DataPoint point : ui->crossplotView->data()){
             // should be no NULL values here, they must be filterd out before
             data.push_back( f(point));
          }
     }
     else{
-        for( QGraphicsItem* item : m_scene->selectedItems() ){
-            int idx=item->data( DATA_INDEX_KEY ).toInt();
-            const crossplot::DataPoint& point=m_data.at(idx);
+        for( QGraphicsItem* item : ui->crossplotView->scene()->selectedItems() ){
+            int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
+            const crossplot::DataPoint& point=ui->crossplotView->data().at(idx);
             data.push_back(f(point));
         }
     }
@@ -801,7 +486,7 @@ void CrossplotViewer::on_action_HistogramAttribute_triggered()
     viewer->setData( data );
     viewer->setWindowTitle(QString("Histogram of %1 attribute").arg(windowTitle() ) );
 
-    viewer->setColorTable( m_colorTable );        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
+    viewer->setColorTable( ui->crossplotView->colorTable() );        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
 }
 
@@ -815,7 +500,7 @@ void CrossplotViewer::createDockWidgets(){
     m_attributeColorBarDock->setContentsMargins(10, 5, 10, 5);
     m_attributeColorBarDock->setWidget(m_attributeColorBarWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_attributeColorBarDock);
-    m_attributeColorBarWidget->setColorTable( m_colorTable );
+    m_attributeColorBarWidget->setColorTable( ui->crossplotView->colorTable() );
 
     m_attributeColorBarDock->close();
 }
@@ -836,7 +521,7 @@ void CrossplotViewer::saveSettings(){
 
      settings.beginGroup("items");
 
-        settings.setValue("datapoint-size", m_datapointSize);
+        settings.setValue("datapoint-size", ui->crossplotView->datapointSize());
 
      settings.endGroup();
 
@@ -856,7 +541,7 @@ void CrossplotViewer::loadSettings(){
 
     settings.beginGroup("items");
 
-          setDatapointSize( settings.value("datapoint-size", 7 ).toInt());
+        ui->crossplotView->setDatapointSize( settings.value("datapoint-size", 7 ).toInt());
 
     settings.endGroup();
 }

@@ -8,6 +8,8 @@
 #include <trace.h>
 #include <header.h>
 #include<array2d.h>
+#include<volumediptracker.h>
+
 
 using util::Array2D;
 
@@ -30,11 +32,13 @@ private:
     int m_halfXlines;
     int m_halfSamples;
 
-    std::shared_ptr<Grid3D<float> > m_inputVolume;
+    std::shared_ptr<Volume > m_inputVolume;
     Grid3DBounds m_bounds;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_volume;
 
-    std::shared_ptr< Array2D<seismic::Trace*> > traceBuffer=nullptr;
+    bool m_track;
+    std::shared_ptr<VolumeDipTracker> m_tracker;
+    //std::shared_ptr< Array2D<seismic::Trace*> > traceBuffer=nullptr;
 };
 
 #endif // SEMBLANCEVOLUMEPROCESS_H

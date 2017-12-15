@@ -19,7 +19,7 @@ public:
         }
     };
 
-    SeismicDatasetWriter(const SeismicDatasetInfo&, unsigned dt_us, unsigned ns);
+    SeismicDatasetWriter(const SeismicDatasetInfo& );
 
     std::shared_ptr<seismic::SEGYWriter> segyWriter()const{
         return m_writer;
@@ -29,7 +29,7 @@ public:
         return m_info;
     }
 
-    void writeTrace(std::shared_ptr<seismic::Trace>);
+    void writeTrace(const seismic::Trace&);
 
     void writeGather(std::shared_ptr<seismic::Gather>);
 

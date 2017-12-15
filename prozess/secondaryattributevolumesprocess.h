@@ -30,10 +30,10 @@ private:
     QString m_fluidFactorName;
     QString m_outputName;
 
-    std::shared_ptr<Grid3D<float> > m_intercept;
-    std::shared_ptr<Grid3D<float> > m_gradient;
-    std::shared_ptr<Grid3D<float> > m_fluidFactor;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_intercept;
+    std::shared_ptr<Volume > m_gradient;
+    std::shared_ptr<Volume > m_fluidFactor;
+    std::shared_ptr<Volume > m_volume;
 
     std::function<float(int, int, int)> m_func;
 };

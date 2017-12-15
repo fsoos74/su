@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QMap>
+#include <avoproject.h>
 
 #include "processparametersdialog.h"
 
@@ -21,18 +22,29 @@ public:
 
     QMap<QString,QString> params();
 
+    int minIline();
+    int maxIline();
+    int minXline();
+    int maxXline();
+    int minZ();
+    int maxZ();
+
 public slots:
-    void setDatasets( const QStringList&);
-    void setWindowStartMS( int );
-    void setWindowEndMS( int );
+    void setProject( AVOProject* p);
+    void setMinIline(int);
+    void setMaxIline(int);
+    void setMinXline(int);
+    void setMaxXline(int);
+    void setMinZ(int);
+    void setMaxZ(int);
 
 private slots:
     void updateOkButton();
+    void updateDatasets();
 
 private:
     Ui::AmplitudeVolumeDialog *ui;
-
-    QStringList m_volumeList;           // need this to check whether volume allready exists
+    AVOProject* m_project=nullptr;
 };
 
 #endif // AMPLITUDEVOLUMEDIALOG_H

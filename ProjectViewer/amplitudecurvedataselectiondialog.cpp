@@ -15,8 +15,10 @@ AmplitudeCurveDataSelectionDialog::AmplitudeCurveDataSelectionDialog(QWidget *pa
     ui->leCrossline->setValidator(validator);
 
     QDoubleValidator* doubleValidator=new QDoubleValidator(this);
-    doubleValidator->setBottom(0);
+    //doubleValidator->setBottom(0);
+    ui->leMinOffset->setValidator(doubleValidator);
     ui->leMaxOffset->setValidator(doubleValidator);
+    ui->leMSec->setValidator(doubleValidator);
     ui->leDepth->setValidator(doubleValidator);
 
     QDoubleValidator* azimuthValidator=new QDoubleValidator(this);
@@ -35,10 +37,6 @@ QString AmplitudeCurveDataSelectionDialog::datasetName(){
     return ui->cbDataset->currentText();
 }
 
-QString AmplitudeCurveDataSelectionDialog::horizonName(){
-    return ui->cbHorizon->currentText();
-}
-
 int AmplitudeCurveDataSelectionDialog::inlineNumber(){
     return ui->leInline->text().toInt();
 }
@@ -47,12 +45,18 @@ int AmplitudeCurveDataSelectionDialog::crosslineNumber(){
     return ui->leCrossline->text().toInt();
 }
 
-QString AmplitudeCurveDataSelectionDialog::reductionMethod(){
-    return ui->cbMethod->currentText();
+double AmplitudeCurveDataSelectionDialog::time(){
+    return 0.001*ui->leMSec->text().toDouble();
 }
 
-int AmplitudeCurveDataSelectionDialog::numberOfSamples(){
-    return ui->sbSamples->value();
+double AmplitudeCurveDataSelectionDialog::minimumOffset(){
+
+    if( ui->cbRestrictOffset->isChecked()){
+        return ui->leMinOffset->text().toDouble();
+    }
+    else{
+        return std::numeric_limits<double>::lowest();
+    }
 }
 
 double AmplitudeCurveDataSelectionDialog::maximumOffset(){
@@ -110,7 +114,10 @@ int AmplitudeCurveDataSelectionDialog::crosslineSize(){
     }
 }
 
-
+void AmplitudeCurveDataSelectionDialog::setDatasetNames(const QStringList & l){
+    ui->cbDataset->clear();
+    ui->cbDataset->addItems(l);
+}
 
 void AmplitudeCurveDataSelectionDialog::setInlineNumber(int il){
 
@@ -122,29 +129,13 @@ void AmplitudeCurveDataSelectionDialog::setCrosslineNumber(int xl){
     ui->leCrossline->setText(QString::number(xl));
 }
 
-void AmplitudeCurveDataSelectionDialog::setDatasetNames( const QStringList& names){
-    ui->cbDataset->clear();
-    ui->cbDataset->addItems(names);
+void AmplitudeCurveDataSelectionDialog::setTime(double secs){
+    ui->leMSec->setText(QString::number(1000*secs));
 }
 
-void AmplitudeCurveDataSelectionDialog::setHorizonNames( const QStringList& names){
-    ui->cbHorizon->clear();
-    ui->cbHorizon->addItems(names);
-}
+void AmplitudeCurveDataSelectionDialog::setMinimumOffset(const double & minOffset){
 
-void AmplitudeCurveDataSelectionDialog::setReductionMethods( const QStringList& h){
-    ui->cbMethod->clear();
-    ui->cbMethod->addItems(h);
-}
-
-// will only select existing method
-void AmplitudeCurveDataSelectionDialog::setCurrentReductionMethod(QString s){
-    auto idx=ui->cbMethod->findText(s);
-    if( idx >= 0) ui->cbMethod->setCurrentIndex(idx);
-}
-
-void AmplitudeCurveDataSelectionDialog::setNumberOfSamples( int n ){
-    ui->sbSamples->setValue(n);
+    ui->leMinOffset->setText(QString::number(minOffset));
 }
 
 void AmplitudeCurveDataSelectionDialog::setMaximumOffset(const double & maxOffset){
@@ -172,18 +163,16 @@ void AmplitudeCurveDataSelectionDialog::on_pbAdd_clicked()
 
     AmplitudeCurveDefinition def;
     def.dataset=datasetName();
-    def.horizon=horizonName();
     def.inlineNumber=inlineNumber();
+    def.time=time();
     def.crosslineNumber=crosslineNumber();
     def.inlineSize=inlineSize();
     def.crosslineSize=crosslineSize();
+    def.minimumOffset=minimumOffset();
     def.maximumOffset=maximumOffset();
     def.minimumAzimuth=minimumAzimuth();
     def.maximumAzimuth=maximumAzimuth();
     def.depth=depth();
-    def.reductionMethod=reductionMethod();
-    def.windowSize=numberOfSamples();
-
 
     emit curveDataSelected(def );
 }

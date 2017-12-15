@@ -24,6 +24,8 @@ FrequencyVolumeProcess::FrequencyVolumeProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode FrequencyVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("input-volume"))){
 
         setErrorString("Parameters contain no input-volume!");
@@ -43,7 +45,7 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::init( const QMap<QString, QSt
     }
     m_volumeName=parameters.value(QString("output-volume"));
 
-    m_volume=std::shared_ptr<Grid3D<float>>(new Grid3D<float>(m_bounds));
+    m_volume=std::shared_ptr<Volume>(new Volume(m_bounds));
 
     if( !m_volume ){
         setErrorString("Allocating volume failed!");
@@ -103,7 +105,7 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
 
     auto bounds=m_volume->bounds();
 
-    int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
+    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
 
     auto freqs = fft_freqs(bounds.dt(), m_windowSamples);
 
@@ -111,12 +113,12 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.inline1()+1; i<=bounds.inline2()-1; i++){
+    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
 
-        for( int j=bounds.crossline1()+1; j<=bounds.crossline2()-1; j++){
+        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
 
             #pragma omp parallel for
-            for( int k=m_windowSamples/2; k<m_bounds.sampleCount()-m_windowSamples/2; k++){
+            for( int k=m_windowSamples/2; k<m_bounds.nt()-m_windowSamples/2; k++){
 
                 auto spectrum=computeSpectrum( &((*m_inputVolume)(i,j,k)), m_windowSamples, bounds.dt() );
                 auto all=integratedPower(spectrum, 0, 1000);
@@ -127,8 +129,8 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
 
         }
 
-        if( (i-bounds.inline1()) % onePercent==0 ){
-            emit progress((i-bounds.inline1()) / onePercent);
+        if( (i-bounds.i1()) % onePercent==0 ){
+            emit progress((i-bounds.i1()) / onePercent);
             qApp->processEvents();
         }
     }
@@ -137,7 +139,7 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
     emit started(1);
     emit progress(0);
     qApp->processEvents();
-    if( !project()->addVolume( m_volumeName, m_volume ) ) {
+    if( !project()->addVolume( m_volumeName, m_volume, params() ) ) {
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_volumeName) );
         return ResultCode::Error;
     }

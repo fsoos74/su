@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Horizon Amplitudes</string>
+   <string>Horizon Frequencies</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../ProjectViewer/icons.qrc">

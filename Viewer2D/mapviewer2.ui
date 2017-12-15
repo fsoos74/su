@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MapViewer2</class>
+ <widget class="QMainWindow" name="MapViewer2">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>845</width>
+    <height>658</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_5">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="RulerGraphicsView" name="graphicsView">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+          <horstretch>1</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>450</width>
+          <height>400</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>845</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionE_xit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Items">
+    <property name="title">
+     <string>&amp;Items</string>
+    </property>
+    <addaction name="actionAdd_Wells"/>
+    <addaction name="actionSelect_Horizons"/>
+    <addaction name="actionSelect_Attribute_Grids"/>
+    <addaction name="actionAdd_Grid"/>
+    <addaction name="actionSelect_Volumes"/>
+   </widget>
+   <widget class="QMenu" name="menu_Options">
+    <property name="title">
+     <string>&amp;Options</string>
+    </property>
+    <addaction name="actionSet_Well_Reference_Depth"/>
+    <addaction name="actionSetup_Wells"/>
+    <addaction name="actionSetup_Grids"/>
+    <addaction name="actionSetup_Volume"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menu_Items"/>
+   <addaction name="menu_Options"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="actionAdd_Grid">
+   <property name="text">
+    <string>Select &amp;Other Grids</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionAdd_Wells">
+   <property name="text">
+    <string>Select &amp;Wells</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionSetup_Wells">
+   <property name="text">
+    <string>Configure &amp;Wells</string>
+   </property>
+  </action>
+  <action name="actionSetup_Grids">
+   <property name="text">
+    <string>Configure &amp;Grid</string>
+   </property>
+  </action>
+  <action name="actionSelect_Volumes">
+   <property name="text">
+    <string>Select &amp;Volumes</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="actionSetup_Volume">
+   <property name="text">
+    <string>Configure &amp;Volume</string>
+   </property>
+  </action>
+  <action name="actionSet_Well_Reference_Depth">
+   <property name="text">
+    <string>Set Well Reference &amp;Depth</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+D</string>
+   </property>
+  </action>
+  <action name="actionSelect_Horizons">
+   <property name="text">
+    <string>Select &amp;Horizon Grids</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionSelect_Attribute_Grids">
+   <property name="text">
+    <string>Select &amp;Attribute Grids</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>RulerGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header location="global">rulergraphicsview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>actionE_xit</sender>
+   <signal>triggered()</signal>
+   <receiver>MapViewer2</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>422</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

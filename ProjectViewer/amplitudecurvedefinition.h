@@ -7,14 +7,14 @@ struct AmplitudeCurveDefinition{
     QString horizon;
     int inlineNumber;
     int crosslineNumber;
+    double time;
     int inlineSize;
     int crosslineSize;
+    double minimumOffset;
     double maximumOffset;
     double minimumAzimuth;
     double maximumAzimuth;
     double depth;
-    QString reductionMethod;
-    int windowSize;
 };
 
 Q_DECLARE_METATYPE(AmplitudeCurveDefinition)

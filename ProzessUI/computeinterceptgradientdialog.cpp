@@ -13,7 +13,8 @@ ComputeInterceptGradientDialog::ComputeInterceptGradientDialog(QWidget *parent) 
     ui->setupUi(this);
 
     QDoubleValidator* doubleValidator=new QDoubleValidator(this);
-    doubleValidator->setBottom(0);
+    //doubleValidator->setBottom(0);
+    ui->leMinOffset->setValidator(doubleValidator);
     ui->leMaxOffset->setValidator(doubleValidator);
     ui->leDepth->setValidator(doubleValidator);
     ui->leMinAzimuth->setValidator(doubleValidator);
@@ -23,6 +24,7 @@ ComputeInterceptGradientDialog::ComputeInterceptGradientDialog(QWidget *parent) 
     connect( ui->leGradient, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leQuality, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leDepth, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->leMinOffset, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leMaxOffset, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbRestrictOffset, SIGNAL( toggled(bool)), this, SLOT(updateOkButton()) );
     connect( ui->cbAVA, SIGNAL( toggled(bool)), this, SLOT(updateOkButton()) );
@@ -77,10 +79,13 @@ QMap<QString,QString> ComputeInterceptGradientDialog::params(){
 
     p.insert( QString("samples"), QString::number(ui->sbSamples->value() ) );
 
+    double minOffset=std::numeric_limits<double>::lowest();
     double maxOffset=std::numeric_limits<double>::max();
     if( ui->cbRestrictOffset->isChecked()){
+        minOffset=ui->leMinOffset->text().toDouble();
         maxOffset=ui->leMaxOffset->text().toDouble();
     }
+    p.insert( QString("minimum-offset"), QString::number(minOffset));
     p.insert( QString("maximum-offset"), QString::number(maxOffset));
 
     p.insert( "minimum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMinAzimuth->text() : QString::number(0.));
@@ -171,11 +176,13 @@ void ComputeInterceptGradientDialog::updateOkButton(){
         }
     }
 
-    if( ui->cbRestrictOffset->isChecked()){
-        if(ui->leMaxOffset->text().isEmpty()){
-            ok=false;
-        }
+    QPalette offsetPalette;
+    if( ui->cbRestrictOffset->isChecked() && ui->leMinOffset->text().toDouble() > ui->leMaxOffset->text().toDouble()){
+        ok=false;
+        offsetPalette.setColor(QPalette::Text, Qt::red);
     }
+    ui->leMinOffset->setPalette(offsetPalette);
+    ui->leMaxOffset->setPalette(offsetPalette);
 
     if( ui->cbRestrictAzimuth->isChecked()){
 

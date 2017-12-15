@@ -65,7 +65,10 @@ SOURCES += main.cpp\
     gridcolorcompositeinputdialog.cpp \
     colorcompositeviewer.cpp \
     spectrumviewer.cpp \
-    spectrumdataselectiondialog.cpp
+    spectrumdataselectiondialog.cpp \
+    processparamsviewer.cpp \
+    logsitemdelegate.cpp \
+    crossplotview.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -94,7 +97,10 @@ HEADERS  += projectviewer.h \
     colorcompositeviewer.h \
     spectrumviewer.h \
     spectrumdataselectiondialog.h \
-    spectrumdefinition.h
+    spectrumdefinition.h \
+    processparamsviewer.h \
+    logsitemdelegate.h \
+    crossplotview.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -118,11 +124,27 @@ FORMS    += projectviewer.ui \
     gridcolorcompositeinputdialog.ui \
     colorcompositeviewer.ui \
     spectrumviewer.ui \
-    spectrumdataselectiondialog.ui
+    spectrumdataselectiondialog.ui \
+    processparamsviewer.ui
 
 RESOURCES += \
     icons.qrc
 
+
+
+#maybe order matters, try put this after all libs that need it
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#INCLUDEPATH += $$PWD/../util
+#DEPENDPATH += $$PWD/../util
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
+
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Database/release/ -lDatabase
@@ -160,6 +182,15 @@ else:unix: LIBS += -L$$OUT_PWD/../SeismicUI/ -lSeismicUI
 INCLUDEPATH += $$PWD/../SeismicUI
 DEPENDPATH += $$PWD/../SeismicUI
 
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../WellUI/release/ -lWellUI
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../WellUI/debug/ -lWellUI
+else:unix: LIBS += -L$$OUT_PWD/../WellUI/ -lWellUI
+
+INCLUDEPATH += $$PWD/../WellUI
+DEPENDPATH += $$PWD/../WellUI
+
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../GridUI/release/ -lGridUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../GridUI/debug/ -lGridUI
 else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
@@ -168,20 +199,20 @@ INCLUDEPATH += $$PWD/../GridUI
 DEPENDPATH += $$PWD/../GridUI
 
 
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Viewer2D/release/ -lViewer2D
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Viewer2D/debug/ -lViewer2D
+else:unix: LIBS += -L$$OUT_PWD/../Viewer2D/ -lViewer2D
+
+INCLUDEPATH += $$PWD/../Viewer2D
+DEPENDPATH += $$PWD/../Viewer2D
+
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Viewer3D/release/ -lViewer3D
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Viewer3D/debug/ -lViewer3D
 else:unix: LIBS += -L$$OUT_PWD/../Viewer3D/ -lViewer3D
 
 INCLUDEPATH += $$PWD/../Viewer3D
 DEPENDPATH += $$PWD/../Viewer3D
-
-
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
-
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Statistics/release/ -lStatistics
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Statistics/debug/ -lStatistics
@@ -197,6 +228,14 @@ else:unix: LIBS += -L$$OUT_PWD/../StatisticsUI/ -lStatisticsUI
 
 INCLUDEPATH += $$PWD/../StatisticsUI
 DEPENDPATH += $$PWD/../StatisticsUI
+
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Well/release/ -lWell
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Well/debug/ -lWell
+else:unix: LIBS += -L$$OUT_PWD/../Well/ -lWell
+
+INCLUDEPATH += $$PWD/../Well
+DEPENDPATH += $$PWD/../Well
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Seismic/release/ -lSeismic
@@ -242,6 +281,7 @@ INCLUDEPATH += $$PWD/../utilUI
 DEPENDPATH += $$PWD/../utilUI
 
 
+
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Crypt/release/ -lCrypt
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Crypt/debug/ -lCrypt
 else:unix: LIBS += -L$$OUT_PWD/../Crypt/ -lCrypt
@@ -268,5 +308,11 @@ win32{
 
 DISTFILES += \
     ../images/select-range-icon.png \
-    ../images/current-point-icon-32x32.png
+    ../images/current-point-icon-32x32.png \
+    ../images/pause-32x32.png \
+    ../images/play-32x32.png \
+    ../images/stop-32x32.png \
+    ../images/crossplot-volumes-32x32.png \
+    ../images/crossplot-logs-32x32.png \
+    ../images/crossplot-grids-32x32.png
 

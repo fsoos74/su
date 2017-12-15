@@ -17,6 +17,8 @@ SecondaryAttributeVolumesProcess::SecondaryAttributeVolumesProcess( AVOProject* 
 
 ProjectProcess::ResultCode SecondaryAttributeVolumesProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     using namespace std::placeholders;
 
     if( !parameters.contains(QString("output"))){
@@ -97,7 +99,7 @@ ProjectProcess::ResultCode SecondaryAttributeVolumesProcess::init( const QMap<QS
 
 
     Grid3DBounds bounds=m_intercept->bounds();
-    m_volume=std::shared_ptr<Grid3D<float> >( new Grid3D<float>(bounds));
+    m_volume=std::shared_ptr<Volume >( new Volume(bounds));
 
 
     if( !m_volume){
@@ -112,7 +114,7 @@ ProjectProcess::ResultCode SecondaryAttributeVolumesProcess::run(){
 
 
     Grid3DBounds bounds=m_intercept->bounds();      // iall input grids have same bounds, checked on init
-    int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
+    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
     QVector<QPointF> all;
 
 
@@ -120,17 +122,17 @@ ProjectProcess::ResultCode SecondaryAttributeVolumesProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.inline1(); i<=bounds.inline2(); i++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
-        for( int j=bounds.crossline1(); j<=bounds.crossline2(); j++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
-            for( int k=0; k<bounds.sampleCount(); k++){
+            for( int k=0; k<bounds.nt(); k++){
                 (*m_volume)(i,j,k)=m_func(i,j,k);
             }
         }
 
-        if( (i-bounds.inline1()) % onePercent==0 ){
-            emit progress((i-bounds.inline1()) / onePercent);
+        if( (i-bounds.i1()) % onePercent==0 ){
+            emit progress((i-bounds.i1()) / onePercent);
             qApp->processEvents();
         }
     }
@@ -140,7 +142,7 @@ ProjectProcess::ResultCode SecondaryAttributeVolumesProcess::run(){
     emit progress(0);
     qApp->processEvents();
 
-    if( !project()->addVolume( m_outputName, m_volume)){
+    if( !project()->addVolume( m_outputName, m_volume, params() ) ){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_outputName) );
         return ResultCode::Error;
     }

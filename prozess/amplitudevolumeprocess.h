@@ -23,7 +23,7 @@ private:
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
     Grid3DBounds  m_bounds;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    std::shared_ptr<Volume > m_volume;
 };
 
 #endif // AMPLITUDEVOLUMEPROCESS_H

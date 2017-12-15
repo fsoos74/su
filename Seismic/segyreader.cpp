@@ -28,6 +28,9 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
 
     Header th;
 
+    // XXX
+    double coordfac=1.;
+    double elevfac=1.;
 
     for( auto def : defs ){
 
@@ -35,35 +38,13 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
         case SEGYHeaderWordDataType::INT16:{
             std::int16_t i;
             get_from_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
-            if( def.ctype==SEGYHeaderWordConvType::ELEV ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( i*m_info.scalel() ));
-            }
-            else if( def.ctype==SEGYHeaderWordConvType::COORD ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( i*m_info.scalco() ) );
-            }
-            else if( def.ctype==SEGYHeaderWordConvType::FLOAT ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( i ) );
-            }
-            else{
-                th[def.name]=HeaderValue(HeaderValue::int_type( i ) );
-            }
+            th[def.name]=HeaderValue(HeaderValue::int_type( i ) );
             break;
         }
         case SEGYHeaderWordDataType::INT32:{
             std::int32_t i;
             get_from_raw( &i, &rhdr[0] + def.pos -1, m_info.isSwap() );
-            if( def.ctype==SEGYHeaderWordConvType::ELEV ){
-                th[def.name]=HeaderValue( HeaderValue::float_type( i*m_info.scalel() ) );
-            }
-            else if( def.ctype==SEGYHeaderWordConvType::COORD ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( i*m_info.scalco() ) );
-            }
-            else if( def.ctype==SEGYHeaderWordConvType::FLOAT ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( i ) );
-            }
-            else{
-                th[def.name]=HeaderValue(HeaderValue::int_type( i ) );
-            }
+            th[def.name]=HeaderValue(HeaderValue::int_type( i ) );
             break;
         }
         case SEGYHeaderWordDataType::UINT16:{
@@ -84,18 +65,7 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
         case SEGYHeaderWordDataType::IEEE:{
             float f;
             get_from_raw( &f, &rhdr[0] + def.pos - 1 , m_info.isSwap() );  // pos is 1-based !!!
-            if( def.ctype==SEGYHeaderWordConvType::PLAIN ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( f ) );
-            }
-            else if( def.ctype==SEGYHeaderWordConvType::ELEV ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( f*m_info.scalel() ));
-            }
-            else if( def.ctype==SEGYHeaderWordConvType::COORD ){
-                th[def.name]=HeaderValue(HeaderValue::float_type( f*m_info.scalco() ) );
-            }
-            else{
-                throw SEGYFormatError("SEGY_FLOAT unhandled conv type!");
-            }
+            th[def.name]=HeaderValue(HeaderValue::float_type( f ) );
             break;
         }
         default:
@@ -105,6 +75,62 @@ Header SEGYReader::convert_raw_header( std::vector<char>& rhdr, const std::vecto
 
 
     } // for
+
+    // get coordinate scaler if needed
+    if( m_info.isFixedScalco() ){
+        coordfac=m_info.scalco();   // this is a factor already
+    }else{
+        try{
+        auto it=th.find("scalco");
+        if( it!=th.end() ){
+            auto h = th["scalco"].intValue();
+            if( h<0 ){
+                coordfac = -1./h;
+            }
+            else if( h>0 ){
+                coordfac = h;
+            }
+        }
+        }catch(...){
+            coordfac=1.;
+        }
+
+    }
+
+    // apply coordinate scaler where needed
+    for( auto def : defs ){
+
+        if( def.ctype==SEGYHeaderWordConvType::COORD ){
+
+            th[def.name]=HeaderValue( HeaderValue::float_type(th[def.name].toFloat()*coordfac) );
+        }
+    }
+
+    // get elevation scaler if needed
+    if( m_info.isFixedScalel() ){
+        elevfac=m_info.scalel();   // this is a factor already
+    }else{
+        try{
+        auto it=th.find("scalel");
+        if( it!=th.end() ){
+            auto h = th["scalel"].intValue();
+            if( h<0 ){
+                elevfac = -1./h;
+            }
+            else if( h>0 ){
+                elevfac = h;
+            }
+        }
+        }catch(...){elevfac=1.;}
+    }
+
+    // apply elevation scaler where needed
+    for( auto def : defs ){
+
+        if( def.ctype==SEGYHeaderWordConvType::ELEV){
+            th[def.name]=HeaderValue( HeaderValue::float_type(th[def.name].toFloat()*elevfac) );
+        }
+    }
 
     return th;
 }
@@ -123,6 +149,7 @@ SEGYReader::SEGYReader( const std::string& name,
         m_raw_samples_buf( max_samples_per_trace * sizeof(sample_t)),
         m_postReadFunc(postReadFunc)
 {
+
     if( !m_ifile) throw( SEGYFormatError("Open file failed!"));
     estimate_filesize();
     read_leading_headers();
@@ -168,7 +195,7 @@ double scalerToFactor( std::int16_t scaler){
 }
 
 void SEGYReader::convert_trace_header(){
-
+/*
     if( !m_info.isFixedScalel() ){
         std::int16_t iscalel;
         get_from_raw( &iscalel, &m_raw_trace_header_buf[0] + m_info.scalelDef().pos - 1, m_info.isSwap() ); // pos is 1-based
@@ -180,7 +207,7 @@ void SEGYReader::convert_trace_header(){
         get_from_raw( &iscalco, &m_raw_trace_header_buf[0] + m_info.scalcoDef().pos - 1, m_info.isSwap() ); // pos is 1-based
         m_info.setScalco( scalerToFactor(iscalco) );
     }
-
+*/
     m_trace_header=convert_raw_header(m_raw_trace_header_buf, m_info.traceHeaderDef());
 
    if( !m_fixed_sampling ){

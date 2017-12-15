@@ -4,8 +4,8 @@
 
 
 
-GatherFilter::GatherFilter( const double& maxABSOffset, const double& minAzimuth, const double& maxAzimuth):
-    m_maxABSOffset(maxABSOffset), m_minAzimuth(minAzimuth), m_maxAzimuth(maxAzimuth){
+GatherFilter::GatherFilter( const double& minOffset, const double& maxOffset, const double& minAzimuth, const double& maxAzimuth):
+    m_minOffset(minOffset),m_maxOffset(maxOffset), m_minAzimuth(minAzimuth), m_maxAzimuth(maxAzimuth){
 
 }
 
@@ -31,7 +31,7 @@ bool GatherFilter::isOffsetAccepted(const seismic::Trace& trace){
 
     double offset=trace.header().at("offset").floatValue();
 
-    return (std::fabs(offset)<=m_maxABSOffset);
+    return (offset>=m_minOffset) && (offset<=m_maxOffset);
 }
 
 bool GatherFilter::isAzimuthAccepted(const seismic::Trace& trace){

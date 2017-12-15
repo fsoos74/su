@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QMap>
 #include <processparametersdialog.h>
+#include <avoproject.h>
+
 
 namespace Ui {
 class GridMathDialog;
@@ -21,19 +23,17 @@ public:
 
 
 public slots:
-    void setInputGrids( QString, const QStringList&);
+    void setProject(AVOProject*);
 
 private slots:
-    void on_cbFunction_currentIndexChanged(int index);
+    void on_cbFunction_currentIndexChanged(QString arg1);
     void updateInputGrids();
-   // void updateInputGridControls();
     void updateOkButton();
 
 private:
     Ui::GridMathDialog *ui;
 
-    QMap<QString, QStringList> m_inputGrids;
-
+    AVOProject* m_project=nullptr;
 };
 
 #endif // GRIDMATHDIALOG_H

@@ -4,6 +4,8 @@
 #include<QPushButton>
 #include<QDoubleValidator>
 
+#include<mathprocessor.h>
+#include<iostream>
 
 GridMathDialog::GridMathDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
@@ -19,7 +21,15 @@ GridMathDialog::GridMathDialog(QWidget *parent) :
     connect( ui->cbInput1Type, SIGNAL(currentIndexChanged(int)), this, SLOT(updateInputGrids()) );
     connect( ui->cbInput2Type, SIGNAL(currentIndexChanged(int)), this, SLOT(updateInputGrids()) );
 
-    ui->cbFunction->setCurrentIndex(0); // this will trigger update of enabled/disabled items
+    QStringList gtypes;
+    gtypes<<toQString(GridType::Horizon);
+    gtypes<<toQString(GridType::Attribute);
+    gtypes<<toQString(GridType::Other);
+    ui->cbOutputType->addItems(gtypes);
+    ui->cbInput1Type->addItems(gtypes);
+    ui->cbInput2Type->addItems(gtypes);
+
+    ui->cbFunction->addItems(MathProcessor::opList());
 }
 
 GridMathDialog::~GridMathDialog()
@@ -31,86 +41,71 @@ QMap<QString,QString> GridMathDialog::params(){
 
     QMap<QString, QString> p;
 
-    //QString fullGridName=createFullGridName( GridType::Attribute, ui->leResultGrid->text() );
-
-    p.insert( QString("function"), QString::number( ui->cbFunction->currentIndex() ) );
+    p.insert( QString("function"), ui->cbFunction->currentText() );
 
     p.insert( QString("output-type"), ui->cbOutputType->currentText() );
-    p.insert( QString("output-grid"), ui->leOutput->text() );
+    p.insert( QString("output-name"), ui->leOutput->text() );
 
     p.insert( QString("input-grid1-type"), ui->cbInput1Type->currentText() );
     p.insert( QString("input-grid1"), ui->cbInput1->currentText() );
 
-    if( ui->cbInput2Type->isEnabled()){
-        p.insert( QString("input-grid2-type"), ui->cbInput2Type->currentText() );
-        p.insert( QString("input-grid2"), ui->cbInput2->currentText() );
-    }
+    p.insert( QString("input-grid2-type"), ui->cbInput2Type->currentText() );
+    p.insert( QString("input-grid2"), (ui->cbInput2Type->isEnabled()) ? ui->cbInput2->currentText() : "" );
 
-    if( ui->leValue->isEnabled()){
+    //if( ui->leValue->isEnabled()){
         p.insert(QString("value"), ui->leValue->text());
-    }
+    //}
 
     return p;
 }
 
 
-void GridMathDialog::setInputGrids( QString type, const QStringList& l){
+void GridMathDialog::setProject(AVOProject* project){
 
-    if( !m_inputGrids.contains(type)){
-        ui->cbOutputType->addItem(type);
-        ui->cbInput1Type->addItem(type);
-        ui->cbInput2Type->addItem(type);
-    }
+    if( project==m_project) return;
 
-    m_inputGrids.insert(type, l);
+    m_project = project;
 
     updateInputGrids();
-
 }
+
 
 void GridMathDialog::updateInputGrids(){
 
-    ui->cbInput1->clear();
-    ui->cbInput1->addItems(m_inputGrids.value(ui->cbInput1Type->currentText()));
+    if(!m_project) return;
 
+    auto itype1=toGridType(ui->cbInput1Type->currentText());
+    ui->cbInput1->clear();
+    auto items1=m_project->gridList(itype1);
+    if(!items1.isEmpty()) ui->cbInput1->addItems(items1);
+
+    auto itype2=toGridType(ui->cbInput2Type->currentText());
     ui->cbInput2->clear();
-    ui->cbInput2->addItems(m_inputGrids.value(ui->cbInput2Type->currentText()));
+    auto items2=m_project->gridList(itype2);
+    if(!items2.isEmpty()) ui->cbInput2->addItems(items2);
 
     updateOkButton();
 }
 
-void GridMathDialog::on_cbFunction_currentIndexChanged(int index)
+void GridMathDialog::on_cbFunction_currentIndexChanged(QString arg1)
 {
-    switch( index ){
-    case 0:
-    case 1:
-        ui->leValue->setEnabled( true );
-        ui->cbInput2Type->setEnabled( false );
-        ui->cbInput2->setEnabled(false);
-        break;
-    case 2:
-    case 3:
-        ui->leValue->setEnabled( false );
-        ui->cbInput2Type->setEnabled( true );
-        ui->cbInput2->setEnabled(true);
-        break;
-    default:    // should not happen, add error code later
-        break;
-    }
+    ui->leValue->setEnabled(arg1.contains("Value"));
+    ui->cbInput2->setEnabled(arg1.contains("Input2"));
+    ui->cbInput2Type->setEnabled(arg1.contains("Input2"));
 }
 
 
 void GridMathDialog::updateOkButton(){
 
+    if(!m_project) return;
+
     bool ok=true;
 
-    if( ui->leOutput->text().isEmpty()){
-        ok=false;
-    }
+    auto otype=toGridType(ui->cbOutputType->currentText());
+    auto oname=ui->leOutput->text();
 
-    QString type=ui->cbOutputType->currentText();
     QPalette palette;
-    if( m_inputGrids.contains(type) && m_inputGrids.value(type).contains(ui->leOutput->text())){
+    if( oname.isEmpty() || m_project->existsGrid(otype, oname) ){    // make sure not to call existsgrid with empty name!!!
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }

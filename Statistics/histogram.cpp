@@ -29,20 +29,35 @@ size_t Histogram::binValue(const size_t i)const{
 }
 
 void Histogram::addValue( const double& v){
+if( std::isnan(v)) return;
+    // statistics are computed using Welford's algorithm
+    m_n++;
 
-    m_totalCount++;
-
+    // add value to bins
+    size_t i=(v-m_firstBin)/m_binWidth;
     if( v<m_firstBin ){
         m_underflowCount++;
-        return;
     }
-
-    size_t i=(v-m_firstBin)/m_binWidth;
-
-    if(i>=m_binCount){
+    else if(i>=m_binCount){
         m_overflowCount++;
-        return;
+    }
+    else{
+        m_bins[i]++;
     }
 
-    m_bins[i]++;
+    // update range
+    if( v<m_min ) m_min=v;
+    if( v>m_max ) m_max=v;
+
+    // update statistics
+    if( m_n==1){
+        m_oldM = m_newM = v;
+        m_oldS = 0.0;
+    }
+    else{
+        m_newM = m_oldM + (v - m_oldM)/m_n;
+        m_newS = m_oldS + (v - m_oldM)*(v - m_newM);
+        m_oldM = m_newM;
+        m_oldS = m_newS;
+    }
 }

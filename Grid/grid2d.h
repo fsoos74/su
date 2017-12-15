@@ -142,6 +142,15 @@ public:
         return std::pair<value_type, value_type>(value_type(), value_type());
     }
     */
+
+    value_type* data(){
+        return &m_values[0];
+    }
+
+    size_t size()const{
+        return m_values.size();
+    }
+
 private:
 
     bounds_type  m_bounds;

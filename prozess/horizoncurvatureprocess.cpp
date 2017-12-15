@@ -13,6 +13,8 @@ HorizonCurvatureProcess::HorizonCurvatureProcess( AVOProject* project, QObject* 
 
 ProjectProcess::ResultCode HorizonCurvatureProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     if( !parameters.contains(QString("basename"))){
 
         setErrorString("Parameters contain no basename!");
@@ -120,7 +122,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(MIN_CURVATURE_STR)){
         QString name=QString("%1-minimum").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gmin ) ) {
+        if( !project()->addGrid( GridType::Other, name, gmin, params() ) ) {
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -128,7 +130,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(MAX_CURVATURE_STR)){
         QString name=QString("%1-maximum").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gmax ) ){
+        if( !project()->addGrid( GridType::Other, name, gmax, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -136,7 +138,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(MEAN_CURVATURE_STR)){
         QString name=QString("%1-mean").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gmean ) ){
+        if( !project()->addGrid( GridType::Other, name, gmean, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -144,7 +146,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(GAUSS_CURVATURE_STR)){
         QString name=QString("%1-gaussian").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, ggauss ) ){
+        if( !project()->addGrid( GridType::Other, name, ggauss, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -152,7 +154,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(MAX_POS_CURVATURE_STR)){
         QString name=QString("%1-maximum-positive").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gpos ) ){
+        if( !project()->addGrid( GridType::Other, name, gpos, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -160,7 +162,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(MAX_NEG_CURVATURE_STR)){
         QString name=QString("%1-maximum-negative").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gneg ) ){
+        if( !project()->addGrid( GridType::Other, name, gneg, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -168,7 +170,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(DIP_ANGLE_STR)){
         QString name=QString("%1-dip-angle").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gangle ) ){
+        if( !project()->addGrid( GridType::Other, name, gangle, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }
@@ -176,7 +178,7 @@ ProjectProcess::ResultCode HorizonCurvatureProcess::run(){
 
     if( m_output_attributes.contains(DIP_AZIMUTH_STR)){
         QString name=QString("%1-dip-azimuth").arg(m_baseName);
-        if( !project()->addGrid( GridType::Other, name, gazimuth ) ){
+        if( !project()->addGrid( GridType::Other, name, gazimuth, params() ) ){
             setErrorString( QString("Could not add grid \"%1\" to project!").arg(name) );
             return ResultCode::Error;
         }

@@ -12,6 +12,7 @@ TARGET = SeismicUI
 TEMPLATE = lib
 
 include(../common.pri)
+
 win32{
     CONFIG +=staticlib
 }
@@ -114,6 +115,12 @@ else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
 INCLUDEPATH += $$PWD/../Seismic
 DEPENDPATH += $$PWD/../Seismic
 
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Well/release/ -lWell
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Well/debug/ -lWell
+else:unix: LIBS += -L$$OUT_PWD/../Well/ -lWell
+
+INCLUDEPATH += $$PWD/../Well
+DEPENDPATH += $$PWD/../Well
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Project/debug/ -lProject
@@ -129,12 +136,18 @@ else:unix: LIBS += -L$$OUT_PWD/../Database/ -lDatabase
 INCLUDEPATH += $$PWD/../Database
 DEPENDPATH += $$PWD/../Database
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
+#else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+#INCLUDEPATH += $$PWD/../util
+#DEPENDPATH += $$PWD/../util
 
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
+
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilUI/release/ -lutilUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilUI/debug/ -lutilUI
@@ -145,12 +158,11 @@ DEPENDPATH += $$PWD/../utilUI
 
 # need this to share current points from seismic viewer and grid viewer
 # this is currently done in a method of gatherviewer
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../GridUI/release/ -lGridUI
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../GridUI/debug/ -lGridUI
-else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
-
-INCLUDEPATH += $$PWD/../GridUI
-DEPENDPATH += $$PWD/../GridUI
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../GridUI/release/ -lGridUI
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../GridUI/debug/ -lGridUI
+#else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
+#INCLUDEPATH += $$PWD/../GridUI
+#DEPENDPATH += $$PWD/../GridUI
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/release/ -lStatisticsUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../StatisticsUI/debug/ -lStatisticsUI

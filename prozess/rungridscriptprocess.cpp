@@ -24,6 +24,7 @@ RunGridScriptProcess::RunGridScriptProcess( AVOProject* project, QObject* parent
 
 ProjectProcess::ResultCode RunGridScriptProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
 
     if( !parameters.contains(QString("type"))){
         setErrorString("Parameters contain no output grid type!");
@@ -302,7 +303,7 @@ ProjectProcess::ResultCode RunGridScriptProcess::run(){
     emit progress(0);
     qApp->processEvents();
     //std::pair<GridType, QString> gridTypeAndName = splitFullGridName( m_gridName );
-    if( !project()->addGrid( m_gridType, m_gridName, m_grid)){
+    if( !project()->addGrid( m_gridType, m_gridName, m_grid, params() )){
         setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_gridName) );
         return ResultCode::Error;
     }

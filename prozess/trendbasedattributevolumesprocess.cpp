@@ -17,6 +17,8 @@ TrendBasedAttributeVolumesProcess::TrendBasedAttributeVolumesProcess( AVOProject
 
 ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::init( const QMap<QString, QString>& parameters ){
 
+    setParams(parameters);
+
     using namespace std::placeholders;
 
     if( !parameters.contains(QString("output"))){
@@ -114,7 +116,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::init( const QMap<Q
     m_tanPhi=std::tan(m_trendAngle);
 
     Grid3DBounds bounds=m_intercept->bounds();
-    m_volume=std::shared_ptr<Grid3D<float> >( new Grid3D<float>(bounds));
+    m_volume=std::shared_ptr<Volume >( new Volume(bounds));
 
 
     if( !m_volume){
@@ -128,7 +130,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::init( const QMap<Q
 ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
 
     Grid3DBounds bounds=m_intercept->bounds();      // iall input grids have same bounds, checked on init
-    int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
+    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
     QVector<QPointF> all;
 
 
@@ -136,11 +138,11 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int iline=bounds.inline1(); iline<=bounds.inline2(); iline++){
+    for( int iline=bounds.i1(); iline<=bounds.i2(); iline++){
 
-        for( int xline=bounds.crossline1(); xline<=bounds.crossline2(); xline++){
+        for( int xline=bounds.j1(); xline<=bounds.j2(); xline++){
 
-            for( int sample=0; sample<bounds.sampleCount(); sample++){
+            for( int sample=0; sample<bounds.nt(); sample++){
 
                 float G=(*m_gradient)(iline, xline, sample);
                 float I=(*m_intercept)(iline, xline, sample);
@@ -156,8 +158,8 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
              }
         }
 
-        if( (iline-bounds.inline1()) % onePercent==0 ){
-            emit progress((iline-bounds.inline1()) / onePercent);
+        if( (iline-bounds.i1()) % onePercent==0 ){
+            emit progress((iline-bounds.i1()) / onePercent);
             qApp->processEvents();
         }
     }
@@ -167,7 +169,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
     emit progress(0);
     qApp->processEvents();
 
-    if( !project()->addVolume( m_outputName, m_volume)){
+    if( !project()->addVolume( m_outputName, m_volume, params() ) ){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_outputName) );
         return ResultCode::Error;
     }
@@ -238,14 +240,14 @@ void TrendBasedAttributeVolumesProcess::computeTrend(){
 
     Grid3DBounds bounds=m_intercept->bounds();
 
-    int onePercent=(bounds.inline2()-bounds.inline1()+1)/100 + 1; // adding one to avoids possible division by zero
+    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
     QVector<QPointF> all;
 
-    for( int iline=bounds.inline1(); iline<=bounds.inline2(); iline++){
+    for( int iline=bounds.i1(); iline<=bounds.i2(); iline++){
 
-        for( int xline=bounds.crossline1(); xline<=bounds.crossline2(); xline++){
+        for( int xline=bounds.j1(); xline<=bounds.j2(); xline++){
 
-            for( int sample=0; sample<bounds.sampleCount(); sample++){
+            for( int sample=0; sample<bounds.nt(); sample++){
 
                 float intercept=(*m_intercept)(iline, xline, sample );
                 if( intercept == m_intercept->NULL_VALUE ) continue;
@@ -261,8 +263,8 @@ void TrendBasedAttributeVolumesProcess::computeTrend(){
 
         }
 
-        if( (iline-bounds.inline1()) % onePercent==0 ){
-            emit progress((iline-bounds.inline1()) / onePercent);
+        if( (iline-bounds.i1()) % onePercent==0 ){
+            emit progress((iline-bounds.i1()) / onePercent);
             qApp->processEvents();
         }
 

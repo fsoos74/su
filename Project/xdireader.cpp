@@ -1,5 +1,5 @@
 #include "xdireader.h"
-
+#include<iostream>
 XDIReader::XDIReader( SeismicDatasetInfo& info) : m_info( info )
 {
 }
@@ -10,9 +10,12 @@ bool XDIReader::read(QIODevice *device)
 
     if (xml.readNextStartElement()) {
 
-        if (xml.name() == "xdi" && xml.attributes().value("version") == "1.0"){
+        if (xml.name() == "xdi" ){ //%%&& xml.attributes().value("version") == "1.0"){
 
             while(xml.readNextStartElement()){
+//std::cout<<xml.name().toString().toStdString()<<std::endl<<std::flush;
+                bool num_ok=true;
+
                 if( xml.name()=="name"){
                     m_info.setName(xml.readElementText());
                 }
@@ -31,8 +34,21 @@ bool XDIReader::read(QIODevice *device)
                 else if( xml.name()=="mode"){
                     m_info.setMode( stringToDatasetMode( xml.readElementText() ) );
                 }
+                else if( xml.name()=="ft"){
+                    m_info.setFT( xml.readElementText().toDouble(&num_ok) );
+                }
+                else if( xml.name()=="dt"){
+                    m_info.setDT( xml.readElementText().toDouble(&num_ok) );
+                }
+                else if( xml.name()=="nt"){
+                    m_info.setNT( xml.readElementText().toULong(&num_ok) );
+                }
                 else{
                     xml.raiseError("Unexpected element");
+                }
+
+                if(!num_ok){
+                    xml.raiseError(QString("Invalid number") );
                 }
             }
         }

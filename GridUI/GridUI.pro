@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += widgets
+QT += sql
 
 //QT       -= gui
 
@@ -22,31 +23,37 @@ DEFINES += GRIDUI_LIBRARY
 SOURCES += gridui.cpp \
     gridview.cpp \
     displayrangedialog.cpp \
-    gridimportdialog.cpp \
     isolinedialog.cpp \
     orientationdialog.cpp \
     gridviewer.cpp \
     griddisplayoptionsdialog.cpp \
-    gridexportdialog.cpp \
     aspectratiodialog.cpp \
     scaledialog.cpp \
     griduiutil.cpp \
-    gridselectdialog.cpp
+    gridselectdialog.cpp \
+    volumeview.cpp \
+    volumepropertydialog.cpp \
+    volumeviewer2d.cpp \
+    volumeitemsconfigdialog.cpp \
+    playerdialog.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
     gridview.h \
     displayrangedialog.h \
-    gridimportdialog.h \
     isolinedialog.h \
     orientationdialog.h \
     gridviewer.h \
     griddisplayoptionsdialog.h \
-    gridexportdialog.h \
     aspectratiodialog.h \
     scaledialog.h \
     griduiutil.h \
-    gridselectdialog.h
+    gridselectdialog.h \
+    volumeview.h \
+    volumepropertydialog.h \
+    volumeviewer2d.h \
+    volumeitemsconfigdialog.h \
+    playerdialog.h
 
 unix {
     target.path = /usr/lib
@@ -57,24 +64,25 @@ unix {
 
 FORMS += \
     displayrangedialog.ui \
-    gridimportdialog.ui \
     isolinedialog.ui \
     orientationdialog.ui \
     gridviewer.ui \
     griddisplayoptionsdialog.ui \
-    gridexportdialog.ui \
     aspectratiodialog.ui \
     scaledialog.ui \
-    gridselectdialog.ui
+    gridselectdialog.ui \
+    volumepropertydialog.ui \
+    volumeviewer2d.ui \
+    playerdialog.ui
 
 
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../util/debug/ -lutil
-else:unix: LIBS += -L$$OUT_PWD/../util/ -lutil
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
+else:unix: LIBS += -L$$OUT_PWD/../utilfs/ -lutilfs
 
-INCLUDEPATH += $$PWD/../util
-DEPENDPATH += $$PWD/../util
+INCLUDEPATH += $$PWD/../utilfs
+DEPENDPATH += $$PWD/../utilfs
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI
@@ -121,12 +129,11 @@ INCLUDEPATH += $$PWD/../StatisticsUI
 DEPENDPATH += $$PWD/../StatisticsUI
 
 # added for intersection times
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../SeismicUI/release/ -lSeismicUI
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../SeismicUI/debug/ -lSeismicUI
-else:unix: LIBS += -L$$OUT_PWD/../SeismicUI/ -lSeismicUI
-
-INCLUDEPATH += $$PWD/../SeismicUI
-DEPENDPATH += $$PWD/../SeismicUI
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../SeismicUI/release/ -lSeismicUI
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../SeismicUI/debug/ -lSeismicUI
+#else:unix: LIBS += -L$$OUT_PWD/../SeismicUI/ -lSeismicUI
+#INCLUDEPATH += $$PWD/../SeismicUI
+#DEPENDPATH += $$PWD/../SeismicUI
 
 #added for intersection times
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Seismic/release/ -lSeismic
@@ -136,3 +143,10 @@ else:unix: LIBS += -L$$OUT_PWD/../Seismic/ -lSeismic
 INCLUDEPATH += $$PWD/../Seismic
 DEPENDPATH += $$PWD/../Seismic
 
+
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Well/release/ -lWell
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../Well/debug/ -lWell
+else:unix: LIBS += -L$$OUT_PWD/../Well/ -lWell
+
+INCLUDEPATH += $$PWD/../Well
+DEPENDPATH += $$PWD/../Well

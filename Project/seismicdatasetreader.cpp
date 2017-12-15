@@ -6,7 +6,12 @@ SeismicDatasetReader::SeismicDatasetReader(const SeismicDatasetInfo& info):m_inf
 {
     openDatabase();
     openSEGYFile();
+}
 
+
+void SeismicDatasetReader::close(){
+    closeDatabase();
+    closeSEGYFile();
 }
 
 
@@ -501,6 +506,11 @@ void SeismicDatasetReader::openDatabase(){
 }
 
 
+void SeismicDatasetReader::closeDatabase(){
+
+    m_db.close();
+}
+
 void SeismicDatasetReader::openSEGYFile(){
 
     seismic::SEGYInfo segyInfo;
@@ -520,5 +530,9 @@ void SeismicDatasetReader::openSEGYFile(){
     }
 }
 
+void SeismicDatasetReader::closeSEGYFile(){
+
+    if( m_reader) m_reader.reset();
+}
 
 

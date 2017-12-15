@@ -20,6 +20,9 @@ HistogramWidget::HistogramWidget(QWidget* parent) : QWidget(parent)
 void HistogramWidget::setHistogram(const Histogram& h){
 
     m_histogram=h;
+
+    //std::cout<<"HistogramWidget::setHistogram"<<std::endl;
+    //std::cout<<"min="<<m_histogram.minimum()<<" max="<<m_histogram.maximum()<<" #bins="<<m_histogram.binCount()<<std::endl<<std::flush;
     update();
 }
 
@@ -45,6 +48,31 @@ void HistogramWidget::setColorTable( ColorTable* ct){
     setRange( m_colorTable->range() );
     setPower( m_colorTable->power() );
 }
+
+/*
+void HistogramWidget::setColorTable( ColorTable* ct){
+
+    if( ct==m_colorTable ) return;
+
+    if( m_colorTable ) disconnect(m_colorTable, 0, 0, 0);
+
+    m_colorTable=ct;
+
+    connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(update()) );
+
+    connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)),
+             this, SLOT(setRange(std::pair<double,double>)) );
+    connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(setPower(double)) );
+
+    connect( this, SIGNAL(rangeChanged(std::pair<double,double>)),
+             m_colorTable, SLOT(setRange(std::pair<double, double>) ) );
+    connect( this, SIGNAL(powerChanged(double)),
+             m_colorTable, SLOT(setPower(double) ) );
+
+    setRange( m_colorTable->range() );
+    setPower( m_colorTable->power() );
+}
+*/
 
 void HistogramWidget::setRange(std::pair<double, double> r){
 
