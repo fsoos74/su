@@ -198,6 +198,7 @@
    <addaction name="actionCrossplot_Grids"/>
    <addaction name="actionCrossplot_Volumes"/>
    <addaction name="actionCrossplot_Logs"/>
+   <addaction name="actionLog_TVD_Plot"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menuBar">
@@ -231,14 +232,6 @@
      <addaction name="actionWellpaths_Bulk_Mode"/>
      <addaction name="actionWell_Markers"/>
     </widget>
-    <widget class="QMenu" name="menu_Open">
-     <property name="title">
-      <string>&amp;Open </string>
-     </property>
-     <addaction name="actionOpenProject"/>
-     <addaction name="actionOpenGrid"/>
-     <addaction name="actionOpenSeismicDataset"/>
-    </widget>
     <widget class="QMenu" name="menuExport">
      <property name="title">
       <string>&amp;Export</string>
@@ -257,7 +250,7 @@
      </property>
     </widget>
     <addaction name="actionNewProject"/>
-    <addaction name="menu_Open"/>
+    <addaction name="actionOpenProject"/>
     <addaction name="actionSave"/>
     <addaction name="actionSaveProjectAs"/>
     <addaction name="separator"/>
@@ -296,6 +289,7 @@
     <addaction name="separator"/>
     <addaction name="actionAmplitude_vs_Offset_Plot"/>
     <addaction name="actionFrequency_Spectrum_Plot"/>
+    <addaction name="actionLog_TVD_Plot"/>
     <addaction name="separator"/>
     <addaction name="actionColor_Composite_Grids"/>
     <addaction name="actionOpen_2DViewer"/>
@@ -305,12 +299,13 @@
    </widget>
    <widget class="QMenu" name="menuPro_ject">
     <property name="title">
-     <string>Pro&amp;ject</string>
+     <string>P&amp;roject</string>
     </property>
+    <addaction name="actionDisplay_Map"/>
+    <addaction name="separator"/>
     <addaction name="action_Geometry"/>
     <addaction name="actionAxis_Orientation"/>
-    <addaction name="separator"/>
-    <addaction name="actionDisplay_Map"/>
+    <addaction name="actionEdit_Tops"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -440,20 +435,7 @@
      <normaloff>:/icons/images/open-icon-32x32.png</normaloff>:/icons/images/open-icon-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Project</string>
-   </property>
-  </action>
-  <action name="actionOpenGrid">
-   <property name="text">
-    <string>&amp;Grid</string>
-   </property>
-  </action>
-  <action name="actionOpenSeismicDataset">
-   <property name="text">
-    <string>&amp;Seismic Dataset</string>
-   </property>
-   <property name="toolTip">
-    <string>Open Seismic Dataset</string>
+    <string>&amp;Open</string>
    </property>
   </action>
   <action name="actionCreateTimeslice">
@@ -888,6 +870,20 @@
    </property>
    <property name="text">
     <string>O&amp;pen Slice Viewer</string>
+   </property>
+  </action>
+  <action name="actionLog_TVD_Plot">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/icons/images/logscatter-32x32.png</normaloff>:/icons/images/logscatter-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Log(s) vs &amp;Z Scatter Plot</string>
+   </property>
+  </action>
+  <action name="actionEdit_Tops">
+   <property name="text">
+    <string>Edit &amp;Tops</string>
    </property>
   </action>
  </widget>

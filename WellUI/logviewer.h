@@ -32,6 +32,7 @@ class LogViewer : public BaseViewer
 public:
 
     enum TrackLabelMode{ UWI=0, WELL_NAME};
+    enum FlattenMode{ FLATTEN_NONE=0, FLATTEN_HORIZON, FLATTEN_TOP};
 
     explicit LogViewer(QWidget *parent = 0);
     ~LogViewer();
@@ -51,7 +52,8 @@ public slots:
     void removeLog(QString);
     void setZMode(ZMode);
     void setZMode(QString);
-    void setFlattenHorizon(QString);
+    void setFlattenMode(int);
+    void setFlattenSource(QString);
     void setFilterLen(int);
     void setTrackLabelMode(int);
 
@@ -77,6 +79,7 @@ private slots:
     void onZCursorChanged(qreal);
     void onTrackLabelMoved(QPoint);
     void onCloseTrack();
+    void onTrackPointSelected(QPointF);
 
     //void on_action_Open_Horizon_triggered();
     //void on_action_Close_Horizon_triggered();
@@ -84,6 +87,7 @@ private slots:
     void on_actionSort_By_Well_triggered();
     void on_actionSetup_Horizons_triggered();
     void on_actionSetup_Tops_triggered();
+
 
 private:
 
@@ -97,20 +101,24 @@ private:
     void addLog( WellInfo, std::shared_ptr<WellPath>, std::shared_ptr<Log>, std::shared_ptr<WellMarkers> );
     void layoutLogs();
     void setupZModeToolbar();
+    void setupFlattenToolbar();
+    void setupFilterToolbar();
 
     Ui::LogViewer *ui;
     QWidget* m_tracksAreaWidget;
     QComboBox* m_cbZMode;
-    QComboBox* m_cbFlattenHorizon;
+    QComboBox* m_cbFlattenMode;
+    QComboBox* m_cbFlattenSource;
     QSpinBox* m_sbFilterLen;
 
     Axis* m_zAxis=nullptr;
     QLayout* m_tracksLayout=nullptr;
     AVOProject* m_project=nullptr;
     ZMode m_zmode=ZMode::MD;
+    FlattenMode m_flattenMode=FLATTEN_NONE;
+    QString m_flattenSource;
     int m_filterLen=0;
     int m_trackLabelMode=TrackLabelMode::UWI;
-    std::shared_ptr<Grid2D<float>> m_flattenHorizon;
 
     QMap<QString, std::shared_ptr<Grid2D<float>>> m_horizons;
     QVector<std::shared_ptr<WellMarkers>> m_markers;

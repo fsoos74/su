@@ -19,7 +19,7 @@ public:
     WellMarkers markers();
 
 public slots:
-    void setMarkers(WellMarkers);
+    void setMarkers(const WellMarkers&);
 
 private slots:
     void on_pbAdd_clicked();

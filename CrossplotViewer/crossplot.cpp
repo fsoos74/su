@@ -174,4 +174,37 @@ Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline, int xline ){
     return data;
 }
 
+
+Data createFromLogs( Log* log1, Log* log2, Log* loga, const WellPath& wp, QTransform xy_to_ilxl){
+
+    Data data;
+
+    if( !log1 ) return data;
+    if( !log2 ) return data;
+    if( !loga ) return data;
+
+    if( log1->nz() != log2->nz() || log1->nz()!=loga->nz() ) return data;
+
+    for( int i=0; i<log1->nz(); i++){
+
+        double v1=(*log1)[i];
+        double v2=(*log2)[i];
+        double va=(*loga)[i];
+        if( v1==log1->NULL_VALUE || v2==log2->NULL_VALUE || va==loga->NULL_VALUE) continue;
+
+        auto md=log1->index2z(i);
+        auto xy=wp.locationAtMD(md);
+        auto ilxl=xy_to_ilxl.map(xy);
+        auto il=ilxl.x();
+        auto xl=ilxl.y();
+        auto z=wp.zAtMD(md);
+
+        data.push_back( DataPoint( v1, v2, il, xl, 0.001*z, va)); // sec -> ms
+    }
+
+    return data;
+}
+
+
+
 }

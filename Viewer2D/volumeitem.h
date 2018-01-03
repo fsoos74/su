@@ -12,8 +12,8 @@ class VolumeItem : public GridItem
 public:
     VolumeItem(AVOProject* project=nullptr, QGraphicsItem* parentGraphicsItemItem=nullptr, QObject* parentQObject=nullptr );
 
-    double time()const{
-        return m_time;
+    double refDepth()const{
+        return m_refDepth;
     }
 
     std::shared_ptr<Volume> volume()const{
@@ -21,7 +21,7 @@ public:
     }
 
 public slots:
-    void setTime(double);
+    void setRefDepth(double);
     void setVolume(std::shared_ptr<Volume>);
 
 private slots:
@@ -30,7 +30,7 @@ private slots:
 private:
 
     std::shared_ptr<Volume> m_volume;
-    double m_time;
+    double m_refDepth;
 
 };
 

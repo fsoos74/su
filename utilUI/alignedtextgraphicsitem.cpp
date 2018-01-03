@@ -63,12 +63,14 @@ QRectF AlignedTextGraphicsItem::boundingRect()const{
     return QRectF(x, y, w, h);
 }
 
+#include<iostream>
 void AlignedTextGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *){
 
 
     painter->save();
 
     QTransform tf=transform();
+    std::cout<<text().toStdString()<<" "<<"m11="<<tf.m11()<<" m22="<<tf.m22()<<std::endl<<std::flush;
 
     painter->scale(1./tf.m11(), 1./tf.m22());
 

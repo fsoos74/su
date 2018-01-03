@@ -4,7 +4,7 @@
 #include<QtSql>
 #include<QSet>
 #include <iostream>
-
+#include<limits>
 
 int TopsDBManager::m_counter=0;
 
@@ -92,15 +92,45 @@ QStringList TopsDBManager::wells(const QString& name){
     return QStringList::fromSet(res);
 }
 
-QVector<WellMarker> TopsDBManager::valuesByWell(const QString &uwi){
+double TopsDBManager::value(const QString& uwi, const QString& name){
 
-    QSqlQuery query("valuesByWell", m_db);
+    QSqlQuery query("value", m_db);
+    auto qstring = QString("select md from %1 where uwi='%2'").arg(TABLE, uwi);
+    if( !query.exec(qstring)){
+        throw std::runtime_error( query.lastError().text().toStdString());
+    }
+
+    if( !query.next()) return 0; //quiet_NaN();
+
+    return query.value(0).toDouble();
+}
+
+
+WellMarkers TopsDBManager::markers(){
+
+    QSqlQuery query("markers", m_db);
+    auto qstring = QString("select name,uwi,md from %1").arg(TABLE);
+    if( !query.exec(qstring)){
+        throw std::runtime_error( query.lastError().text().toStdString());
+    }
+
+    WellMarkers res;
+    while( query.next()){
+        res.push_back(WellMarker( query.value(0).toString(), query.value(1).toString(), query.value(2).toDouble()));
+    }
+
+    return res;
+}
+
+WellMarkers TopsDBManager::markersByWell(const QString &uwi){
+
+    QSqlQuery query("markersByWell", m_db);
     auto qstring = QString("select name,md from %1 where uwi='%2'").arg(TABLE, uwi);
     if( !query.exec(qstring)){
         throw std::runtime_error( query.lastError().text().toStdString());
     }
 
-    QVector<WellMarker> res;
+    WellMarkers res;
     while( query.next()){
         res.push_back(WellMarker( query.value(0).toString(), uwi, query.value(1).toDouble()));
     }
@@ -108,15 +138,15 @@ QVector<WellMarker> TopsDBManager::valuesByWell(const QString &uwi){
     return res;
 }
 
-QVector<WellMarker> TopsDBManager::valuesByName(const QString &name){
+WellMarkers TopsDBManager::markersByName(const QString &name){
 
-    QSqlQuery query("valuesByName", m_db);
+    QSqlQuery query("markersByName", m_db);
     auto qstring = QString("select uwi,md from %1 where name='%2'").arg(TABLE, name);
     if( !query.exec(qstring)){
         throw std::runtime_error( query.lastError().text().toStdString());
     }
 
-    QVector<WellMarker> res;
+    WellMarkers res;
     while( query.next()){
         res.push_back(WellMarker( name, query.value(0).toString(), query.value(1).toDouble()));
     }
@@ -145,6 +175,14 @@ bool TopsDBManager::exists(const QString &uwi, const QString& name){
     return query.next();
 }
 
+void TopsDBManager::clear(){
+
+    QSqlQuery query("clear", m_db);
+    auto qstring = QString("delete from %1;").arg(TABLE);
+    if( !query.exec(qstring)){
+        throw std::runtime_error( query.lastError().text().toStdString());
+    }
+}
 
 void TopsDBManager::remove(const QString &uwi, const QString &name){
 

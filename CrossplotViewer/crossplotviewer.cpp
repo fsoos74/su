@@ -69,6 +69,11 @@ CrossplotViewer::CrossplotViewer(QWidget *parent) :
     loadSettings();
 }
 
+
+CrossplotView* CrossplotViewer::view(){
+    return ui->crossplotView;
+}
+
 void CrossplotViewer::populateWindowMenu(){
 
     ui->menu_Window->addAction(m_attributeColorBarDock->toggleViewAction());

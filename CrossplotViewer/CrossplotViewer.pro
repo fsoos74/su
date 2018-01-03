@@ -1,12 +1,6 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2017-07-22T15:25:06
-#
-#-------------------------------------------------
-
 QT       += widgets
 
-TARGET = Viewer2D
+TARGET = CrossplotViewer
 TEMPLATE = lib
 
 win32{
@@ -16,24 +10,22 @@ win32{
 include(../common.pri)
 
 SOURCES += \
-    griditem.cpp \
-    mapviewer2.cpp \
-    viewer2d.cpp \
-    wellitemconfigdialog.cpp \
-    griditemconfigdialog.cpp \
-    wellitem.cpp \
-    volumeitem.cpp \
-    areaitem.cpp
+    crossplotviewer.cpp \
+    crossplot.cpp \
+    crossplotgridsinputdialog.cpp \
+    crossplotview.cpp \
+    crossplotviewerdisplayoptionsdialog.cpp \
+    crossplotvolumesinputdialog.cpp \
+    edittrenddialog.cpp
 
 HEADERS += \
-    griditem.h \
-    mapviewer2.h \
-    viewer2d.h \
-    wellitemconfigdialog.h \
-    griditemconfigdialog.h \
-    wellitem.h \
-    volumeitem.h \
-    areaitem.h
+    crossplotviewer.h \
+    crossplot.h \
+    crossplotgridsinputdialog.h \
+    crossplotview.h \
+    crossplotviewerdisplayoptionsdialog.h \
+    crossplotvolumesinputdialog.h \
+    edittrenddialog.h
 
 unix {
     target.path = /usr/lib
@@ -41,9 +33,11 @@ unix {
 }
 
 FORMS += \
-    mapviewer2.ui \
-    wellitemconfigdialog.ui \
-    griditemconfigdialog.ui
+    crossplotgridsinputdialog.ui \
+    crossplotviewer.ui \
+    crossplotviewerdisplayoptionsdialog.ui \
+    crossplotvolumesinputdialog.ui \
+    edittrenddialog.ui
 
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil

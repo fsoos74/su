@@ -43,7 +43,15 @@ void TrackView::setWellPath(std::shared_ptr<WellPath> p){
 
 
 void TrackView::setHighlighted(QVector<qreal> h){
-    m_highlighted=h;
+    if( !m_wellPath ) return;
+
+    m_highlighted.clear();
+    m_highlighted.reserve(h.size());
+    for( auto z : h ){
+        auto md=m_wellPath->mdAtZ(z);
+        m_highlighted.push_back(md);
+    }
+
     refreshScene();
 }
 
@@ -223,7 +231,7 @@ void TrackView::refreshScene(){
         QFont markerFont("Helvetica [Cronyx]", 10);
         for( auto name : m_markers.keys()){
             auto marker=m_markers.value(name);
-            qreal zm=marker.md;
+            qreal zm=marker.md + m_zshift ;
             qreal z=zAxis()->toScene(zm);
 
             auto pen=(marker.type==Marker::Type::Horizon) ? horizonPen : topPen;

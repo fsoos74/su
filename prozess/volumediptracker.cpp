@@ -16,5 +16,5 @@ double VolumeDipTracker::track( int i, int j, double t, int ii, int jj)const{
     auto delta_i=ii - i;
     auto delta_j=jj - j;
 
-    return t + delta_i*di + delta_j*dj;
+    return t +  delta_i*di*m_ildip->dt() + delta_j*dj*m_xldip->dt();        // dip volumes store sample per line
 }

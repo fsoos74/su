@@ -61,6 +61,7 @@
     <addaction name="actionSelect_Attribute_Grids"/>
     <addaction name="actionAdd_Grid"/>
     <addaction name="actionSelect_Volumes"/>
+    <addaction name="actionShow_Project_Area"/>
    </widget>
    <widget class="QMenu" name="menu_Options">
     <property name="title">
@@ -145,6 +146,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="actionShow_Project_Area">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show Project Area</string>
    </property>
   </action>
  </widget>

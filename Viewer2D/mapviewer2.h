@@ -10,6 +10,8 @@
 #include<volumeitem.h>
 #include<wellitem.h>
 #include<QDockWidget>
+#include<QDoubleSpinBox>
+
 
 namespace Ui {
 class MapViewer2;
@@ -21,12 +23,16 @@ class MapViewer2 : public BaseViewer
 
 public:
 
-    enum class ItemType : int { Volume, HorizonGrid, AttributeGrid, OtherGrid, Well };
+    enum class ItemType : int { Area, Volume, HorizonGrid, AttributeGrid, OtherGrid, Well };
 
     explicit MapViewer2(QWidget *parent = 0);
     ~MapViewer2();
 
     QStringList itemList( ItemType );
+
+    bool showProjectArea()const{
+        return m_showProjectArea;
+    }
 
     qreal wellRefDepth()const{
         return m_wellRefDepth;
@@ -34,9 +40,11 @@ public:
 
 public slots:
     void setProject(AVOProject* );
+    void setShowProjectArea(bool);
     void setWellRefDepth(qreal);
 
 signals:
+    void showProjectAreaChanged(bool);
     void wellRefDepthChanged(qreal);
 
 protected:
@@ -68,6 +76,7 @@ private:
     void configGridItem( GridItem* );
     void configVolumeItem( VolumeItem* );
 
+    void setupToolBarControls();
     void addItemDockWidget( QString title, QGraphicsItem*, QWidget* );
     void removeItemDockWidget( QGraphicsItem* );
 
@@ -76,7 +85,9 @@ private:
     QRectF addMargins(const QRectF&);
 
     Ui::MapViewer2 *ui;
+    QDoubleSpinBox* m_sbRefDepth;
     AVOProject* m_project=nullptr;
+    bool m_showProjectArea=true;
     QStringList m_grids;
     QStringList m_wells;
     qreal m_wellRefDepth=0;

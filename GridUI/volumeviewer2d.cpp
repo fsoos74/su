@@ -600,7 +600,7 @@ try{
         }
 
         auto db=m_project->openTopsDatabase();
-        auto tmp=db->valuesByWell(name);
+        auto tmp=db->markersByWell(name);
         auto wms=std::make_shared<WellMarkers>(WellMarkers(tmp.begin(), tmp.end()));
 
         ui->volumeView->addWell(name, pt, wms);

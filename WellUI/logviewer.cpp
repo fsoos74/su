@@ -33,7 +33,7 @@
 #include<tuple>
 #include<algorithm>
 #include<wellmarkers.h>
-
+#include<topsdbmanager.h>
 
 QMap<ZMode,QString> zmodeNameLookup{
     {ZMode::MD, "MD"},
@@ -56,6 +56,8 @@ LogViewer::LogViewer(QWidget *parent) :
     connect( ui->action_Send, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
     setupZModeToolbar();
+    setupFilterToolbar();
+    setupFlattenToolbar();
 }
 
 LogViewer::~LogViewer()
@@ -66,7 +68,7 @@ LogViewer::~LogViewer()
 
 void LogViewer::setupZModeToolbar(){
 
-    QToolBar* toolBar=new QToolBar(this);
+    QToolBar* toolBar=new QToolBar( "Z-Mode", this);
 
     toolBar->addWidget(new QLabel("Z-Axis:", this));
     m_cbZMode=new QComboBox(this);
@@ -75,10 +77,35 @@ void LogViewer::setupZModeToolbar(){
     }
     toolBar->addWidget(m_cbZMode);
 
-    toolBar->addWidget(new QLabel("Flatten:", this));
-    m_cbFlattenHorizon=new QComboBox(this);
-    m_cbFlattenHorizon->addItem("NONE");
-    toolBar->addWidget(m_cbFlattenHorizon);
+    addToolBar(toolBar);
+
+    connect( m_cbZMode, SIGNAL(currentIndexChanged(QString)), this, SLOT(setZMode(QString)));
+    connect( this, SIGNAL(zmodeChanged(QString)), m_cbZMode, SLOT(setCurrentText(QString)));
+}
+
+void LogViewer::setupFlattenToolbar(){
+
+    QToolBar* toolBar=new QToolBar( "Flatten", this);
+
+    m_cbFlattenMode=new QComboBox(this);
+    m_cbFlattenMode->addItem("NO Flattening");
+    m_cbFlattenMode->addItem("Flatten on Horizon");
+    m_cbFlattenMode->addItem("Flatten on Top");
+    m_cbFlattenMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    toolBar->addWidget(m_cbFlattenMode);
+    connect( m_cbFlattenMode, SIGNAL(currentIndexChanged(int)), this, SLOT(setFlattenMode(int)));
+
+    m_cbFlattenSource=new QComboBox(this);
+    m_cbFlattenSource->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    toolBar->addWidget(m_cbFlattenSource);
+    connect( m_cbFlattenSource, SIGNAL(currentIndexChanged(QString)), this,SLOT(setFlattenSource(QString)));
+
+    addToolBar(toolBar);
+}
+
+void LogViewer::setupFilterToolbar(){
+
+    QToolBar* toolBar=new QToolBar("Filter", this);
 
     toolBar->addWidget(new QLabel("Filter:", this) );
     m_sbFilterLen=new QSpinBox(this);
@@ -89,9 +116,6 @@ void LogViewer::setupZModeToolbar(){
 
     addToolBar(toolBar);
 
-    connect( m_cbZMode, SIGNAL(currentIndexChanged(QString)), this, SLOT(setZMode(QString)));
-    connect( this, SIGNAL(zmodeChanged(QString)), m_cbZMode, SLOT(setCurrentText(QString)));
-    connect( m_cbFlattenHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
     connect( m_sbFilterLen, SIGNAL(valueChanged(int)), this, SLOT(setFilterLen(int)) );
 }
 
@@ -207,6 +231,9 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
     tv->setWellPath(p);
     tv->setZMode(m_zmode);
     connect( this, SIGNAL(zmodeChanged(ZMode)), tv, SLOT(setZMode(ZMode)) );
+    tv->setSelectionMode(AxisView::SELECTIONMODE::SinglePoint);
+    connect( tv, SIGNAL(pointSelected(QPointF)), this, SLOT(onTrackPointSelected(QPointF)));
+
     tv->setFilterLen(m_filterLen);
     connect( this, SIGNAL(filterLenChanged(int)), tv, SLOT(setFilterLen(int)) );
 
@@ -311,11 +338,39 @@ void LogViewer::setZMode(QString str){
     setZMode(m);
 }
 
-void LogViewer::setFlattenHorizon(QString name){
+void LogViewer::setFlattenMode(int m){
 
-    m_flattenHorizon=m_horizons.value(name, std::shared_ptr<Grid2D<float>>());    // if not found, eg NONE then horizon will be set to empty/null pointer
+    if( m==m_flattenMode) return;
+
+    m_flattenMode=static_cast<FlattenMode>(m);
+
+    m_cbFlattenSource->clear();
+
+    switch( m_flattenMode){
+        case FLATTEN_HORIZON:{
+            auto names=m_project->gridList(GridType::Horizon);
+            std::sort(names.begin(), names.end());
+            m_cbFlattenSource->addItems(names);
+            break;
+        }
+        case FLATTEN_TOP:{
+            auto p=m_project->openTopsDatabase();
+            auto names=p->names();
+            std::sort(names.begin(), names.end());
+            m_cbFlattenSource->addItems(names);
+            break;
+            }
+        default: break;
+    }
+
     updateTrackFlatten();
+}
 
+void LogViewer::setFlattenSource(QString name){
+
+    if( m_flattenSource==name) return;
+    m_flattenSource=name;
+    updateTrackFlatten();
 }
 
 void LogViewer::setFilterLen(int l){
@@ -521,6 +576,35 @@ void LogViewer::onZCursorChanged(qreal z){
     }
 }
 
+void LogViewer::onTrackPointSelected(QPointF p){
+
+    static QString prevname;
+
+    auto sourceTV = dynamic_cast<TrackView*>(sender());
+    if( !sourceTV) return;
+
+    // find number of this log in log list
+    auto idx = m_trackViews.indexOf(sourceTV);
+
+    // convert pick to md
+    auto md = sourceTV->view2log(p.y());
+    auto uwi = m_wellInfos[idx].uwi();
+
+    auto tmgr=m_project->openTopsDatabase();
+    auto avail=tmgr->names();
+    std::sort(avail.begin(), avail.end());
+    bool ok=false;
+    int previdx=avail.indexOf(prevname);
+    auto name=QInputDialog::getItem( this, "Pick Top", "Select Top:", avail, previdx, false, &ok);
+    if( name.isEmpty() || !ok ) return;
+    prevname=name;
+
+    tmgr->set( WellMarker( name, uwi, md) );
+
+    m_markers[idx]=m_project->loadWellMarkersByWell(uwi);
+    updateTrackTops();
+    //sourceTV->refreshScene();       // maybe better have db changed signal connected
+}
 
 void LogViewer::onTrackLabelMoved(QPoint pos){
 
@@ -678,6 +762,63 @@ void LogViewer::updateTrackTops(){
 
 void LogViewer::updateTrackFlatten(){
 
+    switch (m_flattenMode) {
+
+    case FLATTEN_NONE:{
+        for( int i = 0; i<m_trackViews.size(); i++){
+            m_trackViews[i]->setZShift(0);
+        }
+    }
+
+    case FLATTEN_HORIZON:{
+
+        auto flattenHorizon=m_project->loadGrid(GridType::Horizon, m_flattenSource);
+        if( !flattenHorizon){
+            QMessageBox::critical(this, "Flatten Horizon", "Loading Horizon failed!", QMessageBox::Ok);
+            return;
+        }
+
+        for( int i = 0; i<m_trackViews.size(); i++){
+            auto tv=m_trackViews[i];
+            qreal zs=0;
+            auto wp=m_trackViews[i]->wellPath();
+            auto zh=intersect(*flattenHorizon, *wp);
+            if( zh!=flattenHorizon->NULL_VALUE) zs=-zh;
+            tv->setZShift(zs);
+        }
+
+        break;
+    }
+
+    case FLATTEN_TOP:{
+
+        auto tmgr=m_project->openTopsDatabase();
+        if( !tmgr ){
+            QMessageBox::critical( this, "Flatten Top", "Open tops database failed!", QMessageBox::Ok);
+            return;
+        }
+
+        for( int i = 0; i<m_trackViews.size(); i++){
+            auto uwi=m_wellInfos[i].uwi();
+            auto name=m_flattenSource;
+            if( !tmgr->exists(uwi, name)) continue;
+
+            auto md=tmgr->value(uwi, name);
+            auto tv=m_trackViews[i];
+            tv->setZShift(-md);
+        }
+    }
+
+    }
+
+
+
+    updateZAxis();
+}
+
+/*
+void LogViewer::updateTrackFlatten(){
+
     for( int i = 0; i<m_trackViews.size(); i++){
         auto tv=m_trackViews[i];
         qreal zs=0;
@@ -691,7 +832,7 @@ void LogViewer::updateTrackFlatten(){
 
     updateZAxis();
 }
-
+*/
 void LogViewer::updateZAxis(){
 
     qreal zmin=std::numeric_limits<qreal>::max();
@@ -786,8 +927,6 @@ void LogViewer::on_actionSetup_Horizons_triggered()
 
         if( !names.contains(name)){
             m_horizons.remove(name);
-            auto idx=m_cbFlattenHorizon->findText(name);
-            m_cbFlattenHorizon->removeItem(idx);
         }
         else names.removeAll(name);
     }
@@ -804,7 +943,6 @@ void LogViewer::on_actionSetup_Horizons_triggered()
         }
 
         m_horizons.insert(name, g);
-        m_cbFlattenHorizon->addItem(name);
     }
 
     updateTrackHorizons();

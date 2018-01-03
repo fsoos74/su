@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += widgets
+QT += sql
 
 TARGET = WellUI
 TEMPLATE = lib

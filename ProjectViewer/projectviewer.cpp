@@ -171,11 +171,11 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <crossplot.h>
 #include <gridcolorcompositeinputdialog.h>
 #include <colorcompositeviewer.h>
-#include <mapviewer2.h>
+#include <scatterplotviewer.h>
 #include <reversespinbox.h>
 #include <logsitemdelegate.h>
-
-#include <mapviewer.h>
+#include <selectwellsbylogdialog.h>
+#include<mapviewer2.h>
 #include <volumeviewer.h>
 #include <processparamsviewer.h>
 
@@ -322,28 +322,6 @@ void ProjectViewer::on_actionOpenProject_triggered()
     if( fileName.isNull()) return;
 
     openProject(fileName);
-}
-
-
-void ProjectViewer::on_actionOpenGrid_triggered()
-{
-    bool ok;
-    QString item = QInputDialog::getItem(this, tr("Open Grid"),
-                                         tr("Select Grid:"), m_project->gridList(GridType::Other), 0, false, &ok);
-    if (ok && !item.isEmpty()){
-        displayGrid( GridType::Other, item);
-    }
-}
-
-
-void ProjectViewer::on_actionOpenSeismicDataset_triggered()
-{
-    bool ok;
-    QString item = QInputDialog::getItem(this, tr("Open Seismic Dataset"),
-                                         tr("Select Dataset:"), m_project->seismicDatasetList(), 0, false, &ok);
-    if (ok && !item.isEmpty()){
-        displaySeismicDataset(item);
-    }
 }
 
 
@@ -794,12 +772,12 @@ void ProjectViewer::on_actionAxis_Orientation_triggered()
 
 
 void ProjectViewer::on_actionDisplay_Map_triggered()
-{
-    MapViewer* mviewer=new MapViewer;
-    mviewer->setWindowTitle(QString("Map of %1").arg(this->windowTitle()));
-    mviewer->show();
-
-    mviewer->setProject(m_project);
+{  
+    MapViewer2* viewer=new MapViewer2();
+    viewer->setWindowTitle(QString("Project Map - %1").arg( m_projectFileName ) );
+    viewer->setProject(m_project);
+    viewer->setShowProjectArea(true);
+    viewer->show();
 }
 
 
@@ -1671,65 +1649,96 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
 void ProjectViewer::on_actionCrossplot_Logs_triggered()
 {
     bool ok=false;
-    QString well = QInputDialog::getItem( this, tr("Crossplot Log"), tr("Select Well:"), m_project->wellList(), 0, false, &ok );
-    if( well.isEmpty() || !ok ) return;
-/*
-    TwoCombosDialog dlg(this);
-    auto logs=m_project->logList(well);
-    dlg.setLabelText1("x-axis:");
-    dlg.setItems1(logs);
-    dlg.setLabelText2("y-axis:");
-    dlg.setItems2(logs);
-    if( dlg.exec()!=QDialog::Accepted) return;
-*/
-    ok=false;
-    QStringList avail;
-    avail<<"NONE";
-    avail<<m_project->logList(well);
-    auto names=MultiInputDialog::getItems(this, tr("Crossplot Logs"), QStringList{"X-Axis:", "Y-Axis:", "Attribute:"}, avail, &ok  );
-    if( names.size()<2 || !ok ) return;
+    //QString well = QInputDialog::getItem( this, tr("Crossplot Logs"), tr("Select Well:"), m_project->wellList(), 0, false, &ok );
+    //if( well.isEmpty() || !ok ) return;
+    QStringList wells=MultiItemSelectionDialog::getItems(this, "Crossplot Logs", "Select Well(s)", m_project->wellList(), &ok);
+    if( wells.isEmpty() || !ok ) return;
 
-    auto log1name=names[0];//dlg.selection1();
-    if( log1name=="NONE") return;
-    auto log1=m_project->loadLog(well, log1name);
-    if( !log1 ){
-        QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1\" failed!").arg(log1name));
-        return;
-    }
-
-    auto log2name=names[1];//dlg.selection2();
-    if( log2name=="NONE") return;
-    auto log2=m_project->loadLog(well, log2name);
-    if( !log2 ){
-        QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%2\" failed!").arg(log2name));
-        return;
-    }
-
-    auto log3name=names[2];//dlg.selection2();
-    std::shared_ptr<Log> log3;  // null by default
-    if( log3name!="NONE"){
-        log3=m_project->loadLog(well, log3name);
-        if( !log3 ){
-            QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%2\" failed!").arg(log3name));
-            return;
+    crossplotLogs(wells);
+    /*
+    // find logs that all selected wells have in common
+    QSet<QString> savail;
+    for(auto well : wells){
+        auto wlogs=m_project->logList(well);
+        if( savail.isEmpty()){
+            savail=wlogs.toSet();
+        }
+        else{
+            savail=savail.intersect(wlogs.toSet());
         }
     }
 
-    crossplot::Data data=crossplot::createFromLogs(log1.get(), log2.get(), log3.get());
+    ok=false;
+    QStringList avail;
+    avail<<"NONE";
+    //avail<<m_project->logList(well);
+    auto tmp=savail.toList();
+    std::sort( std::begin(tmp), std::end(tmp));
+    avail<<tmp;
+    auto names=MultiInputDialog::getItems(this, tr("Select Logs for Crossplot"), QStringList{"X-Axis:", "Y-Axis:", "Attribute:"}, avail, &ok  );
+    if( names.size()<2 || !ok ) return;
+
+    auto log1name=names[0];//dlg.selection1();
+    auto log2name=names[1];//dlg.selection2();
+    auto log3name=names[2];//dlg.selection2();
+    QString log1unit;
+    QString log2unit;
+    QString log3unit;
+    crossplot::Data data;
+
+    for( auto well : wells){
+
+        if( log1name=="NONE") return;
+        auto log1=m_project->loadLog(well, log1name);
+        if( !log1 ){
+            QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1-%2\" failed!").arg(well,log1name));
+            return;
+        }
+        log1unit=log1->unit().c_str();
+
+        if( log2name=="NONE") return;
+        auto log2=m_project->loadLog(well, log2name);
+        if( !log2 ){
+            QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1-%2\" failed!").arg(well,log2name));
+            return;
+        }
+        log2unit=log2->unit().c_str();
+
+        std::shared_ptr<Log> log3;  // null by default
+        if( log3name!="NONE"){
+            log3=m_project->loadLog(well, log3name);
+            if( !log3 ){
+                QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1-%2\" failed!").arg(well,log3name));
+                return;
+            }
+        }
+
+        crossplot::Data wdata=crossplot::createFromLogs(log1.get(), log2.get(), log3.get());
+        data.insert( std::end(data), std::begin(wdata), std::end(wdata));
+
+    }
+
+
 
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);
 
-    viewer->setWindowTitle( QString("%1 - %2 vs %3").arg( well, log1name, log2name ) );
+    viewer->setWindowTitle( QString("%2 vs %3").arg( log1name, log2name ) );
     viewer->show();
-    viewer->setFixedColor(!log3);
+    viewer->setFixedColor(log3name=="NONE");
     viewer->setInlinesSelectable(false);
     viewer->setCrosslinesSelectable(false);
-    viewer->setData(data); // add data after visible!!!!
-    viewer->setAxisLabels(QString("%1 [%2]").arg(log1->name().c_str(), log1->unit().c_str()),
-                          QString("%1 [%2]").arg(log2->name().c_str(), log2->unit().c_str()) );
+    viewer->setData(data); // add data after visible!!!
+    auto view=viewer->view();
+    view->xAxis()->setName(log1name);
+    view->xAxis()->setUnit(log1unit);
+    view->zAxis()->setName(log2name);
+    view->zAxis()->setUnit(log2unit);
+    //viewer->setAxisLabels(QString("%1 [%2]").arg(log1name, log1unit),
+    //                      QString("%1 [%2]").arg(log2name, log2unit) );
     //viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
     viewer->setDispatcher(m_dispatcher);
+*/
 }
 
 
@@ -1753,6 +1762,50 @@ void ProjectViewer::on_actionFrequency_Spectrum_Plot_triggered()
     viewer->show();
     viewer->setProject(m_project);
     viewer->setDispatcher(m_dispatcher);
+}
+
+
+void ProjectViewer::on_actionLog_TVD_Plot_triggered()
+{
+
+    SelectWellsByLogDialog dlg;
+    dlg.setProject(m_project);
+    dlg.setWindowTitle(tr("Select Log/Wells"));
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QVector<ScatterPlotPoint> data;
+
+    auto name=dlg.log();
+    for( auto uwi : dlg.wells()){
+
+        auto log=m_project->loadLog(uwi, name);
+        if( !log ){
+            QMessageBox::critical(this, "Log TVD Scatter Plot", QString("Loading log %1-%2 failed!").arg(uwi,name), QMessageBox::Ok);
+            return;
+        }
+
+        auto wp=m_project->loadWellPath(uwi);
+        if( !wp ){
+            QMessageBox::critical(this, "Log TVD Scatter Plot", QString("Loading well path for %1 failed!").arg(uwi), QMessageBox::Ok);
+            return;
+        }
+
+        for( size_t i=0; i<log->nz(); i++){
+
+            auto md = log->index2z(i);
+            auto z=wp->zAtMD(md);
+            auto value=(*log)[i];
+            if( value==log->NULL_VALUE) continue;
+            data.push_back(ScatterPlotPoint{ QPointF(value,z), uwi } );
+        }
+    }
+
+    auto viewer=new ScatterplotViewer();
+    viewer->setWindowTitle("Log(s) vs Z Scatter Plot");
+    viewer->view()->zAxis()->setReversed(true);
+    viewer->setAxisLabels(name, "Z");
+    viewer->show();
+    viewer->setData(data);
 }
 
 
@@ -2359,9 +2412,9 @@ void ProjectViewer::runWellContextMenu( const QPoint& pos){
     QPoint globalPos = view->viewport()->mapToGlobal(pos);
 
     QMenu menu;
-    menu.addAction("display log");
+    menu.addAction("display log(s)");
     menu.addAction("display log spectrum");
-    //menu.addAction("edit log");
+    menu.addAction("crossplot logs");
     menu.addAction("log properties");
     //menu.addAction("rename log");
     menu.addAction("remove log");
@@ -2376,15 +2429,15 @@ void ProjectViewer::runWellContextMenu( const QPoint& pos){
     QAction* selectedAction = menu.exec(globalPos);
     if (!selectedAction) return;
 
-    if( selectedAction->text()=="display log" ){
+    if( selectedAction->text()=="display log(s)" ){
         selectAndDisplayLog( names );
     }
     else if( selectedAction->text()=="display log spectrum" ){
         selectAndDisplayLogSpectrum( names[0] );
     }
-    //else if( selectedAction->text()=="edit log" ){
-    //    editLog( names[0]);
-    // }
+    else if( selectedAction->text()=="crossplot logs" ){
+        crossplotLogs( names);
+    }
     else if( selectedAction->text()=="log properties" ){
         logProperties( names[0]);
      }
@@ -3265,19 +3318,96 @@ bool ProjectViewer::importWellPathBulk( QVector<std::pair<QString, QString>> uwi
     return true;
 }
 
-void ProjectViewer::editLog( const QString& name){
+void ProjectViewer::crossplotLogs( const QStringList& wells ){
 
-    if( ! m_project->existsWell(name)) return;
-    auto info = m_project->getWellInfo(name);
+    if( !m_project ) return;
 
-    LogEditor* editor=new LogEditor(this);
+    if( wells.empty()) return;
 
-    editor->setProject(m_project);
-    editor->setUWI(info.uwi());
+    // find logs that all selected wells have in common
+    QSet<QString> savail;
+    for(auto well : wells){
+        auto wlogs=m_project->logList(well);
+        if( savail.isEmpty()){
+            savail=wlogs.toSet();
+        }
+        else{
+            savail=savail.intersect(wlogs.toSet());
+        }
+    }
 
-    editor->show();
+    bool ok=false;
+    QStringList avail;
+    //avail<<"NONE";
+    //avail<<m_project->logList(well);
+    auto tmp=savail.toList();
+    std::sort( std::begin(tmp), std::end(tmp));
+    avail<<tmp;
+    auto names=MultiInputDialog::getItems(this, tr("Select Logs for Crossplot"), QStringList{"X-Axis:", "Y-Axis:", "Attribute:"}, avail, &ok  );
+    if( names.size()<2 || !ok ) return;
 
-    editor->openLog();      // open dialog to select log
+    auto log1name=names[0];//dlg.selection1();
+    auto log2name=names[1];//dlg.selection2();
+    auto log3name=names[2];//dlg.selection2();
+    QString log1unit;
+    QString log2unit;
+    QString log3unit;
+    crossplot::Data data;
+
+    QTransform xy_to_ilxl, ilxl_to_xy;
+    m_project->geometry().computeTransforms(xy_to_ilxl, ilxl_to_xy);
+
+    for( auto well : wells){
+
+        auto log1=m_project->loadLog(well, log1name);
+        if( !log1 ){
+            QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1-%2\" failed!").arg(well,log1name));
+            return;
+        }
+        log1unit=log1->unit().c_str();
+
+        auto log2=m_project->loadLog(well, log2name);
+        if( !log2 ){
+            QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1-%2\" failed!").arg(well,log2name));
+            return;
+        }
+        log2unit=log2->unit().c_str();
+
+        auto log3=m_project->loadLog(well, log3name);
+        if( !log3 ){
+            QMessageBox::critical(this, tr("Crossplot Logs"), QString("Loading log \"%1-%2\" failed!").arg(well,log3name));
+            return;
+        }
+
+        auto wp=m_project->loadWellPath(well);
+        if( !wp ){
+            QMessageBox::critical( this, "Crossplot Logs", QString("Loading wellpath for well \"%1\" failed!").arg(well), QMessageBox::Ok);
+            return;
+        }
+
+        auto wdata=crossplot::createFromLogs( log1.get(), log2.get(), log3.get(), *wp, xy_to_ilxl);
+        data.insert( std::end(data), std::begin(wdata), std::end(wdata));
+
+    }
+
+    CrossplotViewer* viewer=new CrossplotViewer();
+    viewer->setAttribute( Qt::WA_DeleteOnClose);
+
+    viewer->setWindowTitle( QString("%2 vs %3").arg( log1name, log2name ) );
+    viewer->show();
+    viewer->setFixedColor(log3name=="NONE");
+    //viewer->setInlinesSelectable(false);
+    //viewer->setCrosslinesSelectable(false);
+    viewer->setData(data); // add data after visible!!!
+    auto view=viewer->view();
+    view->xAxis()->setName(log1name);
+    view->xAxis()->setUnit(log1unit);
+    view->zAxis()->setName(log2name);
+    view->zAxis()->setUnit(log2unit);
+    //viewer->setAxisLabels(QString("%1 [%2]").arg(log1name, log1unit),
+    //                      QString("%1 [%2]").arg(log2name, log2unit) );
+    //viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
+    viewer->setDispatcher(m_dispatcher);
 }
 
 void ProjectViewer::logProperties(const QString & well){
@@ -4311,8 +4441,6 @@ void ProjectViewer::updateMenu(){
     ui->actionExportVolume->setEnabled(isProject);
     ui->actionExportSeismic->setEnabled(isProject);
     ui->actionExportProject->setEnabled(isProject);
-    ui->actionOpenGrid->setEnabled( isProject);
-    ui->actionOpenSeismicDataset->setEnabled( isProject);
     ui->actionCloseProject->setEnabled(isProject);
 
     ui->action_Geometry->setEnabled(isProject);
@@ -4368,6 +4496,7 @@ void ProjectViewer::updateMenu(){
     ui->actionCrossplot_Logs->setEnabled(isProject);
     ui->actionAmplitude_vs_Offset_Plot->setEnabled(isProject);
     ui->actionFrequency_Spectrum_Plot->setEnabled(isProject);
+    ui->actionLog_TVD_Plot->setEnabled(isProject);
     ui->actionColor_Composite_Grids->setEnabled(isProject);
     ui->action_3D_Viewer->setEnabled(isProject);
     ui->actionOpen_2DViewer->setEnabled(isProject);
@@ -4443,3 +4572,30 @@ void ProjectViewer::on_actionTest_triggered()
 
 
 
+#include<topsdbmanager.h>
+
+void ProjectViewer::on_actionEdit_Tops_triggered()
+{
+    if( !m_project) return;
+
+    try{
+    auto tmgr = m_project->openTopsDatabase();
+    if( !tmgr){
+        QMessageBox::critical(this, "Edit Tops", "Open Database failed!", QMessageBox::Ok);
+        return;
+    }
+
+    auto mks = tmgr->markers();
+
+    EditMarkersDialog dlg;
+    dlg.setWindowTitle(QString("Edit Tops"));
+    dlg.setMarkers(mks);
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    mks=dlg.markers();
+    tmgr->replaceAll(mks.begin(), mks.end());
+    }
+    catch(std::exception& ex){
+        std::cerr<<"Exception: "<<ex.what()<<std::endl<<std::flush;
+    }
+}

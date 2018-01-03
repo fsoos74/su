@@ -28,7 +28,7 @@ class CrossplotViewer;
 #include<range.h>
 #include <volumedimensions.h>
 #include <crossplot.h>
-
+#include<crossplotview.h>
 #include <mousemodeselector.h>
 
 
@@ -54,6 +54,8 @@ public:
     bool isMsecsSelectable()const{
         return m_msecsSelectable;
     }
+
+    CrossplotView* view();
 
 protected:
     void receivePoint( SelectionPoint, int code );

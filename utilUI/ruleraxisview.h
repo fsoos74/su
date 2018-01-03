@@ -1,3 +1,6 @@
+#ifndef RULERAXISVIEW_H
+#define RULERAXISVIEW_H
+
 #include "axisview.h"
 #include "hscaleview.h"
 #include "vscaleview.h"
@@ -35,3 +38,4 @@ private:
 };
 
 
+#endif  // RULERAXISVIEW_H

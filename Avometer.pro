@@ -20,6 +20,8 @@ SUBDIRS += \
     SeismicUI \
     WellUI \
     ProzessUI \
+    CrossplotViewer \
+    ScatterplotViewer \
     Viewer2D \
     Viewer3D \
     ProjectViewer \

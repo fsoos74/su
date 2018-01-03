@@ -44,8 +44,6 @@ private slots:
     // File menu
     void on_actionNewProject_triggered();
     void on_actionOpenProject_triggered();
-    void on_actionOpenGrid_triggered();
-    void on_actionOpenSeismicDataset_triggered();
     void on_actionImportSeismic_triggered();
     void on_actionImport_Attached_Datasets_triggered();
     void on_actionImportHorizon_triggered();
@@ -127,6 +125,7 @@ private slots:
     void on_actionCrossplot_Logs_triggered();
     void on_actionAmplitude_vs_Offset_Plot_triggered();
     void on_actionFrequency_Spectrum_Plot_triggered();
+    void on_actionLog_TVD_Plot_triggered();
     void on_actionColor_Composite_Grids_triggered();
     void on_actionOpen_2DViewer_triggered();
     void on_actionOpen_Slice_Viewer_triggered();
@@ -169,6 +168,8 @@ private slots:
 
 
     void on_actionTest_triggered();
+
+    void on_actionEdit_Tops_triggered();
 
 protected:
 
@@ -240,7 +241,7 @@ private:
     bool importWellPathBulk( QVector<std::pair<QString, QString>> uwi_path);
     void editTops( const QString&);
     void removeTops(const QStringList&);
-    void editLog( const QString&);
+    void crossplotLogs( const QStringList& wells);
     void logProperties( const QString&);
     void removeLogs( const QStringList&);
     //void removeWell( const QString&);

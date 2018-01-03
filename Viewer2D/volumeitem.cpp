@@ -7,10 +7,10 @@ VolumeItem::VolumeItem(AVOProject* project, QGraphicsItem* parentGraphicsItem, Q
 }
 
 
-void VolumeItem::setTime(double t){
+void VolumeItem::setRefDepth(double t){
 
-    if( t==m_time) return;
-    m_time=t;
+    if( t==m_refDepth) return;
+    m_refDepth=t;
     updateGrid();
 }
 
@@ -41,7 +41,7 @@ void VolumeItem::updateGrid(){
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
-            auto value = m_volume->value( i, j, m_time);
+            auto value = m_volume->value( i, j, 0.001*m_refDepth);      // msec -> sec
             if(value==m_volume->NULL_VALUE) value=g->NULL_VALUE;
             (*g)(i,j)=value;
         }

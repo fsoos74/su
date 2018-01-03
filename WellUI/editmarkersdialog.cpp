@@ -6,6 +6,7 @@ EditMarkersDialog::EditMarkersDialog(QWidget *parent) :
     ui(new Ui::EditMarkersDialog)
 {
     ui->setupUi(this);
+    ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 EditMarkersDialog::~EditMarkersDialog()
@@ -27,7 +28,7 @@ WellMarkers EditMarkersDialog::markers(){
     return mks;
 }
 
-void EditMarkersDialog::setMarkers(WellMarkers wms){
+void EditMarkersDialog::setMarkers(const WellMarkers& wms){
 
     ui->tableWidget->clear();
     ui->tableWidget->setRowCount(wms.size());
@@ -52,10 +53,22 @@ void EditMarkersDialog::on_pbAdd_clicked()
 {
     auto row=ui->tableWidget->currentRow();
     ui->tableWidget->insertRow(row);
+    ui->tableWidget->scrollTo(ui->tableWidget->model()->index(row, 0));
 }
 
 void EditMarkersDialog::on_pbRemove_clicked()
 {
-    auto row=ui->tableWidget->currentRow();
-    ui->tableWidget->removeRow(row);
+    //auto row=ui->tableWidget->currentRow();
+    auto selection=ui->tableWidget->selectionModel()->selectedRows(0);
+    std::vector<int> rows;
+    for( auto idx: selection ){
+        auto row=idx.row();
+        rows.push_back(row);
+    }
+
+    std::sort( rows.begin(), rows.end() );
+
+    for( auto it = rows.rbegin(); it!=rows.rend(); ++it ){
+        ui->tableWidget->removeRow(*it);
+    }
 }

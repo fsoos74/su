@@ -5,10 +5,10 @@
 #include<QMessageBox>
 #include<QInputDialog>
 #include<QToolBar>
+#include<QLabel>
 #include<QMap>
 #include<dynamicmousemodeselector.h>
 #include<volumeitem.h>
-#include<volumeitemconfigdialog.h>
 #include<griditem.h>
 #include<griditemconfigdialog.h>
 #include<wellitem.h>
@@ -16,12 +16,13 @@
 #include<multiitemselectiondialog.h>
 #include<histogramcolorbarwidget.h>
 #include<selecttypeanditemdialog.h>
-
+#include<areaitem.h>
 
 const int ITEM_TYPE_INDEX=0;
 const int ITEM_NAME_INDEX=1;
 
 QMap<MapViewer2::ItemType, int> ItemZMap{
+    {MapViewer2::ItemType::Area, -99},
     {MapViewer2::ItemType::Volume, 0},
     {MapViewer2::ItemType::HorizonGrid, 0},
     {MapViewer2::ItemType::AttributeGrid, 0},
@@ -36,7 +37,7 @@ MapViewer2::MapViewer2(QWidget *parent) :
     ui->setupUi(this);
 
     setupMouseModes();
-
+    setupToolBarControls();
     // prevent overlapping of tick labels, need to make this automatic
     ui->graphicsView->topRuler()->setMinimumPixelIncrement(100);
 
@@ -45,6 +46,9 @@ MapViewer2::MapViewer2(QWidget *parent) :
     ui->graphicsView->setMouseTracking(true);  // also send mouse move events when no button is pressed
     connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
     connect( ui->graphicsView, SIGNAL(mouseDoubleClick(QPointF)), this, SLOT(onMouseDoubleClick(QPointF)) );
+
+    connect( ui->actionShow_Project_Area, SIGNAL(toggled(bool)), this, SLOT(setShowProjectArea(bool)) );
+    connect( this, SIGNAL(showProjectAreaChanged(bool)), ui->actionShow_Project_Area, SLOT(setChecked(bool)) );
 
     ui->graphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
@@ -106,6 +110,16 @@ void MapViewer2::setProject(AVOProject* project ){
     stf.translate( 0, -bbox.bottom() );
 
     ui->graphicsView->setTransform(stf);
+
+    updateScene();
+}
+
+
+void MapViewer2::setShowProjectArea(bool on){
+
+    if( on==m_showProjectArea) return;
+
+    m_showProjectArea=on;
 
     updateScene();
 }
@@ -190,6 +204,14 @@ void MapViewer2::updateScene(){
     ui->graphicsView->setSceneRect( br );
 
     ui->graphicsView->zoomFitWindow();
+
+    if( m_showProjectArea){
+        auto bbl=m_project->geometry().bboxLines();
+        auto item=new AreaItem(m_project);
+        item->setArea(bbl);
+        item->setZValue(ItemZMap.value(ItemType::Area));
+        scene->addItem(item);
+    }
 }
 
 
@@ -238,6 +260,8 @@ void MapViewer2::on_actionSelect_Volumes_triggered()
         item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Volume));
         item->setData(ITEM_NAME_INDEX, name);
         item->setZValue(ItemZMap.value(ItemType::Volume, 0 ));
+        item->setRefDepth(m_sbRefDepth->value());
+        connect( m_sbRefDepth, SIGNAL(valueChanged(double)), item, SLOT(setRefDepth(double)) );
         scene->addItem(item);
 
         auto w = new HistogramColorBarWidget(this);
@@ -518,7 +542,7 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     if( !item ) return;
     if( !item->grid()) return;
     auto histogram=createHistogram( std::begin(*(item->volume())), std::end(*(item->volume())), item->volume()->NULL_VALUE, 100 );
-    auto dlg=new VolumeItemConfigDialog;
+    auto dlg=new GridItemConfigDialog;
     dlg->setWindowTitle(tr("Configure Volume Item"));
     dlg->setColorTable(item->colorTable());      // all updates of scling and colors done through colortable
     dlg->setHistogram(histogram);
@@ -527,14 +551,10 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
     auto bounds=item->volume()->bounds();
-    dlg->setTimeRange(static_cast<int>(1000*bounds.ft()), static_cast<int>(1000*bounds.lt()));      // sec -> msec
-    dlg->setTimeIncrement(static_cast<int>(1000*bounds.dt()));                                      // sec -> msec
-    dlg->setTime(static_cast<int>(1000*item->time()));                                                   //  sec -> msec
     connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLabels(bool)));
     connect(dlg, SIGNAL(showMeshChanged(bool)), item, SLOT( setShowMesh(bool)));
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
-    connect(dlg, SIGNAL(timeChanged(double)), item, SLOT(setTime(double)) );
     if( dlg->exec()==QDialog::Accepted){
 
     }
@@ -543,6 +563,27 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     }
 
     delete dlg;
+}
+
+
+void MapViewer2::setupToolBarControls(){
+
+    auto widget=new QWidget(this);
+    auto label=new QLabel(tr("Reference Depth:"));
+    m_sbRefDepth=new QDoubleSpinBox;
+
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(m_sbRefDepth);
+    widget->setLayout(layout);
+
+    auto toolBar=addToolBar(tr("Controls Toolbar"));
+    toolBar->addWidget(widget);
+
+    m_sbRefDepth->setRange(-999999,999999);
+    m_sbRefDepth->setValue(m_wellRefDepth);
+    connect(m_sbRefDepth, SIGNAL(valueChanged(double)), this, SLOT(setWellRefDepth(qreal)) );
+    connect(this, SIGNAL(wellRefDepthChanged(qreal)), m_sbRefDepth, SLOT(setValue(double)) );
 }
 
 void MapViewer2::addItemDockWidget( QString title, QGraphicsItem* item, QWidget* w){
