@@ -35,11 +35,62 @@
 #include<wellmarkers.h>
 #include<topsdbmanager.h>
 
-QMap<ZMode,QString> zmodeNameLookup{
-    {ZMode::MD, "MD"},
-    {ZMode::TVD, "TVD"}
+
+const int MINIMUM_TRACK_WIDTH=200;
+const int MINIMUM_TRACK_HEIGHT=500;
+const int VSCALE_WIDTH=80;
+const int HSCALE_HEIGHT=80;
+
+
+namespace{
+QMap<LogViewer::FlattenMode,QString> flattenModeLookup{
+    {LogViewer::FlattenMode::FLATTEN_NONE, "NO Flattening"},
+    {LogViewer::FlattenMode::FLATTEN_HORIZON, "Flatten on Horizon"},
+    {LogViewer::FlattenMode::FLATTEN_TOP,"Flatten on Top"}
 };
 
+QString toQString(LogViewer::FlattenMode m){
+    return flattenModeLookup.value(m, "NO Flattening");
+}
+
+LogViewer::FlattenMode toFlattenMode(const QString& str){
+    return flattenModeLookup.key(str, LogViewer::FlattenMode::FLATTEN_NONE);
+}
+
+QList<LogViewer::FlattenMode> flattenModes(){
+    return flattenModeLookup.keys();
+}
+
+QStringList flattenModeNames(){
+    return flattenModeLookup.values();
+}
+
+}
+
+namespace{
+QMap<LogViewer::PickMode, QString> pickModeLookup{
+    {LogViewer::PickMode::PICK_LOG, "Pick Log"},
+    {LogViewer::PickMode::PICK_TOPS, "Pick Tops"}
+
+};
+
+QString toQString(LogViewer::PickMode m){
+    return pickModeLookup.value(m, "Pick Log");
+}
+
+LogViewer::PickMode toPickMode(const QString& str){
+    return pickModeLookup.key(str, LogViewer::PickMode::PICK_LOG);
+}
+
+QList<LogViewer::PickMode> pickModes(){
+    return pickModeLookup.keys();
+}
+
+QStringList pickModeNames(){
+    return pickModeLookup.values();
+}
+
+}
 
 LogViewer::LogViewer(QWidget *parent) :
     BaseViewer(parent),
@@ -55,9 +106,11 @@ LogViewer::LogViewer(QWidget *parent) :
     connect( ui->action_Receive , SIGNAL(toggled(bool)), this, SLOT(setReceptionEnabled(bool)) );
     connect( ui->action_Send, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
+    setupMouseModes();
     setupZModeToolbar();
     setupFilterToolbar();
     setupFlattenToolbar();
+    setupPickingToolbar();
 }
 
 LogViewer::~LogViewer()
@@ -65,6 +118,17 @@ LogViewer::~LogViewer()
     delete ui;
 }
 
+void LogViewer::setupMouseModes(){
+
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    //mm->addMode(MouseMode::Select);
+    mm->addMode(MouseMode::Pick);
+    mm->addMode(MouseMode::DeletePick);
+    ui->mouseToolBar->addWidget( mm);
+    m_mousemodeSelector=mm;
+}
 
 void LogViewer::setupZModeToolbar(){
 
@@ -72,13 +136,10 @@ void LogViewer::setupZModeToolbar(){
 
     toolBar->addWidget(new QLabel("Z-Axis:", this));
     m_cbZMode=new QComboBox(this);
-    for(auto m : zmodeNameLookup.keys()){
-        m_cbZMode->addItem(zmodeNameLookup.value(m));
-    }
+    m_cbZMode->addItems(zmodeNames());
+    m_cbZMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     toolBar->addWidget(m_cbZMode);
-
     addToolBar(toolBar);
-
     connect( m_cbZMode, SIGNAL(currentIndexChanged(QString)), this, SLOT(setZMode(QString)));
     connect( this, SIGNAL(zmodeChanged(QString)), m_cbZMode, SLOT(setCurrentText(QString)));
 }
@@ -88,12 +149,10 @@ void LogViewer::setupFlattenToolbar(){
     QToolBar* toolBar=new QToolBar( "Flatten", this);
 
     m_cbFlattenMode=new QComboBox(this);
-    m_cbFlattenMode->addItem("NO Flattening");
-    m_cbFlattenMode->addItem("Flatten on Horizon");
-    m_cbFlattenMode->addItem("Flatten on Top");
+    m_cbFlattenMode->addItems(flattenModeNames());
     m_cbFlattenMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     toolBar->addWidget(m_cbFlattenMode);
-    connect( m_cbFlattenMode, SIGNAL(currentIndexChanged(int)), this, SLOT(setFlattenMode(int)));
+    connect( m_cbFlattenMode, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenMode(QString)));
 
     m_cbFlattenSource=new QComboBox(this);
     m_cbFlattenSource->setSizeAdjustPolicy(QComboBox::AdjustToContents);
@@ -118,6 +177,19 @@ void LogViewer::setupFilterToolbar(){
 
     connect( m_sbFilterLen, SIGNAL(valueChanged(int)), this, SLOT(setFilterLen(int)) );
 }
+
+void LogViewer::setupPickingToolbar(){
+
+    QToolBar* toolBar=new QToolBar( "Picking", this);
+    m_cbPickMode=new QComboBox(this);
+    m_cbPickMode->addItems(pickModeNames());
+    m_cbPickMode->setCurrentText(toQString(PickMode::PICK_LOG));
+    m_cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    toolBar->addWidget(m_cbPickMode);
+    connect( m_cbPickMode, SIGNAL(currentIndexChanged(QString)), this, SLOT(setPickMode(QString)));
+    addToolBar(toolBar);
+}
+
 
 void LogViewer::receivePoint(SelectionPoint, int code){
     //QMessageBox::information(this,tr("Receive"), tr("Receive point"), QMessageBox::Ok);
@@ -202,14 +274,33 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
 
     TrackLabel* tl=new TrackLabel(trackLabelText(wi, *l), this);
     tl->setFont(m_labelFont);
+    tl->setWordWrap(true);
     connect( tl, SIGNAL(moved(QPoint)), this, SLOT(onTrackLabelMoved(QPoint)) );
     m_trackLabels.push_back(tl);
 
-    QStyle *style = qApp->style();
-    QIcon closeIcon = style->standardIcon(QStyle::SP_TitleBarCloseButton);
-    QPushButton* tb=new QPushButton(closeIcon,"",this);
+    QPushButton* tb=new QPushButton(QIcon(QPixmap(":images/x-16x16.png")),"",this);
     m_closeButtons.push_back(tb);
     connect( tb, SIGNAL(clicked()), this, SLOT(onCloseTrack()));
+
+    tb=new QPushButton(QIcon(QPixmap(":images/shrink-x-24x24.png")),"",this);
+    m_shrinkButtons.push_back(tb);
+    connect( tb, SIGNAL(clicked()), this, SLOT(onShrinkTrack()));
+
+    tb=new QPushButton(QIcon(QPixmap(":images/grow-x-24x24.png")),"",this);
+    m_growButtons.push_back(tb);
+    connect( tb, SIGNAL(clicked()), this, SLOT(onGrowTrack()));
+
+    tb=new QPushButton(QIcon(QPixmap(":images/plus_16x16.png")),"",this);
+    m_addButtons.push_back(tb);
+    connect( tb, SIGNAL(clicked()), this, SLOT(onAddTrackLog()));
+
+    tb=new QPushButton(QIcon(QPixmap(":images/minus_16x16.png")),"",this);
+    m_removeButtons.push_back(tb);
+    connect( tb, SIGNAL(clicked()), this, SLOT(onRemoveTrackLog()));
+
+    tb=new QPushButton(QIcon(QPixmap(":images/colors-16x16.png")),"",this);
+    m_colorButtons.push_back(tb);
+    connect( tb, SIGNAL(clicked()), this, SLOT(onTrackColors()));
 
     QLabel* vl=new QLabel(QString(), this);
     vl->setFont(m_trackValueFont);
@@ -225,14 +316,20 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
     tv->setCursorMode(AxisView::CURSORMODE::BOTH);  // show x and z cursor
     tv->setXMesh(true);
     tv->setZMesh(true);
+    updateTrackPickMode(tv);
     m_trackViews.push_back(tv);
-
-    tv->setLog(l);
+    tv->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect( tv, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(runTrackViewContextMenu(QPoint)));
+    tv->addLog(l);
     tv->setWellPath(p);
     tv->setZMode(m_zmode);
     connect( this, SIGNAL(zmodeChanged(ZMode)), tv, SLOT(setZMode(ZMode)) );
-    tv->setSelectionMode(AxisView::SELECTIONMODE::SinglePoint);
-    connect( tv, SIGNAL(pointSelected(QPointF)), this, SLOT(onTrackPointSelected(QPointF)));
+
+    // mouse modes
+    if(m_mousemodeSelector){
+        connect( m_mousemodeSelector, SIGNAL(modeChanged(MouseMode)), tv, SLOT(setMouseMode(MouseMode)));
+        tv->setMouseMode(m_mousemodeSelector->mode());
+    }
 
     tv->setFilterLen(m_filterLen);
     connect( this, SIGNAL(filterLenChanged(int)), tv, SLOT(setFilterLen(int)) );
@@ -244,7 +341,6 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
     hv->setXAxis(tv->xAxis());
     hv->setZoomMode(AxisView::ZOOMMODE::X);
     hv->setCursorMode(AxisView::CURSORMODE::X);
-    hv->setFixedHeight(80);
     hv->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     m_trackScaleViews.push_back(hv);
 
@@ -258,7 +354,8 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
         m_vscaleView->setZAxis(m_zAxis);
         m_vscaleView->setZoomMode(AxisView::ZOOMMODE::Z); // zooming on z-axis enabled
         m_vscaleView->setCursorMode(AxisView::CURSORMODE::Z);  // show z cursor position
-        m_vscaleView->setFixedWidth(80);
+
+        m_vscaleView->setFixedWidth(VSCALE_WIDTH);
    }
 
     if( !m_verticalScrollBar){
@@ -274,9 +371,22 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
    connect(tv->verticalScrollBar(), SIGNAL(valueChanged(int)), m_verticalScrollBar, SLOT(setValue(int)) );
    connect(m_verticalScrollBar, SIGNAL(valueChanged(int)), tv->verticalScrollBar(), SLOT(setValue(int)) );
 
-   tv->setMinimumWidth(100);
-   tv->setMinimumHeight(500);
+
+   // setup geometry
+
+   tl->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+   tl->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+
    tv->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+   tv->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+   tv->setMinimumHeight(MINIMUM_TRACK_HEIGHT);
+
+   hv->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+   hv->setFixedHeight(HSCALE_HEIGHT);
+
+   vl->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+
+
    layoutLogs();
 
    updateZAxis();
@@ -289,6 +399,11 @@ void LogViewer::removeLog(int j){
     m_wellInfos.remove(j);
     m_markers.remove(j);
     delete m_trackLabels[j]; m_trackLabels.remove(j);
+    delete m_addButtons[j];m_addButtons.remove(j);
+    delete m_removeButtons[j];m_removeButtons.remove(j);
+    delete m_colorButtons[j];m_colorButtons.remove(j);
+    delete m_shrinkButtons[j];m_shrinkButtons.remove(j);
+    delete m_growButtons[j];m_growButtons.remove(j);
     delete m_closeButtons[j];m_closeButtons.remove(j);
     delete m_trackValueLabels[j]; m_trackValueLabels.remove(j);
     delete m_trackViews[j]; m_trackViews.remove(j);
@@ -307,9 +422,8 @@ void LogViewer::removeLog(QString name){
     }
 }
 
-
-
 QString LogViewer::trackLabelText(const WellInfo& wi, const Log& l){
+
     QString wstr=(m_trackLabelMode==TrackLabelMode::UWI)?wi.uwi():wi.name();
     return QString("%1\n%2 [%3] ").arg(wstr, l.name().c_str(), l.unit().c_str());
 }
@@ -330,15 +444,15 @@ void LogViewer::setZMode( ZMode m){
     updateZAxis();
 
     emit zmodeChanged(m);
-    emit zmodeChanged(zmodeNameLookup.value(m));
+    emit zmodeChanged(toQString(m));
 }
 
 void LogViewer::setZMode(QString str){
-    auto m=zmodeNameLookup.key(str, ZMode::MD);
+    auto m=toZMode(str);
     setZMode(m);
 }
 
-void LogViewer::setFlattenMode(int m){
+void LogViewer::setFlattenMode(FlattenMode m){
 
     if( m==m_flattenMode) return;
 
@@ -366,6 +480,10 @@ void LogViewer::setFlattenMode(int m){
     updateTrackFlatten();
 }
 
+void LogViewer::setFlattenMode(QString str){
+    setFlattenMode(toFlattenMode(str));
+}
+
 void LogViewer::setFlattenSource(QString name){
 
     if( m_flattenSource==name) return;
@@ -385,6 +503,18 @@ void LogViewer::setTrackLabelMode(int m){
     updateTrackLabels();
 }
 
+void LogViewer::setPickMode(PickMode pm){
+    if(pm==m_PickMode) return;
+    m_PickMode=pm;
+    for( auto tv : m_trackViews){
+        updateTrackPickMode(tv);
+    }
+}
+
+void LogViewer::setPickMode(QString str){
+    setPickMode(toPickMode(str));
+}
+
 void LogViewer::layoutLogs(){
 
     QGridLayout* lo = new QGridLayout;
@@ -392,19 +522,27 @@ void LogViewer::layoutLogs(){
     lo->addWidget( m_vscaleView, 1, 0);
 
     for( int i = 0; i<m_trackViews.size(); i++){
-        QHBoxLayout* caption = new QHBoxLayout;
-        caption->addWidget( m_trackLabels[i]);//, 0, i+1);
-        caption->addWidget(m_closeButtons[i]);
-        caption->setStretch(0,1);   // only grow label not button
-        caption->setStretch(1,0);   // only grow label not button
-        lo->addLayout(caption, 0, i+1);
+        auto c1=new QHBoxLayout;
+        //c1->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Ignored));
+        c1->addWidget(m_addButtons[i]);
+        c1->addWidget(m_removeButtons[i]);
+        c1->addWidget(m_colorButtons[i]);
+        c1->addWidget(m_shrinkButtons[i]);
+        c1->addWidget(m_growButtons[i]);
+        c1->addWidget(m_closeButtons[i]);
+
+        auto clo=new QVBoxLayout;
+        clo->addWidget( m_trackLabels[i]);
+        clo->addLayout(c1);
+        lo->addLayout(clo, 0, i+1);
+
         lo->addWidget( m_trackViews[i], 1, i+1);
         lo->addWidget( m_trackScaleViews[i], 2, i+1);
         lo->addWidget( m_trackValueLabels[i], 3, i+1);
-        lo->setColumnStretch(i+1, 1);
+        //lo->setColumnStretch(i+1, 1);
     }
 
-    lo->addWidget(m_verticalScrollBar, 1, 1000);
+    lo->addWidget(m_verticalScrollBar, 1, 1000);        // rightmost
 
     lo->setHorizontalSpacing(4);
     lo->setVerticalSpacing(0);
@@ -415,6 +553,7 @@ void LogViewer::layoutLogs(){
     m_tracksAreaWidget->setLayout(lo);
 
     lo->update();
+
 }
 
 void LogViewer::on_action_Add_Log_triggered()
@@ -547,32 +686,32 @@ void LogViewer::onXCursorChanged(qreal x){
     statusBar()->showMessage(msg);
  }
 
+QString colorstr(QColor c){
+    return QString().sprintf("#%02x%02x%02x", c.red(), c.green(), c.blue());
+}
+
 void LogViewer::onZCursorChanged(qreal z){
 
     for( int i=0; i<m_trackViews.size(); i++){
 
-        auto trackView=m_trackViews[i];
-        auto md=trackView->view2log(z);
-        auto log=m_trackViews[i]->log();
-        auto value=(*log)(md);
+        auto tv=m_trackViews[i];
+        auto md=tv->view2log(z);
         QString text;
-        if( value!=log->NULL_VALUE){
-            text=QString("%1 %2").arg(value).arg(log->unit().c_str());
+
+        for( int j=0; j<tv->count(); j++){
+            auto log=tv->log(j);
+            auto value=(*log)(md);
+            QString valuestr;
+            if(value!=log->NULL_VALUE) valuestr=QString::number(value);
+            auto color=tv->color(j);
+
+            text+=QString("<span style=\"color:%1;\"> %2: %3</span><br>").arg(colorstr(color), log->name().c_str(), valuestr);
         }
 
-        //auto wellPath=m_trackViews[i]->wellPath();
-        //qreal md=( m_zmode==ZMode::MD || !wellPath) ? z : m_trackViews[i]->wellPath()->mdAtTVD(z);
-        //auto log=m_trackViews[i]->log();
-        //int j = (md-log->z0())/log->dz();
-        //QString text;
-        //if( j>=0 && j<log->nz() ){
-        //    auto value = (*log)[j];
-        //    if( value!=log->NULL_VALUE){
-        //        text=QString("%1 %2").arg(value).arg(log->unit().c_str());
-        //    }
-        //}
+        std::cout<<text.toStdString()<<std::endl<<std::flush;
 
         m_trackValueLabels[i]->setText(text);
+        //m_trackValueLabels[i]->updateGeometry();
     }
 }
 
@@ -632,7 +771,12 @@ void LogViewer::onTrackLabelMoved(QPoint pos){
                 m_trackViews.move(sourceIndex, i);
                 m_trackScaleViews.move(sourceIndex, i);
                 m_trackValueLabels.move(sourceIndex, i);
+                m_addButtons.move(sourceIndex, i);
+                m_removeButtons.move(sourceIndex, i);
+                m_shrinkButtons.move(sourceIndex, i);
+                m_growButtons.move(sourceIndex, i);
                 m_closeButtons.move(sourceIndex, i);
+                m_colorButtons.move(sourceIndex, i);
                 layoutLogs();
             }
 
@@ -652,7 +796,130 @@ void LogViewer::onCloseTrack(){
     if( m_trackViews.empty()) close();
 }
 
+void LogViewer::onShrinkTrack(){
+    QPushButton* pb=dynamic_cast<QPushButton*>(sender());
 
+    if( !pb) return;
+
+    auto index=m_shrinkButtons.indexOf(pb);
+    auto tv=m_trackViews[index];
+    auto tl=m_trackLabels[index];
+    auto hv=m_trackScaleViews[index];
+    auto vl=m_trackValueLabels[index];
+
+    int w=std::max(MINIMUM_TRACK_WIDTH, static_cast<int>(tv->width()/1.5));
+
+    tv->setMinimumWidth(w);
+    hv->setMinimumWidth(w);
+    tl->setMinimumWidth(w);
+    vl->setMinimumWidth(w);
+
+    tv->resize(w,tv->height());
+    hv->resize(w,hv->height());
+    tl->resize(w,tl->height());
+    vl->resize(w,vl->height());
+
+    layoutLogs();
+}
+
+
+void LogViewer::onGrowTrack(){
+    QPushButton* pb=dynamic_cast<QPushButton*>(sender());
+    if( !pb) return;
+    auto index=m_growButtons.indexOf(pb);
+    auto tv=m_trackViews[index];
+
+    int w=tv->width()*1.5;
+    m_trackLabels[index]->setMinimumWidth(w);
+    m_trackScaleViews[index]->setMinimumWidth(w);
+    m_trackValueLabels[index]->setMinimumWidth(w);
+    tv->setMinimumWidth(w);
+    /*
+    m_trackLabels[index]->setFixedWidth(w);
+    m_trackScaleViews[index]->setFixedWidth(w);
+    m_trackValueLabels[index]->setFixedWidth(w);
+    tv->setFixedWidth(w);
+    */
+    layoutLogs();
+}
+
+void LogViewer::onAddTrackLog(){
+    QPushButton* pb=dynamic_cast<QPushButton*>(sender());
+    if( !pb) return;
+    auto index=m_addButtons.indexOf(pb);
+    auto tv=m_trackViews[index];
+    auto uwi=m_wellInfos[index].uwi();
+
+    QStringList avail=m_project->logList(uwi);
+    std::sort( avail.begin(), avail.end());
+    QStringList names = MultiItemSelectionDialog::getItems(this, tr("Add Logs"), tr("Select Logs:"), avail);
+
+    for( auto name : names ){
+
+        auto l=m_project->loadLog(uwi, name);
+        if( !l ){
+            QMessageBox::critical(this, "Add Logs", "Loading log failed!", QMessageBox::Ok);
+            return;
+        }
+
+        tv->addLog(l);
+    }
+}
+
+
+void LogViewer::onRemoveTrackLog(){
+    QPushButton* pb=dynamic_cast<QPushButton*>(sender());
+    if( !pb) return;
+    auto index=m_removeButtons.indexOf(pb);
+    auto tv=m_trackViews[index];
+    auto uwi=m_wellInfos[index].uwi();
+
+    QStringList avail;
+    for(int i=1; i<tv->count(); i++){       // cannot remove first log, it is reference for track
+        auto l=tv->log(i);
+        if(l) avail<<l->name().c_str();
+    }
+
+    QStringList names = MultiItemSelectionDialog::getItems(this, tr("Remove Logs"), tr("Select Logs:"), avail);
+    QVector<int> indices;
+
+    for( auto name : names ){
+        indices.push_back(names.indexOf(name));
+    }
+
+    // now remove in reverse order
+    for( auto it = indices.rbegin(); it!=indices.rend(); it++ ){
+        auto index=1 + *it;         // first log always kept
+        tv->removeLog(index);
+    }
+}
+
+
+void LogViewer::onTrackColors(){
+
+    QPushButton* pb=dynamic_cast<QPushButton*>(sender());
+    if( !pb) return;
+    auto index=m_colorButtons.indexOf(pb);
+    auto tv=m_trackViews[index];
+
+    int l=0;
+    if(tv->count()>1){
+        QStringList items;
+        for(int i=0; i<tv->count(); i++){
+            items<<tv->log(i)->name().c_str();
+        }
+        bool ok=false;
+        auto item=QInputDialog::getItem(nullptr, "Set Log Color", "Select Log", items, 0, false, &ok);
+        if( !ok || item.isEmpty()) return;
+        l=items.indexOf(item);
+    }
+
+    auto color=QColorDialog::getColor(tv->color(l), this, "Select Log Color");
+
+    if( !color.isValid()) return;
+
+    tv->setColor(l, color);
+}
 
 /*
 void LogViewer::on_action_Open_Horizon_triggered()
@@ -768,6 +1035,8 @@ void LogViewer::updateTrackFlatten(){
         for( int i = 0; i<m_trackViews.size(); i++){
             m_trackViews[i]->setZShift(0);
         }
+
+        break;
     }
 
     case FLATTEN_HORIZON:{
@@ -864,6 +1133,11 @@ void LogViewer::on_actionSort_By_Log_triggered()
     auto tmp_trackScaleViews=m_trackScaleViews;
     auto tmp_trackLabels=m_trackLabels;
     auto tmp_trackValuelabels=m_trackValueLabels;
+    auto tmp_addButtons=m_addButtons;
+    auto tmp_removeButtons=m_removeButtons;
+    auto tmp_shrinkButtons=m_shrinkButtons;
+    auto tmp_growButtons=m_growButtons;
+    auto tmp_colorButtons=m_colorButtons;
     auto tmp_closeButtons=m_closeButtons;
     auto tmp_wellInfos=m_wellInfos;
     auto tmp_markers=m_markers;
@@ -873,6 +1147,11 @@ void LogViewer::on_actionSort_By_Log_triggered()
         m_trackScaleViews[i]=tmp_trackScaleViews[j];
         m_trackLabels[i]=tmp_trackLabels[j];
         m_trackValueLabels[i]=tmp_trackValuelabels[j];
+        m_addButtons[i]=tmp_addButtons[j];
+        m_removeButtons[i]=tmp_removeButtons[j];
+        m_colorButtons[i]=tmp_colorButtons[j];
+        m_shrinkButtons[i]=tmp_shrinkButtons[j];
+        m_growButtons[i]=tmp_growButtons[j];
         m_closeButtons[i]=tmp_closeButtons[j];
         m_wellInfos[i]=tmp_wellInfos[j];
         m_markers[i]=tmp_markers[j];
@@ -895,6 +1174,11 @@ void LogViewer::on_actionSort_By_Well_triggered()
     auto tmp_trackLabels=m_trackLabels;
     auto tmp_trackValuelabels=m_trackValueLabels;
     auto tmp_closeButtons=m_closeButtons;
+    auto tmp_shrinkButtons=m_shrinkButtons;
+    auto tmp_growButtons=m_growButtons;
+    auto tmp_addButtons=m_addButtons;
+    auto tmp_removeButtons=m_removeButtons;
+    auto tmp_colorButtons=m_colorButtons;
     auto tmp_wellInfos=m_wellInfos;
     auto tmp_markers=m_markers;
     for( int i=0; i<m_trackViews.size(); i++){
@@ -903,6 +1187,11 @@ void LogViewer::on_actionSort_By_Well_triggered()
         m_trackScaleViews[i]=tmp_trackScaleViews[j];
         m_trackLabels[i]=tmp_trackLabels[j];
         m_trackValueLabels[i]=tmp_trackValuelabels[j];
+        m_addButtons[i]=tmp_addButtons[j];
+        m_removeButtons[i]=tmp_removeButtons[j];
+        m_colorButtons[i]=tmp_colorButtons[j];
+        m_shrinkButtons[i]=tmp_shrinkButtons[j];
+        m_growButtons[i]=tmp_growButtons[j];
         m_closeButtons[i]=tmp_closeButtons[j];
         m_wellInfos[i]=tmp_wellInfos[j];
         m_markers[i]=tmp_markers[j];
@@ -972,4 +1261,149 @@ void LogViewer::on_actionSetup_Tops_triggered()
     m_selectedTops=names;
 
     updateTrackTops();
+}
+
+
+void picksToLog(Log& log, const QVector<QPointF>& points){
+
+    for( int i=1; i<points.size(); i++){
+        auto p0=points[i-1];
+        auto p1=points[i];
+        auto iz0=log.z2index(p0.y());
+        auto iz1=log.z2index(p1.y());
+        for( int iz=iz0; iz<iz1; iz++ ){
+            auto z = log.index2z(iz);
+            auto x = p0.x() + (z-p0.y())*(p1.x()-p0.x())/(p1.y()-p0.y());
+            log[iz]=x;
+        }
+    }
+
+}
+
+void LogViewer::runTrackViewContextMenu(QPoint pos){
+
+    TrackView* tv = dynamic_cast<TrackView*>(sender());
+    if( !tv) return;
+
+    // find number of this log in log list
+    auto index = m_trackViews.indexOf(tv);
+    if( index<0) return;
+    auto well=m_wellInfos[index].name();
+    auto uwi=m_wellInfos[index].uwi();
+
+    if(m_PickMode==PickMode::PICK_LOG){
+
+        QPoint globalPos = tv->mapToGlobal(pos);
+
+        QMenu menu;
+        menu.addAction("remove picks");
+        menu.addAction("convert picks to new log");
+        menu.addAction("add picks to loaded log");
+        menu.addAction("save log");
+        QAction* selectedAction = menu.exec(globalPos);
+        if (!selectedAction) return;
+
+        if( selectedAction->text()=="remove picks" ){
+            tv->clearSelection();
+        }
+        else if(selectedAction->text()=="convert picks to new log"){
+            QString name="picks";
+            while(1){
+                bool ok=false;
+                name=QInputDialog::getText(this,"New Log","Enter Name:",QLineEdit::Normal, name, &ok);
+                if( name.isEmpty() || !ok) return;
+                if( !m_project->existsLog(uwi, name)) break;
+            }
+
+            auto log=std::make_shared<Log>(name.toStdString(),"","picked with logviewer",
+                                           tv->log()->z0(), tv->log()->dz(), tv->log()->nz());
+            auto points=tv->selectedPoints();
+            picksToLog(*log, points);
+            /*
+            // fill log from points, XXX PUT THIS IN FUNCTION
+            for( int i=1; i<points.size(); i++){
+                auto p0=points[i-1];
+                auto p1=points[i];
+                auto iz0=log->z2index(p0.y());
+                auto iz1=log->z2index(p1.y());
+                for( int iz=iz0; iz<iz1; iz++ ){
+                    auto z = log->index2z(iz);
+                    auto x = p0.x() + (z-p0.y())*(p1.x()-p0.x())/(p1.y()-p0.y());
+                    (*log)[iz]=x;
+                }
+            }
+            */
+            tv->addLog(log);
+            tv->clearSelection();
+        }
+        else if(selectedAction->text()=="add picks to loaded log"){
+            QStringList avail;
+            for(int i=0; i<tv->count(); i++){
+                avail<<tv->log(i)->name().c_str();
+            }
+            int idx=0;
+            if(avail.size()>1){
+                bool ok=false;
+                QString name=QInputDialog::getItem(this, "add picks to log", "Select log:", avail, 0, false, &ok);
+                if( name.isEmpty() || !ok ) return;
+                idx=avail.indexOf(name);
+            }
+            auto log=tv->log(idx);
+            auto points=tv->selectedPoints();
+            picksToLog(*log, points);
+            tv->clearSelection();
+            tv->logChanged(idx);
+        }
+        else if(selectedAction->text()=="save log"){
+            QStringList avail;
+            for(int i=0; i<tv->count(); i++){
+                auto l=tv->log(i);
+                if(l) avail<<l->name().c_str();
+            }
+
+            QStringList names;
+            if(avail.size()==1){
+                names=avail;
+            }
+            else{
+               names = MultiItemSelectionDialog::getItems(this, tr("Save Logs"), tr("Select Logs:"), avail);
+            }
+
+            for( auto name : names ){
+                auto lindex=avail.indexOf(name);
+                auto log=tv->log(lindex);
+
+                bool ok=false;
+                auto oname=QInputDialog::getText(this, "Save Log", "Name:", QLineEdit::Normal, name, &ok);
+                if(oname.isEmpty() || !ok) return;
+                log->setName(oname.toStdString());
+
+                if(!m_project->saveLog(uwi, oname, *log )){
+                    QMessageBox::critical(this, "Save Log", tr("Saving Log \"%1-%2\" failed!").arg(well,name), QMessageBox::Ok);
+                    return;
+                }
+            }
+
+        }
+    }
+
+}
+
+void LogViewer::updateTrackPickMode(TrackView* tv){
+
+    if( !tv ) return;
+
+    switch(m_PickMode){
+    case PickMode::PICK_TOPS:
+        tv->setSelectionMode(AxisView::SELECTIONMODE::SinglePoint);
+        connect( tv, SIGNAL(pointSelected(QPointF)), this, SLOT(onTrackPointSelected(QPointF)));
+        break;
+    case PickMode::PICK_LOG:
+         tv->setSelectionMode(AxisView::SELECTIONMODE::LinesVOrdered);
+           // XXX connect
+        break;
+    default:
+        tv->setSelectionMode(AxisView::SELECTIONMODE::None);
+        break;
+    }
 }

@@ -4,7 +4,7 @@
 #include<QImage>
 #include<iostream>
 #include<cmath>
-
+#include<volumepicker.h>
 
 namespace  {
 
@@ -33,6 +33,11 @@ bool operator==(const VolumeView::SliceDef& a, const VolumeView::SliceDef& b){
 
 VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.)
 {
+    m_picker=new VolumePicker(this);
+    //connect(m_picker, SIGNAL(picksChanged()), this, SLOT(update()));
+    //connect(this, SIGNAL(pointSelected(QPointF)), m_picker, SLOT(pickPoint(QPointF)) );
+    //setSelectionMode(AxisView::SELECTIONMODE::SinglePoint);
+
     updateBounds();
     refreshScene();
 }
@@ -67,6 +72,12 @@ QColor VolumeView::horizonColor(QString name){
 
     auto hi=m_horizons.value(name);
     return hi.color;
+}
+
+QColor VolumeView::tableColor(QString name){
+    if( !m_tables.contains(name)) return QColor();
+    auto ti=m_tables.value(name);
+    return ti.color;
 }
 
 QStringList VolumeView::markersList(){
@@ -143,6 +154,8 @@ void VolumeView::setSlice(SliceDef d){
     if( d==m_slice) return;
 
     if( !validSlice(d)) return;
+
+    clearSelection();
 
     m_sliceList.push_back(m_slice);
     if( m_sliceList.size()>MAX_HISTORY) m_sliceList.pop_front();
@@ -222,6 +235,12 @@ void VolumeView::setDisplayMarkerLabels(bool on){
 
 void VolumeView::setDisplayedMarkers(QStringList l){
     m_displayedMarkers=l;
+    refreshScene();
+}
+
+void VolumeView::setDisplayTables(bool on){
+    if( on==m_displayTables ) return;
+    m_displayTables=on;
     refreshScene();
 }
 
@@ -322,6 +341,31 @@ void VolumeView::removeWell(QString name){
 
 QStringList VolumeView::wellList(){
     return m_wells.keys();
+}
+
+
+void VolumeView::addTable(QString name, std::shared_ptr<Table> table, QColor color){
+    if(m_tables.contains(name)) return;  // no dupes
+    if(!table) return;
+    m_tables.insert(name, TableItem{table, color});
+    refreshScene();
+}
+
+void VolumeView::removeTable(QString name){
+    m_tables.remove(name);
+    refreshScene();
+}
+
+void VolumeView::setTableColor(QString name, QColor color){
+    if( !m_tables.contains(name)) return;
+    auto titem=m_tables.value(name);
+    titem.color=color;
+    m_tables[name]=titem;
+    refreshScene();
+}
+
+QStringList VolumeView::tableList(){
+    return m_tables.keys();
 }
 
 
@@ -428,71 +472,6 @@ QImage VolumeView::intersectVolumeTime(const Volume &volume, ColorTable* colorTa
 }
 
 
-/* ORIGINAL
-QImage VolumeView::intersectVolumeInline(const Volume &volume, ColorTable* colorTable, int iline){
-
-    auto bounds=volume.bounds();
-    QImage img( bounds.nj(), bounds.nt(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-    for( auto i = 0; i<bounds.nj(); i++){
-        auto xl=bounds.j1()+i;
-
-        for( auto j=0; j<bounds.nt(); j++){
-            auto value=volume.valueAt(iline, xl, j);
-            if( value==volume.NULL_VALUE) continue;
-            auto col = colorTable->map(value);
-            img.setPixel( i, j, col );
-       }
-    }
-
-    return img;
-}
-
-QImage VolumeView::intersectVolumeCrossline(const Volume &volume, ColorTable* colorTable, int xline){
-
-    auto bounds=volume.bounds();
-    QImage img( bounds.ni(), bounds.nt(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-    for( auto i = 0; i<bounds.ni(); i++){
-        auto il=bounds.i1()+i;
-
-        for( auto j=0; j<bounds.nt(); j++){
-            auto value=volume.valueAt(il, xline, j);
-            if( value==volume.NULL_VALUE) continue;
-            auto col = colorTable->map(value);
-            img.setPixel( i, j, col );
-       }
-    }
-
-    return img;
-}
-
-QImage VolumeView::intersectVolumeTime(const Volume &volume, ColorTable* colorTable, int ms){
-
-    auto bounds=volume.bounds();
-    QImage img( bounds.ni(), bounds.nj(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-    auto k=bounds.timeToSample(0.001*ms);
-
-    for( auto i = 0; i<bounds.ni(); i++){
-        auto il=bounds.i1()+i;
-
-        for( auto j=0; j<bounds.nj(); j++){
-            int xl=bounds.j1()+j;
-
-            auto value=volume.valueAt(il, xl, k);
-            if( value==volume.NULL_VALUE) continue;
-            auto col = colorTable->map(value);
-            img.setPixel( i, j, col );
-       }
-    }
-
-    return img;
-}
-
-*/
 
 
 QPainterPath VolumeView::intersectHorizonInline(const Grid2D<float>& grid, int iline){
@@ -572,6 +551,36 @@ QPainterPath VolumeView::intersectHorizonCrossline(const Grid2D<float>& grid, in
     return path;
 }
 
+
+QVector<QPointF> VolumeView::intersectTableInline(const Table &table, int iline){
+
+    auto points=table.atKey1(iline);
+    QVector<QPointF> res;
+    for( auto p : points ){
+        res.push_back(QPointF(std::get<1>(p), 1000*std::get<2>(p)));   // millis
+    }
+    return res;
+}
+
+QVector<QPointF> VolumeView::intersectTableCrossline(const Table &table, int xline){
+    auto points=table.atKey2(xline);
+    QVector<QPointF> res;
+    for( auto p : points ){
+        res.push_back(QPointF(std::get<0>(p), 1000*std::get<2>(p)));   // millis
+    }
+    return res;
+}
+
+QVector<QPointF> VolumeView::intersectTableTime(const Table &table, int time){
+
+    auto points=table.inValueRange(0.001*time-0.01,0.001*time+0.01 );           // msec -> sec
+    QVector<QPointF> res;
+    for( auto p : points ){
+        res.push_back(QPointF(std::get<0>(p), std::get<1>(p)));
+    }
+
+    return res;
+}
 
 QPainterPath VolumeView::projectWellPathInline(const WellPath& wp, int iline){
 
@@ -763,6 +772,8 @@ void VolumeView::refreshScene(){
 
     if( m_displayMarkers) renderMarkers(scene);
 
+    if( m_displayTables) renderTables(scene);
+
     if( m_displayLastViewed) renderLastViewed(scene);
 
     setScene(scene);
@@ -801,6 +812,10 @@ void VolumeView::renderHorizons(QGraphicsScene* scene){
         }
 
         if( !path.isEmpty()){
+
+            //auto br=path.boundingRect();
+            //std::cout<<br.x()<<"  "<<br.y()<<" "<<br.width()<<" "<<br.height()<<std::endl<<std::flush;
+
             auto item=new QGraphicsPathItem(path);
             QPen pen(hi.color, 2);
             pen.setCosmetic(true);
@@ -887,6 +902,81 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
             scene->addItem(item);
         }
     }
+}
+
+void VolumeView::renderTables(QGraphicsScene* scene){
+
+    for( auto name : m_tables.keys()){
+
+        auto ti=m_tables.value(name);
+        QVector<QPointF> points;
+        switch(m_slice.type){
+        case SliceType::Inline:
+            points=intersectTableInline(*ti.table, m_slice.value);
+            break;
+        case SliceType::Crossline:
+            points=intersectTableCrossline(*ti.table, m_slice.value);
+            break;
+        case SliceType::Z:
+            points=intersectTableTime(*ti.table, m_slice.value);
+            break;
+        default:
+            break;
+        }
+
+        //QPen pen(ti.color, 2);
+        //pen.setCosmetic(true);
+        QBrush brush(ti.color);
+        for( auto p : points){
+            auto item=new QGraphicsRectItem( -2,-2, 4, 4);
+            item->setPen(Qt::NoPen);
+            item->setBrush(brush);
+            item->setPos(p);
+            item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+            scene->addItem(item);
+        }
+    }
+}
+
+
+void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
+
+    painter->save();
+    painter->setWorldMatrixEnabled(false);
+
+    QVector<QPointF> points;
+    switch(m_slice.type){
+    case SliceType::Inline:
+        points=intersectTableInline(*m_picker->picks(), m_slice.value);
+        break;
+    case SliceType::Crossline:
+        points=intersectTableCrossline(*m_picker->picks(), m_slice.value);
+        break;
+    case SliceType::Z:
+        points=intersectTableTime(*m_picker->picks(), m_slice.value);
+        break;
+    default:
+        break;
+    }
+
+
+    QPen pickPen(Qt::red,2);
+    pickPen.setCosmetic(true);
+    painter->setPen(pickPen);
+    const int S=3;
+
+    for( auto p:points){
+
+        auto pp=mapFromScene(p);
+        painter->drawLine(pp.x()-S, pp.y(), pp.x()+S, pp.y()+S);
+        painter->drawLine(pp.x()+S, pp.y(), pp.x()-S, pp.y()+S);
+    }
+
+
+    painter->setWorldMatrixEnabled(true);
+    painter->restore();
+
+    AxisView::drawForeground( painter, rectInScene );
 }
 
 void VolumeView::renderLastViewed(QGraphicsScene * scene){

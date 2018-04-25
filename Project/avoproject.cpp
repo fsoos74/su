@@ -33,38 +33,16 @@
 #include<wellpathreader.h>
 #include<wellmarkers.h>
 #include<topsdbmanager.h>
-
+#include<table.h>
+#include<tablereader.h>
+#include<tablewriter.h>
 
 #include<iostream>
 #include<fstream>
 #include<iomanip>
 #include<chrono>
 
-/*
-//GridType string2GridType( const QString& str){
-GridType toGridType( const QString& str){
 
-   for( auto type : GridTypesAndNames.keys()){
-       if( str == GridTypesAndNames.value(type) ){
-           return type;
-       }
-   }
-
-   throw std::runtime_error("Invalid grid name in string2GridType");
-}
-
-//QString gridType2String( GridType t ){
-QString toQString( GridType t ){
-
-    for( auto type : GridTypesAndNames.keys()){
-        if( t == type ){
-            return GridTypesAndNames.value(type);
-        }
-    }
-
-    throw std::runtime_error("Invalid type in gridType2String");
-}
-*/
 const QString GridTypeAndNameDelimeter = "::";
 
 QString createFullGridName( GridType type, QString name){
@@ -129,7 +107,7 @@ void AVOProject::setProjectDirectory( const QString& dir){
 
     syncWellList();
 
-    //emit changed();
+    syncTableList();
 }
 
 QString AVOProject::getDatabasePath(const QString& databaseName){
@@ -881,52 +859,99 @@ void AVOProject::removeWellMarkersByName(const QString& name){
 }
 
 
+QString AVOProject::getTablePath( const QString& name){
 
-/*
-    if( !existsWell(well)) return false;
+    return QDir::cleanPath( m_tableDirectory + QDir::separator() + name + QString(".") + TableSuffix);
+}
 
-    auto xwmpath=getWellMarkersPath(well);
 
-    QFile file(xwmpath);
-    if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        return false;
-    }
-    XWMWriter writer(wm);
-    if( !writer.writeFile(&file) ) return false; // need clean up
-    file.flush();
+bool AVOProject::existsTable( const QString& name ){
 
-    emit wellChanged(well); //changed();
+   return m_tableList.contains( name);
+}
+
+bool AVOProject::addTable( const QString& name, const Table& table){
+
+    if( name.isEmpty() ) return false;
+
+    if( m_tableList.contains( name)) return false;
+
+    if( !saveTable(name, table) ) return false;
+
+    m_tableList.append(name);
+
+    emit tablesChanged();
+
     return true;
 }
 
-std::shared_ptr<WellMarkers> AVOProject::loadWellMarkers(const QString& well){
-    if( !existsWellMarkers( well ) ) return std::shared_ptr<WellMarkers>();
+bool AVOProject::removeTable( const QString& name){
 
-    auto p=std::make_shared<WellMarkers>();
+   if( !m_tableList.contains(name)) return false;
 
-    auto xwmpath=getWellMarkersPath(well);
-    QFile file(xwmpath);
-    if( !file.open(QFile::ReadOnly | QFile::Text ) ){
-        return p; // return empy process params if no file for backard compability where no xpp
-    }
+   QString filename=getTablePath( name);
+   QFile file(filename);
+   bool res=file.remove();
 
-    XWMReader reader(*p);
+   m_tableList.removeAll(name);
+   emit tablesChanged();
 
-    if( !reader.readFile(&file) ){
-        throw std::runtime_error(QString("Reading well markers %1 failed!").arg(xwmpath).toStdString());
-    }
-
-    return p;
+   return res;
 }
 
+bool AVOProject::renameTable( const QString& name, const QString& newName){
 
-bool AVOProject::saveWellMarkers(const QString& well, const WellMarkers& wm){
+   if( !m_tableList.contains(name)) return false;
+   if( m_tableList.contains(newName)) return false;
 
+   QString fileName=getTablePath(name);
+   QString newFileName=getTablePath(newName);
+   QFile file(fileName);
+   bool res=file.rename(newFileName);
+
+   m_tableList.removeAll(name);
+   m_tableList.append(newName);
+   emit tablesChanged();
+
+   return res;
 }
-*/
 
+QFileInfo AVOProject::getTableFileInfo( const QString& name ){
+    QString path=getTablePath(name);
+    return QFileInfo(path);
+}
 
+std::tuple<QString, QString, bool, int> AVOProject::getTableInfo(QString name){
+    auto path=getTablePath(name);
+    TableReader reader(nullptr);  // read only header
+    if( !reader.readFromFile( path ) ){
+        throw std::runtime_error(reader.lastError().toStdString());
+    }
 
+    return std::make_tuple( reader.key1(), reader.key2(), reader.isMulti(), reader.size());
+}
+
+std::shared_ptr<Table> AVOProject::loadTable(const QString &name){
+
+    auto ptr=std::make_shared<Table>();
+    auto path=getTablePath(name);
+    TableReader reader(ptr.get());
+    if( !reader.readFromFile( path ) ){
+        throw std::runtime_error(reader.lastError().toStdString());
+    }
+
+    return ptr;
+}
+
+bool AVOProject::saveTable( const QString& name, const Table& table){
+
+    QString path=getTablePath(name);
+    TableWriter writer(table);
+    auto res=writer.writeToFile(path);
+    emit tableChanged(name);
+
+    return res;
+}
 
 
  QString AVOProject::getSeismicDatasetPath(const QString& datasetName){
@@ -1032,7 +1057,8 @@ bool AVOProject::setSeismicDatasetInfo( const QString& datasetName, const Seismi
     return true;
 }
 
-SeismicDatasetInfo AVOProject::genericDatasetInfo( const QString& name, SeismicDatasetInfo::Domain domain, SeismicDatasetInfo::Mode mode,
+SeismicDatasetInfo AVOProject::genericDatasetInfo( const QString& name,
+                                                   int dimensions, SeismicDatasetInfo::Domain domain, SeismicDatasetInfo::Mode mode,
                                                    double ft, double dt, size_t nt){
 
     SeismicDatasetInfo info;
@@ -1041,6 +1067,7 @@ SeismicDatasetInfo AVOProject::genericDatasetInfo( const QString& name, SeismicD
     info.setPath( m_seismicDirectory + QDir::separator() + name + QString(".sgy") );
     info.setIndexPath( m_seismicDirectory + QDir::separator() + name + QString(".db3") );
     info.setInfoPath( m_seismicDirectory + QDir::separator() + name + QString(".xsi") );
+    info.setDimensions(dimensions);
     info.setDomain(domain);
     info.setMode(mode);
     info.setFT(ft);
@@ -1051,7 +1078,8 @@ SeismicDatasetInfo AVOProject::genericDatasetInfo( const QString& name, SeismicD
 
 
 
-bool AVOProject::addSeismicDataset( const QString& name, const QString& segyPath, const seismic::SEGYInfo& segyInfo){
+bool AVOProject::addSeismicDataset( const QString& name, int dimensions, SeismicDatasetInfo::Domain domain, SeismicDatasetInfo::Mode mode,
+                                    const QString& segyPath, const seismic::SEGYInfo& segyInfo){
 
      if( name.isEmpty()) return false;
 
@@ -1071,6 +1099,9 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& segyPath
 
     SeismicDatasetInfo datasetInfo;
     datasetInfo.setName(name);
+    datasetInfo.setDomain(domain);
+    datasetInfo.setMode(mode);
+    datasetInfo.setDimensions(dimensions);
 
     // check if file is in seismic directory, i.e. imported, or attached
     if(QFileInfo(segyPath).absoluteDir().path() == m_seismicDirectory ){  // imported
@@ -1089,7 +1120,7 @@ bool AVOProject::addSeismicDataset( const QString& name, const QString& segyPath
 
     auto segyReader=std::make_shared<seismic::SEGYReader>(segyPath.toStdString(), segyInfo);
     if( !segyReader )return false;
-    if( !createDatasetIndex(indexPath, segyReader) ) return false;
+    if( !createDatasetIndex(indexPath, segyReader, datasetInfo.dimensions(), datasetInfo.isPrestack() ) ) return false;
     segyReader.reset();  // close file
     return addSeismicDataset(name, datasetInfo, ProcessParams() );
 }
@@ -1303,7 +1334,9 @@ QString AVOProject::getSeismicDatasetIndexPath(const QString& datasetName){
     return datasetInfo.indexPath();
 }
 
-bool AVOProject::createDatasetIndex( const QString& path, std::shared_ptr<seismic::SEGYReader> reader){
+bool AVOProject::createDatasetIndex( const QString& path, std::shared_ptr<seismic::SEGYReader> reader, int dims, bool prestack){
+
+    std::cout<<"dims="<<dims<<std::endl<<std::flush;
 
     QString tableName="map";
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
@@ -1336,11 +1369,11 @@ bool AVOProject::createDatasetIndex( const QString& path, std::shared_ptr<seismi
 
         query.addBindValue(int(i));
         query.addBindValue(int(hdr.at("cdp").intValue()));
-        query.addBindValue(int(hdr.at("iline").intValue()));
-        query.addBindValue(int(hdr.at("xline").intValue()));
+        query.addBindValue( (dims==3) ? int(hdr.at("iline").intValue()) : 1 );
+        query.addBindValue( (dims==3) ? int(hdr.at("xline").intValue()) : int(hdr.at("cdp").intValue()) );
         query.addBindValue(hdr.at("cdpx").floatValue());
         query.addBindValue(hdr.at("cdpy").floatValue());
-        query.addBindValue(hdr.at("offset").floatValue());
+        query.addBindValue( (prestack) ? hdr.at("offset").floatValue() : 0 );
 
 
         if( !query.exec()) return false;// qFatal(QString(QString("CDPDatabase put: ")+query.lastError().text()).toStdString().c_str());
@@ -1386,19 +1419,21 @@ void AVOProject::setupDirectories(){
     const QString VolumeSubdir="volumes";
     const QString DatabaseSubdir="db";
     const QString WellSubdir="well";
+    const QString TableSubdir="tables";
 
     m_seismicDirectory=QDir::cleanPath( m_projectDirectory + QDir::separator() + SeismicSubdir);
     m_gridDirectory=QDir::cleanPath( m_projectDirectory + QDir::separator() + GridSubdir);
     m_volumeDirectory=QDir::cleanPath( m_projectDirectory + QDir::separator() + VolumeSubdir);
     m_databaseDirectory=QDir::cleanPath( m_projectDirectory + QDir::separator() + DatabaseSubdir);
     m_wellDirectory=QDir::cleanPath( m_projectDirectory + QDir::separator() + WellSubdir );
+    m_tableDirectory=QDir::cleanPath( m_projectDirectory + QDir::separator() + TableSubdir );
 
     ensureDirectory(m_seismicDirectory);
     ensureDirectory(m_gridDirectory);
     ensureDirectory(m_volumeDirectory);
     ensureDirectory(m_databaseDirectory);
     ensureDirectory(m_wellDirectory);
-
+    ensureDirectory(m_tableDirectory);
 
     //for( auto type : GridTypesAndNames.keys() ){
     for( auto type : gridTypes() ){
@@ -1546,4 +1581,22 @@ void AVOProject::syncWellList(){
     }
 
     m_wellList=tmp;
+}
+
+
+void AVOProject::syncTableList(){
+
+    QDir dir(m_tableDirectory);
+    dir.setNameFilters(QStringList(QString("*.%1").arg(TableSuffix)));
+    dir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks);
+
+    QStringList tmp;
+    QStringList list = dir.entryList();
+    for( QString rawName : list){
+
+        QString name=QFileInfo(rawName).baseName();
+        tmp.append(name);
+    }
+
+    m_tableList=tmp;
 }

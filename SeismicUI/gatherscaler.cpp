@@ -23,7 +23,67 @@ void GatherScaler::setFixedScaleFactor(qreal fac){
     m_fixedScaleFactor=fac;
 
     emit changed();
+    emit fixedScaleFactorChanged(fac);
 }
+
+// rms scaling, experimental - NOT WORKING YET!!!
+/*
+QVector<qreal> GatherScaler::computeScalingFactors( std::shared_ptr<seismic::Gather> gather){
+
+    if( !gather ) return QVector<qreal>();
+
+    if( m_mode==Mode::NoScaling){
+        return QVector<qreal>(gather->size(), 1);   // for now
+    }
+
+    if( m_mode==Mode::Fixed){
+        return QVector<qreal>(gather->size(), m_fixedScaleFactor);
+    }
+
+    QVector<qreal> traceSum2;
+
+    traceSum2.reserve(gather->size());
+
+    for( size_t i=0; i<gather->size(); i++){
+
+        const seismic::Trace::Samples& samples=(*gather)[i].samples();
+
+        qreal sum2=0;
+        for( auto sample : samples){
+            sum2+=sample*sample;
+        }
+        traceSum2.push_back( sum2 );
+    }
+
+    if( m_mode==Mode::Individual ){
+
+        QVector<qreal> factors(gather->size(), m_fixedScaleFactor);
+
+        for( int i=0; i<factors.size(); i++){
+            auto n = (*gather)[i].samples().size();
+            auto rms=std::sqrt(traceSum2[i]/n);
+            if(n>0) factors[i]=m_fixedScaleFactor/rms ;
+            std::cout<<"i="<<i<<" rms="<<rms<<" factor="<<factors[i]<<std::endl<<std::flush;
+        }
+        return factors;
+    }
+
+    // once we reached here it must be entire scaling
+
+    qreal gatherSum2=0;
+    size_t gatherN=0;
+    for( size_t i = 0; i<gather->size(); i++){
+        gatherSum2+=traceSum2[i];
+        auto n = (*gather)[i].samples().size();
+        gatherN+=n;
+    }
+
+    auto rms=std::sqrt(gatherSum2/gatherN);
+    return QVector<qreal>(gather->size(), m_fixedScaleFactor/rms);
+}
+*/
+
+// min/max scaling
 
 QVector<qreal> GatherScaler::computeScalingFactors( std::shared_ptr<seismic::Gather> gather){
 
@@ -97,3 +157,4 @@ QVector<qreal> GatherScaler::computeScalingFactors( std::shared_ptr<seismic::Gat
         return QVector<qreal>(gather->size(),0);
     }
 }
+

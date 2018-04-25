@@ -12,6 +12,7 @@
 #include<QPoint>
 #include "gather.h"
 #include <grid2d.h>
+#include <table.h>
 
 #include<selectionpoint.h>
 
@@ -90,6 +91,18 @@ public:
         return m_volumeOpacity;
     }
 
+    int pickSize()const{
+        return m_pickSize;
+    }
+
+    QColor pickColor()const{
+        return m_pickColor;
+    }
+
+    int pickOpacity()const{
+        return m_pickOpacity;
+    }
+
     int viewerCurrentTrace()const{
         return m_viewerCurrentTrace;
     }
@@ -100,6 +113,9 @@ public slots:
     void setTraceOpacity(int);
     void setDensityOpacity(int);
     void setVolumeOpacity(int);
+    void setPickSize(int);
+    void setPickColor(QColor);
+    void setPickOpacity(int);
     void setHorizonColor(QColor);
     void setHighlightedPointSize(int);
     void setHighlightedPointColor(QColor);
@@ -134,12 +150,13 @@ private:
 
     void drawHorizons( QPainter& painter );
     void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen);
-    void drawPicks(QPainter& painter, std::shared_ptr<Grid2D<float>> picks);
+    void drawPicks(QPainter& painter, Table* picks);
     void drawHorizontalLines(QPainter& painter, const QRect& rect);
     void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
     void drawViewerCurrentPosition( QPainter& painter, SelectionPoint);
     void drawIntersectionTraces( QPainter& painter, const QVector<int>& trc);
     void drawIntersectionTimes( QPainter& painter, const QVector<qreal>& times);
+    void drawPickerBuffer( QPainter& painter, std::vector<std::pair<int,float>> points);
     void updateTimeRange();
     void updatePixmap();
     //void computePixelPerUnits();
@@ -165,6 +182,10 @@ private:
     int m_traceOpacity=100;
     int m_densityOpacity=100;
     int m_volumeOpacity=50;
+
+    int m_pickSize=4;
+    int m_pickOpacity=50;
+    QColor m_pickColor=Qt::blue;
 
     int m_highlightedPointSize=4;
     QColor m_highlightedPointColor=Qt::red;

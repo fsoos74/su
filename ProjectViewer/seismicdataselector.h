@@ -51,9 +51,14 @@ public:
         return m_lock;
     }
 
+    void setReader(std::shared_ptr<SeismicDatasetReader>);
+
 public slots:
 
-    void setReader(std::shared_ptr<SeismicDatasetReader>);
+    void first();
+    void last();
+    void next();
+    void previous();
     void setInlineRange( int min, int max);
     void setCrosslineRange( int min, int max);
     void setInlineCountRange( int min, int max);

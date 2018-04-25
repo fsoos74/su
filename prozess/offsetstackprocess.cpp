@@ -51,7 +51,7 @@ ProjectProcess::ResultCode OffsetStackProcess::run(){
     }
 
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
-                                                               m_reader->info().domain(), SeismicDatasetInfo::Mode::Poststack,
+                                                               m_reader->info().dimensions(), m_reader->info().domain(), SeismicDatasetInfo::Mode::Poststack,
                                                                m_reader->info().ft(), m_reader->info().dt(), m_reader->info().nt());
 
     m_writer = std::make_shared<SeismicDatasetWriter>( dsinfo );
@@ -59,8 +59,7 @@ ProjectProcess::ResultCode OffsetStackProcess::run(){
     emit started(reader->trace_count());
     reader->seek_trace(0);
 
-    int stack_iline=-1;
-    int stack_xline=-1;
+    int stack_cdp=-1;
     int stack_fold=0;
     seismic::Trace::time_type   stack_ft;
     seismic::Trace::time_type   stack_dt;
@@ -71,11 +70,10 @@ ProjectProcess::ResultCode OffsetStackProcess::run(){
 
         seismic::Trace trace=reader->read_trace();
         const seismic::Header& header=trace.header();
-        int iline=header.at("iline").intValue();
-        int xline=header.at("xline").intValue();
+        int cdp=header.at("cdp").intValue();
         float offset=header.at("offset").floatValue();
 
-        if( iline!=stack_iline || xline!=stack_xline ){
+        if( cdp!=stack_cdp ){
 
             if( stack_fold ){
 
@@ -89,8 +87,7 @@ ProjectProcess::ResultCode OffsetStackProcess::run(){
                 m_writer->writeTrace(stack_trace);
             }
 
-            stack_iline=iline;
-            stack_xline=xline;
+            stack_cdp=cdp;
             stack_fold=0;
             stack_header=trace.header();
             stack_samples = seismic::Trace::Samples( trace.samples().size(), 0);

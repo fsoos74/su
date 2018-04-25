@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>836</width>
+    <width>922</width>
     <height>564</height>
    </rect>
   </property>
@@ -153,6 +153,23 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tablesTab">
+       <attribute name="title">
+        <string>Tables</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <widget class="QTableView" name="tablesView">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -206,7 +223,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>836</width>
+     <width>922</width>
      <height>25</height>
     </rect>
    </property>
@@ -241,8 +258,10 @@
      <addaction name="actionExportOtherGrid"/>
      <addaction name="separator"/>
      <addaction name="actionExportVolume"/>
+     <addaction name="separator"/>
      <addaction name="actionExportSeismic"/>
      <addaction name="separator"/>
+     <addaction name="actionExportLog"/>
     </widget>
     <widget class="QMenu" name="menu_Recent_Projects">
      <property name="title">
@@ -319,6 +338,7 @@
     </property>
     <addaction name="actionCreate_New_Volume"/>
     <addaction name="action_Crop_Volume"/>
+    <addaction name="actionPunch_Out_Volume"/>
     <addaction name="actionVolume_Math"/>
     <addaction name="actionFlatten_Volume"/>
     <addaction name="actionUnflatten_Volume"/>
@@ -357,16 +377,39 @@
    </widget>
    <widget class="QMenu" name="menuProcess_Well">
     <property name="title">
-     <string>Process(&amp;Log)</string>
+     <string>Pro&amp;cess(Well)</string>
     </property>
     <addaction name="action_Smooth_Log"/>
     <addaction name="actionLog_Math"/>
     <addaction name="actionLog_Integration"/>
     <addaction name="separator"/>
+    <addaction name="actionNN_Log_old"/>
+    <addaction name="actionTrain_NN_Log"/>
+    <addaction name="actionNN_Log_Interpolation"/>
+    <addaction name="separator"/>
+    <addaction name="actionVShale_Computation"/>
+    <addaction name="actionTops_from_Horizon"/>
     <addaction name="actionBuild_Volume"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Log_Script"/>
-    <addaction name="actionTest"/>
+   </widget>
+   <widget class="QMenu" name="menuModeling">
+    <property name="title">
+     <string>&amp;Inversion</string>
+    </property>
+    <addaction name="actionFD_CDP_Acoustic"/>
+   </widget>
+   <widget class="QMenu" name="menuTest">
+    <property name="title">
+     <string>Test</string>
+    </property>
+    <addaction name="actiontest"/>
+   </widget>
+   <widget class="QMenu" name="menuProcess_Table">
+    <property name="title">
+     <string>Process(&amp;Table)</string>
+    </property>
+    <addaction name="actionConvert_Picks_To_Horizon"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
@@ -374,8 +417,11 @@
    <addaction name="menuProcess"/>
    <addaction name="menuProcess_Volume"/>
    <addaction name="menuProcess_Well"/>
+   <addaction name="menuProcess_Table"/>
+   <addaction name="menuModeling"/>
    <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
+   <addaction name="menuTest"/>
   </widget>
   <action name="actionImportHorizon">
    <property name="text">
@@ -850,7 +896,7 @@
   </action>
   <action name="actionVolume_Dip">
    <property name="text">
-    <string>Volume &amp;Dip</string>
+    <string>Volume &amp;Dip Scan</string>
    </property>
   </action>
   <action name="actionWell_Markers">
@@ -884,6 +930,56 @@
   <action name="actionEdit_Tops">
    <property name="text">
     <string>Edit &amp;Tops</string>
+   </property>
+  </action>
+  <action name="actionFD_CDP_Acoustic">
+   <property name="text">
+    <string>&amp;FD CDP 2D (Acoustic)</string>
+   </property>
+  </action>
+  <action name="actionNN_Log_Interpolation">
+   <property name="text">
+    <string>&amp;NN Log Interpolation</string>
+   </property>
+  </action>
+  <action name="actionTrain_NN_Log">
+   <property name="text">
+    <string>NN &amp;Log Trainer *</string>
+   </property>
+  </action>
+  <action name="actionNN_Log_old">
+   <property name="text">
+    <string>NN Log (&amp;old)</string>
+   </property>
+  </action>
+  <action name="actionVShale_Computation">
+   <property name="text">
+    <string>VShale &amp;Computation</string>
+   </property>
+  </action>
+  <action name="actiontest">
+   <property name="text">
+    <string>&amp;Test</string>
+   </property>
+  </action>
+  <action name="actionExportLog">
+   <property name="text">
+    <string>&amp;Log</string>
+   </property>
+  </action>
+  <action name="actionPunch_Out_Volume">
+   <property name="text">
+    <string>&amp;Punch Out Volume</string>
+   </property>
+  </action>
+  <action name="actionTops_from_Horizon">
+   <property name="text">
+    <string>&amp;Tops from Horizon</string>
+   </property>
+  </action>
+  <action name="actionConvert_Picks_To_Horizon">
+   <property name="text">
+    <string>Convert Picks To Horizon</string>
    </property>
   </action>
  </widget>

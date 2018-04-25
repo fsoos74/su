@@ -15,12 +15,13 @@ void SeismicDatasetWriter::writeTrace(const seismic::Trace& trc){
 
     const seismic::Header& hdr=trc.header();
     m_addTraceQuery.addBindValue(static_cast<int>(m_size));
-    m_addTraceQuery.addBindValue(int(hdr.at("cdp").intValue()));
-    m_addTraceQuery.addBindValue(int(hdr.at("iline").intValue()));
-    m_addTraceQuery.addBindValue(int(hdr.at("xline").intValue()));
+    int cdp=int(hdr.at("cdp").intValue());
+    m_addTraceQuery.addBindValue(cdp);
+    m_addTraceQuery.addBindValue( (info().dimensions()==3) ? int(hdr.at("iline").intValue()) : 1 );
+    m_addTraceQuery.addBindValue( (info().dimensions()==3) ? int(hdr.at("xline").intValue()) : cdp );
     m_addTraceQuery.addBindValue(hdr.at("cdpx").floatValue());
     m_addTraceQuery.addBindValue(hdr.at("cdpy").floatValue());
-    m_addTraceQuery.addBindValue(hdr.at("offset").floatValue());
+    m_addTraceQuery.addBindValue( (info().mode()==SeismicDatasetInfo::Mode::Prestack) ? hdr.at("offset").floatValue() : 0);
 
     if( !m_addTraceQuery.exec() ) throw Exception("Failed to add trace index!");
 

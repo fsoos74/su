@@ -52,6 +52,8 @@ public:
 
 private:
 
+    void addDData(seismic::Trace& trc);
+
     void openDatabase();
     void openSEGYFile();
     void closeDatabase();

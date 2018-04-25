@@ -4,12 +4,12 @@
 #include<QIntValidator>
 
 const QString ORDER_NONE_STR("none");
-const QString ILINE_ASC_STR("inline ascending");
-const QString ILINE_DESC_STR("inline descending");
-const QString XLINE_ASC_STR("crossline ascending");
-const QString XLINE_DESC_STR("crossline descending");
-const QString OFFSET_ASC_STR("offset ascending");
-const QString OFFSET_DESC_STR("offset descending");
+const QString ILINE_ASC_STR("iline asc");
+const QString ILINE_DESC_STR("iline desc");
+const QString XLINE_ASC_STR("xline asc");
+const QString XLINE_DESC_STR("xline desc");
+const QString OFFSET_ASC_STR("offset asc");
+const QString OFFSET_DESC_STR("offset desc");
 
 const int ORDER_NONE_INDEX=0;
 const int ILINE_ASC_INDEX=1;
@@ -75,6 +75,61 @@ QString SeismicDataSelector::selectionDescription(){
 }
 
 
+void SeismicDataSelector::first()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->setValue(ui->sbInline->minimum()); break;
+    case ILINE_DESC_INDEX: ui->sbInline->setValue(ui->sbInline->maximum()); break;
+    case XLINE_ASC_INDEX: ui->sbXline->setValue(ui->sbXline->minimum()); break;
+    case XLINE_DESC_INDEX: ui->sbXline->setValue(ui->sbXline->maximum()); break;
+    default: //nop
+        break;
+    }
+}
+
+void SeismicDataSelector::previous()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->stepDown();break;
+    case ILINE_DESC_INDEX: ui->sbInline->stepUp(); break;
+    case XLINE_ASC_INDEX: ui->sbXline->stepDown(); break;
+    case XLINE_DESC_INDEX: ui->sbXline->stepUp(); break;
+    default: //nop
+        break;
+    }
+}
+
+void SeismicDataSelector::next()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->stepUp();break;
+    case ILINE_DESC_INDEX: ui->sbInline->stepDown(); break;
+    case XLINE_ASC_INDEX: ui->sbXline->stepUp(); break;
+    case XLINE_DESC_INDEX: ui->sbXline->stepDown(); break;
+    default: //nop
+        break;
+    }
+}
+
+void SeismicDataSelector::last()
+{
+    int order1=ui->cbOrder1->currentIndex();
+
+    switch( order1 ){
+    case ILINE_ASC_INDEX: ui->sbInline->setValue(ui->sbInline->maximum()); break;
+    case ILINE_DESC_INDEX: ui->sbInline->setValue(ui->sbInline->minimum()); break;
+    case XLINE_ASC_INDEX: ui->sbXline->setValue(ui->sbXline->maximum()); break;
+    case XLINE_DESC_INDEX: ui->sbXline->setValue(ui->sbXline->minimum()); break;
+    default: //nop
+        break;
+    }
+}
 
 void SeismicDataSelector::updatePrimarySort(){
 
@@ -440,7 +495,6 @@ void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
 
     ui->label->setEnabled(!checked);
     ui->label_2->setEnabled(!checked);
-    ui->label_3->setEnabled(!checked);
     ui->sbInline->setEnabled(!checked);
     ui->sbIlineCount->setEnabled(!checked);
     ui->sbXline->setEnabled(!checked);
@@ -577,56 +631,20 @@ void SeismicDataSelector::on_pbLock_toggled(bool checked)
 
 void SeismicDataSelector::on_pbFirst_clicked()
 {
-    int order1=ui->cbOrder1->currentIndex();
-
-    switch( order1 ){
-    case ILINE_ASC_INDEX: ui->sbInline->setValue(ui->sbInline->minimum()); break;
-    case ILINE_DESC_INDEX: ui->sbInline->setValue(ui->sbInline->maximum()); break;
-    case XLINE_ASC_INDEX: ui->sbXline->setValue(ui->sbXline->minimum()); break;
-    case XLINE_DESC_INDEX: ui->sbXline->setValue(ui->sbXline->maximum()); break;
-    default: //nop
-        break;
-    }
+    first();
 }
 
 void SeismicDataSelector::on_pbPrevious_clicked()
 {
-    int order1=ui->cbOrder1->currentIndex();
-
-    switch( order1 ){
-    case ILINE_ASC_INDEX: ui->sbInline->stepDown();break;
-    case ILINE_DESC_INDEX: ui->sbInline->stepUp(); break;
-    case XLINE_ASC_INDEX: ui->sbXline->stepDown(); break;
-    case XLINE_DESC_INDEX: ui->sbXline->stepUp(); break;
-    default: //nop
-        break;
-    }
+    previous();
 }
 
 void SeismicDataSelector::on_pbNext_clicked()
 {
-    int order1=ui->cbOrder1->currentIndex();
-
-    switch( order1 ){
-    case ILINE_ASC_INDEX: ui->sbInline->stepUp();break;
-    case ILINE_DESC_INDEX: ui->sbInline->stepDown(); break;
-    case XLINE_ASC_INDEX: ui->sbXline->stepUp(); break;
-    case XLINE_DESC_INDEX: ui->sbXline->stepDown(); break;
-    default: //nop
-        break;
-    }
+    next();
 }
 
 void SeismicDataSelector::on_pbLast_clicked()
 {
-    int order1=ui->cbOrder1->currentIndex();
-
-    switch( order1 ){
-    case ILINE_ASC_INDEX: ui->sbInline->setValue(ui->sbInline->maximum()); break;
-    case ILINE_DESC_INDEX: ui->sbInline->setValue(ui->sbInline->minimum()); break;
-    case XLINE_ASC_INDEX: ui->sbXline->setValue(ui->sbXline->maximum()); break;
-    case XLINE_DESC_INDEX: ui->sbXline->setValue(ui->sbXline->minimum()); break;
-    default: //nop
-        break;
-    }
+    last();
 }

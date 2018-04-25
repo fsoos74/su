@@ -8,13 +8,14 @@
 #include <grid2d.h>
 #include <wellpath.h>
 #include <wellmarkers.h>
+#include <table.h>
 #include <histogram.h>
 
 #include<QList>
 #include<QMap>
 #include<QColor>
 
-
+class VolumePicker;
 
 class VolumeView : public RulerAxisView
 {
@@ -30,6 +31,10 @@ public:
     };
 
     VolumeView(QWidget* parent);
+
+    VolumePicker* picker()const{
+        return m_picker;
+    }
 
     Grid3DBounds bounds(){
         return m_bounds;
@@ -47,7 +52,6 @@ public:
         return m_lastViewedColor;
     }
 
-
     QStringList volumeList();
     std::shared_ptr<Volume> volume(QString name);
     qreal volumeAlpha(QString name);
@@ -62,11 +66,12 @@ public:
     }
 
     QStringList markersList();
-
     QColor markerColor()const{
         return m_markerColor;
     }
 
+    QStringList tableList();
+    QColor tableColor(QString);
 
     bool displayHorizons()const{
         return m_displayHorizons;
@@ -82,6 +87,10 @@ public:
 
     bool displayMarkers()const{
         return m_displayMarkers;
+    }
+
+    bool displayTables()const{
+        return m_displayTables;
     }
 
     QStringList displayedMarkers()const{
@@ -113,6 +122,10 @@ public slots:
     void setWellColor(QColor);
     void setMarkerColor(QColor);
 
+    void addTable(QString, std::shared_ptr<Table>, QColor);
+    void removeTable(QString);
+    void setTableColor(QString, QColor);
+
     void setDisplayedMarkers(QStringList);
 
     void setLastViewedColor(QColor);
@@ -120,6 +133,7 @@ public slots:
     void setDisplayWells(bool);
     void setDisplayMarkers(bool);
     void setDisplayMarkerLabels(bool);
+    void setDisplayTables(bool);
     void setDisplayLastViewed(bool);
 
     void back();
@@ -133,9 +147,11 @@ signals:
     void displayMarkersChanged(bool);
     void displayMarkerLabelsChanged(bool);
     void displayHorizonsChanged(bool);
+    void displayTablesChanged(bool);
     void displayLastViewedChanged(bool);
 
 protected:
+    void drawForeground(QPainter *painter, const QRectF &rect)override; // need to draw picks
     void refreshScene()override;
 
 private slots:
@@ -149,6 +165,7 @@ private:
     void renderHorizons(QGraphicsScene*);
     void renderWells(QGraphicsScene*);
     void renderMarkers(QGraphicsScene*);
+    void renderTables(QGraphicsScene*);
     void renderLastViewed(QGraphicsScene*);
 
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
@@ -164,11 +181,19 @@ private:
         QColor color;
     };
 
+    struct TableItem{
+        std::shared_ptr<Table> table;
+        QColor color;
+    };
+
     QImage intersectVolumeInline(const Volume& volume, ColorTable* colorTable, int iline, double ft, double lt);
     QImage intersectVolumeCrossline(const Volume& volume, ColorTable* colorTable, int xline, double ft, double lt);
     QImage intersectVolumeTime(const Volume& volume, ColorTable* colorTable, int time);
     QPainterPath intersectHorizonInline(const Grid2D<float>& grid, int iline);
     QPainterPath intersectHorizonCrossline(const Grid2D<float>& grid, int xline);
+    QVector<QPointF> intersectTableInline(const Table& table, int iline);
+    QVector<QPointF> intersectTableCrossline(const Table& table, int xline);
+    QVector<QPointF> intersectTableTime(const Table& table, int time);
     QPainterPath projectWellPathInline(const WellPath& wp, int iline);
     QPainterPath projectWellPathCrossline(const WellPath& wp, int xline);
     QVector<std::pair<QPointF, QString>> projectMarkersInline(int iline);
@@ -181,12 +206,15 @@ private:
 
     QTransform m_xy_to_ilxl, m_ilxl_to_xy;
 
+    VolumePicker* m_picker;
+
     SliceDef m_slice;
     int m_wellViewDist=100;
     QMap<QString, VolumeItem> m_volumes;
     QMap<QString, HorizonItem> m_horizons;
     QMap<QString, std::shared_ptr<WellPath>> m_wells;
     QMap<QString, std::shared_ptr<WellMarkers>> m_markers;
+    QMap<QString, TableItem> m_tables;         // picks/points
     QStringList m_displayedMarkers;
     QColor m_wellColor=Qt::white;
     QColor m_markerColor=Qt::darkRed;
@@ -195,6 +223,7 @@ private:
     bool m_displayWells=true;
     bool m_displayMarkers=true;
     bool m_displayMarkerLabels=true;
+    bool m_displayTables=true;
     bool m_displayLastViewed=true;
     Grid3DBounds m_bounds;
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;

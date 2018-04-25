@@ -60,7 +60,8 @@ SOURCES += main.cpp\
     spectrumviewer.cpp \
     spectrumdataselectiondialog.cpp \
     processparamsviewer.cpp \
-    logsitemdelegate.cpp
+    logsitemdelegate.cpp \
+    tabledialog.cpp
 
 HEADERS  += projectviewer.h \
     seismicdataselector.h \
@@ -84,7 +85,8 @@ HEADERS  += projectviewer.h \
     spectrumdataselectiondialog.h \
     spectrumdefinition.h \
     processparamsviewer.h \
-    logsitemdelegate.h
+    logsitemdelegate.h \
+    tabledialog.h
 
 FORMS    += projectviewer.ui \
     seismicdataselector.ui \
@@ -103,7 +105,8 @@ FORMS    += projectviewer.ui \
     colorcompositeviewer.ui \
     spectrumviewer.ui \
     spectrumdataselectiondialog.ui \
-    processparamsviewer.ui
+    processparamsviewer.ui \
+    tabledialog.ui
 
 RESOURCES += \
     icons.qrc
@@ -331,5 +334,10 @@ DISTFILES += \
     ../images/stop-32x32.png \
     ../images/crossplot-volumes-32x32.png \
     ../images/crossplot-logs-32x32.png \
-    ../images/crossplot-grids-32x32.png
+    ../images/crossplot-grids-32x32.png \
+    ../images/minus_16x16.png \
+    ../images/plus_16x16.png \
+    ../images/add-by-well-32x32.png \
+    ../images/add-by-log-32x32.png \
+    ../images/pick-outline-32x32.png
 

@@ -60,6 +60,10 @@ void SeismicDatasetInfo::setIndexPath(const QString& path){
     m_indexPath=path;
 }
 
+void SeismicDatasetInfo::setDimensions(int i){
+    m_dimensions=i;
+}
+
 void SeismicDatasetInfo::setDomain( SeismicDatasetInfo::Domain domain){
     m_domain=domain;
 }

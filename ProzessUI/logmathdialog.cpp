@@ -44,7 +44,7 @@ QMap<QString,QString> LogMathDialog::params(){
     p.insert( "description", ui->leDescr->text());
 
     p.insert( "input-log1", ui->cbInput1->currentText() );
-    p.insert( "input-log2", ui->cbInput2->currentText() );
+    p.insert( "input-log2", (ui->cbInput2->isEnabled()) ? ui->cbInput2->currentText() : "" );
 
     p.insert( "value", ui->leValue->text());
 

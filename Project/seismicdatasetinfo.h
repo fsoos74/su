@@ -29,6 +29,10 @@ public:
         return m_indexPath;
     }
 
+    int dimensions()const{
+        return m_dimensions;
+    }
+
     Domain domain()const{
         return m_domain;
     }
@@ -49,10 +53,27 @@ public:
         return m_nt;
     }
 
+    bool is2D()const{
+        return m_dimensions==2;
+    }
+
+    bool is3D()const{
+        return m_dimensions==3;
+    }
+
+    bool isPrestack()const{
+        return m_mode==SeismicDatasetInfo::Mode::Prestack;
+    }
+
+    bool isPoststack()const{
+        return m_mode==SeismicDatasetInfo::Mode::Poststack;
+    }
+
     void setName(const QString&);
     void setPath(const QString&);
     void setInfoPath(const QString&);
     void setIndexPath(const QString&);
+    void setDimensions(int);
     void setDomain(Domain);
     void setMode(Mode);
     void setDT(double);
@@ -69,6 +90,7 @@ private:
     QString m_path;
     QString m_infoPath;
     QString m_indexPath;
+    int m_dimensions=3;
     Domain  m_domain=Domain::Time;
     Mode    m_mode=Mode::Prestack;
     double m_ft=0;

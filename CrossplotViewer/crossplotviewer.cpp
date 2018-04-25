@@ -29,6 +29,8 @@
 #include<histogramdialog.h>
 
 #include "edittrenddialog.h"
+#include "crossplotfilterdialog.h"
+
 
 #include<cmath>
 
@@ -194,11 +196,6 @@ void CrossplotViewer::setFixedColor(bool on){
     ui->crossplotView->setFixedColor(on);
 }
 
-void CrossplotViewer::setRegion(VolumeDimensions dims){
-
-    ui->crossplotView->setRegion(dims);
-}
-
 
 void CrossplotViewer::onTrendLineSelected(QLineF axisline){
 
@@ -344,18 +341,37 @@ void CrossplotViewer::sceneSelectionChanged(){
 
 void CrossplotViewer::on_actionSelect_By_Inline_Crossline_Ranges_triggered()
 {
-    VolumeDataSelectionDialog dlg(this);
 
-    dlg.setWindowTitle( "Select Line Ranges and Time Range");
-    dlg.setInlineSelectionEnabled(m_inlinesSelectable);
-    dlg.setCrosslineSelectionEnabled(m_crosslinesSelectable);
-    dlg.setMSecSelectionEnabled(m_msecsSelectable);
-    dlg.setDimensions(ui->crossplotView->region());
+    auto dims=ui->crossplotView->dimensions();
+    auto arange=ui->crossplotView->attributeRange();
 
-    if( dlg.exec()==QDialog::Accepted){
+    CrossplotFilterDialog dlg;
+    auto f=ui->crossplotView->filter();
 
-       setRegion( dlg.dimensions());
+    dlg.setWindowTitle("Select Displayed Points");
+    dlg.setMinInline(std::max(dims.inline1, f.minIL));
+    dlg.setMaxInline(std::min(dims.inline2,f.maxIL));
+    dlg.setMinCrossline(std::max(dims.crossline1,f.minXL));
+    dlg.setMaxCrossline(std::min(dims.crossline2,f.maxXL));
+    dlg.setMinZ(std::max(dims.msec1,f.minZ));
+    dlg.setMaxZ(std::min(dims.msec2,f.maxZ));
+    dlg.setMinAttribute(std::max(static_cast<double>(arange.minimum), f.minA));
+    dlg.setMaxAttribute(std::min(static_cast<double>(arange.maximum), f.maxA));
+
+    if( dlg.exec()){
+
+        ui->crossplotView->setFilter(
+
+                    CrossplotView::Filter{
+                        dlg.minInline(), dlg.maxInline(),
+                        dlg.minCrossline(), dlg.maxCrossline(),
+                        dlg.minZ(), dlg.maxZ(),
+                        dlg.minAttribute(), dlg.maxAttribute()
+                    }
+                    );
+
     }
+
 }
 
 void CrossplotViewer::on_actionDisplay_Options_triggered()
@@ -363,15 +379,18 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
     if( !displayOptionsDialog){
 
         displayOptionsDialog=new CrossplotViewerDisplayOptionsDialog(this);
-        displayOptionsDialog->setDatapointSize(ui->crossplotView->datapointSize());
+        displayOptionsDialog->setPointSize(ui->crossplotView->pointSize());
+        displayOptionsDialog->setPointSymbol(ui->crossplotView->pointSymbol());
         displayOptionsDialog->setFixedColor(ui->crossplotView->isFixedColor());
         displayOptionsDialog->setPointColor(ui->crossplotView->pointColor());
         displayOptionsDialog->setTrendlineColor(ui->crossplotView->trendlineColor());
 
         displayOptionsDialog->setWindowTitle("Crossplot Display Options");
 
-        connect( displayOptionsDialog, SIGNAL(datapointSizeChanged(int)),
-                 ui->crossplotView, SLOT(setDatapointSize(int)) );
+        connect( displayOptionsDialog, SIGNAL(pointSizeChanged(int)),
+                 ui->crossplotView, SLOT(setPointSize(int)) );
+        connect( displayOptionsDialog, SIGNAL(pointSymbolChanged(CrossplotView::Symbol)),
+                 ui->crossplotView, SLOT(setPointSymbol(CrossplotView::Symbol)) );
         connect( displayOptionsDialog, SIGNAL(fixedColorChanged(bool)),
                  ui->crossplotView, SLOT(setFixedColor(bool)) );
         connect( displayOptionsDialog, SIGNAL( pointColorChanged(QColor)),
@@ -526,7 +545,7 @@ void CrossplotViewer::saveSettings(){
 
      settings.beginGroup("items");
 
-        settings.setValue("datapoint-size", ui->crossplotView->datapointSize());
+        settings.setValue("datapoint-size", ui->crossplotView->pointSize());
 
      settings.endGroup();
 
@@ -546,9 +565,8 @@ void CrossplotViewer::loadSettings(){
 
     settings.beginGroup("items");
 
-        ui->crossplotView->setDatapointSize( settings.value("datapoint-size", 7 ).toInt());
+        ui->crossplotView->setPointSize( settings.value("datapoint-size", 7 ).toInt());
 
     settings.endGroup();
 }
-
 

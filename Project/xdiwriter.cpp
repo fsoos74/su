@@ -20,6 +20,7 @@ bool XDIWriter::writeFile(QIODevice *device){
     xml.writeTextElement("path", m_info.path());
     xml.writeTextElement("info-path", m_info.infoPath());
     xml.writeTextElement("index-path", m_info.indexPath());
+    xml.writeTextElement("dimensions", QString::number(m_info.dimensions()));
     xml.writeTextElement("domain", datasetDomainToString( m_info.domain() ) );
     xml.writeTextElement("mode", datasetModeToString( m_info.mode() ) );
     xml.writeTextElement("ft", QString::number(m_info.ft()));

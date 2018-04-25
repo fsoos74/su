@@ -32,7 +32,9 @@ SOURCES += wellui.cpp \
     convertlogdepthtimedialog.cpp \
     selectwellsbylogdialog.cpp \
     logpropertiesdialog.cpp \
-    editmarkersdialog.cpp
+    editmarkersdialog.cpp \
+    logeditdialog.cpp \
+    zmode.cpp
 
 HEADERS += wellui.h\
         wellui_global.h \
@@ -49,7 +51,8 @@ HEADERS += wellui.h\
     selectwellsbylogdialog.h \
     zmode.h \
     logpropertiesdialog.h \
-    editmarkersdialog.h
+    editmarkersdialog.h \
+    logeditdialog.h
 
 unix {
     target.path = /usr/lib
@@ -65,7 +68,8 @@ FORMS += \
     convertlogdepthtimedialog.ui \
     selectwellsbylogdialog.ui \
     logpropertiesdialog.ui \
-    editmarkersdialog.ui
+    editmarkersdialog.ui \
+    logeditdialog.ui
 
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil

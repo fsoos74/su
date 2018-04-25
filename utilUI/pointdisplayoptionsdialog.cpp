@@ -20,6 +20,10 @@ int PointDisplayOptionsDialog::pointSize()const{
     return ui->sbSize->value();
 }
 
+int PointDisplayOptionsDialog::opacity()const{
+    return ui->sbOpacity->value();
+}
+
 QColor PointDisplayOptionsDialog::pointColor()const{
 
     return ui->cbColor->color();
@@ -28,6 +32,10 @@ QColor PointDisplayOptionsDialog::pointColor()const{
 void PointDisplayOptionsDialog::setPointSize(int size){
 
     ui->sbSize->setValue(size);
+}
+
+void PointDisplayOptionsDialog::setOpacity(int o){
+    ui->sbOpacity->setValue(o);
 }
 
 void PointDisplayOptionsDialog::setPointColor(QColor color){
@@ -52,4 +60,9 @@ void PointDisplayOptionsDialog::on_cbColor_clicked()
 void PointDisplayOptionsDialog::on_sbSize_valueChanged(int size)
 {
     emit pointSizeChanged(size);
+}
+
+void PointDisplayOptionsDialog::on_sbOpacity_valueChanged(int arg1)
+{
+    emit opacityChanged(arg1);
 }

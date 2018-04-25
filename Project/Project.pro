@@ -36,7 +36,10 @@ SOURCES += project.cpp \
     wellinfo.cpp \
     xwiwriter.cpp \
     xwireader.cpp \
-    topsdbmanager.cpp
+    topsdbmanager.cpp \
+    table.cpp \
+    tablewriter.cpp \
+    tablereader.cpp
 
 HEADERS += project.h\
         project_global.h \
@@ -56,7 +59,11 @@ HEADERS += project.h\
     wellinfo.h \
     xwiwriter.h \
     xwireader.h \
-    topsdbmanager.h
+    topsdbmanager.h \
+    table.h \
+    tablewriter.h \
+    tablereader.h \
+    tablereader.h
 
 unix {
     target.path = /usr/lib

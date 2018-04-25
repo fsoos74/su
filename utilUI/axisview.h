@@ -18,7 +18,7 @@ public:
 
     enum class ZOOMMODE{ NONE, X, Z, BOTH };
     enum class CURSORMODE{ NONE, X, Z, BOTH };
-    enum class SELECTIONMODE{ None, SinglePoint, Line, Polygon };
+    enum class SELECTIONMODE{ None, SinglePoint, Line, Lines, LinesVOrdered, Polygon};
 
     AxisView(QWidget* parent);
 
@@ -55,15 +55,21 @@ public:
     }
 
     QPointF selectedPoint()const{
-        return m_selectedPoint;
+        if( m_selectedPoints.empty()) return QPointF();
+        return m_selectedPoints.front();
     }
 
     QLineF selectedLine()const{
-        return m_selectedLine;
+        if(m_selectedPoints.size()<2) return QLineF();
+        return QLineF(m_selectedPoints[0],m_selectedPoints[1]);
     }
 
     QPolygonF selectionPolygon()const{
-        return m_selectionPolygon;
+        return QPolygonF(m_selectedPoints);
+    }
+
+    QVector<QPointF> selectedPoints()const{
+        return m_selectedPoints;
     }
 
     virtual void setXAxis(Axis*);
@@ -79,6 +85,7 @@ public:
     QRectF viewRectFromView();
 
 public slots:
+    void clearSelection();
     void setZoomMode(ZOOMMODE);
     void setCursorMode(CURSORMODE);
     void setSelectionMode( SELECTIONMODE );
@@ -100,7 +107,9 @@ signals:
     void mouseOver( QPointF);
     void pointSelected(QPointF);
     void lineSelected(QLineF);
+    void linesSelected(QPolygonF);
     void polygonSelected(QPolygonF);
+    void removePoint(QPointF);
 
 protected:
 
@@ -130,9 +139,14 @@ private slots:
     void updateViewRectFromAxes();
     void updateAxesRangeFromSceneRect();
     void updateAxesViewRangeFromViewRect();
+    void addSelectionLinesPoint( QPointF p );
     void addSelectionPolygonPoint( QPointF p );
+    void addSelectionVOrderPoint( QPointF p);
+    //void removeSelectionVOrderPoint( QPointF p);
+    void removeSelectionPoint( QPointF p);
 
 private:
+    void updateSceneSelection();
 
     Axis* m_xAxis=nullptr;
     Axis* m_zAxis=nullptr;
@@ -151,9 +165,10 @@ private:
     QRubberBand* m_zCursorRubberband=nullptr;
 
     QPoint              m_mouseSelectionStart;
-    QPointF             m_selectedPoint;
-    QLineF              m_selectedLine;         // axis coords
-    QPolygonF           m_selectionPolygon;     // axis coords
+    //QPointF             m_selectedPoint;
+    //QLineF              m_selectedLine;         // axis coords
+    //QPolygonF           m_selectionPolygon;     // axis coords
+    QVector<QPointF>    m_selectedPoints;       // axis coords
 };
 
 #endif // TRACKVIEW_H

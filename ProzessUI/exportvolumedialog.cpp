@@ -20,6 +20,7 @@ ExportVolumeDialog::ExportVolumeDialog(QWidget *parent) :
     QDoubleValidator* dvalidator=new QDoubleValidator(this);
     ui->leMinTime->setValidator(dvalidator);
     ui->leMaxTime->setValidator(dvalidator);
+    ui->leNULL->setValidator(dvalidator);
 
     connect(ui->leMinInline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMaxInline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -109,6 +110,8 @@ QMap<QString,QString> ExportVolumeDialog::params(){
     p.insert( QString("volume"), ui->cbVolume->currentText());
 
     p.insert( QString("output-file"), ui->leOutputFile->text() );
+
+    p.insert( "null-value", ui->leNULL->text());
 
     if( ui->cbRestrictVolume->isChecked()){
         p.insert( QString("min-inline" ), ui->leMinInline->text() );

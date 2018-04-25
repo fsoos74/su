@@ -408,6 +408,18 @@ void SeismicDatasetReader::setOrder(const QString& key1, bool ascending1, const 
     }
 }
 
+// adjust trace headers to dataset
+void SeismicDatasetReader::addDData(seismic::Trace& trc ){
+
+    if( m_info.dimensions()==2){
+        trc.header()["iline"]=seismic::HeaderValue::makeIntValue(1);
+        trc.header()["xline"]=trc.header()["cdp"]; //  seismic::HeaderValue::makeIntValue(xl);
+    }
+
+    if( m_info.mode()==SeismicDatasetInfo::Mode::Poststack){
+        trc.header()["offset"]=seismic::HeaderValue::makeFloatValue(0);
+    }
+}
 
 std::shared_ptr<seismic::Trace> SeismicDatasetReader::readFirstTrace( const QString& key1, const QString& value1,
                                                      const QString& key2, const QString& value2){
@@ -428,8 +440,11 @@ std::shared_ptr<seismic::Trace> SeismicDatasetReader::readFirstTrace( const QStr
 
     m_reader->seek_trace(traceNo);
 
-    return std::shared_ptr<seismic::Trace>(new seismic::Trace(m_reader->read_trace()));
+    auto trc = m_reader->read_trace();
 
+    addDData(trc);
+
+    return std::make_shared<seismic::Trace>(trc);
 }
 
 
@@ -445,7 +460,6 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather(
 
     std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
 
-
     while( query.next() && gather->size()<maxTraces){
 
         bool ok=false;
@@ -455,7 +469,12 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather(
         }
 
         m_reader->seek_trace(traceNo);
-        gather->push_back(m_reader->read_trace());
+
+        auto trc=m_reader->read_trace();
+
+        addDData(trc);
+
+        gather->push_back(trc);
     }
 
     return gather;
@@ -484,7 +503,11 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
 
         m_reader->seek_trace(traceNo);
 
-        gather->push_back(m_reader->read_trace());
+        auto trc=m_reader->read_trace();
+
+        addDData(trc);
+
+        gather->push_back(trc);
 
     }
 

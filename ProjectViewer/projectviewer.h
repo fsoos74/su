@@ -60,6 +60,7 @@ private slots:
     void on_actionExportOtherGrid_triggered();
     void on_actionExportVolume_triggered();
     void on_actionExportSeismic_triggered();
+    void on_actionExportLog_triggered();
     void on_actionSaveProjectAs_triggered();
     void on_actionSave_triggered();
     void on_actionCloseProject_triggered();
@@ -111,13 +112,23 @@ private slots:
     void on_actionTrend_Based_Attribute_Volumes_triggered();
     void on_actionSecondary_Attribute_Volumes_triggered();
     void on_actionRun_Volume_Script_triggered();
+    void on_actionPunch_Out_Volume_triggered();
 
     // Process well menu
     void on_action_Smooth_Log_triggered();
     void on_actionLog_Math_triggered();
     void on_actionLog_Integration_triggered();
+    void on_actionTrain_NN_Log_triggered();
+    void on_actionNN_Log_old_triggered();
+    void on_actionNN_Log_Interpolation_triggered();
+    void on_actionVShale_Computation_triggered();
     void on_actionRun_Log_Script_triggered();
     void on_actionBuild_Volume_triggered();
+    void on_actionTops_from_Horizon_triggered();
+    void on_actionEdit_Tops_triggered();
+
+    // process table menu
+    void on_actionConvert_Picks_To_Horizon_triggered();
 
     // Analyze menu
     void on_actionCrossplot_Grids_triggered();
@@ -146,6 +157,8 @@ private slots:
     void updateVolumesView(QString);
     void updateWellsView();
     void updateWellsView(QString);
+    void updateTablesView();
+    void updateTablesView(QString);
     void updateProjectViews();
 
     void runDatasetContextMenu(const QPoint& pos);
@@ -160,6 +173,8 @@ private slots:
     void runVolumeContextMenu(const QPoint& pos);
     void on_wellsView_doubleClicked(const QModelIndex &index);
     void runWellContextMenu(const QPoint& pos);
+    void on_tablesView_doubleClicked(const QModelIndex &index);
+    void runTableContextMenu(const QPoint& pos);
 
 #ifdef USE_KEYLOCK_LICENSE
     void on_licenseTimer();
@@ -167,9 +182,11 @@ private slots:
 #endif
 
 
-    void on_actionTest_triggered();
 
-    void on_actionEdit_Tops_triggered();
+
+    void on_actionFD_CDP_Acoustic_triggered();
+
+    void on_actiontest_triggered();
 
 protected:
 
@@ -190,6 +207,7 @@ private:
     void connectGridViews(AVOProject*);
     void connectVolumesView(AVOProject*);
     void connectWellsView(AVOProject*);
+    void connectTablesView(AVOProject*);
     void connectViews(AVOProject*);
     QStandardItemModel* buildDatesetsModel();
     QStandardItemModel* buildDatasetModelItem(QStandardItemModel* model, int row, QString name);
@@ -199,15 +217,19 @@ private:
     QStandardItemModel* buildVolumeModelItem(QStandardItemModel* model, int row, QString name);
     QStandardItemModel* buildWellsModel();
     QStandardItemModel* buildWellModelItem(QStandardItemModel* model, int row, QString name);
+    QStandardItemModel* buildTablesModel();
+    QStandardItemModel* buildTableModelItem(QStandardItemModel* model, int row, QString name);
 
     void displayProcessParams( const QString&, const ProcessParams&);
 
     void displaySeismicDataset( const QString& name);
     void displaySeismicDatasetSlice( const QString& name);
     void displaySeismicDatasetIndex( const QString& name);
+    void displaySeismicDatasetEBCDICHeader( const QString& name);
     void editSeismicDatasetProperties(const QString& name);
     void renameSeismicDataset(const QString&);
     void removeSeismicDataset(const QString&);
+    void removeSeismicDatasets(const QStringList&);
     void selectAndExportSeismicDataset();
     void exportSeismicDataset(QString);
 
@@ -243,9 +265,15 @@ private:
     void removeTops(const QStringList&);
     void crossplotLogs( const QStringList& wells);
     void logProperties( const QString&);
+    void editLog( const QString&);
     void removeLogs( const QStringList&);
+    void selectAndExportLog();
     //void removeWell( const QString&);
     void removeWells( const QStringList&);
+
+    void displayTable(const QString&);
+    void renameTable(const QString&);
+    void removeTables(const QStringList&);
 
     void runProcess( ProjectProcess* process, QMap<QString, QString> params);
 

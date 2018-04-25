@@ -28,6 +28,9 @@ bool XDIReader::read(QIODevice *device)
                 else  if( xml.name()=="index-path"){
                     m_info.setIndexPath(xml.readElementText());
                 }
+                else if( xml.name()=="dimensions"){
+                    m_info.setDimensions( xml.readElementText().toInt());
+                }
                 else if( xml.name()=="domain"){
                     m_info.setDomain( stringToDatasetDomain( xml.readElementText() ) );
                 }

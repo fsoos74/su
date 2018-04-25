@@ -123,7 +123,7 @@ public:
         return m_primarySortKey;
     }
 
-     int lookupTrace(int iline, int xline);  // return -1 if not found
+
 
      QVector<int> intersectionTraces()const{
          return m_intersectionTraces;
@@ -132,6 +132,9 @@ public:
      QVector<qreal> intersectionTimes()const{
          return m_intersectionTimes;
      }
+
+     int lookupTrace(int iline, int xline)const;
+     std::pair<int,int> lookupLines(int trace)const;
 
 signals:
 
@@ -193,10 +196,12 @@ private:
     void updateTimeRange();
     void adjustScrollBar(QScrollBar *scrollBar, qreal factor);
 
-    //void buildGatherIndex();
+    qint64 linesToKey(int iline, int xline)const;
+    std::pair<int,int> keyToLines(qint64 key)const;
+    bool containsKey(qint64 key)const;
+    bool containsLines(int iline,int xline)const;
 
     std::shared_ptr<seismic::Gather> m_gather;
-
     GatherSortKey m_primarySortKey=GatherSortKey::None;
 
     QMap<QString, std::shared_ptr<Grid2D<float> > > m_horizons;
@@ -206,8 +211,8 @@ private:
 
     Picker* m_picker=nullptr;
 
-    QMap< QString, int> m_traceLookup;       // key is combination il and xl : "iline_xline"
-
+    //QMap< QString, int> m_traceLookup;       // key is combination il and xl : "iline_xline"
+    QMap<qint64, int> m_traceLookup;
     QVector<int>    m_intersectionTraces;
     QVector<qreal>  m_intersectionTimes;
     QVector<SelectionPoint> m_highlightedPoints;

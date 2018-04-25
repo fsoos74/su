@@ -3,20 +3,25 @@
 
 #include<QColorDialog>
 
+
 CrossplotViewerDisplayOptionsDialog::CrossplotViewerDisplayOptionsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::CrossplotViewerDisplayOptionsDialog)
 {
     ui->setupUi(this);
 
-    connect( ui->sbDatapointSize, SIGNAL(valueChanged(int)),
-             this, SLOT(setDatapointSize(int)) );
+    for( auto s : {CrossplotView::Symbol::Circle, CrossplotView::Symbol::Square, CrossplotView::Symbol::Cross}){
+        ui->cbSymbol->addItem(toQString(s));
+    }
+
+    connect( ui->sbPointSize, SIGNAL(valueChanged(int)),
+             this, SIGNAL(pointSizeChanged(int)) );
 
     connect( ui->rbFixedColor, SIGNAL(toggled(bool)),
-             this, SLOT(setFixedColor(bool)) );
+             this, SIGNAL(fixedColorChanged(bool)) );
 
     connect( ui->cbFixColor, SIGNAL(colorChanged(QColor)),
-             this, SLOT(setPointColor(QColor)) );
+             this, SIGNAL(pointColorChanged(QColor)) );
 }
 
 CrossplotViewerDisplayOptionsDialog::~CrossplotViewerDisplayOptionsDialog()
@@ -24,8 +29,8 @@ CrossplotViewerDisplayOptionsDialog::~CrossplotViewerDisplayOptionsDialog()
     delete ui;
 }
 
-int CrossplotViewerDisplayOptionsDialog::datapointSize(){
-    return ui->sbDatapointSize->value();
+int CrossplotViewerDisplayOptionsDialog::pointSize(){
+    return ui->sbPointSize->value();
 }
 
 bool CrossplotViewerDisplayOptionsDialog::isFixedColor(){
@@ -38,44 +43,39 @@ QColor CrossplotViewerDisplayOptionsDialog::pointColor(){
     return ui->cbFixColor->color();
 }
 
+CrossplotView::Symbol CrossplotViewerDisplayOptionsDialog::pointSymbol(){
+
+    return toSymbol(ui->cbSymbol->currentText());
+}
+
 QColor CrossplotViewerDisplayOptionsDialog::trendlineColor(){
 
     return ui->cbTrendlineColor->color();
 }
 
-void CrossplotViewerDisplayOptionsDialog::setDatapointSize(int size){
+void CrossplotViewerDisplayOptionsDialog::setPointSize(int size){
 
     // do not compare new and old value, spinbox does this anyway and we need signal to be eimitted if this is triggered by spinbox
-    ui->sbDatapointSize->setValue(size);
-
-    emit datapointSizeChanged(size);
+    ui->sbPointSize->setValue(size);
 }
 
 void CrossplotViewerDisplayOptionsDialog::setFixedColor(bool on){
 
-     // do not compare new and old value, we need signal to be eimitted
-
     ui->rbFixedColor->setChecked(on);
-
-    emit fixedColorChanged(on);
 }
 
 void CrossplotViewerDisplayOptionsDialog::setPointColor(QColor color){
 
-    // do not compare new and old value, we need signal to be eimitted
-
     ui->cbFixColor->setColor(color);
+}
 
-    emit pointColorChanged(color);
+void CrossplotViewerDisplayOptionsDialog::setPointSymbol(CrossplotView::Symbol s){
+    ui->cbSymbol->setCurrentText(toQString(s));
 }
 
 void CrossplotViewerDisplayOptionsDialog::setTrendlineColor(QColor color){
 
-    // do not compare new and old value, we need signal to be eimitted
-
     ui->cbTrendlineColor->setColor(color);
-
-    emit trendlineColorChanged(color);
 }
 
 
@@ -98,4 +98,10 @@ void CrossplotViewerDisplayOptionsDialog::on_cbTrendlineColor_clicked()
 
         setTrendlineColor(color);
     }
+}
+
+void CrossplotViewerDisplayOptionsDialog::on_cbSymbol_currentIndexChanged(const QString &arg1)
+{
+    auto s=toSymbol(arg1);
+    emit pointSymbolChanged(s);
 }

@@ -30,8 +30,26 @@ public:
 
     TrackView(QWidget* parent);
 
-    std::shared_ptr<Log> log(){
-        return m_log;
+    QSize sizeHint(){
+        return QSize(100,500);
+    }
+
+    int count()const{
+        return m_logs.size();
+    }
+
+    std::shared_ptr<Log> log()const{
+        return log(0);
+    }
+
+    std::shared_ptr<Log> log(int i)const{
+        if(i<0||i>=m_logs.size()) return std::shared_ptr<Log>();
+        return m_logs[i];
+    }
+
+    QColor color(int i)const{
+        Q_ASSERT(i>=0||i<m_logs.size());
+        return m_logColors[i];
     }
 
     std::shared_ptr<WellPath> wellPath(){
@@ -65,7 +83,11 @@ public:
 
 public slots:
 
-    void setLog( std::shared_ptr<Log> );
+    void addLog( std::shared_ptr<Log> );
+    void addLog( std::shared_ptr<Log>, QColor);
+    void removeLog(int);
+    void logChanged(int);
+    void setColor(int, QColor);
     void setWellPath( std::shared_ptr<WellPath>);
     void setHighlighted(QVector<qreal>);
     void setZMode( ZMode);
@@ -88,7 +110,8 @@ private:
 
     QPainterPath buildPath(Log log);
 
-    std::shared_ptr<Log> m_log;
+    QVector<std::shared_ptr<Log>> m_logs;
+    QVector<QColor> m_logColors;
     std::shared_ptr<WellPath> m_wellPath;
     QVector<qreal> m_highlighted;
     QMap<QString, Marker> m_markers;

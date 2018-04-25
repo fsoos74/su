@@ -84,11 +84,23 @@ SOURCES += prozess.cpp \
     logscriptprocess.cpp \
     smoothprocessor.cpp \
     smoothlogprocess.cpp \
-    integrationprocessor.cpp \
     logintegrationprocess.cpp \
     volumedipprocess.cpp \
     volumediptracker.cpp \
-    importmarkersprocess.cpp
+    importmarkersprocess.cpp \
+    fmcdp2dprocess.cpp \
+    volumedipscanprocess.cpp \
+    nn.cpp \
+    xnlwriter.cpp \
+    xnlreader.cpp \
+    nnloginterpolationprocess.cpp \
+    nnlogprocess.cpp \
+    nnlogtrainer.cpp \
+    vshaleprocess.cpp \
+    exportlogprocess.cpp \
+    punchoutvolumeprocess.cpp \
+    horizontotopprocess.cpp \
+    tabletohorizonprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -152,11 +164,25 @@ HEADERS += prozess.h\
     logscriptprocess.h \
     smoothprocessor.h \
     smoothlogprocess.h \
-    integrationprocessor.h \
     logintegrationprocess.h \
     volumedipprocess.h \
     volumediptracker.h \
-    importmarkersprocess.h
+    importmarkersprocess.h \
+    fmcdp2dprocess.h \
+    volumedipscanprocess.h \
+    nn.h \
+    matrix.h \
+    nnfunc.h \
+    xnlwriter.h \
+    xnlreader.h \
+    nnloginterpolationprocess.h \
+    nnlogprocess.h \
+    nnlogtrainer.h \
+    vshaleprocess.h \
+    exportlogprocess.h \
+    punchoutvolumeprocess.h \
+    horizontotopprocess.h \
+    tabletohorizonprocess.h
 
 unix {
     target.path = /usr/lib
@@ -228,3 +254,6 @@ else:unix: LIBS += -L$$OUT_PWD/../Statistics/ -lStatistics
 
 INCLUDEPATH += $$PWD/../Statistics
 DEPENDPATH += $$PWD/../Statistics
+
+FORMS += \
+    nnlogtrainer.ui

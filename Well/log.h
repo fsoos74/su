@@ -21,7 +21,8 @@ public:
 
     //Log(const Log&)=default;
 
-    Log( const std::string& name, const std::string& unit, const std::string& descr, const double& z0, const double& dz, int nz, const double& ival=0):
+    Log( const std::string& name, const std::string& unit, const std::string& descr, const double& z0, const double& dz, int nz,
+         const double& ival=NULL_VALUE):        // ival was 0, 9.3.18
         m_name(name), m_unit(unit), m_descr(descr), m_z0(z0), m_dz(dz), m_data( nz,ival ){
     }
 

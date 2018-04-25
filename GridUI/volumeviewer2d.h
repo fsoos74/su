@@ -11,6 +11,9 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <playerdialog.h>
+#include <dynamicmousemodeselector.h>
+#include <volumepicker.h>
+
 
 namespace Ui {
 class VolumeViewer2D;
@@ -29,6 +32,9 @@ public:
 public slots:
     void addVolume(QString);
 
+protected:
+    void closeEvent(QCloseEvent*);
+    void keyPressEvent(QKeyEvent*);
 private slots:
 
     void setInlineSliceX(QPointF);
@@ -60,17 +66,29 @@ private slots:
     void on_action_Configure_Volumes_triggered();
 
     void on_action_Player_triggered();
-
     void on_actionSetup_Tops_triggered();
+    void on_actionSetup_Tables_triggered();
+    void on_actionSet_Table_Color_triggered();
+
+    void on_action_New_Picks_triggered();
+    void on_action_Load_Picks_triggered();
+    void on_action_Save_Picks_triggered();
+    void on_actionSave_As_Picks_triggered();
 
 private:
-    void setupToolBarControls();
+    bool canDiscardPicks();
+    void setupMouseModes();
+    void setupSliceToolBar();
+    void setupFlattenToolBar();
+    void setupWellToolBar();
+    void setupPickingToolBar();
     void updateFlattenHorizons();
     //void orientate();
 
     Ui::VolumeViewer2D *ui;
+    DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
     QVBoxLayout* m_colorbarsLayout;
-
+    QComboBox* m_cbPickMode;
     QComboBox* cbSlice;
     QSpinBox* sbSlice;
     //QPushButton* pbSlice;
@@ -83,6 +101,9 @@ private:
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;
     AVOProject* m_project=nullptr;
     PlayerDialog* m_player=nullptr;
+
+    VolumePicker* m_picker=nullptr;
+    QString m_picksName;
 
     bool m_noupdate=false;
 };

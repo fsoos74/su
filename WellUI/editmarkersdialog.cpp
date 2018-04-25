@@ -1,6 +1,7 @@
 #include "editmarkersdialog.h"
 #include "ui_editmarkersdialog.h"
 
+
 EditMarkersDialog::EditMarkersDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EditMarkersDialog)

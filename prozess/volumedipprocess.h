@@ -14,7 +14,7 @@ class VolumeDipProcess : public ProjectProcess
 
 public:
 
-    enum class Method{ DERIVATION, DERIVATION_5P, DERIVATION_7P, CORRELATION};
+    enum class Method{ DERIVATION, DERIVATION_5P, DERIVATION_7P, CORRELATION, MAXIMUM_SEMBLANCE};
 
     VolumeDipProcess( AVOProject* project, QObject* parent=nullptr);
 
@@ -31,6 +31,7 @@ private:
     std::pair<float, float> dips_derivative_5p( int i, int j, int k);
     std::pair<float, float> dips_derivative_7p( int i, int j, int k);
     std::pair<float, float> dips_correlation( int i, int j, int k);
+    std::pair<float, float> dips_maximum_semblance( int i, int j, int k);
 
     QString m_ilineDipName;
     QString m_xlineDipName;

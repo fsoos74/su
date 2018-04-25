@@ -55,7 +55,7 @@ ProjectProcess::ResultCode CropDatasetProcess::run(){
     int ons = (m_maxMSec - m_minMSec) / odtms + 1;
 
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
-                                                               m_reader->info().domain(), m_reader->info().mode(),
+                                                               m_reader->info().dimensions(), m_reader->info().domain(), m_reader->info().mode(),
                                                                0.001*m_minMSec, m_reader->info().dt(), static_cast<size_t>(ons));
 
 

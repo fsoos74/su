@@ -78,6 +78,10 @@
         <file>../images/crossplot-grids-32x32.png</file>
         <file>../images/crossplot-volumes-32x32.png</file>
         <file>../images/crossplot-logs-32x32.png</file>
+        <file>../images/add-by-well-32x32.png</file>
+        <file>../images/add-by-log-32x32.png</file>
+        <file>../images/pick-outline-32x32.png</file>
+        <file>../images/pick-lines-32x32.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>
@@ -95,5 +99,13 @@
         <file>../images/shrink-x_32x32.png</file>
         <file>../images/shrink-y_32x32.png</file>
         <file>../images/shrink-z_32x32.png</file>
+        <file>../images/minus_16x16.png</file>
+        <file>../images/plus_16x16.png</file>
+        <file>../images/colors-16x16.png</file>
+        <file>../images/x-16x16.png</file>
+        <file>../images/grow-x-24x24.png</file>
+        <file>../images/shrink-x-24x24.png</file>
+        <file>../images/pick-lines-32x32.png</file>
+        <file>../images/pick-display-options-icon-32x32.png</file>
     </qresource>
 </RCC>

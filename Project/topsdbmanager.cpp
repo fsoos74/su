@@ -95,7 +95,7 @@ QStringList TopsDBManager::wells(const QString& name){
 double TopsDBManager::value(const QString& uwi, const QString& name){
 
     QSqlQuery query("value", m_db);
-    auto qstring = QString("select md from %1 where uwi='%2'").arg(TABLE, uwi);
+    auto qstring = QString("select md from %1 where uwi='%2' and name='%3'").arg(TABLE, uwi, name);
     if( !query.exec(qstring)){
         throw std::runtime_error( query.lastError().text().toStdString());
     }

@@ -67,6 +67,10 @@ public:
 
     bool isShareCurrentPoint()const;
 
+    int agcLen()const{
+        return m_agcLen;
+    }
+
 protected:
 
     void receivePoint(SelectionPoint, int code);
@@ -75,8 +79,11 @@ protected:
 public slots:
     void setProject( AVOProject*);
     void setGather( std::shared_ptr<seismic::Gather>);
+    void setAGCLen(int);
     void setTraceHeaderDef(const std::vector<seismic::SEGYHeaderWordDef>&);
     void zoomFitWindow();
+    void zoomIn();
+    void zoomOut();
     void setTraceAnnotations( const std::vector< std::pair< std::string, QString > >& );  
     void setShareCurrentPoint(bool);
 
@@ -87,81 +94,56 @@ signals:
     void requestPoint(int,int);
     void requestPoints(QVector<QPoint>);
     void requestPerpendicularLine(int,int);
+    void firstRequested();
+    void previousRequested();
+    void nextRequested();
+    void lastRequested();
 
 protected:
 
     void closeEvent(QCloseEvent*);
     void leaveEvent(QEvent*);
+    void keyPressEvent(QKeyEvent*);
 
 private slots:
 
     void showTraceHeader( size_t );        // 0-based
     void navigateToTraceHeader(size_t);    // 1-based
     void onTraceHeaderDialogFinished();
-
     void onTraceSelected(size_t);
     void onViewPointSelected( SelectionPoint );
-
     void onMouseOver(int, qreal);
-
     void onTopRulerClicked( int trace );
-
     void onLeftRulerClicked( qreal secs);
-
-    void on_zoomInAct_triggered();
-
-    void on_zoomOutAct_triggered();
-
-    void on_zoomFitWindowAct_triggered();
-
     void on_openGridAct_triggered();
-
     void on_closeGridAct_triggered();
-
     void on_actionOpenVolume_triggered();
-
     void on_actionCloseVolume_triggered();
-
     void on_actionVolume_Options_triggered();
-
     void on_action_Trace_Options_triggered();
-
     void on_actionTrace_Scaling_triggered();
-
     void on_action_Point_Display_Options_triggered();
-
     void on_actionVolume_Histogram_triggered();
-
     void on_actionShare_Current_Position_toggled(bool arg1);
-
     void on_action_Receive_CDPs_toggled(bool arg1);
-
     void on_action_Dispatch_CDPs_toggled(bool arg1);
-
     void on_actionDensity_Color_Table_triggered();
-
     void on_actionSet_Scale_triggered();
-
     void on_actionVolume_Color_Table_triggered();
-
     void on_actionVolume_Display_Range_triggered();
-
     void on_action_Load_Picks_triggered();
-
     void on_action_Close_Picks_triggered();
-
     void on_action_Save_Picks_triggered();
-
     void on_action_New_Picks_triggered();
-
     void pickModeSelected( QAction* );
     void pickTypeSelected( QAction* );
     void fillModeSelected( QAction* );
-
     void on_actionGather_Histogram_triggered();
-
+    void on_actionPick_Display_Options_triggered();
 
 private:
+
+    void applyAGC();
 
     void saveSettings();
     void loadSettings();
@@ -170,30 +152,23 @@ private:
     void setupPickMenus();
     void createDockWidgets();
     void setupMouseModes();
+    void setupGainToolBar();
+    void adjustPickActions();
 
     QString createStatusMessage( int trace, qreal secs);
-
     QVector<int> computeIntersections();
     void updateIntersections();
-
     bool picksSaved();
 
     Ui::GatherViewer *ui;
-
     GatherView* gatherView;
-
     std::shared_ptr<Gather> m_gather;
-
     AVOProject* m_project;
-
-    QString m_picksGridName;
-
+    int m_agcLen=0;
+    QString m_picksName;
     std::vector<seismic::SEGYHeaderWordDef> m_traceHeaderDef;
-
     std::vector< std::pair< std::string, QString> > m_traceAnnotations;
-
     HeaderDialog* m_TraceHeaderDialog=nullptr;
-
     SectionScaleDialog* sectionScaleDialog=nullptr;
 
     TraceScalingDialog* m_traceScalingDialog=nullptr;
@@ -201,11 +176,15 @@ private:
     VolumeDisplayOptionsDialog* m_volumeDisplayOptionsDialog=nullptr;
     HistogramRangeSelectionDialog* m_volumeDisplayRangeDialog=nullptr;
     PointDisplayOptionsDialog* m_pointDisplayOptionsDialog=nullptr;
+    PointDisplayOptionsDialog* m_pickDisplayOptionsDialog=nullptr;
 
     ColorBarWidget* m_densityColorBarWidget=nullptr;
     ColorBarWidget* m_attributeColorBarWidget=nullptr;
     QDockWidget* m_densityColorBarDock=nullptr;
     QDockWidget* m_attributeColorBarDock=nullptr;
+
+    QMap<PickMode, QAction*> m_pickModeActions;
+    QMap<PickType, QAction*> m_pickTypeActions;
 };
 
 #endif // GATHERVIEWER_H

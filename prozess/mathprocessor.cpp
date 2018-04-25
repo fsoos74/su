@@ -17,12 +17,15 @@ QMap<MathProcessor::OP, QString> op_name_lookup{
     {MathProcessor::OP::MUL_GV, "Input1 * Value"},
     {MathProcessor::OP::DIV_GV, "Input1 / Value"},
     {MathProcessor::OP::POW_GV, "Input1 ** Value"},
+    {MathProcessor::OP::DIV_VG, "Value / Input1"},
+    {MathProcessor::OP::POW_VG, "Value ** Input1"},
     {MathProcessor::OP::ADD_GG, "Input1 + Input2"},
     {MathProcessor::OP::SUB_GG, "Input1 - Input2"},
     {MathProcessor::OP::MUL_GG, "Input1 * Input2"},
     {MathProcessor::OP::DIV_GG, "Input1 / Input2"},
     {MathProcessor::OP::ADD_MUL_GVG, "Input1 + Value*Input2"},
     {MathProcessor::OP::NORM_GG, "SQRT( Input1**2 + Input2**2 )"},
+    {MathProcessor::OP::REL_DIFF_GG, "(Input1 - Input2) / Input2"}
 };
 
 }
@@ -110,6 +113,16 @@ double MathProcessor::pow_gv(){
     return std::pow(m_input1,m_value);
 }
 
+double MathProcessor::div_vg(){
+    if(m_input1==m_inputNullValue || !m_input1) return NULL_VALUE;   // ADD EPS for zero checking!!!
+    return m_value/m_input1;
+}
+
+double MathProcessor::pow_vg(){
+    if(m_input1==m_inputNullValue) return NULL_VALUE;
+    return std::pow(m_value, m_input1);
+}
+
 double MathProcessor::add_gg(){
     if(m_input1==m_inputNullValue || m_input2==m_inputNullValue) return NULL_VALUE;
     return m_input1+m_input2;
@@ -140,6 +153,12 @@ double MathProcessor::norm_gg(){
     return std::sqrt( m_input1*m_input1 + m_input2*m_input2);
 }
 
+double MathProcessor::rel_diff_gg(){
+    if(m_input1==m_inputNullValue || m_input2==m_inputNullValue) return NULL_VALUE;
+    return (m_input2) ? (m_input1-m_input2)/m_input2 : NULL_VALUE;
+}
+
+
 void MathProcessor::updateFunc(){
     switch(m_op){
     case OP::SET_V: m_func= std::bind(&MathProcessor::set_v, this); break;
@@ -150,11 +169,14 @@ void MathProcessor::updateFunc(){
     case OP::MUL_GV: m_func= std::bind(&MathProcessor::mul_gv, this); break;
     case OP::DIV_GV: m_func= std::bind(&MathProcessor::div_gv, this); break;
     case OP::POW_GV: m_func= std::bind(&MathProcessor::pow_gv, this); break;
+    case OP::DIV_VG: m_func= std::bind(&MathProcessor::div_vg, this); break;
+    case OP::POW_VG: m_func= std::bind(&MathProcessor::pow_vg, this); break;
     case OP::ADD_GG: m_func= std::bind(&MathProcessor::add_gg, this); break;
     case OP::SUB_GG: m_func= std::bind(&MathProcessor::sub_gg, this); break;
     case OP::MUL_GG: m_func= std::bind(&MathProcessor::mul_gg, this); break;
     case OP::DIV_GG: m_func= std::bind(&MathProcessor::div_gg, this); break;
     case OP::ADD_MUL_GVG: m_func= std::bind(&MathProcessor::add_mul_gvg, this); break;
     case OP::NORM_GG: m_func= std::bind(&MathProcessor::norm_gg, this); break;
+    case OP::REL_DIFF_GG: m_func= std::bind(&MathProcessor::rel_diff_gg, this); break;
     };
 }

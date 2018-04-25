@@ -9,8 +9,9 @@ class VScaleView : public AxisView
 {
     Q_OBJECT
 public:
-    VScaleView(QWidget* parent, Qt::Alignment align=Qt::AlignLeft);
+    VScaleView(QWidget* parent=nullptr, Qt::Alignment align=Qt::AlignLeft);
 
+    //QSize sizeHint(){return QSize(50, 500);}
     //Qt::Alignment alignment()const{
     //    return m_alignment;
     //}

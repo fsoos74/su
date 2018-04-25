@@ -63,7 +63,7 @@ ProjectProcess::ResultCode ReplaceBadTracesProcess::run(){
     }
 
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
-                                                               m_reader->info().domain(), m_reader->info().mode(),
+                                                               m_reader->info().dimensions(), m_reader->info().domain(), m_reader->info().mode(),
                                                                m_reader->info().ft(), m_reader->info().dt(), m_reader->info().nt() );
 
     m_writer = std::make_shared<SeismicDatasetWriter>( dsinfo );

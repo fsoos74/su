@@ -10,7 +10,7 @@ class HScaleView : public AxisView
 {
 Q_OBJECT
 public:
-    HScaleView(QWidget* parent, Qt::Alignment=Qt::AlignBottom);
+    HScaleView(QWidget* parent=nullptr, Qt::Alignment=Qt::AlignBottom);
 
     //Qt::Alignment alignment()const{
     //    return m_alignment;

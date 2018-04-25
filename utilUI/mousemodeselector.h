@@ -20,7 +20,6 @@ public:
     QToolButton* exploreButton();
     QToolButton* zoomButton();
     QToolButton* selectButton();
-
     MouseMode mode();
 
 signals:

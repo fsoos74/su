@@ -7,6 +7,9 @@ DatasetPropertiesDialog::DatasetPropertiesDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->cbDimensions->addItem("2D");
+    ui->cbDimensions->addItem("3D");
+
     ui->cbDomain->addItem( datasetDomainToString(SeismicDatasetInfo::Domain::Time) );
     ui->cbDomain->addItem( datasetDomainToString(SeismicDatasetInfo::Domain::Depth) );
 
@@ -25,6 +28,10 @@ QString DatasetPropertiesDialog::name(){
     return ui->leName->text();
 }
 
+int DatasetPropertiesDialog::dimensions(){
+    return 2 + ui->cbDimensions->currentIndex();
+}
+
 SeismicDatasetInfo::Domain DatasetPropertiesDialog::domain(){
 
    return stringToDatasetDomain( ui->cbDomain->currentText());
@@ -38,6 +45,10 @@ SeismicDatasetInfo::Mode DatasetPropertiesDialog::mode(){
 void DatasetPropertiesDialog::setName(const QString& name){
 
     ui->leName->setText( name );
+}
+
+void DatasetPropertiesDialog::setDimensions(int i){
+    ui->cbDimensions->setCurrentIndex(i-2);
 }
 
 void DatasetPropertiesDialog::setDomain(SeismicDatasetInfo::Domain domain){

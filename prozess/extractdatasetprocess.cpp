@@ -73,7 +73,7 @@ ProjectProcess::ResultCode ExtractDatasetProcess::run(){
     }
 
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
-                                                               SeismicDatasetInfo::Domain::Time, SeismicDatasetInfo::Mode::Poststack,
+                                                               3, SeismicDatasetInfo::Domain::Time, SeismicDatasetInfo::Mode::Poststack,
                                                                bounds.sampleToTime(k1), bounds.dt(), k2-k1+1);
 
     auto writer = std::make_shared<SeismicDatasetWriter>( dsinfo );

@@ -16,7 +16,8 @@ SOURCES += \
     crossplotview.cpp \
     crossplotviewerdisplayoptionsdialog.cpp \
     crossplotvolumesinputdialog.cpp \
-    edittrenddialog.cpp
+    edittrenddialog.cpp \
+    crossplotfilterdialog.cpp
 
 HEADERS += \
     crossplotviewer.h \
@@ -25,7 +26,8 @@ HEADERS += \
     crossplotview.h \
     crossplotviewerdisplayoptionsdialog.h \
     crossplotvolumesinputdialog.h \
-    edittrenddialog.h
+    edittrenddialog.h \
+    crossplotfilterdialog.h
 
 unix {
     target.path = /usr/lib
@@ -37,7 +39,8 @@ FORMS += \
     crossplotviewer.ui \
     crossplotviewerdisplayoptionsdialog.ui \
     crossplotvolumesinputdialog.ui \
-    edittrenddialog.ui
+    edittrenddialog.ui \
+    crossplotfilterdialog.ui
 
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil

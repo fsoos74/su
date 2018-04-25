@@ -15,58 +15,33 @@ ExportVolumeProcess::ExportVolumeProcess(AVOProject* project, QObject* parent) :
 
 ProjectProcess::ResultCode ExportVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
-    if( !parameters.contains(QString("volume"))){
-        setErrorString("Parameters contain no volume!");
+    setParams(parameters);
+
+    try{
+
+        m_volumeName=getParam(parameters,"volume");
+        m_outputFilename=getParam(parameters, "output-file");
+        m_nullValue=getParam(parameters, "null-value").toFloat();
+
+        m_volume=project()->loadVolume(m_volumeName);
+        if( !m_volume ){
+            setErrorString("Loading volume failed!");
+            return ResultCode::Error;
+        }
+
+        Grid3DBounds bounds=m_volume->bounds();
+
+        m_minInline = getParam(parameters, "min-inline", false, QString::number(bounds.i1())).toInt();
+        m_maxInline = getParam(parameters, "max-inline", false, QString::number(bounds.i2())).toInt();
+        m_minCrossline = getParam(parameters, "min-crossline", false, QString::number(bounds.j1())).toInt();
+        m_maxCrossline = getParam(parameters, "max-crossline", false, QString::number(bounds.j2())).toInt();
+        m_minTime = getParam(parameters, "min-time", false, QString::number(bounds.ft())).toFloat();
+        m_maxTime = getParam(parameters, "max-time", false, QString::number(bounds.lt())).toFloat();
+   }
+    catch(std::exception& ex){
+        setErrorString(ex.what());
         return ResultCode::Error;
     }
-    m_volumeName=parameters.value(QString("volume"));
-
-    m_volume=project()->loadVolume(m_volumeName);
-    if( !m_volume ){
-        setErrorString("Loading volume failed!");
-        return ResultCode::Error;
-    }
-
-    Grid3DBounds bounds=m_volume->bounds();
-
-    m_minInline=bounds.i1();
-    if( parameters.contains(QString("min-inline"))){
-        m_minInline=std::max(m_minInline, parameters.value(QString("min-inline")).toInt() );
-    }
-
-    m_maxInline=bounds.i2();
-    if( parameters.contains(QString("max-inline"))){
-        m_maxInline=std::min(m_maxInline, parameters.value(QString("max-inline")).toInt() );
-    }
-
-    m_minCrossline=bounds.j1();
-    if( parameters.contains(QString("min-crossline"))){
-        m_minCrossline=std::max(m_minCrossline, parameters.value(QString("min-crossline")).toInt() );
-    }
-
-    m_maxCrossline=bounds.j2();
-    if( parameters.contains(QString("max-crossline"))){
-        m_maxCrossline=std::min(m_maxCrossline, parameters.value(QString("max-crossline")).toInt() );
-    }
-
-    m_minTime=bounds.ft();
-    if( parameters.contains(QString("min-time"))){
-        m_minTime=std::max(m_minTime, parameters.value(QString("min-time")).toFloat() );
-    }
-
-    m_maxTime=bounds.lt();
-    if( parameters.contains(QString("max-time"))){
-        m_maxTime=std::min(m_maxTime, parameters.value(QString("max-time")).toFloat() );
-    }
-
-
-    if( !parameters.contains(QString("output-file"))){
-        setErrorString("Parameters contain no output file!");
-        return ResultCode::Error;
-    }
-    m_outputFilename=parameters.value(QString("output-file"));
-
-
 
     return ResultCode::Ok;
 }
@@ -147,9 +122,8 @@ ProjectProcess::ResultCode ExportVolumeProcess::run(){
 
                 float s=(*m_volume)(iline,xline,i);
 
-                // write zero for NULL values, maybe make this selectable?
                 if( s==m_volume->NULL_VALUE ){
-                    s=0;
+                    s=m_nullValue;
                 }
 
                 samples[i-i1]=s;

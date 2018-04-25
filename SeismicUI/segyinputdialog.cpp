@@ -114,6 +114,38 @@ void SegyInputDialog::setInfo(const seismic::SEGYInfo &info){
     updateControlsFromInfo();
 }
 
+void SegyInputDialog::setPrestack(bool on){
+
+    if( on==m_prestack) return;
+
+    m_prestack=on;
+
+    ui->lbOffset->setEnabled(on);
+    ui->leMinOffset->setEnabled(on);
+    ui->leMaxOffset->setEnabled(on);
+    ui->lePosOffset->setEnabled(on);
+    ui->cbSizeOffset->setEnabled(on);
+}
+
+void SegyInputDialog::set3D(bool on){
+
+    if( on==m_3d) return;
+
+    m_3d=on;
+
+    ui->lbIline->setEnabled(on);
+    ui->lePosIline->setEnabled(on);
+    ui->cbSizeIline->setEnabled(on);
+    ui->leMinIline->setEnabled(on);
+    ui->leMaxIline->setEnabled(on);
+
+    ui->lbXline->setEnabled(on);
+    ui->lePosXline->setEnabled(on);
+    ui->cbSizeXline->setEnabled(on);
+    ui->leMinXline->setEnabled(on);
+    ui->leMaxXline->setEnabled(on);
+}
+
 void SegyInputDialog::updateControlsFromInfo(){
 
 
@@ -129,11 +161,11 @@ void SegyInputDialog::updateControlsFromInfo(){
         QComboBox* cbSize=nullptr;
 
 
-        if(def.name=="iline"){
+        if(def.name=="iline" && m_3d){
             lePos=ui->lePosIline;
             cbSize=ui->cbSizeIline;
         }
-        else if(def.name=="xline"){
+        else if(def.name=="xline" && m_3d){
             lePos=ui->lePosXline;
             cbSize=ui->cbSizeXline;
         }
@@ -150,7 +182,7 @@ void SegyInputDialog::updateControlsFromInfo(){
             lePos=ui->lePosCDPY;
             cbSize=ui->cbSizeCDPY;
         }
-        else if(def.name=="offset"){
+        else if(def.name=="offset" && m_prestack){
             lePos=ui->lePosOffset;
             cbSize=ui->cbSizeOffset;
             ui->cbScaleOffset->setChecked( def.ctype==SEGYHeaderWordConvType::COORD );
@@ -206,11 +238,11 @@ void SegyInputDialog::updateInfoFromControls(){
         QLineEdit* lePos=nullptr;
         QComboBox* cbSize=nullptr;
 
-        if(def.name=="iline"){
+        if(def.name=="iline" && m_3d){
             lePos=ui->lePosIline;
             cbSize=ui->cbSizeIline;
         }
-        else if(def.name=="xline"){
+        else if(def.name=="xline" && m_3d){
             lePos=ui->lePosXline;
             cbSize=ui->cbSizeXline;
         }
@@ -226,7 +258,7 @@ void SegyInputDialog::updateInfoFromControls(){
             lePos=ui->lePosCDPY;
             cbSize=ui->cbSizeCDPY;
         }
-        else if(def.name=="offset"){
+        else if(def.name=="offset" && m_prestack){
             lePos=ui->lePosOffset;
             cbSize=ui->cbSizeOffset;
             def.ctype=(ui->cbScaleOffset->isChecked())?
@@ -280,8 +312,7 @@ void SegyInputDialog::on_btScan_clicked()
     // using only necessary header words to speed up scan
     std::vector<seismic::SEGYHeaderWordDef> tmp_def;
     for( auto& d : orig_info.traceHeaderDef()){
-        if( d.name == "iline" ||
-                d.name=="xline" ||
+        if( d.name == "iline" || d.name=="xline" ||
                 d.name=="cdp" ||
                 d.name=="cdpx" ||
                 d.name=="cdpy" ||

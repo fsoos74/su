@@ -86,6 +86,13 @@ QRectF AxisView::viewRectFromView(){        // in scene coords
     return mapToScene(vr).boundingRect();
 }
 
+void AxisView::clearSelection(){
+    m_selectedPoints.clear();
+    invalidateScene(sceneRect(),QGraphicsScene::ForegroundLayer);
+    scene()->clearSelection();
+    scene()->update();
+}
+
 void AxisView::setZoomMode(ZOOMMODE m){
 
     if( m==m_zoomMode) return;
@@ -202,9 +209,10 @@ void AxisView::setSelectionMode(SELECTIONMODE  mode){
     m_selectionMode=mode;
 
     // clear all old selections
-    m_selectedPoint=QPointF();
-    m_selectedLine=QLineF();
-    m_selectionPolygon.clear();
+    //m_selectedPoint=QPointF();
+    //m_selectedLine=QLineF();
+    //m_selectionPolygon.clear();
+    m_selectedPoints.clear();
     if( scene()) scene()->clearSelection();
 
     // redraw to remove traces of old selections
@@ -215,18 +223,20 @@ void AxisView::setSelectionMode(SELECTIONMODE  mode){
 
 void AxisView::setSelectedLine(QLineF l){
 
-    if( l==m_selectedLine) return;
+    if( l==selectedLine()) return;
 
-    m_selectedLine=l;
+    m_selectedPoints.clear();
+    m_selectedPoints.push_back(l.p1());
+    m_selectedPoints.push_back(l.p2());
 
     scene()->update();
 }
 
 void AxisView::setSelectionPolygon( QPolygonF poly){
 
-    if( poly==m_selectionPolygon) return;
+    if( poly==selectionPolygon()) return;
 
-    m_selectionPolygon=poly;
+    m_selectedPoints=poly.toList().toVector();
 
     scene()->update();
   //  update();
@@ -432,22 +442,75 @@ void AxisView::mousePressEvent(QMouseEvent * event){
             break;
         }
     }
-    else if( event->button()==Qt::LeftButton && ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select ) ){
+    else if( event->button()==Qt::LeftButton &&
+             ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select || m_mouseMode==MouseMode::Pick  ) ){
 
         m_selectionActive=true;
 
-        if( m_selectionMode==SELECTIONMODE::SinglePoint){
-            m_selectedPoint=p;
-            emit pointSelected(m_selectedPoint);
-        }
-        if( m_selectionMode==SELECTIONMODE::Line){
-            m_selectedLine.setPoints(p,p);
-        }
-        else if( m_selectionMode==SELECTIONMODE::Polygon){
+        switch(m_selectionMode){
+        case SELECTIONMODE::SinglePoint:
+            m_selectedPoints=QVector<QPointF>{p};
+            emit pointSelected(p);
+            break;
+        case SELECTIONMODE::Line:
+            m_selectedPoints=QVector<QPointF>{p,p};
+            break;
+        case SELECTIONMODE::LinesVOrdered:
+            addSelectionVOrderPoint(p);
+            break;
+        case SELECTIONMODE::Lines:
+            addSelectionLinesPoint( p );
+            break;
+        case SELECTIONMODE::Polygon:
             addSelectionPolygonPoint( p );
+            break;
+        default:
+            break;
         }
     }
+    else if( event->button()==Qt::RightButton &&
+             ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select || m_mouseMode==MouseMode::Pick  ) ){
 
+        switch(m_selectionMode){
+        case SELECTIONMODE::Lines:
+            emit linesSelected(selectionPolygon());
+            clearSelection();
+             m_selectionActive=false;
+            break;
+        case SELECTIONMODE::Polygon:
+            emit polygonSelected(selectionPolygon());
+            clearSelection();
+             m_selectionActive=false;
+            break;
+        default:
+            break;
+        }
+    }
+    else if( ( event->button()==Qt::LeftButton && m_mouseMode==MouseMode::DeletePick ) ||
+                (event->button()==Qt::MiddleButton &&
+                  (event->modifiers()==Qt::ShiftModifier ||
+                        m_mouseMode==MouseMode::Select || m_mouseMode==MouseMode::Pick) ) ){
+        m_selectionActive=true;
+        emit removePoint(p);
+        /*
+        m_selectionActive=true;
+
+        switch(m_selectionMode){
+        case SELECTIONMODE::SinglePoint:
+            m_selectedPoints=QVector<QPointF>{p};
+            emit removePoint(p);
+            break;
+        case SELECTIONMODE::Polygon:
+            removeSelectionPoint(p);
+            break;
+        case SELECTIONMODE::LinesVOrdered:
+            removeSelectionPoint(p);
+            break;
+        default:
+            break;
+        }
+        */
+    }
      event->accept();
 
 }
@@ -508,8 +571,10 @@ void AxisView::mouseReleaseEvent(QMouseEvent * event){
 
         m_zoomActive=false;
     }
-    else if( event->button()==Qt::LeftButton && ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select ) ){
-        emit lineSelected(m_selectedLine);
+    else if( event->button()==Qt::LeftButton &&
+             ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select ||
+               m_mouseMode==MouseMode::Pick || m_mouseMode==MouseMode::DeletePick) ){
+        emit lineSelected(selectedLine());
         m_selectionActive=false;
     }
 }
@@ -517,9 +582,6 @@ void AxisView::mouseReleaseEvent(QMouseEvent * event){
 
 void AxisView::mouseMoveEvent(QMouseEvent * event){
 
-    //auto p=mapToScene(event->pos());
-    //p.setX(xAxis()->toAxis(p.x()));
-    //p.setY(zAxis()->toAxis(p.y()));
     QPointF scenePos=mapToScene(event->pos());
     QPointF p=toAxis(scenePos);
     emit mouseOver(p);
@@ -545,21 +607,25 @@ void AxisView::mouseMoveEvent(QMouseEvent * event){
             break;
         }
     }
-    else if( m_selectionActive ){
+    else if( m_selectionActive && m_selectionMode==SELECTIONMODE::Line){
 
-        if( m_selectionMode==SELECTIONMODE::Line){
-            m_selectedLine.setP2(p);
-        }
-
+        if( m_selectedPoints.size()>1) m_selectedPoints[1]=p;
         invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
         scene()->update();
+    }
+    else if( m_selectionActive && m_mouseMode==MouseMode::Pick && m_selectionMode==SELECTIONMODE::SinglePoint ){
+        m_selectedPoints=QVector<QPointF>{p};
+        emit pointSelected(p);
+    }
+    else if( m_selectionActive && m_mouseMode==MouseMode::DeletePick ){
+        emit removePoint(p);
     }
 }
 
 
 void AxisView::mouseDoubleClickEvent(QMouseEvent* event){
 
-    m_selectionPolygon.clear();
+    m_selectedPoints.clear();
     scene()->clearSelection();
 
     QGraphicsItem* item=itemAt(event->pos());
@@ -572,20 +638,27 @@ void AxisView::mouseDoubleClickEvent(QMouseEvent* event){
     event->accept();
 }
 
+
+
 void AxisView::keyPressEvent(QKeyEvent * event){
 
-    if( event->key()!=Qt::Key_Escape ) return;
+    if( event->key()!=Qt::Key_Escape ){
+        QWidget::keyPressEvent(event);      // not using this event, call base to further distribute it!!
+        return;
+    }
 
     if( m_selectionMode==SELECTIONMODE::Line){
-        m_selectedLine=QLineF();
+        m_selectedPoints.clear();
         invalidateScene(sceneRect(),QGraphicsScene::ForegroundLayer);
         scene()->update();
     }
     else if( m_selectionMode==SELECTIONMODE::Polygon ){
-        m_selectionPolygon.clear();
+        m_selectedPoints.clear();
         scene()->clearSelection();
         scene()->update();
     }
+
+    // now the event is consumed!
 }
 
 void AxisView::leaveEvent(QEvent *){
@@ -649,19 +722,29 @@ void AxisView::drawForeground(QPainter *painter, const QRectF &rectInScene){
     switch(m_selectionMode){
 
     case SELECTIONMODE::Line:{
-        //std::cout<<"SELECTIONMODE::Line"<<std::endl<<std::flush;
-        QLineF scline(toScene(m_selectedLine.p1()), toScene(m_selectedLine.p2()));
+        auto line=selectedLine();
+        QLineF scline(toScene(line.p1()), toScene(line.p2()));
         painter->drawLine(mapFromScene(scline.p1()), mapFromScene(scline.p2()));
         break;
     }
-    case SELECTIONMODE::Polygon:{
-        //std::cout<<"SELECTIONMODE::Polygon"<<std::endl<<std::flush;
+    case SELECTIONMODE::Polygon:
+    case SELECTIONMODE::Lines:
+    case SELECTIONMODE::LinesVOrdered:
+    {
         QPolygonF scenePolygon;
-        for( auto p : m_selectionPolygon){
+        for( auto p : selectionPolygon()){
             scenePolygon<<toScene(p);
         }
         QPolygon polygonInView=mapFromScene(scenePolygon);
-        painter->drawPolygon(polygonInView);
+        for( auto piv : polygonInView){
+            painter->drawRect(piv.x()-1, piv.y()-1, 3, 3);
+        }
+        if(m_selectionMode==SELECTIONMODE::Polygon){
+            painter->drawPolygon(polygonInView);
+        }
+        else{
+            painter->drawPolyline(polygonInView);
+        }
         break;
     }
     default:
@@ -678,46 +761,108 @@ void AxisView::drawForeground(QPainter *painter, const QRectF &rectInScene){
 // only add point if new side does not intersect others, points are in axis/content coords
 void AxisView::addSelectionPolygonPoint( QPointF p ){
 
-    if( m_selectionPolygon.size()>2 ){
+    if( m_selectedPoints.size()>2 ){
 
 
-        QLineF pointToFirst( p, m_selectionPolygon.first() );
-        QLineF lastToPoint( m_selectionPolygon.last(), p );
+        QLineF pointToFirst( p, m_selectedPoints.front() );
+        QLineF lastToPoint( m_selectedPoints.back(), p );
 
-        for( int i=1; i<m_selectionPolygon.size(); i++){
+        for( int i=1; i<m_selectedPoints.size(); i++){
 
-            QLineF side( m_selectionPolygon.at(i-1), m_selectionPolygon.at(i));
+            QLineF side( m_selectedPoints.at(i-1), m_selectedPoints.at(i));
             QPointF inter;
 
-            if( side.intersect(pointToFirst, &inter)==QLineF::BoundedIntersection && inter!=m_selectionPolygon.first()){
+            if( side.intersect(pointToFirst, &inter)==QLineF::BoundedIntersection && inter!=m_selectedPoints.first()){
                 return;
             }
 
-            if( i+1<m_selectionPolygon.size() && side.intersect(lastToPoint, &inter)==QLineF::BoundedIntersection && inter!=m_selectionPolygon.last()){
+            if( i+1<m_selectedPoints.size() && side.intersect(lastToPoint, &inter)==QLineF::BoundedIntersection &&
+                    inter!=m_selectedPoints.last()){
                 return;
             }
         }
 
     }
 
-    m_selectionPolygon<<p;
+    m_selectedPoints<<p;
 
-    if( m_selectionPolygon.size()>2){
+    updateSceneSelection();
 
-        QPolygonF poly;     // this is in scene coords
-        for( int i=0; i<m_selectionPolygon.size(); i++){
-            auto p=toScene(m_selectionPolygon[i]);
-            poly<<p;
-        }
-
-        QPainterPath selectionArea;
-        selectionArea.addPolygon(poly);//m_selectionPolygon);
-        scene()->setSelectionArea(selectionArea,viewportTransform());
-    }
-
-    emit polygonSelected(m_selectionPolygon);
+    //emit polygonSelected(selectionPolygon());
 
     //scene()->update();
+
+    invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
+    scene()->update();
+}
+
+
+void AxisView::addSelectionLinesPoint( QPointF p ){
+    m_selectedPoints<<p;
+    updateSceneSelection();
+    invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
+    scene()->update();
+}
+
+void AxisView::updateSceneSelection(){
+    //if( m_selectedPoints.size()>2){
+
+            QPolygonF poly;     // this is in scene coords
+            for( auto psel:m_selectedPoints){
+                auto psc=toScene(psel);
+                poly<<psc;
+            }
+
+            QPainterPath selectionArea;
+            selectionArea.addPolygon(poly);//m_selectionPolygon);
+            scene()->setSelectionArea(selectionArea,viewportTransform());
+      //  }
+}
+
+// inserts point based on y value, if y already exists do noting
+void AxisView::addSelectionVOrderPoint(QPointF p){
+    if( m_selectedPoints.empty()){
+        m_selectedPoints.push_back(p);
+    }
+    else if(p.y()<m_selectedPoints.front().y()){
+        m_selectedPoints.push_front(p);
+    }
+    else if(p.y()>m_selectedPoints.back().y()){
+        m_selectedPoints.push_back(p);
+    }
+    else{
+        for( auto it=m_selectedPoints.begin(); it!=m_selectedPoints.end(); ++it){
+            if( it->y()==p.y()) return;     // y value already exists, skip
+            if( it->y()>p.y()){             // must insert before
+                m_selectedPoints.insert(it, p);
+                break;
+            }
+        }
+    }
+
+    invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
+    scene()->update();
+}
+
+void AxisView::removeSelectionPoint(QPointF p){
+
+    if( m_selectedPoints.empty()){
+        return;
+    }
+    // find closest point
+    int minidx=0;
+    qreal mindist2=std::numeric_limits<qreal>::max();
+    for( int i=0; i<m_selectedPoints.size(); i++){
+        auto pp=m_selectedPoints[i]-p;
+        auto dist2=pp.x()*pp.x()+pp.y()*pp.y();
+        if(dist2<mindist2){
+            minidx=i;
+            mindist2=dist2;
+        }
+    }
+    m_selectedPoints.remove(minidx);
+
+    updateSceneSelection();
 
     invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
     scene()->update();

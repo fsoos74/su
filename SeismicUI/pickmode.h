@@ -7,7 +7,9 @@
 enum class PickMode{
     Single,
     Left,
-    Right
+    Right,
+    Lines,
+    Outline
 };
 
 

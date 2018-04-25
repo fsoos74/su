@@ -14,7 +14,8 @@ QMap<VolumeDipProcess::Method, QString> method_name_lookup{
     {VolumeDipProcess::Method::DERIVATION, "derivation"},
     {VolumeDipProcess::Method::DERIVATION_5P, "5 point derivation"},
     {VolumeDipProcess::Method::DERIVATION_7P, "7 point derivation"},
-    {VolumeDipProcess::Method::CORRELATION, "correlation"}
+    {VolumeDipProcess::Method::CORRELATION, "correlation"},
+    {VolumeDipProcess::Method::MAXIMUM_SEMBLANCE, "maximum semblance"}
 };
 
 }
@@ -63,6 +64,7 @@ ProjectProcess::ResultCode VolumeDipProcess::init( const QMap<QString, QString>&
         case Method::DERIVATION_5P: m_func=std::bind( &VolumeDipProcess::dips_derivative_5p, this, _1, _2, _3); m_margin=2; break;
         case Method::DERIVATION_7P: m_func=std::bind( &VolumeDipProcess::dips_derivative_7p, this, _1, _2, _3); m_margin=3; break;
         case Method::CORRELATION: m_func=std::bind( &VolumeDipProcess::dips_correlation, this, _1, _2, _3); m_margin=1; break;
+        case Method::MAXIMUM_SEMBLANCE: m_func=std::bind( &VolumeDipProcess::dips_maximum_semblance, this, _1, _2, _3); m_margin=1; break;
     }
 
     emit currentTask("Loading Volume");
@@ -384,6 +386,61 @@ std::pair<float, float> VolumeDipProcess::dips_correlation( int i, int j, int k)
     auto dx1=optimum_shift( *m_inputVolume, i, j-1, i, j, k-W/2, W, W/2);
     auto dx2=optimum_shift( *m_inputVolume, i, j, i, j+1, k-W/2, W, W/2);
     float xldip=0.5*(dx1+dx2);
+
+    return std::make_pair( ildip, xldip );
+}
+
+
+std::pair<float, float> VolumeDipProcess::dips_maximum_semblance( int i, int j, int k){
+
+    const int W=m_window_samples;
+
+    std::vector<std::tuple<int, int, double>> path(3);      // use 3 traces, central + adjacent in inline or xline direction
+
+    // shift per trace between -W and W
+
+    auto t0 = m_inputVolume->bounds().sampleToTime(k);
+    auto dt = m_inputVolume->dt();
+    int nfrac=2;
+
+     // scan inline dip
+    float best_shift=0;
+    auto best_semblance=std::numeric_limits<double>::lowest();
+    for( int ispt = -nfrac*W; ispt<=nfrac*W; ispt++){
+
+        float spt=float(ispt)/nfrac;
+        path[0]=std::make_tuple( i-1, j, t0 - spt*dt );
+        path[1]=std::make_tuple( i, j, t0 );
+        path[2]=std::make_tuple( i+1, j, t0 + spt*dt );
+        auto s = semblance( *m_inputVolume, path, W/2);
+
+        if( s>best_semblance ){
+            best_semblance=s;
+            best_shift=spt;
+        }
+
+    }
+    float ildip = best_shift;
+
+    // scan xline dip
+   best_shift=0;
+   best_semblance=std::numeric_limits<double>::lowest();
+
+   for( int ispt = -nfrac*W; ispt<=nfrac*W; ispt++){
+
+       float spt=float(ispt)/nfrac;
+
+       path[0]=std::make_tuple( i, j-1, t0 - spt*dt );
+       path[1]=std::make_tuple( i, j, t0 );
+       path[2]=std::make_tuple( i, j+1, t0 + spt*dt );
+       auto s = semblance( *m_inputVolume, path, W/2);
+       if( s>best_semblance ){
+           best_semblance=s;
+           best_shift=spt;
+       }
+
+   }
+   float xldip = best_shift;
 
     return std::make_pair( ildip, xldip );
 }

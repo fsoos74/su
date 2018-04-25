@@ -9,7 +9,9 @@ QMap< PickMode, QString> lookup{
 
     { PickMode::Single, QString("Single") },
     { PickMode::Left, QString("Left") },
-    { PickMode::Right, QString("Right") }
+    { PickMode::Right, QString("Right") },
+    { PickMode::Lines, QString("Lines") },
+    { PickMode::Outline, QString("Outline") }
 };
 
 }
@@ -37,6 +39,12 @@ QPixmap pickModePixmap(PickMode t){
         break;
     case PickMode::Right:
         return QPixmap(":/icons/images/pick-right-32x32.png");
+        break;
+    case PickMode::Lines:
+        return QPixmap(":/icons/images/pick-lines-32x32.png");
+        break;
+    case PickMode::Outline:
+        return QPixmap(":/icons/images/pick-outline-32x32.png");
         break;
    }
 

@@ -31,8 +31,12 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 
     m_colorbarsLayout=new QVBoxLayout(ui->wdColortableArea);
 
-    setupToolBarControls();
-
+    //setupToolBarControls();
+    setupMouseModes();
+    setupSliceToolBar();
+    setupFlattenToolBar();
+    setupWellToolBar();
+    setupPickingToolBar();
     setAttribute( Qt::WA_DeleteOnClose);
 
     ui->volumeView->setZoomMode(AxisView::ZOOMMODE::BOTH);
@@ -52,6 +56,9 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     connect( ui->actionDisplay_Wells, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayWells(bool)) );
     connect( ui->volumeView, SIGNAL(displayWellsChanged(bool)), ui->actionDisplay_Wells, SLOT(setChecked(bool)) );
 
+    connect( ui->actionDisplay_Tables, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayTables(bool)) );
+    connect( ui->volumeView, SIGNAL(displayTablesChanged(bool)), ui->actionDisplay_Tables, SLOT(setChecked(bool)) );
+
     connect( ui->actionDisplay_Markers, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayMarkers(bool)) );
     connect( ui->volumeView, SIGNAL(displayMarkersChanged(bool)), ui->actionDisplay_Markers, SLOT(setChecked(bool)) );
 
@@ -66,6 +73,8 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     updateSliceConnections();
 
     ui->volumeView->setSlice(VolumeView::SliceType::Inline, 0);
+
+
 }
 
 VolumeViewer2D::~VolumeViewer2D()
@@ -162,13 +171,14 @@ void VolumeViewer2D::setFlattenHorizon(QString name){
 
 void VolumeViewer2D::updateSliceConnections(){
 
-    VolumeView::SliceType type=ui->volumeView->slice().type;
-
+    auto vv=ui->volumeView;
     HScaleView* hsv=ui->volumeView->hscaleView();
     VScaleView* vsv=ui->volumeView->vscaleView();
+    //disconnect(vv, SIGNAL(polygonSelected(QPolygonF)), 0, 0); XXX why?
     disconnect(hsv, SIGNAL(pointSelected(QPointF)),0,0);
     disconnect(vsv, SIGNAL(pointSelected(QPointF)),0,0);
 
+    VolumeView::SliceType type=vv->slice().type;
     switch(type){
     case VolumeView::SliceType::Inline:
          connect( hsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setCrosslineSliceX(QPointF)) );
@@ -188,7 +198,73 @@ void VolumeViewer2D::updateSliceConnections(){
 
 }
 
+void VolumeViewer2D::setupMouseModes(){
 
+    DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
+    mm->addMode(MouseMode::Explore);
+    mm->addMode(MouseMode::Zoom);
+    //mm->addMode(MouseMode::Select);
+    mm->addMode(MouseMode::Pick);
+    mm->addMode(MouseMode::DeletePick);
+    ui->mouseToolBar->addWidget( mm);
+    m_mousemodeSelector=mm;
+    connect(m_mousemodeSelector, SIGNAL(modeChanged(MouseMode)), ui->volumeView, SLOT(setMouseMode(MouseMode)) );
+}
+
+
+void VolumeViewer2D::setupSliceToolBar(){
+    QToolBar* toolBar=new QToolBar( "Slice", this);
+    auto widget=new QWidget(this);
+    auto label=new QLabel(tr("Slice:"));
+    cbSlice=new QComboBox;
+    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Inline));
+    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
+    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
+    cbSlice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    sbSlice=new QSpinBox;
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(cbSlice);
+    layout->addWidget(sbSlice);
+    widget->setLayout(layout);
+    toolBar->addWidget(widget);
+    addToolBar(toolBar);
+    connect(cbSlice, SIGNAL(currentIndexChanged(QString)), this, SLOT(cbSlice_currentIndexChanged(QString)) );
+    connect(sbSlice, SIGNAL(valueChanged(int)), this, SLOT(sbSlice_valueChanged(int)) );
+}
+
+void VolumeViewer2D::setupFlattenToolBar(){
+    QToolBar* toolBar=new QToolBar( "Flatten", this);
+    auto widget=new QWidget(this);
+    auto label=new QLabel(tr("Flatten:"));
+    cbHorizon=new QComboBox;
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(cbHorizon);
+    widget->setLayout(layout);
+    toolBar->addWidget(widget);
+    addToolBar(toolBar);
+    connect(cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
+}
+
+void VolumeViewer2D::setupWellToolBar(){
+    QToolBar* toolBar=new QToolBar( "Well", this);
+    auto widget=new QWidget(this);
+    auto label=new QLabel(tr("Dist:"));
+    sbWellViewDist=new QSpinBox;
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(sbWellViewDist);
+    widget->setLayout(layout);
+    toolBar->addWidget(widget);
+    addToolBar(toolBar);
+    connect(sbWellViewDist, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setWellViewDist(int)) );
+
+    sbWellViewDist->setRange(0, 9999);
+    sbWellViewDist->setValue(ui->volumeView->welViewDist());
+}
+
+/*
 void VolumeViewer2D::setupToolBarControls(){
 
     auto widget=new QWidget(this);
@@ -206,6 +282,12 @@ void VolumeViewer2D::setupToolBarControls(){
     auto label3=new QLabel(tr("Flatten Horizon:"));
     cbHorizon=new QComboBox;
 
+    auto label4=new QLabel(tr("Pick Mode:"));
+    m_cbPickMode=new QComboBox(this);
+    m_cbPickMode->addItems(volumePickModeNames());
+    m_cbPickMode->setCurrentText(toQString(VolumePicker::PickMode::Points));
+    m_cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+
     auto layout=new QHBoxLayout;
     layout->addWidget(label);
     layout->addWidget(cbSlice);
@@ -217,7 +299,9 @@ void VolumeViewer2D::setupToolBarControls(){
     layout->addSpacing(20);
     layout->addWidget(label2);
     layout->addWidget(sbWellViewDist);
-
+    layout->addSpacing(30);
+    layout->addWidget(label4);
+    layout->addWidget(m_cbPickMode);
     widget->setLayout(layout);
 
     auto toolBar=addToolBar(tr("Controls Toolbar"));
@@ -229,9 +313,31 @@ void VolumeViewer2D::setupToolBarControls(){
     connect(sbWellViewDist, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setWellViewDist(int)) );
     connect(cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
 
+    connect( m_cbPickMode, SIGNAL(currentIndexChanged(QString)), ui->volumeView->picker(), SLOT(setPickMode(QString)));
+
     sbWellViewDist->setRange(0, 9999);
     sbWellViewDist->setValue(ui->volumeView->welViewDist());
 }
+*/
+
+void VolumeViewer2D::setupPickingToolBar(){
+
+    QToolBar* toolBar=new QToolBar( "Picking", this);
+    auto widget=new QWidget(this);
+    auto label=new QLabel(tr("Pick:"));
+    m_cbPickMode=new QComboBox(this);
+    m_cbPickMode->addItems(volumePickModeNames());
+    m_cbPickMode->setCurrentText(toQString(VolumePicker::PickMode::Points));
+    m_cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(m_cbPickMode);
+    widget->setLayout(layout);
+    toolBar->addWidget(widget);
+    addToolBar(toolBar);
+    connect( m_cbPickMode, SIGNAL(currentIndexChanged(QString)), ui->volumeView->picker(), SLOT(setPickMode(QString)));
+}
+
 
 void VolumeViewer2D::updateFlattenHorizons(){
 
@@ -572,6 +678,53 @@ void VolumeViewer2D::on_actionSet_Horizon_Color_triggered()
     }
 }
 
+void VolumeViewer2D::on_actionSet_Table_Color_triggered()
+{
+    bool ok=false;
+    QString name=QInputDialog::getItem(this, tr("Set Table Color"), tr("Select Table:"), ui->volumeView->tableList(), 0, false, &ok);
+
+    if(!ok || name.isEmpty()) return;
+
+    QColor initial=ui->volumeView->tableColor(name);
+    QColor color=QColorDialog::getColor( initial, this, QString("Table %1 color").arg(name));
+
+    if( color.isValid()){
+        ui->volumeView->setTableColor(name, color);
+    }
+}
+
+
+void VolumeViewer2D::on_actionSetup_Tables_triggered()
+{
+    Q_ASSERT(m_project);
+
+    QStringList avail=m_project->tableList();
+    bool ok=false;
+    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Tables"), tr("Select tables:"), avail, &ok, ui->volumeView->tableList());
+    if( !ok ) return;
+
+    // first pass remove items
+    for( auto name : ui->volumeView->tableList() ){
+
+        if( !names.contains(name)) ui->volumeView->removeTable(name);
+        else names.removeAll(name);
+    }
+
+    // now we only have names that need to be added
+    // second pass add items
+    for( auto name : names){
+
+        auto t = m_project->loadTable(name);
+
+        if( !t ){
+            QMessageBox::critical(this, tr("Add Table"), QString("Loading table \"%1\" failed!").arg(name) );
+            break;
+        }
+
+        ui->volumeView->addTable(name, t, Qt::blue);
+    }
+}
+
 void VolumeViewer2D::on_actionSetup_Wells_triggered()
 {
     Q_ASSERT(m_project);
@@ -705,3 +858,116 @@ void VolumeViewer2D::orientate(){
     return true;
 }
 */
+
+bool VolumeViewer2D::canDiscardPicks(){
+    if( !ui->volumeView->picker()->isDirty()) return true;
+    auto reply = QMessageBox::warning(this, tr("Discard Picks"),
+                                      tr("Picks have unsaved changes. Continuing will delete them. Continue?"),
+                                        QMessageBox::Yes | QMessageBox::No );
+    return reply == QMessageBox::Yes;
+}
+
+void VolumeViewer2D::on_action_New_Picks_triggered()
+{
+    if( !canDiscardPicks()) return;
+    auto picker=ui->volumeView->picker();
+    picker->newPicks();
+
+    m_picksName.clear();
+}
+
+void VolumeViewer2D::on_action_Load_Picks_triggered()
+{
+    if( !canDiscardPicks()) return;
+
+    bool ok=false;
+    QString name=QInputDialog::getItem(this, "Open Picks", "Please select a Table:",
+                                           m_project->tableList(), 0, false, &ok);
+    if( name.isEmpty() || !ok ) return;
+    auto picks=m_project->loadTable(name );
+    if( !picks){
+        QMessageBox::critical(this, "Load Picks", "Loading Picks failed!", QMessageBox::Ok);
+        return;
+    }
+
+    auto picker=ui->volumeView->picker();
+    picker->setPicks(picks);
+
+    m_picksName=name;
+}
+
+void VolumeViewer2D::on_action_Save_Picks_triggered()
+{
+    if( m_picksName.isEmpty() || !m_project->existsTable(m_picksName)){
+        ui->actionSave_As_Picks->trigger();
+        return;
+    }
+
+    auto picker=ui->volumeView->picker();
+    if( m_project->saveTable(m_picksName, *(picker->picks()) ) ){
+        picker->setDirty(false);
+    }
+    else{
+        QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
+    }
+}
+
+void VolumeViewer2D::on_actionSave_As_Picks_triggered()
+{
+    QString name=m_picksName;
+    bool ok;
+
+    // input non-existing name
+    for(;;){
+
+        name = QInputDialog::getText(this, tr("Save Picks As"), tr("Pick Table Name:"), QLineEdit::Normal, name, &ok );
+
+        if( name.isNull() || !ok ) return; // canceled
+
+        if( !m_project->tableList().contains(name)){
+             break;
+        }
+    }
+
+    auto picker=ui->volumeView->picker();
+    if( m_project->addTable(name, *(picker->picks()) ) ){
+        picker->setDirty(false);
+        m_picksName=name;
+    }
+    else{
+        QMessageBox::critical(this, tr("Save Picks"), tr("Saving picks failed"));
+    }
+
+}
+
+
+void VolumeViewer2D::closeEvent(QCloseEvent *event)
+{
+    if( !canDiscardPicks()){
+        event->ignore();
+        return;
+    }
+
+    /*
+    sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );  // notify other viewers
+    // remove intersections from other viewers
+   updateIntersections();
+   */
+}
+
+void VolumeViewer2D::keyPressEvent(QKeyEvent * event){
+
+    std::cout<<"GatherViewer::keyPressEvent"<<std::endl<<std::flush;
+
+    switch(event->key()){
+    case Qt::Key_F: sbSlice->setValue(sbSlice->minimum()); break;
+    case Qt::Key_L: sbSlice->setValue(sbSlice->maximum()); break;
+    case Qt::Key_N: sbSlice->stepUp(); break;
+    case Qt::Key_P: sbSlice->stepDown(); break;
+    //case Qt::Key_Plus: zoomIn(); break;
+    //case Qt::Key_Minus: zoomOut(); break;
+    //case Qt::Key_0: zoomFitWindow(); break;
+    default: break;
+    }
+    event->accept();
+}

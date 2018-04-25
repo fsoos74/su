@@ -68,6 +68,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<exportvolumedialog.h>
 #include<exportseismicprocess.h>
 #include<exportseismicdialog.h>
+#include<exportlogprocess.h>
+#include<exportlogdialog.h>
 
 #include <offsetstackdialog.h>
 #include <offsetstackprocess.h>
@@ -115,6 +117,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <createvolumeprocess.h>
 #include <cropvolumedialog.h>
 #include <cropvolumeprocess.h>
+#include <punchoutvolumedialog.h>
+#include <punchoutvolumeprocess.h>
 #include <volumemathdialog.h>
 #include <volumemathprocess.h>
 #include <flattenvolumedialog.h>
@@ -128,8 +132,10 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <amplitudevolumeprocess.h>
 #include <frequencyvolumedialog.h>
 #include <frequencyvolumeprocess.h>
-#include <volumedipdialog.h>
-#include <volumedipprocess.h>
+#include <dipscandialog.h>
+#include <volumedipscanprocess.h>
+//#include <volumedipdialog.h>
+//#include <volumedipprocess.h>
 #include <curvaturevolumedialog.h>
 #include <curvaturevolumeprocess.h>
 #include <convertgriddialog.h>
@@ -145,17 +151,31 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <windowreductionfunction.h>
 #include <buildwellvolumedialog.h>
 #include <buildwellvolumeprocess.h>
+#include <horizontotopdialog.h>
+#include <horizontotopprocess.h>
 #include <smoothlogdialog.h>
 #include <smoothlogprocess.h>
 #include <logmathdialog.h>
 #include <logmathprocess.h>
 #include <logintegrationdialog.h>
 #include <logintegrationprocess.h>
+#include <nnlogdialog.h>
+#include <nnlogprocess.h>
+#include <nnlogtrainer.h>
+#include <nnloginterpolationdialog.h>
+#include <nnloginterpolationprocess.h>
 #include <logscriptdialog.h>
 #include <logscriptprocess.h>
+#include <vshaledialog.h>
+#include <vshaleprocess.h>
+#include <tabletohorizondialog.h>
+#include <tabletohorizonprocess.h>
 #include <importmarkersdialog.h>
 #include <importmarkersprocess.h>
 #include <editmarkersdialog.h>
+#include <fmcdp2ddialog.h>
+#include <fmcdp2dprocess.h>
+
 
 #include<axxisorientation.h>
 #include<projectgeometry.h>
@@ -167,6 +187,7 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include "spectrumviewer.h"
 #include <logviewer.h>
 #include <logeditor.h>
+#include <logeditdialog.h>
 #include <logspectrumviewer.h>
 #include <crossplot.h>
 #include <gridcolorcompositeinputdialog.h>
@@ -178,7 +199,10 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<mapviewer2.h>
 #include <volumeviewer.h>
 #include <processparamsviewer.h>
-
+#include<ebcdicdialog.h>
+#include<topsdbmanager.h>
+#include<table.h>
+#include<tabledialog.h>
 #include<segywriter.h>
 #include<swsegywriter.h>
 #include<segyreader.h>
@@ -256,6 +280,12 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
         this, SLOT(runWellContextMenu(const QPoint&)));
     ui->wellsView->installEventFilter(this);
     // ui->wellsView->setItemDelegateForColumn(5, new LogsItemDelegate(this)); // XXX don't use thie because this requires editing enabled
+
+    ui->tablesView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tablesView, SIGNAL(customContextMenuRequested(const QPoint&)),
+        this, SLOT(runTableContextMenu(const QPoint&)));
+    ui->tablesView->installEventFilter(this);
+
 
     loadSettings();
 
@@ -352,30 +382,27 @@ void ProjectViewer::on_actionImportSeismic_triggered()
     if( propertiesDialog.exec()!=QDialog::Accepted) return;
     QString name=propertiesDialog.name();
     if( name.isEmpty()) return;
-std::cout<<"1"<<std::endl<<std::flush;
+
     if( m_project->seismicDatasetList().contains(name)){
         QMessageBox::warning(this, "Import Dataset", QString("Dataset \"%1\" already exists!").arg(name));
         return;
     }
-std::cout<<"2"<<std::endl<<std::flush;
+
     SegyInputDialog segyInputDialog;
+    segyInputDialog.setPrestack(propertiesDialog.mode()==SeismicDatasetInfo::Mode::Prestack);
+    segyInputDialog.set3D(propertiesDialog.dimensions()==3);
     segyInputDialog.setWindowTitle("Import SEG-Y");
+
+    std::cout<<"ppdlg dims="<<propertiesDialog.dimensions()<<" sidlg 3d="<<std::boolalpha<<segyInputDialog.is3D()<<std::endl<<std::flush;
+
     if( segyInputDialog.exec()!=QDialog::Accepted) return;
-std::cout<<"3"<<std::endl<<std::flush;
-    if( !m_project->addSeismicDataset(name, segyInputDialog.path(), segyInputDialog.info())){
+
+    if( !m_project->addSeismicDataset(name, propertiesDialog.dimensions(), propertiesDialog.domain(), propertiesDialog.mode(),
+                                      segyInputDialog.path(), segyInputDialog.info())){
         QMessageBox::critical(this, "Import Dataset", "Adding seismic dataset to project failed!");
         return;
     }
-std::cout<<"4"<<std::endl<<std::flush;
-    SeismicDatasetInfo datasetInfo=m_project->getSeismicDatasetInfo(name);
-    datasetInfo.setDomain(propertiesDialog.domain());
-    datasetInfo.setMode(propertiesDialog.mode());
-std::cout<<"5"<<std::endl<<std::flush;
-    if( !m_project->setSeismicDatasetInfo(name, datasetInfo) ){
-        QMessageBox::critical(this, "Import Dataset", QString("Setting properties of \"%1\" failed!").arg(name));
-        return;
-    }
-std::cout<<"6"<<std::endl<<std::flush;
+
     //updateProjectViews();
 }
 
@@ -658,6 +685,10 @@ void ProjectViewer::on_actionExportSeismic_triggered()
     selectAndExportSeismicDataset();
 }
 
+void ProjectViewer::on_actionExportLog_triggered()
+{
+    selectAndExportLog();
+}
 
 void ProjectViewer::on_actionSave_triggered()
 {
@@ -1177,6 +1208,18 @@ void ProjectViewer::on_action_Crop_Volume_triggered()
     runProcess( new CropVolumeProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionPunch_Out_Volume_triggered()
+{
+    Q_ASSERT( m_project );
+
+    PunchOutVolumeDialog dlg;
+    dlg.setWindowTitle(tr("Punch Out Volume"));
+    dlg.setProject(m_project);
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new PunchOutVolumeProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionVolume_Math_triggered()
 {
@@ -1264,7 +1307,7 @@ void ProjectViewer::on_actionExtract_Dataset_triggered()
 }
 
 
-
+/*
 void ProjectViewer::on_actionVolume_Dip_triggered()
 {
     Q_ASSERT(m_project);
@@ -1279,7 +1322,23 @@ void ProjectViewer::on_actionVolume_Dip_triggered()
 
     runProcess( new VolumeDipProcess( m_project, this ), params );
 }
+*/
 
+void ProjectViewer::on_actionVolume_Dip_triggered()
+{
+    Q_ASSERT(m_project);
+
+    DipScanDialog dlg;
+    dlg.setProject(m_project);
+    dlg.setInputs(m_project->volumeList());
+    dlg.setWindowTitle("Scan Volume Dips");
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    auto params=dlg.params();
+
+    runProcess( new VolumeDipScanProcess( m_project, this ), params );
+}
 
 void ProjectViewer::on_actionVolume_Frequencies_triggered()
 {
@@ -1476,6 +1535,61 @@ void ProjectViewer::on_actionLog_Integration_triggered()
     runProcess( new LogIntegrationProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionNN_Log_old_triggered()
+{
+    Q_ASSERT( m_project );
+
+    NNLogDialog dlg;
+    dlg.setWindowTitle(tr("NN Log"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new NNLogProcess( m_project, this ), params );
+}
+
+void ProjectViewer::on_actionTrain_NN_Log_triggered()
+{
+    Q_ASSERT( m_project );
+
+    NNLogTrainer dlg;
+    dlg.setWindowTitle(tr("NN Log Trainer"));
+    dlg.setProject(m_project);
+
+    dlg.exec();
+}
+
+void ProjectViewer::on_actionNN_Log_Interpolation_triggered()
+{
+    Q_ASSERT( m_project );
+
+    NNLogInterpolationDialog dlg;
+    dlg.setWindowTitle(tr("NN Log Interpolation"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new NNLogInterpolationProcess( m_project, this ), params );
+}
+
+
+void ProjectViewer::on_actionVShale_Computation_triggered()
+{
+    Q_ASSERT( m_project );
+
+    VShaleDialog dlg;
+    dlg.setWindowTitle(tr("VShale Computation"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new VShaleProcess( m_project, this ), params );
+}
+
+
 void ProjectViewer::on_actionRun_Log_Script_triggered()
 {
     Q_ASSERT( m_project );
@@ -1505,7 +1619,57 @@ void ProjectViewer::on_actionBuild_Volume_triggered()
 }
 
 
+void ProjectViewer::on_actionTops_from_Horizon_triggered()
+{
+    Q_ASSERT( m_project );
 
+    HorizonToTopDialog dlg;
+    dlg.setWindowTitle(tr("Tops from Horizon"));
+    dlg.setProject(m_project);
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new HorizonToTopProcess( m_project, this ), params );
+}
+
+
+
+
+/*
+ * Process Table menu
+*/
+
+void ProjectViewer::on_actionConvert_Picks_To_Horizon_triggered()
+{
+    Q_ASSERT( m_project );
+
+    TableToHorizonDialog dlg;
+    dlg.setWindowTitle(tr("Convert Table To Horizon"));
+    dlg.setProject(m_project);
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new TableToHorizonProcess( m_project, this ), params );
+}
+
+
+/*
+ * Inversion menu
+*/
+
+void ProjectViewer::on_actionFD_CDP_Acoustic_triggered()
+{
+    Q_ASSERT( m_project );
+
+    FMCDP2DDialog dlg;
+    dlg.setWindowTitle(tr("FD CDP 2D (Acoustic)"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new FMCDP2DProcess( m_project, this ), params );
+}
 
 
 /*
@@ -2199,6 +2363,19 @@ void ProjectViewer::exportGrid( GridType gridType, QString gridName){
     runProcess( new ExportGridProcess( m_project, this ), params );
 }
 
+void ProjectViewer::selectAndExportLog()
+{
+    ExportLogDialog dlg;
+
+    dlg.setProject(m_project);
+    dlg.setWindowTitle(tr("Export Log"));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    auto params=dlg.params();
+    runProcess( new ExportLogProcess( m_project, this ), params );
+}
+
 
 void ProjectViewer::on_datasetsView_doubleClicked(const QModelIndex &idx)
 {
@@ -2416,7 +2593,7 @@ void ProjectViewer::runWellContextMenu( const QPoint& pos){
     menu.addAction("display log spectrum");
     menu.addAction("crossplot logs");
     menu.addAction("log properties");
-    //menu.addAction("rename log");
+    menu.addAction("edit log");
     menu.addAction("remove log");
     menu.addSeparator();
     //menu.addAction("import well path");
@@ -2441,6 +2618,9 @@ void ProjectViewer::runWellContextMenu( const QPoint& pos){
     else if( selectedAction->text()=="log properties" ){
         logProperties( names[0]);
      }
+    else if( selectedAction->text()=="edit log" ){
+        editLog( names[0] );
+     }
     else if( selectedAction->text()=="remove log" ){
         removeLogs( names );
      }
@@ -2462,12 +2642,56 @@ void ProjectViewer::runWellContextMenu( const QPoint& pos){
     }
 }
 
+void ProjectViewer::on_tablesView_doubleClicked(const QModelIndex &idx)
+{
+    auto model=ui->tablesView->model();
+    QString name=model->itemData( model->index(idx.row(), 0))[Qt::DisplayRole].toString();
+    displayTable(name);
+}
+
+void ProjectViewer::runTableContextMenu( const QPoint& pos){
+
+    auto view=ui->tablesView;
+    auto idx=view->currentIndex();
+    auto model=view->model();
+    QStringList names;
+    for( auto idx : view->selectionModel()->selectedRows(0)){
+        names.push_back(view->model()->itemData(idx)[Qt::DisplayRole].toString() );
+    }
+    if( names.isEmpty()) return;
+    QPoint globalPos = view->viewport()->mapToGlobal(pos);
+
+    QMenu menu;
+
+    menu.addAction("display");
+    menu.addAction("rename");
+    menu.addAction("remove");
+
+    QAction* selectedAction = menu.exec(globalPos);
+    if (!selectedAction) return;
+
+    if( selectedAction->text()=="display" ){
+        displayTable( names[0] );
+    }
+    else if( selectedAction->text()=="rename" ){
+        renameTable( names[0] );
+    }
+    else if( selectedAction->text()=="remove" ){
+        removeTables( names );
+    }
+}
+
 void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
 
     auto view=ui->datasetsView;
     auto idx=view->currentIndex();
     auto model=view->model();
-    QString name=model->itemData( model->index(idx.row(), 0))[Qt::DisplayRole].toString();
+    QStringList names;
+    for( auto idx : view->selectionModel()->selectedRows(0)){
+        names.push_back(view->model()->itemData(idx)[Qt::DisplayRole].toString() );
+    }
+    if( names.isEmpty()) return;
+    QString name=names.front(); //model->itemData( model->index(idx.row(), 0))[Qt::DisplayRole].toString();
     QPoint globalPos = view->viewport()->mapToGlobal(pos);
 
     QMenu menu;
@@ -2475,6 +2699,7 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
     menu.addAction("display slice");
     menu.addSeparator();
     menu.addAction("display index");
+    menu.addAction("display EBCDIC");
     menu.addAction("view process parameters");
     menu.addAction("properties");
     menu.addSeparator();
@@ -2494,6 +2719,9 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
     else if( selectedAction->text()=="display index" ){
         displaySeismicDatasetIndex(name);
     }
+    else if( selectedAction->text()=="display EBCDIC" ){
+        displaySeismicDatasetEBCDICHeader(name);
+    }
     else if( selectedAction->text()=="view process parameters" ){
         displayProcessParams( name, m_project->getSeismicDatasetProcessParams(name));
     }
@@ -2504,7 +2732,7 @@ void ProjectViewer::runDatasetContextMenu(const QPoint& pos){
         exportSeismicDataset(name);
     }
     else if( selectedAction->text()=="remove" ){
-        removeSeismicDataset(name);
+        removeSeismicDatasets(names);
     }
 }
 
@@ -3449,6 +3677,31 @@ void ProjectViewer::logProperties(const QString & well){
     }
 }
 
+void ProjectViewer::editLog(const QString & well){
+
+    auto avail=m_project->logList(well);
+    std::sort( std::begin(avail), std::end(avail));
+    QString name = QInputDialog::getItem( this, tr("Edit Log"), tr("Select log:"), avail );
+
+    if( name.isEmpty()) return;
+
+    auto log = m_project->loadLog(well, name);
+    if( !log){
+        QMessageBox::critical(this, tr("Edit Log"), tr("Loading log \"%1 - %2\" failed!").arg(well, name), QMessageBox::Ok);
+        return;
+    }
+
+    LogEditDialog dlg;
+    dlg.setWindowTitle( tr("Edit Log %1 - %2").arg(well,name));
+    dlg.setLog(*log);
+
+    if( dlg.exec()!=QDialog::Accepted ) return;
+
+    if( !m_project->saveLog( well, name, dlg.log()) ){
+        QMessageBox::critical( this, "Edit Log", "Saving log failed!", QMessageBox::Ok);
+    }
+}
+
 void ProjectViewer::removeLogs(const QStringList& names){
 
     QStringList lognames;
@@ -3501,6 +3754,61 @@ void ProjectViewer::removeWells( const QStringList& names){
     for( auto name : names){
        m_project->removeWell( name);
     }
+}
+
+
+void ProjectViewer::renameTable( const QString& name){
+
+    if( m_project->tableList().contains(name)){
+        bool ok=false;
+
+        QString newName=QInputDialog::getText(this, QString("Rename Table \"%1\"").arg(name), "New Name:", QLineEdit::Normal, name, &ok);
+
+        if( newName.isNull() || !ok) return;
+
+        if( newName==name) return;
+
+        if( m_project->tableList().contains(newName) ){
+            QMessageBox::information(this, "Rename Table", QString("Table %1 already exists!").arg(newName));
+            return;
+        }
+
+        if( ! m_project->renameTable( name, newName) ){
+            QMessageBox::critical(this, "Rename Table", QString("Renaming table %1 failed!").arg(name));
+        }
+
+    }
+}
+
+
+void ProjectViewer::removeTables( const QStringList& names){
+
+    if( QMessageBox::question(this, QString("Remove Tables"),
+             QString("Are you sure you want to remove %1 tables?").arg(names.size()), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
+        return;
+    }
+
+    int nfail=0;
+    for( auto name : names){
+       m_project->removeTable( name);
+    }
+}
+
+
+void ProjectViewer::displayTable( const QString& name){
+
+    auto table=m_project->loadTable(name);
+
+    if( !table ){
+        QMessageBox::critical(this, "Display Table", "Loading Table failed!", QMessageBox::Ok);
+        return;
+    }
+
+    TableDialog* dlg=new TableDialog();
+    dlg->setProject(m_project);
+    dlg->loadTable(name);
+    dlg->setAttribute( Qt::WA_DeleteOnClose);
+    dlg->show();
 }
 
 void ProjectViewer::displayProcessParams(const QString& name, const ProcessParams& pp){
@@ -3557,9 +3865,15 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
 
         if( info.mode()==SeismicDatasetInfo::Mode::Prestack){
 
-            selector->setOrder(SeismicDataSelector::ORDER_INLINE_ASCENDING,
+            if( info.dimensions()==3){
+                selector->setOrder(SeismicDataSelector::ORDER_INLINE_ASCENDING,
                                SeismicDataSelector::ORDER_CROSSLINE_ASCENDING,
                                SeismicDataSelector::ORDER_OFFSET_ASCENDING);
+            }else{  // 2d data: inline=const, xline=cdp
+                selector->setOrder(SeismicDataSelector::ORDER_CROSSLINE_ASCENDING,
+                               SeismicDataSelector::ORDER_OFFSET_ASCENDING,
+                               SeismicDataSelector::ORDER_INLINE_ASCENDING);
+            }
 
             selector->setInlineCount(1);
 
@@ -3624,6 +3938,10 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         connect( viewer, SIGNAL(requestPoint(int,int)), selector,SLOT(providePoint(int,int)));
         connect( viewer, SIGNAL(requestPoints(QVector<QPoint>)), selector, SLOT( provideRandomLine(QVector<QPoint>)) );
         connect( viewer, SIGNAL(requestPerpendicularLine(int,int)), selector, SLOT(providePerpendicularLine(int,int)) );
+        connect( viewer, SIGNAL(firstRequested()), selector, SLOT(first()));
+        connect( viewer, SIGNAL(previousRequested()), selector, SLOT(previous()));
+        connect( viewer, SIGNAL(nextRequested()), selector, SLOT(next()));
+        connect( viewer, SIGNAL(lastRequested()), selector, SLOT(last()));
         viewer->navigationToolBar()->addWidget(selector);
         //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
         viewer->show();
@@ -3736,8 +4054,23 @@ void ProjectViewer::displaySeismicDatasetIndex(const QString& name){
 
 }
 
+void ProjectViewer::displaySeismicDatasetEBCDICHeader(const QString& name){
 
+    if( m_project->seismicDatasetList().contains(name)){
 
+        std::shared_ptr<SeismicDatasetReader> reader=m_project->openSeismicDataset(name);
+        if( !reader){
+            QMessageBox::critical(this, "Display EBDIC Header", "Open reader failed!");
+            return;
+        }
+
+        auto dlg=new EBCDICDialog;
+
+        dlg->setHeader(reader->segyReader()->textHeaders()[0]);
+        dlg->setWindowTitle( QString( "Textual Header of \"") + name + QString("\""));
+        dlg->show();
+     }
+}
 
 void ProjectViewer::editSeismicDatasetProperties(const QString& name){
 
@@ -3747,13 +4080,15 @@ void ProjectViewer::editSeismicDatasetProperties(const QString& name){
         dlg.setWindowTitle(QString("Properties of %1").arg(name));
         SeismicDatasetInfo info=m_project->getSeismicDatasetInfo(name);
         dlg.setName( name );
+        dlg.setDimensions(info.dimensions());
         dlg.setDomain( info.domain());
         dlg.setMode(info.mode());
 
         if( dlg.exec()==QDialog::Accepted){
 
-            if( info.domain()!=dlg.domain() || info.mode()!=dlg.mode() ){
+            if( info.domain()!=dlg.domain() || info.mode()!=dlg.mode() || info.dimensions()!=dlg.dimensions()){
 
+                info.setDimensions(dlg.dimensions());
                 info.setDomain(dlg.domain());
                 info.setMode(dlg.mode());
                 if( !m_project->setSeismicDatasetInfo(name, info) ){
@@ -3816,6 +4151,24 @@ void ProjectViewer::removeSeismicDataset(const QString& name){
          }
 
          //updateProjectViews();
+    }
+}
+
+
+void ProjectViewer::removeSeismicDatasets( const QStringList& names){
+
+    if( QMessageBox::question(this, QString("Remove Datasets"),
+             QString("Are you sure you want to remove %1 datasets?").arg(names.size()), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
+        return;
+    }
+
+    int nfail=0;
+    for( auto name : names){
+        if( !m_project->removeSeismicDataset(name)) nfail++;
+    }
+
+    if( nfail>0 ){
+        QMessageBox::critical(this, QString("Remove Datasets"), QString("Removing %1 datasets failed!").arg(QString::number(nfail)));
     }
 }
 
@@ -3921,11 +4274,17 @@ void ProjectViewer::connectWellsView(AVOProject* p){
     connect( p, SIGNAL(wellChanged(QString)), this, SLOT(updateWellsView(QString)) );
 }
 
+void ProjectViewer::connectTablesView(AVOProject* p){
+    connect( p, SIGNAL(tablesChanged()), this, SLOT(updateTablesView()) );
+    connect( p, SIGNAL(tableChanged(QString)), this, SLOT(updateTablesView(QString)) );
+}
+
 void ProjectViewer::connectViews(AVOProject* p){
     connectDatasetsView(p);
     connectGridViews(p);
     connectVolumesView(p);
     connectWellsView(p);
+    connectTablesView(p);
 }
 
 
@@ -3967,6 +4326,7 @@ QStandardItemModel* ProjectViewer::buildDatasetModelItem(QStandardItemModel *mod
     model->setItem(row, column++, new QStandardItem(name) );
     model->setItem(row, column++, newAlignedItem(datasetDomainToString(info.domain()), Qt::AlignHCenter));// new QStandardItem(datasetDomainToString(info.domain())));
     model->setItem(row, column++, newAlignedItem(datasetModeToString(info.mode()), Qt::AlignHCenter));
+    model->setItem(row, column++, newAlignedItem(QString::number(info.dimensions())+"D", Qt::AlignHCenter));
     model->setItem(row, column++, newAlignedItem(reader->minInline(), Qt::AlignHCenter));
     model->setItem(row, column++, newAlignedItem(reader->maxInline(), Qt::AlignHCenter));
     model->setItem(row, column++, newAlignedItem(reader->minCrossline(), Qt::AlignHCenter));
@@ -3988,7 +4348,7 @@ QStandardItemModel* ProjectViewer::buildDatesetsModel(){
     try{
 
     QStringList labels;
-    labels<<"Name"<<"Domain"<<"Mode"<<"Min IL"<<"Max IL"<<"Min XL"<<"Max XL"<<"Start"<<"End"<<"Interval"<<"Size(MB)"<<"Source"<<"Last Modified";
+    labels<<"Name"<<"Domain"<<"Mode"<<"Dims"<<"Min IL"<<"Max IL"<<"Min XL"<<"Max XL"<<"Start"<<"End"<<"Interval"<<"Size(MB)"<<"Source"<<"Last Modified";
 
     auto names=m_project->seismicDatasetList();
     QStandardItemModel* model=new QStandardItemModel(names.size(), labels.size(), this);
@@ -4175,6 +4535,53 @@ QStandardItemModel* ProjectViewer::buildWellsModel(){
     return model;
 }
 
+QStandardItemModel* ProjectViewer::buildTableModelItem(QStandardItemModel* model, int row, QString name){
+
+    if( !model ) return model;
+
+    QString key1;
+    QString key2;
+    bool multi;
+    int size;
+
+    try{
+        auto info=m_project->getTableInfo(name);
+        std::tie(key1,key2,multi,size)=info;
+    }catch(std::exception& ex){
+        QMessageBox::warning(this, tr("build picks model"), QString("%1 :\n %2").arg(name,ex.what()), QMessageBox::Ok);
+        return nullptr;
+    }
+
+    int column=0;
+
+    model->setItem(row, column++, new QStandardItem(name) );
+    model->setItem(row, column++, newAlignedItem(key1, Qt::AlignRight));
+    model->setItem(row, column++, newAlignedItem(key2, Qt::AlignRight));
+    model->setItem(row, column++, newAlignedItem( (multi) ? "multi" : "single" , Qt::AlignRight));
+    model->setItem(row, column++, newAlignedItem(size, Qt::AlignRight));
+    auto finfo=m_project->getTableFileInfo(name);
+    model->setItem(row, column++, newAlignedItem(finfo.lastModified()));
+
+    return model;
+}
+
+QStandardItemModel* ProjectViewer::buildTablesModel(){
+
+    QStringList labels;
+    labels<<"Name"<<"Key1"<<"Key2"<<"Mode"<<"Size"<<"Last Modified";
+
+    auto names=m_project->tableList();
+    QStandardItemModel* model=new QStandardItemModel(names.size(), labels.size(), this);
+    model->setHorizontalHeaderLabels(labels);
+
+    int row=0;
+    for( auto name :names ){
+
+        if( buildTableModelItem( model, row, name) ) row++;
+    }
+
+    return model;
+}
 
 void ProjectViewer::updateDatasetsView(){
 
@@ -4185,7 +4592,7 @@ void ProjectViewer::updateDatasetsView(){
 
     ui->datasetsView->setModel(buildDatesetsModel() );
     ui->datasetsView->setEditTriggers(QAbstractItemView::NoEditTriggers);   // read only
-    ui->datasetsView->resizeColumnsToContents();
+    ui->datasetsView->resizeColumnsToContents();  // XXX 1.3.18
     QHeaderView *headerView = ui->datasetsView->horizontalHeader();
     headerView->setSectionResizeMode(QHeaderView::Fixed );
     headerView->setSectionResizeMode(0, QHeaderView::Stretch);  // first column uses all available space
@@ -4302,6 +4709,37 @@ void ProjectViewer::updateWellsView(QString name){
     buildWellModelItem(model, row, name);
 }
 
+
+void ProjectViewer::updateTablesView(){
+
+    if( !m_project ){
+        ui->tablesView->setModel(0);
+        return;
+    }
+
+    auto model=buildTablesModel();
+    ui->tablesView->setModel(model);
+    ui->tablesView->setEditTriggers(QAbstractItemView::NoEditTriggers);   // read only, for LogItemDelegate use AllEditTriggers
+    ui->tablesView->resizeColumnsToContents();
+    auto headerView = ui->tablesView->horizontalHeader();
+    //headerView->setSectionResizeMode(QHeaderView::Fixed );
+    headerView->setSectionResizeMode(0, QHeaderView::Stretch);
+}
+
+
+void ProjectViewer::updateTablesView(QString name){
+
+    auto model = dynamic_cast<QStandardItemModel*>(ui->tablesView->model());
+    if( !model) return;
+
+    auto items=model->findItems(name);
+    if( items.empty()) return;
+
+    int row=items.front()->row();
+    buildTableModelItem(model, row, name);
+}
+
+
 void ProjectViewer::updateProjectViews(){
 
     updateDatasetsView();
@@ -4310,6 +4748,7 @@ void ProjectViewer::updateProjectViews(){
     updateGridsView(GridType::Other);
     updateVolumesView();
     updateWellsView();
+    updateTablesView();
 }
 
 
@@ -4440,6 +4879,7 @@ void ProjectViewer::updateMenu(){
     ui->actionExportAttributeGrid->setEnabled(isProject);
     ui->actionExportVolume->setEnabled(isProject);
     ui->actionExportSeismic->setEnabled(isProject);
+    ui->actionExportLog->setEnabled(isProject);
     ui->actionExportProject->setEnabled(isProject);
     ui->actionCloseProject->setEnabled(isProject);
 
@@ -4483,13 +4923,23 @@ void ProjectViewer::updateMenu(){
     ui->actionInstantaneous_Attribute_Volumes->setEnabled(isProject);
     ui->actionTrend_Based_Attribute_Volumes->setEnabled(isProject);
     ui->actionSecondary_Attribute_Volumes->setEnabled(isProject);
+    ui->actionPunch_Out_Volume->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->action_Smooth_Log->setEnabled(isProject);
     ui->actionLog_Math->setEnabled(isProject);
     ui->actionLog_Integration->setEnabled(isProject);
+    ui->actionNN_Log_old->setEnabled(isProject);
+    ui->actionTrain_NN_Log->setEnabled(isProject);
+    ui->actionNN_Log_Interpolation->setEnabled(isProject);
+    ui->actionVShale_Computation->setEnabled(isProject);
+    ui->actionTops_from_Horizon->setEnabled(isProject);
     ui->actionRun_Log_Script->setEnabled(isProject);
     ui->actionBuild_Volume->setEnabled(isProject);
+
+    ui->actionConvert_Picks_To_Horizon->setEnabled(isProject);
+
+    ui->actionFD_CDP_Acoustic->setEnabled(isProject);
 
     ui->actionCrossplot_Grids->setEnabled(isProject);
     ui->actionCrossplot_Volumes->setEnabled(isProject);
@@ -4521,58 +4971,7 @@ void dumpPoint(std::ostream& os, const char* label, const POINT& p){
     os<<label<<" { "<<p.x()<<", "<<p.y()<<" }"<<std::endl;
 }
 
-void ProjectViewer::on_actionTest_triggered()
-{
-    QTransform xy_to_ilxl, ilxl_to_xy;
-    m_project->geometry().computeTransforms(xy_to_ilxl, ilxl_to_xy);
-    auto bblines=m_project->geometry().bboxLines();
-    auto bbcoords=m_project->geometry().bboxCoords();
 
-    dumpRect(std::cout,"bblines=",bblines);
-    dumpRect(std::cout,"bbcoords=",bbcoords);
-
-    auto lines_t=ilxl_to_xy.mapRect(bblines);
-    auto lines_t_t=xy_to_ilxl.mapRect(lines_t);
-    dumpRect(std::cout, "bblines transformed:", lines_t);
-    dumpRect(std::cout, "bblines transformed transformed:", lines_t_t);
-
-    auto tl=bbcoords.topLeft();
-    auto tl_t=xy_to_ilxl.map(tl);
-    auto tl_t_t=ilxl_to_xy.map(tl_t);
-    auto br=bbcoords.bottomRight();
-    auto br_t=xy_to_ilxl.map(br);
-    auto br_t_t=ilxl_to_xy.map(br_t);
-    std::cout<<"tl="<<tl.x()<<", "<<tl.y()<<std::endl;
-    std::cout<<"tl_t="<<tl_t.x()<<", "<<tl_t.y()<<std::endl;
-    std::cout<<"tl_t_T="<<tl_t_t.x()<<", "<<tl_t_t.y()<<std::endl;
-    std::cout<<"br="<<br.x()<<", "<<br.y()<<std::endl;
-    std::cout<<"br_t="<<br_t.x()<<", "<<br_t.y()<<std::endl;
-    std::cout<<"br_t_T="<<br_t_t.x()<<", "<<br_t_t.y()<<std::endl;
-    //dumpPoint(std::ostream, "tl=", tl);
-    //dumpPoint(std::ostream, "tl_t=", tl_t);
-    //dumpPoint(std::ostream, "tl_t_t=", tl_t_t);
-    //dumpPoint(std::ostream, "br=", br);
-    //dumpPoint(std::ostream, "br_t=", br_t);
-    //dumpPoint(std::ostream, "br_t_t=", br_t_t);
-
-/*
-    QRectF tlbr_t(tl_t, br_t);
-    QRectF tlbr_t_t(tl_t_t, br_t_t);
-    dumpRect(std::cout, "tlbr_t=",tlbr_t);
-    dumpRect(std::cout, "tlbr_t_t=",tlbr_t_t);
-*/
-    //QPoint tl()
-    std::cout<<std::flush;
-}
-
-
-
-
-
-
-
-
-#include<topsdbmanager.h>
 
 void ProjectViewer::on_actionEdit_Tops_triggered()
 {
@@ -4599,3 +4998,35 @@ void ProjectViewer::on_actionEdit_Tops_triggered()
         std::cerr<<"Exception: "<<ex.what()<<std::endl<<std::flush;
     }
 }
+
+
+void ProjectViewer::on_actiontest_triggered()
+{
+
+    if( !m_project) return;
+
+    Table table("iline", "xline", true);
+
+    for( int il=1; il<=10; il++){
+        for( int xl=11; xl<=20; xl++){
+            for( int j=21; j<=30; j++){
+                table.insert(il,xl,0.001*j);
+            }
+        }
+    }
+
+    //m_project->addTable("test1112", table);
+
+    auto rtable=m_project->loadTable("test1112");
+
+    std::cout<<"size table="<<table.size()<<" rtable="<<rtable->size()<<std::endl<<std::flush;
+
+
+
+}
+
+
+
+
+
+

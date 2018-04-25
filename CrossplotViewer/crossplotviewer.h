@@ -64,7 +64,6 @@ protected:
 public slots:
 
     void setData( crossplot::Data);
-    void setRegion(VolumeDimensions);
     void setDetailedPointInformation(bool);
     void setInlinesSelectable(bool);
     void setCrosslinesSelectable(bool);
@@ -92,6 +91,7 @@ private slots:
     void on_actionCompute_Trend_From_Displayed_Data_triggered();
     void on_actionCompute_Trend_From_Selected_Data_triggered();
     void on_action_Pick_Trend_triggered();
+
     void on_actionSelect_By_Inline_Crossline_Ranges_triggered();
 
     void on_actionAttribute_Colortable_triggered();

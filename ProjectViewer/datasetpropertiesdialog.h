@@ -17,12 +17,14 @@ public:
     ~DatasetPropertiesDialog();
 
     QString name();
+    int dimensions();
     SeismicDatasetInfo::Domain domain();
     SeismicDatasetInfo::Mode mode();
 
 public slots:
 
     void setName(const QString&);
+    void setDimensions(int);
     void setDomain(SeismicDatasetInfo::Domain);
     void setMode(SeismicDatasetInfo::Mode);
 

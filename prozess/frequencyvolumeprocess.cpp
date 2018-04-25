@@ -113,17 +113,18 @@ ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
-        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             #pragma omp parallel for
             for( int k=m_windowSamples/2; k<m_bounds.nt()-m_windowSamples/2; k++){
 
                 auto spectrum=computeSpectrum( &((*m_inputVolume)(i,j,k)), m_windowSamples, bounds.dt() );
                 auto all=integratedPower(spectrum, 0, 1000);
+                if(all<=0) continue;
                 auto area=integratedPower(spectrum, m_minimumFrequency, m_maximumFrequency );
-                (*m_volume)(i, j, k)= area/all;
+                (*m_volume)(i, j, k)=area/all;
 
             }
 

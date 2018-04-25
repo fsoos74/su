@@ -60,6 +60,9 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
     //loadSettings();
 
+    connect( ui->zoomFitWindowAct, SIGNAL(triggered(bool)), this, SLOT(zoomFitWindow()));
+    connect( ui->zoomInAct, SIGNAL(triggered(bool)), this, SLOT(zoomIn()));
+    connect( ui->zoomOutAct, SIGNAL(triggered(bool)), this, SLOT(zoomOut()));
 
     // deactivate zooming controls if scale is locked
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), ui->zoomInAct, SLOT(setDisabled(bool)) );
@@ -78,6 +81,12 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
     setupMouseModes();
 
+    setupGainToolBar();
+
+    gatherView->picker()->setPicks(std::make_shared<Table>());
+    m_picksName = QString();
+    adjustPickActions();
+
     resize( 1024 , 768);
 }
 
@@ -91,6 +100,7 @@ void GatherViewer::populateWindowMenu(){
     ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->mainToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->navigationToolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->gainToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->pickToolBar->toggleViewAction());
 
 }
@@ -101,7 +111,7 @@ void GatherViewer::setupPickMenus(){
     // need to group picker options here because designer does not support this
     QActionGroup* pickModeGroup=new QActionGroup(this);
     pickModeGroup->setExclusive(true);
-    std::array<PickMode,3> modes{PickMode::Single, PickMode::Left, PickMode::Right};
+    std::array<PickMode,5> modes{PickMode::Single, PickMode::Left, PickMode::Right, PickMode::Lines, PickMode::Outline};
     for( PickMode mode : modes){
         QAction* act = new QAction( toQString(mode), this);
         act->setCheckable(true);
@@ -110,6 +120,7 @@ void GatherViewer::setupPickMenus(){
         ui->menuPick_Mode->addAction(act);
         ui->pickToolBar->addAction(act);
         pickModeGroup->addAction(act);
+        m_pickModeActions.insert(mode,act);
     }
 
     QActionGroup* pickTypeGroup=new QActionGroup(this);
@@ -124,6 +135,7 @@ void GatherViewer::setupPickMenus(){
         ui->menuPick_Type->addAction(act);
         ui->pickToolBar->addAction(act);
         pickTypeGroup->addAction(act);
+        m_pickTypeActions.insert(type, act);
     }
 
     // need to group picker options here because designer does not support this
@@ -162,6 +174,29 @@ void GatherViewer::setupMouseModes(){
     // don't zoom on fixed scale
     connect( gatherView, SIGNAL(fixedScaleChanged(bool)), mm->button(MouseMode::Zoom), SLOT(setDisabled(bool)) );
 
+}
+
+void GatherViewer::setupGainToolBar(){
+    auto widget=new QWidget(this);
+    auto label2=new QLabel(tr("AGC:"));
+    auto sbAGC=new QSpinBox;
+    auto label1=new QLabel(tr("Gain:"));
+    auto sbGain=new QDoubleSpinBox();
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label1);
+    layout->addWidget(sbGain);
+    layout->addWidget(label2);
+    layout->addWidget(sbAGC);
+    widget->setLayout(layout);
+    ui->gainToolBar->addWidget(widget);
+    connect(sbGain, SIGNAL(valueChanged(double)), ui->gatherView->gatherScaler(), SLOT(setFixedScaleFactor(qreal)));
+    connect(ui->gatherView->gatherScaler(), SIGNAL(fixedScaleFactorChanged(qreal)), sbGain, SLOT(setValue(double)));
+    connect(sbAGC, SIGNAL(valueChanged(int)), this, SLOT(setAGCLen(int)) );
+
+    sbGain->setRange(0,1000);
+    sbGain->setValue(ui->gatherView->gatherScaler()->fixedScaleFactor());
+    sbAGC->setRange(0, 9999);
+    sbAGC->setValue(m_agcLen);
 }
 
 GatherViewer::~GatherViewer()
@@ -231,17 +266,30 @@ void GatherViewer::receivePoints(QVector<SelectionPoint> points, int code){
 
 }
 
-void GatherViewer::zoomFitWindow(){
-    ui->zoomFitWindowAct->trigger();
+void GatherViewer::zoomIn(){
+    gatherView->zoomBy(1.25);
 }
+
+void GatherViewer::zoomOut(){
+    gatherView->zoomBy(0.8);
+}
+
+
+void GatherViewer::zoomFitWindow(){
+    gatherView->normalize();
+}
+
+#include<agc.h>
 
  void GatherViewer::setGather( std::shared_ptr<seismic::Gather> gather){
 
      if( gather==m_gather ) return;
 
+     if( !gather ) return;
+
      m_gather=gather;
 
-     gatherView->setGather(m_gather);
+     applyAGC();
 
      gatherView->setIntersectionTraces( computeIntersections() );
 
@@ -250,13 +298,34 @@ void GatherViewer::zoomFitWindow(){
     emit gatherChanged();
  }
 
+ void GatherViewer::setAGCLen(int len){
+
+     if( len==m_agcLen ) return;
+
+     m_agcLen=len;
+
+     applyAGC();
+ }
+
+ void GatherViewer::applyAGC(){
+
+     if( m_agcLen && m_gather){
+
+         auto agcg=seismic::agc(*m_gather,m_agcLen);
+         gatherView->setGather(agcg);
+     }
+     else{
+         gatherView->setGather(m_gather);
+     }
+ }
+
  void GatherViewer::setProject( AVOProject* project){
 
      if( project==m_project ) return;
 
      m_project=project;
 
-     ui->action_New_Picks->trigger();   // create empty picks grid for this project
+     //ui->action_New_Picks->trigger();   // create empty picks grid for this project
 
     emit projectChanged();
 
@@ -395,21 +464,6 @@ void GatherViewer::on_actionSet_Scale_triggered()
     }
 
     sectionScaleDialog->show();
-}
-
-void GatherViewer::on_zoomInAct_triggered()
-{
-    gatherView->zoomBy(1.25);
-}
-
-void GatherViewer::on_zoomOutAct_triggered()
-{
-    gatherView->zoomBy(0.8);
-}
-
-void GatherViewer::on_zoomFitWindowAct_triggered()
-{
-    gatherView->normalize();
 }
 
 void GatherViewer::onMouseOver(int trace, qreal secs){
@@ -730,19 +784,25 @@ void GatherViewer::on_action_Load_Picks_triggered()
     if( !picksSaved()) return;
 
     bool ok=false;
-    QString gridName=QInputDialog::getItem(this, "Open Picks", "Please select a Grid:",
-                                           m_project->gridList(GridType::Other), 0, false, &ok);
+    QString name=QInputDialog::getItem(this, "Open Picks", "Please select a Table:",
+                                           m_project->tableList(), 0, false, &ok);
 
-    if( !gridName.isEmpty() && ok ){
+    if( name.isEmpty() || !ok ) return;
 
-        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Other, gridName );
+    auto picks=m_project->loadTable(name );
 
-        gatherView->picker()->setPicks(grid);
-
-        m_picksGridName = gridName;
+    if( !picks){
+        QMessageBox::critical(this, "Load Picks", "Loading Picks failed!", QMessageBox::Ok);
+        return;
     }
 
+    auto picker=gatherView->picker();
+    picker->setPicks(picks);
+
+    m_picksName = name;
+    adjustPickActions();
 }
+
 
 void GatherViewer::on_action_Close_Picks_triggered()
 {
@@ -750,8 +810,9 @@ void GatherViewer::on_action_Close_Picks_triggered()
 
     if( !picksSaved()) return;
 
-    gatherView->picker()->setPicks(std::shared_ptr<Grid2D<float>>());
-    m_picksGridName = QString();
+    gatherView->picker()->setPicks(std::make_shared<Table>());
+    m_picksName = QString();
+    adjustPickActions();
 }
 
 void GatherViewer::on_action_Save_Picks_triggered()
@@ -759,17 +820,17 @@ void GatherViewer::on_action_Save_Picks_triggered()
     if( !m_project ) return;
 
 
-    if( m_picksGridName.isEmpty()){
+    if( m_picksName.isEmpty()){
 
         // input non-existing name
         for(;;){
 
-            QString name = QInputDialog::getText(this, tr("Save Picks"), tr("Pick Grid Name:") );
+            QString name = QInputDialog::getText(this, tr("Save Picks"), tr("Pick Table Name:") );
 
             if( name.isNull() ) return; // canceled
 
-            if( ! m_project->gridList(GridType::Other).contains(name)){
-                m_picksGridName=name;
+            if( ! m_project->tableList().contains(name)){
+                m_picksName=name;
                 break;
             }
 
@@ -777,8 +838,8 @@ void GatherViewer::on_action_Save_Picks_triggered()
         }
     }
 
-    if(  m_project->gridList(GridType::Other).contains(m_picksGridName)){
-        if( m_project->saveGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
+    if(  m_project->tableList().contains(m_picksName)){
+        if( m_project->saveTable(m_picksName, *(gatherView->picker()->picks()) ) ){
             gatherView->picker()->setDirty(false);
         }
         else{
@@ -786,7 +847,7 @@ void GatherViewer::on_action_Save_Picks_triggered()
         }
     }
     else{
-        if( m_project->addGrid(GridType::Other, m_picksGridName, gatherView->picker()->picks() ) ){
+        if( m_project->addTable(m_picksName, *(gatherView->picker()->picks()) ) ){
             gatherView->picker()->setDirty(false);
         }
         else{
@@ -804,15 +865,45 @@ void GatherViewer::on_action_New_Picks_triggered()
 
     if( !picksSaved()) return;
 
-    // create empty grid (filled with NULL) for entire project geometry
-    QRect bb=m_project->geometry().bboxLines();
-    Grid2DBounds bounds(bb.x(), bb.y(), bb.x()+bb.width()-1, bb.y()+bb.height()-1);
-    std::shared_ptr<Grid2D<float>> g(new Grid2D<float>(bounds));
+    bool ok=false;
+    QStringList choices;
+    choices<<"one pick per cdp"<<"multiple picks per cdp";
+    QString choice=QInputDialog::getItem(this, "New Picks", "Select Table Type:", choices, 0, false, &ok);
+    if( choice.isEmpty()  || !ok) return;
 
-    m_picksGridName=QString();  // empty name for new grid
-    gatherView->picker()->setPicks(g);
+    bool multi= (choice == choices[1]);
+
+    gatherView->picker()->newPicks("iline", "xline", multi);
+    m_picksName=QString();  // empty name for new grid
+    adjustPickActions();
 }
 
+
+void GatherViewer::adjustPickActions(){
+
+    auto picker=gatherView->picker();
+    if(!picker) return;
+    if(!picker->picks()) return;
+    auto multi=picker->picks()->isMulti();
+
+    if(multi){
+        m_pickModeActions.value(PickMode::Single)->trigger();
+        m_pickTypeActions.value(PickType::Free)->trigger();
+    }
+    else{   // single pick per cdp
+        m_pickModeActions.value(PickMode::Single)->trigger();
+        m_pickTypeActions.value(PickType::Free)->trigger();
+    }
+
+    m_pickModeActions.value(PickMode::Left)->setEnabled(!multi);
+    m_pickModeActions.value(PickMode::Right)->setEnabled(!multi);
+    m_pickModeActions.value(PickMode::Outline)->setEnabled(multi);
+
+    m_pickTypeActions.value(PickType::Maximum)->setEnabled(!multi);
+    m_pickTypeActions.value(PickType::Minimum)->setEnabled(!multi);
+    m_pickTypeActions.value(PickType::Zero)->setEnabled(!multi);
+
+}
 
 void GatherViewer::pickModeSelected(QAction * a){
 
@@ -855,6 +946,23 @@ void GatherViewer::leaveEvent(QEvent *){
     QString msg=createStatusMessage(-1, 0);
     statusBar()->showMessage(msg);
     sendPoint( SelectionPoint::NONE, PointCode::VIEWER_CURRENT_CDP );
+}
+
+void GatherViewer::keyPressEvent(QKeyEvent * event){
+
+    std::cout<<"GatherViewer::keyPressEvent"<<std::endl<<std::flush;
+
+    switch(event->key()){
+    case Qt::Key_F: emit firstRequested(); break;
+    case Qt::Key_L: emit lastRequested(); break;
+    case Qt::Key_N: emit nextRequested(); break;
+    case Qt::Key_P: emit previousRequested(); break;
+    case Qt::Key_Plus: zoomIn(); break;
+    case Qt::Key_Minus: zoomOut(); break;
+    case Qt::Key_0: zoomFitWindow(); break;
+    default: break;
+    }
+    event->accept();
 }
 
 void GatherViewer::saveSettings(){
@@ -987,6 +1095,31 @@ void GatherViewer::on_action_Point_Display_Options_triggered()
 }
 
 
+void GatherViewer::on_actionPick_Display_Options_triggered()
+{
+    if( !m_pickDisplayOptionsDialog){
+
+        m_pickDisplayOptionsDialog=new PointDisplayOptionsDialog(this);
+        m_pickDisplayOptionsDialog->setWindowTitle("Configure Pick Display");
+
+        GatherLabel* gatherLabel=gatherView->gatherLabel();
+
+        m_pickDisplayOptionsDialog->setPointSize( gatherLabel->pickSize());
+        m_pickDisplayOptionsDialog->setPointColor( gatherLabel->pickColor());
+        m_pickDisplayOptionsDialog->setOpacity( gatherLabel->pickOpacity());
+
+        connect( m_pickDisplayOptionsDialog, SIGNAL( pointSizeChanged(int)),
+                 gatherLabel, SLOT(setPickSize(int)) );
+        connect( m_pickDisplayOptionsDialog, SIGNAL( opacityChanged(int)),
+                 gatherLabel, SLOT(setPickOpacity(int)) );
+        connect( m_pickDisplayOptionsDialog, SIGNAL(pointColorChanged(QColor)),
+                 gatherLabel, SLOT(setPickColor(QColor)) );
+    }
+
+    m_pickDisplayOptionsDialog->show();
+}
+
+
 void GatherViewer::updateIntersections(){
 
     QVector<SelectionPoint> allTraces;
@@ -1095,5 +1228,6 @@ bool GatherViewer::picksSaved(){
                                         QMessageBox::Yes | QMessageBox::No );
     return reply == QMessageBox::Yes;
 }
+
 
 

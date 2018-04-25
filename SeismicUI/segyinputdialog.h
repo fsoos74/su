@@ -42,11 +42,21 @@ public:
         return m_info;
     }
 
+    bool is3D()const{
+        return m_3d;
+    }
+
+    bool isPrestack()const{
+        return m_prestack;
+    }
+
     QString path()const;
 
 public slots:
 
     void setInfo(const seismic::SEGYInfo& info);
+    void setPrestack(bool);
+    void set3D(bool);
 
 protected:
 
@@ -113,6 +123,8 @@ private:
 
     bool m_updateReaderParamsEnabled=true;
     bool m_infoDirty=false;
+    bool m_3d=true;
+    bool m_prestack=true;
 
 };
 

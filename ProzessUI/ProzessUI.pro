@@ -64,7 +64,16 @@ SOURCES += prozessui.cpp \
     smoothlogdialog.cpp \
     logintegrationdialog.cpp \
     volumedipdialog.cpp \
-    importmarkersdialog.cpp
+    importmarkersdialog.cpp \
+    fmcdp2ddialog.cpp \
+    dipscandialog.cpp \
+    nnloginterpolationdialog.cpp \
+    nnlogdialog.cpp \
+    vshaledialog.cpp \
+    exportlogdialog.cpp \
+    punchoutvolumedialog.cpp \
+    horizontotopdialog.cpp \
+    tabletohorizondialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -112,7 +121,16 @@ HEADERS += prozessui.h\
     smoothlogdialog.h \
     logintegrationdialog.h \
     volumedipdialog.h \
-    importmarkersdialog.h
+    importmarkersdialog.h \
+    fmcdp2ddialog.h \
+    dipscandialog.h \
+    nnloginterpolationdialog.h \
+    nnlogdialog.h \
+    vshaledialog.h \
+    exportlogdialog.h \
+    punchoutvolumedialog.h \
+    horizontotopdialog.h \
+    tabletohorizondialog.h
 
 unix {
     target.path = /usr/lib
@@ -163,7 +181,16 @@ FORMS += \
     smoothlogdialog.ui \
     logintegrationdialog.ui \
     volumedipdialog.ui \
-    importmarkersdialog.ui
+    importmarkersdialog.ui \
+    fmcdp2ddialog.ui \
+    dipscandialog.ui \
+    nnloginterpolationdialog.ui \
+    nnlogdialog.ui \
+    vshaledialog.ui \
+    exportlogdialog.ui \
+    punchoutvolumedialog.ui \
+    horizontotopdialog.ui \
+    tabletohorizondialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

@@ -20,6 +20,7 @@
 #include<QScrollBar>
 #include <QPushButton>
 #include<memory>
+#include <dynamicmousemodeselector.h>
 
 namespace Ui {
 class LogViewer;
@@ -33,6 +34,7 @@ public:
 
     enum TrackLabelMode{ UWI=0, WELL_NAME};
     enum FlattenMode{ FLATTEN_NONE=0, FLATTEN_HORIZON, FLATTEN_TOP};
+    enum PickMode{ PICK_TOPS, PICK_LOG};
 
     explicit LogViewer(QWidget *parent = 0);
     ~LogViewer();
@@ -52,10 +54,13 @@ public slots:
     void removeLog(QString);
     void setZMode(ZMode);
     void setZMode(QString);
-    void setFlattenMode(int);
+    void setFlattenMode(FlattenMode);
+    void setFlattenMode(QString);
     void setFlattenSource(QString);
     void setFilterLen(int);
     void setTrackLabelMode(int);
+    void setPickMode(PickMode);
+    void setPickMode(QString);
 
 signals:
     void filterLenChanged(int);
@@ -69,6 +74,7 @@ protected:
     void resizeEvent(QResizeEvent *)override;
 
 private slots:
+
     void on_action_Add_Log_triggered();
     void on_actionAdd_Logs_by_Log_triggered();
     void on_action_Remove_Log_triggered();
@@ -78,19 +84,22 @@ private slots:
     void onXCursorChanged(qreal);
     void onZCursorChanged(qreal);
     void onTrackLabelMoved(QPoint);
+    void onAddTrackLog();
+    void onRemoveTrackLog();
+    void onTrackColors();
+    void onShrinkTrack();
+    void onGrowTrack();
     void onCloseTrack();
     void onTrackPointSelected(QPointF);
-
-    //void on_action_Open_Horizon_triggered();
-    //void on_action_Close_Horizon_triggered();
     void on_actionSort_By_Log_triggered();
     void on_actionSort_By_Well_triggered();
     void on_actionSetup_Horizons_triggered();
     void on_actionSetup_Tops_triggered();
-
+    void runTrackViewContextMenu(QPoint);
 
 private:
 
+    void setupMouseModes();
     QString trackLabelText(const WellInfo&, const Log&);
     qreal intersect(const Grid2D<float>& h, const WellPath& wp);
     void updateTrackLabels();
@@ -103,13 +112,17 @@ private:
     void setupZModeToolbar();
     void setupFlattenToolbar();
     void setupFilterToolbar();
+    void setupPickingToolbar();
+    void updateTrackPickMode(TrackView* tv);
 
     Ui::LogViewer *ui;
+    DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
     QWidget* m_tracksAreaWidget;
     QComboBox* m_cbZMode;
     QComboBox* m_cbFlattenMode;
     QComboBox* m_cbFlattenSource;
     QSpinBox* m_sbFilterLen;
+    QComboBox* m_cbPickMode;
 
     Axis* m_zAxis=nullptr;
     QLayout* m_tracksLayout=nullptr;
@@ -119,6 +132,7 @@ private:
     QString m_flattenSource;
     int m_filterLen=0;
     int m_trackLabelMode=TrackLabelMode::UWI;
+    PickMode m_PickMode=PickMode::PICK_LOG;
 
     QMap<QString, std::shared_ptr<Grid2D<float>>> m_horizons;
     QVector<std::shared_ptr<WellMarkers>> m_markers;
@@ -128,7 +142,12 @@ private:
     QVector<TrackLabel*> m_trackLabels;
     QVector<QLabel*> m_trackValueLabels;
     QVector<HScaleView*> m_trackScaleViews;
+    QVector<QPushButton*> m_shrinkButtons;
+    QVector<QPushButton*> m_growButtons;
     QVector<QPushButton*> m_closeButtons;
+    QVector<QPushButton*> m_addButtons;
+    QVector<QPushButton*> m_removeButtons;
+    QVector<QPushButton*> m_colorButtons;
     VScaleView* m_vscaleView=nullptr;
     QScrollBar* m_verticalScrollBar=nullptr;
     QFont m_labelFont = QFont("Helvetica [Cronyx]", 10, QFont::Bold);

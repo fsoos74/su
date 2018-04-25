@@ -165,6 +165,23 @@ void GatherLabel::setVolumeOpacity(int o){
     updateBuffers();
 }
 
+void GatherLabel::setPickSize(int s){
+    if( s==m_pickSize) return;
+    m_pickSize=s;
+    updateBuffers();
+}
+
+void GatherLabel::setPickColor(QColor c){
+    if(c==m_pickColor) return;
+    m_pickColor=c;
+    updateBuffers();
+}
+
+void GatherLabel::setPickOpacity(int o){
+    if(o==m_pickOpacity) return;
+    m_pickOpacity=o;
+    updateBuffers();
+}
 
 void GatherLabel::onViewGatherChanged(std::shared_ptr<seismic::Gather>){
 
@@ -224,7 +241,9 @@ void GatherLabel::paintEvent(QPaintEvent *event){
 
    drawIntersectionTimes( painter, m_view->intersectionTimes() );
 
-   drawPicks( painter, m_view->picker()->picks() );
+   drawPicks( painter, m_view->picker()->picks().get() );
+
+   drawPickerBuffer( painter, m_view->picker()->bufferedPoints());
 
    SelectionPoint sp=m_view->cursorPosition();
    drawViewerCurrentPosition( painter, sp);
@@ -306,9 +325,9 @@ void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> 
 }
 
 
-void GatherLabel::drawPicks(QPainter &painter, std::shared_ptr<Grid2D<float>> picks){
+void GatherLabel::drawPicks(QPainter &painter, Table* picks){
 
-    const int PICK_SIZE=3;
+    const int PICK_SIZE=m_pickSize;
 
     if( !picks ) return;
 
@@ -317,7 +336,13 @@ void GatherLabel::drawPicks(QPainter &painter, std::shared_ptr<Grid2D<float>> pi
 
     painter.save();
 
-    painter.setPen(QPen(Qt::blue,2));
+    //painter.setPen(QPen(Qt::blue,2));
+    QColor color(m_pickColor);
+    color.setAlphaF(0.01*m_pickOpacity);
+    QPen thePen(color, 2);
+
+    painter.setPen(thePen);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
     qreal pixelPerTrace=m_view->pixelPerTrace();
     qreal pixelPerSecond=m_view->pixelPerSecond();
@@ -329,36 +354,63 @@ void GatherLabel::drawPicks(QPainter &painter, std::shared_ptr<Grid2D<float>> pi
        const seismic::Header& header=trace.header();
        int iline=header.at("iline").intValue();
        int xline=header.at("xline").intValue();
-       qreal t=picks->bounds().isInside(iline,xline) ?           // need to check this here because it is not checked in grid
-                   (*picks)( iline, xline ) : picks->NULL_VALUE;  // maybe add a getValue function to grid that includes this check
+       auto points=picks->values(iline,xline);
+       for( auto t : points ){
+           qreal x= (0.5 + i ) * pixelPerTrace;     // draw pick in midle of trace box
+           qreal y= ( t - ft )*pixelPerSecond;
+           //* display picks in middle of trace now because picking is also related to the closest trace center
+           // make picks show on wiggle
+           qreal s = ( t - trace.ft() ) / trace.dt();
+           qreal val=0;
+           int si = static_cast<int>(s);
+           if( si<0 ) val = trace.samples().front();
+           else if( si+1>=trace.samples().size() ) val= trace.samples().back();
+           else{    // interpolate
+               s-= si;
+               val=(1.-s)*trace.samples()[si] + s*trace.samples()[i];
+           }
+           x+= pixelPerTrace/2 * traceScaleFactors[i]*val;
+            //*/
 
-       if( t==picks->NULL_VALUE) continue;
-
-       t*=0.001; // test hrz was mills change!!!
-       qreal x= (0.5 + i ) * pixelPerTrace;     // draw pick in midle of trace box
-       qreal y= ( t - ft )*pixelPerSecond;
-
-       //* display picks in middle of trace now because picking is also related to the closest trace center
-       // make picks show on wiggle
-       qreal s = ( t - trace.ft() ) / trace.dt();
-       qreal val=0;
-       int si = static_cast<int>(s);
-       if( si<0 ) val = trace.samples().front();
-       else if( si+1>=trace.samples().size() ) val= trace.samples().back();
-       else{    // interpolate
-           s-= si;
-           val=(1.-s)*trace.samples()[si] + s*trace.samples()[i];
-       }
-       x+= pixelPerTrace/2 * traceScaleFactors[i]*val;
-        //*/
-
-       painter.drawLine( x - PICK_SIZE, y - PICK_SIZE, x + PICK_SIZE, y + PICK_SIZE );
-       painter.drawLine( x + PICK_SIZE, y - PICK_SIZE, x - PICK_SIZE, y + PICK_SIZE );
+           painter.drawLine( x - PICK_SIZE, y - PICK_SIZE, x + PICK_SIZE, y + PICK_SIZE );
+           painter.drawLine( x + PICK_SIZE, y - PICK_SIZE, x - PICK_SIZE, y + PICK_SIZE );
+        }
    }
 
     painter.restore();
 }
 
+void GatherLabel::drawPickerBuffer( QPainter& painter, std::vector<std::pair<int,float>> points){
+    const int PICK_SIZE=5;
+
+    painter.save();
+
+    QPen pen(Qt::red,2);
+    pen.setCosmetic(true);
+    painter.setPen(pen);
+    painter.setBrush(Qt::red);
+
+    qreal pixelPerTrace=m_view->pixelPerTrace();
+    qreal pixelPerSecond=m_view->pixelPerSecond();
+    qreal ft=m_view->ft();
+    QVector<QPointF> pp;
+
+    for(int i=0; i<points.size(); i++){
+        auto p=points[i];
+        auto trace=p.first;
+        auto secs=p.second;
+        qreal x= (0.5 + trace ) * pixelPerTrace;     // draw pick in midle of trace box
+        qreal y= ( secs - ft )*pixelPerSecond;
+        pp.push_back(QPointF(x,y));
+    }
+
+    for( int i=0; i<pp.size(); i++){
+        painter.drawRect( pp[i].x() - PICK_SIZE/2, pp[i].y() - PICK_SIZE/2, PICK_SIZE, PICK_SIZE );
+        if( i>0 ) painter.drawLine(pp[i-1].x(), pp[i-1].y(), pp[i].x(), pp[i].y());
+    }
+
+    painter.restore();
+}
 
 void GatherLabel::drawHighlightedPoints( QPainter& painter,
                                          const QVector<SelectionPoint>& points){
@@ -736,6 +788,7 @@ void GatherLabel::updateTracePaths(){
 
 }
 
+
 void GatherLabel::updateDensityPlot(){
 
     Q_ASSERT( m_view );
@@ -757,11 +810,7 @@ void GatherLabel::updateDensityPlot(){
         const seismic::Trace::Samples& samples=gather[j].samples();
         qreal factor=traceScaleFactors[j];
         for( size_t i=0; i<samples.size(); i++ ){
-/*
-            qreal amp=127 + 128*factor*samples[i];
-            if( amp<0) amp=0;
-            if( amp>255 ) amp=255;
-*/
+
             ColorTable::color_type color=colorTable->map(factor * samples[i]);
 
             image.setPixel( j, i, color);//qRgba( qRed(color), qGreen(color), qBlue(color), a ) );// color);

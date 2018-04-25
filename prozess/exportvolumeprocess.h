@@ -26,6 +26,7 @@ private:
 
     QString m_outputFilename;
     QString m_volumeName;
+    float m_nullValue;
 
     int m_minInline;
     int m_maxInline;

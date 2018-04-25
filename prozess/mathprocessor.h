@@ -9,7 +9,8 @@ class MathProcessor
 {
 public:
 
-    enum class OP{ SET_V, SET_G1, SET_G2, ADD_GV, SUB_GV, MUL_GV, DIV_GV, POW_GV, ADD_GG, SUB_GG, MUL_GG, DIV_GG, ADD_MUL_GVG, NORM_GG };
+    enum class OP{ SET_V, SET_G1, SET_G2, ADD_GV, SUB_GV, MUL_GV, DIV_GV, POW_GV,DIV_VG, POW_VG,
+                   ADD_GG, SUB_GG, MUL_GG, DIV_GG, ADD_MUL_GVG, NORM_GG, REL_DIFF_GG };
 
     static const double NULL_VALUE;
 
@@ -57,12 +58,15 @@ private:
     double mul_gv();
     double div_gv();
     double pow_gv();
+    double div_vg();
+    double pow_vg();
     double add_gg();
     double sub_gg();
     double mul_gg();
     double div_gg();
     double add_mul_gvg();
     double norm_gg();
+    double rel_diff_gg();
     void updateFunc();
 
     OP m_op;

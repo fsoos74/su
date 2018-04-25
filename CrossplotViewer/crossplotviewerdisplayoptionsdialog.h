@@ -2,6 +2,8 @@
 #define CROSSPLOTVIEWERDISPLAYOPTIONSDIALOG_H
 
 #include <QDialog>
+#include <crossplotview.h> // Symbol
+
 
 namespace Ui {
 class CrossplotViewerDisplayOptionsDialog;
@@ -15,27 +17,30 @@ public:
     explicit CrossplotViewerDisplayOptionsDialog(QWidget *parent = 0);
     ~CrossplotViewerDisplayOptionsDialog();
 
-    int datapointSize();
+    int pointSize();
     bool isFixedColor();
     QColor pointColor();
+    CrossplotView::Symbol pointSymbol();
     QColor trendlineColor();
 
 public slots:
-    void setDatapointSize(int);
+    void setPointSize(int);
     void setFixedColor(bool);
     void setPointColor(QColor);
+    void setPointSymbol(CrossplotView::Symbol);
     void setTrendlineColor(QColor);
 
 signals:
-    void datapointSizeChanged(int);
+    void pointSizeChanged(int);
+    void pointSymbolChanged(CrossplotView::Symbol);
     void fixedColorChanged(bool);
     void pointColorChanged(QColor);
     void trendlineColorChanged(QColor);
 
 private slots:
     void on_cbFixColor_clicked();
-
     void on_cbTrendlineColor_clicked();
+    void on_cbSymbol_currentIndexChanged(const QString &arg1);
 
 private:
 

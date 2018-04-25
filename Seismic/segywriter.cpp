@@ -60,7 +60,7 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
             }
         }
     }
-    //std::cout<<"SEGYWriter coordfac="<<coordfac<<std::endl<<std::flush;
+
 
     for( auto def : defs ){
 
@@ -262,7 +262,7 @@ void SEGYWriter::convert_header( std::vector<char>& rhdr, const Header& header, 
                 }
         }
     }
-
+    //std::cout<<"Finished converting header"<<std::endl<<std::flush;
 }
 
 
@@ -383,12 +383,12 @@ void SEGYWriter::write_trace(const Trace& trace){
     // replace copies?
     m_trace_header=trace.header();
 
-    // write start time as recording delay
+    // write start time as recording delay, maybe add this to dataset writer
     m_trace_header["delrt"]=HeaderValue::makeIntValue(1000*trace.ft()); // XXX
 
     convert_trace_header();
     write_trace_header();
-//std::<<"NT="<<trace.size()<<std::endl<<std::flush;
+
     convert_samples(trace);
     write_samples(trace.size());
 

@@ -17,11 +17,17 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QScrollArea" name="tracksArea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOff</enum>
       </property>
       <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAsNeeded</enum>
+       <enum>Qt::ScrollBarAlwaysOn</enum>
       </property>
       <property name="widgetResizable">
        <bool>true</bool>
@@ -32,7 +38,7 @@
          <x>0</x>
          <y>0</y>
          <width>254</width>
-         <height>532</height>
+         <height>518</height>
         </rect>
        </property>
       </widget>
@@ -96,6 +102,17 @@
    <addaction name="menu_Broadcast"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="mouseToolBar">
+   <property name="windowTitle">
+    <string>toolBar_2</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
@@ -106,6 +123,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionAdd_Logs_by_Log"/>
+   <addaction name="action_Add_Log"/>
+   <addaction name="separator"/>
    <addaction name="action_Receive"/>
    <addaction name="action_Send"/>
   </widget>
@@ -118,6 +138,10 @@
    </property>
   </action>
   <action name="action_Add_Log">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/add-by-well-32x32.png</normaloff>:/icons/images/add-by-well-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>&amp;Add Logs by Well</string>
    </property>
@@ -177,6 +201,10 @@
    </property>
   </action>
   <action name="actionAdd_Logs_by_Log">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/add-by-log-32x32.png</normaloff>:/icons/images/add-by-log-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Add &amp;Logs by Log</string>
    </property>

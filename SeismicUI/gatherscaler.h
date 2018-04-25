@@ -33,11 +33,12 @@ public slots:
 
 signals:
     void changed();
+    void fixedScaleFactorChanged(qreal);
 
 private:
 
 
-    Mode m_mode=Mode::Individual;
+    Mode m_mode=Mode::Entire; // Mode::Individual;
 
     qreal m_fixedScaleFactor=2.5;
 

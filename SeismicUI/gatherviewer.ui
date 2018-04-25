@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>789</width>
+    <width>980</width>
     <height>421</height>
    </rect>
   </property>
@@ -36,7 +36,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>789</width>
+     <width>980</width>
      <height>25</height>
     </rect>
    </property>
@@ -86,6 +86,7 @@
     <addaction name="action_Trace_Options"/>
     <addaction name="actionVolume_Options"/>
     <addaction name="action_Point_Display_Options"/>
+    <addaction name="actionPick_Display_Options"/>
     <addaction name="actionDensity_Color_Table"/>
     <addaction name="actionVolume_Color_Table"/>
     <addaction name="actionGather_Histogram"/>
@@ -201,6 +202,7 @@
    <addaction name="actionVolume_Histogram"/>
    <addaction name="separator"/>
    <addaction name="action_Point_Display_Options"/>
+   <addaction name="actionPick_Display_Options"/>
    <addaction name="separator"/>
    <addaction name="action_Receive_CDPs"/>
    <addaction name="action_Dispatch_CDPs"/>
@@ -237,6 +239,17 @@
    </attribute>
    <addaction name="separator"/>
   </widget>
+  <widget class="QToolBar" name="gainToolBar">
+   <property name="windowTitle">
+    <string>Gain Toolbar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>BottomToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
   <action name="exitAct">
    <property name="text">
     <string>E&amp;xit</string>
@@ -247,7 +260,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -259,7 +272,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="icons.qrc">
+    <iconset resource="../ProjectViewer/icons.qrc">
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -554,6 +567,15 @@
     <string>Set Search &amp;Window</string>
    </property>
   </action>
+  <action name="actionPick_Display_Options">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/pick-display-options-icon-32x32.png</normaloff>:/images/pick-display-options-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>P&amp;ick Display Options</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -565,7 +587,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="icons.qrc"/>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>
  <connections>

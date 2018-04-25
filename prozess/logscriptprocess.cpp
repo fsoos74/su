@@ -169,6 +169,27 @@ ProjectProcess::ResultCode LogScriptProcess::processWell(QString well){
 
     // finally run script / iterate
 
+    // add common variables for execution envronment
+    // define environment before running the script - vars can be accessed on startup
+
+    auto mainModule=Python::mainModule;
+
+    PyObject* NULL_VALUE=PyFloat_FromDouble(m_log->NULL_VALUE);
+    if( NULL_VALUE==NULL || -1==PyObject_SetAttrString(mainModule,"NULL", NULL_VALUE) ){
+            throw std::runtime_error("Adding execution environment variable failed!");
+    }
+
+    PyObject* dz=PyFloat_FromDouble(m_log->dz());
+    if( dz==NULL || -1==PyObject_SetAttrString(mainModule,"DZ", dz) ){
+            throw std::runtime_error("Adding execution environment variable failed!");
+    }
+
+    PyObject* nz=PyInt_FromLong(m_log->nz());
+    if( nz==NULL || -1==PyObject_SetAttrString(mainModule,"NZ", nz) ){
+            throw std::runtime_error("Adding execution environment variable failed!");
+    }
+
+
     for( int i=0; i<m_log->nz(); i++){
 
 

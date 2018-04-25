@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>456</width>
-    <height>496</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -53,13 +53,6 @@
      <item row="6" column="1">
       <widget class="QComboBox" name="cbInput"/>
      </item>
-     <item row="8" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Start Value:</string>
-       </property>
-      </widget>
-     </item>
      <item row="4" column="1">
       <widget class="QLineEdit" name="leUnit"/>
      </item>
@@ -81,13 +74,6 @@
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Method:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QLineEdit" name="leValue">
-       <property name="text">
-        <string>0.0</string>
        </property>
       </widget>
      </item>

@@ -12,7 +12,9 @@ QMap<SmoothProcessor::OP, QString> op_name_lookup{
     {SmoothProcessor::OP::MEAN, "Mean"},
     {SmoothProcessor::OP::MEAN80, "Trimmed Mean 80 Percent"},
     {SmoothProcessor::OP::MEAN_DISTANCE_WEIGHTED, "Distance Weighted Mean"},
-    {SmoothProcessor::OP::MEDIAN, "Median"} };
+    {SmoothProcessor::OP::MEDIAN, "Median"},
+    {SmoothProcessor::OP::MINIMUM, "Minimum"},
+    {SmoothProcessor::OP::MAXIMUM, "Maximum"}};
 }
 
 QString SmoothProcessor::toQString(OP op){
@@ -127,11 +129,31 @@ double SmoothProcessor::median(){
     return *it;
 }
 
+double SmoothProcessor::minimum(){
+    double min=std::numeric_limits<double>::max();
+    for( auto d : m_data ){
+        if( d.first!=m_inputNullValue && d.first<min ) min=d.first;
+    }
+
+    return min;
+}
+
+double SmoothProcessor::maximum(){
+    double max=std::numeric_limits<double>::lowest();
+    for( auto d : m_data ){
+        if( d.first!=m_inputNullValue && d.first>max ) max=d.first;
+    }
+
+    return max;
+}
+
 void SmoothProcessor::updateFunc(){
     switch(m_op){
         case OP::MEAN: m_func= std::bind(&SmoothProcessor::mean, this); break;
         case OP::MEAN80: m_func= std::bind(&SmoothProcessor::mean_80, this); break;
         case OP::MEAN_DISTANCE_WEIGHTED: m_func= std::bind(&SmoothProcessor::mean_distance_weighted, this); break;
         case OP::MEDIAN: m_func= std::bind(&SmoothProcessor::median, this); break;
+        case OP::MINIMUM: m_func= std::bind(&SmoothProcessor::minimum, this); break;
+        case OP::MAXIMUM: m_func= std::bind(&SmoothProcessor::maximum, this); break;
     };
 }

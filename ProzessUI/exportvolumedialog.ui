@@ -6,35 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>382</height>
+    <width>416</width>
+    <height>407</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Export Volume</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Volume:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="cbVolume">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -55,6 +34,41 @@
       <widget class="QPushButton" name="pbBrowse">
        <property name="text">
         <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Volume:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cbVolume">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>NULL Value:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="leNULL">
+       <property name="text">
+        <string>0.0</string>
        </property>
       </widget>
      </item>
@@ -181,6 +195,11 @@
     </widget>
    </item>
   </layout>
+  <zorder>cbRestrictVolume</zorder>
+  <zorder>buttonBox</zorder>
+  <zorder>label_8</zorder>
+  <zorder>label</zorder>
+  <zorder>leNULL</zorder>
  </widget>
  <resources/>
  <connections>

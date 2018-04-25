@@ -59,6 +59,7 @@ GatherView::GatherView( QWidget* parent) : QScrollArea(parent)
       // setup picker
       m_picker=new Picker(this);
       connect( m_picker, SIGNAL(picksChanged()), gatherLabel(), SLOT(update()) );
+      connect( m_picker, SIGNAL(bufferedPointsChanged()), gatherLabel(), SLOT(update()) );
       connect( this, SIGNAL(gatherChanged(std::shared_ptr<seismic::Gather>)), m_picker, SLOT(setGather(std::shared_ptr<seismic::Gather>)) );
 
 }
@@ -138,22 +139,16 @@ void GatherView::buildTraceLookup(){
 
     for( int i=0; i<m_gather->size(); i++){
 
-        int iline=(*m_gather)[i].header().at("iline").intValue();
-        int xline=(*m_gather)[i].header().at("xline").intValue();
-
-        QString key=QString("%1_%2").arg(iline).arg(xline);
-
+        auto const& header=(*m_gather)[i].header();
+        if(header.find("iline")==header.end()) continue;
+        int iline=header.at("iline").intValue();
+        if(header.find("xline")==header.end()) continue;
+        int xline=header.at("xline").intValue();
+        auto key=linesToKey(iline,xline);
         m_traceLookup.insert( key, i );
     }
 }
 
-// return trace number or -1 if not found
-int GatherView::lookupTrace(int iline, int xline){
-
-    QString key=QString("%1_%2").arg(iline).arg(xline);
-
-    return m_traceLookup.value(key, -1);
-}
 
 void GatherView::setCursorPosition(SelectionPoint p){
 
@@ -164,6 +159,7 @@ void GatherView::setCursorPosition(SelectionPoint p){
     m_gatherLabel->update();
 
     int trcno=lookupTrace(p.iline, p.xline);
+    if( trcno<0 || trcno>m_gather->size()) return;      // ADD ERROR LOGGING
     topRuler()->setCurrentPos(trcno);
     leftRuler()->setCurrentPos( p.time );
 
@@ -509,6 +505,7 @@ bool GatherView::eventFilterExplore(QWidget* widget, QMouseEvent *mouseEvent){
         last=mouseEvent->pos();
         drag=true;
         m_gatherLabel->setCursor(QCursor(Qt::DragMoveCursor) );
+        return true;
     }
     else if( mouseEvent->type()==QEvent::MouseMove && drag ){
 
@@ -516,13 +513,15 @@ bool GatherView::eventFilterExplore(QWidget* widget, QMouseEvent *mouseEvent){
         horizontalScrollBar()->setValue( horizontalScrollBar()->value() + delta.x() );
         verticalScrollBar()->setValue( verticalScrollBar()->value() + delta.y() );
         last = mouseEvent->pos();
+        return true;
     }
     else if( mouseEvent->type()==QEvent::MouseButtonRelease && drag ){
         drag=false;
         m_gatherLabel->setCursor(modeCursor(m_mouseMode));  // restore previous cursor
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 
@@ -609,23 +608,50 @@ bool GatherView::eventFilterPick(QWidget* widget, QMouseEvent *mouseEvent){
     // pick
     if( widget!=m_gatherLabel ) return false;
 
-    if( (QEvent::MouseButtonPress && mouseEvent->buttons()&Qt::LeftButton) ||
-            (mouseEvent->type()==QEvent::MouseMove &&
-             mouseEvent->buttons()&Qt::LeftButton &&
-             m_picker->mode()==PickMode::Single) ){
-        QPoint p=mouseEvent->pos();
-        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
-        qreal secs=m_ft + p.y()/m_pixelPerSecond;
-        m_picker->pick(trace, secs);
+    QPoint p=mouseEvent->pos();
+    int trace=static_cast<int>(std::round(static_cast<qreal>(p.x())/m_pixelPerTrace));
+    qreal secs=m_ft + p.y()/m_pixelPerSecond;
+
+    if( (mouseEvent->type() == QEvent::MouseButtonPress) && (mouseEvent->buttons()&Qt::LeftButton )){
+        switch(m_picker->mode()){
+        case PickMode::Single:
+        case PickMode::Left:
+        case PickMode::Right:
+        case PickMode::Lines:
+        case PickMode::Outline:
+            m_picker->pick(trace, secs);
+            break;
+        default:
+            break;
+        }
+    }
+
+    if( mouseEvent->type()==QEvent::MouseMove && mouseEvent->buttons()&Qt::LeftButton){
+        switch(m_picker->mode()){
+        case PickMode::Single:
+         m_picker->pick(trace, secs);
+            break;
+        default:
+            break;
+        }
     }
 
     // short cut for delete picks in pick mode
-    if( (QEvent::MouseButtonPress && mouseEvent->buttons()&Qt::MiddleButton) ||
+    if( ((mouseEvent->type() == QEvent::MouseButtonPress) && mouseEvent->buttons()&Qt::MiddleButton) ||
             (mouseEvent->type()==QEvent::MouseMove &&
              mouseEvent->buttons()&Qt::MiddleButton) ){
-        QPoint p=mouseEvent->pos();
-        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
-        m_picker->deleteSingle(trace);  // don't use pichmode
+        m_picker->deleteSingle(trace, secs);  // don't use pichmode
+    }
+
+    if( (mouseEvent->type() == QEvent::MouseButtonPress ) && (mouseEvent->buttons()&Qt::RightButton)){
+        switch(m_picker->mode()){
+        case PickMode::Lines:
+        case PickMode::Outline:
+            m_picker->finishedBuffer();
+            break;
+        default:
+            break;
+        }
     }
 
     return true;
@@ -638,12 +664,12 @@ bool GatherView::eventFilterDeletePick(QWidget* widget, QMouseEvent *mouseEvent)
     if(mouseEvent->type()==QEvent::MouseButtonPress ||
             (mouseEvent->type()==QEvent::MouseMove &&
              mouseEvent->buttons()&Qt::LeftButton &&
-             m_picker->mode()==PickMode::Single) ){
+             (m_picker->mode()==PickMode::Single || m_picker->mode()==PickMode::Lines || m_picker->mode()==PickMode::Outline)) ){
 
         QPoint p=mouseEvent->pos();
-        int trace=static_cast<int>(p.x()/m_pixelPerTrace);
+        int trace=static_cast<int>(std::round(static_cast<qreal>(p.x())/m_pixelPerTrace));
         qreal secs=m_ft + p.y()/m_pixelPerSecond;
-        m_picker->deletePick(trace);
+        m_picker->deletePick(trace,secs);
     }
 
     return true;
@@ -655,6 +681,11 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
 
     QWidget* widget=dynamic_cast<QWidget*>(obj);
     QMouseEvent* mouseEvent=dynamic_cast<QMouseEvent*>(ev);
+
+    QKeyEvent* keyEvent=dynamic_cast<QKeyEvent*>(ev);
+    if(keyEvent){
+        std::cout<<"Keyevent!"<<std::endl<<std::flush;
+    }
 
     if( !widget || !mouseEvent ) return QObject::eventFilter(obj,ev);
 
@@ -908,4 +939,32 @@ void GatherView::adjustScrollBar(QScrollBar *scrollBar, qreal factor)
     int newValue=int(factor * scrollBar->value()
                      + ((factor - 1) * scrollBar->pageStep()/2));
     scrollBar->setValue(newValue);
+}
+
+
+qint64 GatherView::linesToKey(int iline, int xline)const{
+    return (static_cast<qint64>(iline)<<32) + static_cast<qint64>(xline);
+}
+
+std::pair<int,int> GatherView::keyToLines(qint64 key)const{
+    return std::make_pair( static_cast<int>(key>>32), static_cast<int>(key&0xffffffff));
+}
+
+bool GatherView::containsKey(qint64 key)const{
+    return m_traceLookup.contains(key);
+}
+
+bool GatherView::containsLines(int iline,int xline)const{
+    return containsKey(linesToKey(iline,xline));
+}
+
+int GatherView::lookupTrace(int iline, int xline)const{
+    auto key=linesToKey(iline,xline);
+    return m_traceLookup.value(key,-1); // return -1 if not found
+}
+
+std::pair<int,int> GatherView::lookupLines(int trace)const{
+    static std::pair<int,int> NULL_LINES(-1,-1);
+    auto key = m_traceLookup.key(trace, -1);
+    return ( key>=0) ? keyToLines(key) : NULL_LINES;
 }

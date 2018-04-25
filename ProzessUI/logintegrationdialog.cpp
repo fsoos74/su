@@ -2,9 +2,8 @@
 #include "ui_logintegrationdialog.h"
 #include<QComboBox>
 #include<QPushButton>
-#include<QDoubleValidator>
 
-#include<integrationprocessor.h>
+#include<logintegrationprocess.h>
 #include<iostream>
 
 LogIntegrationDialog::LogIntegrationDialog(QWidget *parent) :
@@ -13,14 +12,11 @@ LogIntegrationDialog::LogIntegrationDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QDoubleValidator* validator=new QDoubleValidator(this);
-    ui->leValue->setValidator(validator);
-
     connect( ui->lwWells->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(updateOkButton()) );
     connect( ui->leOutput, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbInput, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateWells()) );
 
-    ui->cbFunction->addItems(IntegrationProcessor::opList());
+    ui->cbFunction->addItems(LogIntegrationProcess::opNames());
 }
 
 LogIntegrationDialog::~LogIntegrationDialog()
@@ -43,8 +39,6 @@ QMap<QString,QString> LogIntegrationDialog::params(){
     p.insert( "description", ui->leDescr->text());
 
     p.insert( "input-log", ui->cbInput->currentText() );
-
-    p.insert( "start-value", ui->leValue->text());
 
     return p;
 }

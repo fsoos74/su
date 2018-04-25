@@ -10,7 +10,7 @@ class SmoothProcessor
 {
 public:
 
-    enum class OP{ MEAN, MEAN80, MEAN_DISTANCE_WEIGHTED, MEDIAN };
+    enum class OP{ MEAN, MEAN80, MEAN_DISTANCE_WEIGHTED, MEDIAN, MINIMUM, MAXIMUM };
 
     static const double NULL_VALUE;
 
@@ -26,7 +26,6 @@ public:
 
     void setOP(OP);
     void setInputNullValue(const double&);
-    void setAperture(int);
 
     void clearInput();
     void addInput(const double& value, const double& dist=0);
@@ -43,6 +42,8 @@ private:
     double mean_80();
     double mean_distance_weighted();
     double median();
+    double minimum();
+    double maximum();
     void updateFunc();
 
     OP m_op;

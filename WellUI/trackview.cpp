@@ -13,26 +13,50 @@ TrackView::TrackView(QWidget* parent):AxisView(parent)
 }
 
 qreal TrackView::minZ()const{
-    if( !m_log) return 0;
-    return log2view(m_log->z0());
+    if( !log()) return 0;
+    return log2view(log()->z0());
 }
 
 qreal TrackView::maxZ()const{
-    if( !m_log) return 0;
-    return log2view(m_log->lz());
+    if( !log()) return 0;
+    return log2view(log()->lz());
 }
 
-void TrackView::setLog(std::shared_ptr<Log> l){
+void TrackView::addLog(std::shared_ptr<Log> l){
 
-    if( l == m_log ) return;
+    static QVector<QColor> colors{Qt::darkBlue, Qt::darkRed, Qt::darkGreen, Qt::blue, Qt::red, Qt::green};
+    addLog(l, colors[m_logs.size()%colors.size()]);
+}
 
-    m_log=l;
+void TrackView::addLog(std::shared_ptr<Log> l, QColor color){
 
+    if( m_logs.size()>0 ){
+        if( l->dz()!=m_logs[0]->dz() || l->nz()!=m_logs[0]->nz() || l->z0()!=m_logs[0]->z0()) return;   // only add logs with same sampling
+    }
+
+    m_logs.push_back(l);
+    m_logColors.push_back(color);
     refreshScene();
-
-    //fitInView(sceneRect(), Qt::IgnoreAspectRatio);
 }
 
+
+void TrackView::removeLog(int i){
+    if(i>=0 && i<m_logs.size()){
+        m_logs.remove(i);
+        refreshScene();
+    }
+}
+
+void TrackView::logChanged(int){
+    refreshScene();
+}
+
+void TrackView::setColor(int i, QColor color){
+    if(i>=0 && i<m_logs.size()){
+        m_logColors[i]=color;
+        refreshScene();
+    }
+}
 
 void TrackView::setWellPath(std::shared_ptr<WellPath> p){
 
@@ -196,19 +220,21 @@ void TrackView::refreshScene(){
 
     QGraphicsScene* scene=new QGraphicsScene(this);
 
-    if( m_log ){
+    if( log() ){
 
 
-        // draw log
-        auto path=buildPath(*m_log);
-        QGraphicsPathItem* gitem=new QGraphicsPathItem(path);
-        gitem->setPen( QPen( Qt::darkBlue, 0));
-        scene->addItem( gitem );
+        // draw logs
+        for( int i=0; i<m_logs.size(); i++){
+            auto path=buildPath(*(m_logs[i]));
+            QGraphicsPathItem* gitem=new QGraphicsPathItem(path);
+            gitem->setPen( QPen( m_logColors[i], 0));
+            scene->addItem( gitem );
+        }
 
         // draw highlighted, do this in scene because drawforeground did not work as expected
         // highlighted depths are considered md
         for( auto md : m_highlighted){
-            auto md2=md+m_log->dz();
+            auto md2=md+log()->dz();
             auto z=zAxis()->toScene(log2view(md));
             auto z2=zAxis()->toScene(log2view(md2));
             //zh+=m_zshift;

@@ -66,12 +66,17 @@ ProjectProcess::ResultCode InstantaneousAttributesProcess::run(){
     emit started(bounds.ni());
     qApp->processEvents();
 
+    auto null_value=vol.NULL_VALUE;
+
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
-            std::vector<float> trc(bounds.nt());
-            std::copy( &vol( i, j, 0 ), &vol( i, j, 0 ) + bounds.nt(), trc.begin() );
+            std::vector<float> trc(bounds.nt(),0);
+            for( int k=0; k<bounds.nt(); k++){
+                if( vol( i, j, k )!=vol.NULL_VALUE ) trc[k]= vol( i, j, k );
+            }
+
             auto ctrc = hilbert_trace(trc);
 
             for( int k=0; k<bounds.nt(); k++){
