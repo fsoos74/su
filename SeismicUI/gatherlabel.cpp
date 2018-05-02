@@ -367,7 +367,7 @@ void GatherLabel::drawPicks(QPainter &painter, Table* picks){
            else if( si+1>=trace.samples().size() ) val= trace.samples().back();
            else{    // interpolate
                s-= si;
-               val=(1.-s)*trace.samples()[si] + s*trace.samples()[i];
+               val=(1.-s)*trace.samples()[si] + s*trace.samples()[si+1];
            }
            x+= pixelPerTrace/2 * traceScaleFactors[i]*val;
             //*/

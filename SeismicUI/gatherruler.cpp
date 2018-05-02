@@ -62,7 +62,6 @@ QVector< GatherRuler::Tick > GatherRuler::computeTicks( int pixFrom, int pixTo )
 
     }
     else{
-
         qreal pixelPerTrace=m_view->pixelPerTrace();
         qreal traceFrom=pixFrom/pixelPerTrace;
         qreal traceTo=pixTo/pixelPerTrace;
@@ -70,6 +69,13 @@ QVector< GatherRuler::Tick > GatherRuler::computeTicks( int pixFrom, int pixTo )
         // we are using integer trace numbers!!
         int incr=tickIncrement( pixTo - pixFrom + 1, traceTo - traceFrom + 1, TICK_LABEL_DX);
 
+        /*
+        std::cout<<"Gatherruler::computeTicks()"<<std::endl;
+        std::cout<<"pixelPerTrace="<<pixelPerTrace<<std::endl;
+        std::cout<<"pixels: "<<pixFrom<<" - "<<pixTo<<std::endl;
+        std::cout<<"traces: "<<traceFrom<<" - "<<traceTo<<std::endl;
+        std::cout<<"incr="<<incr<<std::endl<<std::flush;
+        */
         if( incr > 0 ){
 
             for( int trace=incr*(std::floor(traceFrom/incr)+1); trace<traceTo; trace+=incr){
@@ -118,6 +124,7 @@ void GatherRuler::drawVerticalIndicator(QPainter& painter, QPoint p){
 
 void GatherRuler::drawVertical( QPainter& painter ){
 
+    // scrollbars are not in sync, order of event processing...use gatherlabel size instead of pagestep
 
     if( !m_view){
         qDebug("m_view == 0");
@@ -139,7 +146,8 @@ void GatherRuler::drawVertical( QPainter& painter ){
         painter.restore();
     }
 
-    int max=sb->value() + sb->pageStep();
+    //int max=sb->value() + sb->pageStep();
+    int max=sb->value() + m_view->gatherLabel()->height();  // dont use page_step!!!
     if( max > m_view->gatherLabel()->height()) max=m_view->gatherLabel()->height();
     QVector<Tick> ticks=computeTicks( sb->value(), max );// cannot use pageStep because scrollbars are adjusted after all event processing
 
@@ -177,6 +185,7 @@ void GatherRuler::drawHorizontalIndicator(QPainter& painter, QPoint p){
 
 void GatherRuler::drawHorizontal( QPainter& painter ){
 
+    // scrollbars are not in sync, order of event processing...use gatherlabel size instead of pagestep
 
     if( !m_view){
         qDebug("m_view == 0");
@@ -190,7 +199,8 @@ void GatherRuler::drawHorizontal( QPainter& painter ){
     }
 
     int lineDY=painter.fontMetrics().height();
-    int max=sb->value() + sb->pageStep();
+    //int max=sb->value() + sb->pageStep();
+    int max=sb->value()+m_view->gatherLabel()->width();
     if( max > m_view->gatherLabel()->width()) max=m_view->gatherLabel()->width();
     QVector<Tick> ticks=computeTicks( sb->value(), max );// cannot use pageStep because scrollbars are adjusted after all event processing
 

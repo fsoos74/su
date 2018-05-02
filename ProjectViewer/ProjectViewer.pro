@@ -5,8 +5,7 @@
 #-------------------------------------------------
 
 
-
-#XXX ADD FOR RELEASE, LICENSE
+##XXX ADD FOR RELEASE, LICENSE
 win32{
     DEFINES += USE_KEYLOCK_LICENSE
 }
@@ -21,7 +20,7 @@ unix {
     #LIBS += -lpthread -ldl -lutil -lm -Xlinker -export-dynamic
 }
 win32{
-    LIBS += -L"C:\Python27\libs" -lpython27
+   LIBS += -L"C:\Python27\libs" -lpython27
 
 }
 

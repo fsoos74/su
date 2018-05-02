@@ -98,23 +98,14 @@ private slots:
     void changeOrder();
 
     void on_sbIlineCount_valueChanged(int arg1);
-
     void on_sbXlineCount_valueChanged(int arg1);
-
-    void on_rbRandomLine_toggled(bool checked);
-
+    void on_tbRandomLine_toggled(bool checked);
     void on_tbInline_clicked();
-
     void on_tbXLine_clicked();
-
-    void on_pbLock_toggled(bool checked);
-
+    void on_tbLock_toggled(bool checked);
     void on_pbFirst_clicked();
-
     void on_pbPrevious_clicked();
-
     void on_pbNext_clicked();
-
     void on_pbLast_clicked();
 
 private:

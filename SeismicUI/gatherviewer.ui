@@ -132,8 +132,8 @@
     <addaction name="action_Close_Picks"/>
     <addaction name="separator"/>
     <addaction name="menuPick_Type"/>
-    <addaction name="menuPick_Mode"/>
     <addaction name="menuFill_Method"/>
+    <addaction name="menuPick_Mode"/>
     <addaction name="actionConservative"/>
    </widget>
    <addaction name="menu_File"/>
@@ -244,7 +244,7 @@
     <string>Gain Toolbar</string>
    </property>
    <attribute name="toolBarArea">
-    <enum>BottomToolBarArea</enum>
+    <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
@@ -530,7 +530,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>C&amp;onservative</string>
+    <string>&amp;Retain Picks</string>
    </property>
   </action>
   <action name="actionFill_Strategy">

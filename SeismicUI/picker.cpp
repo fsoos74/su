@@ -43,6 +43,8 @@ void Picker::setGather( std::shared_ptr<seismic::Gather>  g ){
 
     if( g==m_gather ) return;
 
+    clearBuffer();
+
     m_gather=g;
     fillILXLBuffer();
 
@@ -66,7 +68,7 @@ void Picker::setMode(PickMode m){
 
   m_mode=m;
 
-  //std::cout<<"mode="<<toQString(m).toStdString()<<std::endl<<std::flush;
+  std::cout<<"mode="<<toQString(m).toStdString()<<std::endl<<std::flush;
 
   updateModeFuncs();
 
@@ -106,6 +108,10 @@ void Picker::setConservative(bool on){
 
 void Picker::setDirty(bool on){
     m_dirty=on;
+}
+
+void Picker::clearBuffer(){
+    m_bufferedPoints.clear();
 }
 
 void Picker::finishedBuffer(){
@@ -302,6 +308,8 @@ void Picker::pickFillRightNearest(int firstTraceNo, float traceTime){
 void Picker::pickFillRightNext(int firstTraceNo, float traceTime){
 
     if( !m_gather || !m_picks || firstTraceNo<0 ) return;
+
+    std::cout<<"2"<<std::endl<<std::flush;
 
     if( !useTrace(firstTraceNo)) return;        // first trace is zero trace, no pick here
 
@@ -591,7 +599,7 @@ void Picker::fillILXLBuffer(){
         int xline=header.at("xline").intValue();
         if(header.find("trid")==header.end()) throw std::runtime_error("trace header has no trid");
         int trid=header.at("trid").intValue();
-        bool use=(trid==1);     // seismic trace code
+        bool use=(trid=2);     // no dead trace
         m_ilxluseBuffer.push_back(std::make_tuple(iline,xline,use));
     }
 

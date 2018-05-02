@@ -204,63 +204,63 @@ void SeismicDataSelector::setReader(std::shared_ptr<SeismicDatasetReader> reader
 
 void SeismicDataSelector::setInlineRange( int min, int max){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbInline->setRange(min,max);
 }
 
 void SeismicDataSelector::setCrosslineRange( int min, int max){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbXline->setRange(min,max);
 }
 
 void SeismicDataSelector::setInlineCountRange( int min, int max ){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbIlineCount->setRange(min, max);
 }
 
 void SeismicDataSelector::setCrosslineCountRange( int min, int max ){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbXlineCount->setRange(min, max);
 }
 
 void SeismicDataSelector::setInline( int val ){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbInline->setValue(val);
 }
 
 void SeismicDataSelector::setCrossline( int val ){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbXline->setValue(val);
 }
 
 void SeismicDataSelector::setInlineCount( int count ){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbIlineCount->setValue(count);
 }
 
 void SeismicDataSelector::setCrosslineCount( int count ){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->sbXlineCount->setValue(count);
 }
 
 void SeismicDataSelector::setOrder(int k1, int k2, int k3){
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
     ui->cbOrder1->setCurrentIndex(k1);
     ui->cbOrder2->setCurrentIndex(k2);
@@ -270,7 +270,7 @@ void SeismicDataSelector::setOrder(int k1, int k2, int k3){
 // smart version
 void SeismicDataSelector::providePoint(int iline, int xline){
 
-   if( ui->pbLock->isChecked() ) return;
+   if( ui->tbLock->isChecked() ) return;
 
    bool isPostStack = m_reader->info().mode() == SeismicDatasetInfo::Mode::Poststack;
 
@@ -331,9 +331,9 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
 //std::cout<<"#points="<<polyline.size()<<std::endl;
     if( !m_reader ) return;
 
-    if( ui->pbLock->isChecked() ) return;
+    if( ui->tbLock->isChecked() ) return;
 
-    if( !ui->rbRandomLine->isChecked()) return;
+    if( !ui->tbRandomLine->isChecked()) return;
 
     // return emptx gather if 0 or 1 point since this is not a line
     if( polyline.size()<2){
@@ -430,28 +430,37 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
 
 void SeismicDataSelector::indexToKey( int idx, QString& key, bool& ascending){
 
-    ascending=false;
-
     switch(idx){
 
     case ILINE_ASC_INDEX:
                 ascending=true;
+                key="iline";
+                break;
     case ILINE_DESC_INDEX:
+                ascending=false;
                 key="iline";
                 break;
     case XLINE_ASC_INDEX:
                 ascending=true;
+                key="xline";
+                break;
     case XLINE_DESC_INDEX:
+                ascending=false;
                 key="xline";
                 break;
     case OFFSET_ASC_INDEX:
                 ascending=true;
+                key="offset";
+                break;
     case OFFSET_DESC_INDEX:
+                ascending=false;
                 key="offset";
                 break;
 
     default:
         key="";
+        ascending=false;
+        break;
     }
 }
 
@@ -487,7 +496,7 @@ void SeismicDataSelector::on_sbXlineCount_valueChanged(int arg1)
     ui->sbXline->setSingleStep(arg1);
 }
 
-void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
+void SeismicDataSelector::on_tbRandomLine_toggled(bool checked)
 {
     static int saveIndex1;
     static int saveIndex2;
@@ -506,6 +515,8 @@ void SeismicDataSelector::on_rbRandomLine_toggled(bool checked)
     ui->pbPrevious->setEnabled(!checked);
     ui->pbNext->setEnabled(!checked);
     ui->pbLast->setEnabled(!checked);
+    //ui->tbInline->setEnabled(!checked);      // active since this unlocks random line
+    //ui->tbXLine->setEnabled(!checked);        // active since this unlocks random line
 
     if(checked){    // for random lines there is no primary sort order
 
@@ -571,6 +582,8 @@ void SeismicDataSelector::on_tbInline_clicked()
 {
     setLock(true);
 
+    ui->tbRandomLine->setChecked(false);
+
     ui->cbOrder1->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending
     ui->cbOrder2->setCurrentIndex(XLINE_ASC_INDEX);   // xline ascending
 
@@ -592,8 +605,10 @@ void SeismicDataSelector::on_tbInline_clicked()
 }
 
 void SeismicDataSelector::on_tbXLine_clicked()
-{
+{   
     setLock(true);
+
+    ui->tbRandomLine->setChecked(false);
 
     ui->cbOrder1->setCurrentIndex(XLINE_ASC_INDEX);   // xline ascending
     ui->cbOrder2->setCurrentIndex(ILINE_ASC_INDEX);   // inline ascending
@@ -615,7 +630,7 @@ void SeismicDataSelector::on_tbXLine_clicked()
     setLock(false); // calls apply
 }
 
-void SeismicDataSelector::on_pbLock_toggled(bool checked)
+void SeismicDataSelector::on_tbLock_toggled(bool checked)
 {
     ui->cbOrder1->setEnabled(!checked);
     ui->cbOrder2->setEnabled(!checked);
@@ -624,7 +639,7 @@ void SeismicDataSelector::on_pbLock_toggled(bool checked)
     ui->sbIlineCount->setEnabled(!checked);
     ui->sbXline->setEnabled(!checked);
     ui->sbXlineCount->setEnabled(!checked);
-    ui->rbRandomLine->setEnabled(!checked);
+    ui->tbRandomLine->setEnabled(!checked);
     ui->tbInline->setEnabled(!checked);
     ui->tbXLine->setEnabled(!checked);
 }

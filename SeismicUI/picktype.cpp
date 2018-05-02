@@ -6,10 +6,10 @@ namespace{
 
 QMap<PickType, QString> lookup{
 
-    { PickType::Free, QString("Free") },
+    { PickType::Free, QString("Manual") },
     { PickType::Zero, QString("Zero") },
-    { PickType::Minimum, QString("Minimum") },
-    { PickType::Maximum, QString("Maximum") }
+    { PickType::Minimum, QString("Negative") },
+    { PickType::Maximum, QString("Positive") }
 };
 
 }

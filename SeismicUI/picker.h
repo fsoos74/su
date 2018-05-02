@@ -76,6 +76,7 @@ public slots:
     void pick( int traceNo, float t );
     void deletePick( int traceNo, float t );
     void setDirty(bool);
+    void clearBuffer();
     void finishedBuffer();
 
 private:

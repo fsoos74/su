@@ -13,7 +13,7 @@ class Matrix{
 public:
 
 
-    class Iterator{
+    class Iterator : public std::iterator<std::forward_iterator_tag,T>{
     public:
         Iterator( T* p=nullptr, size_t step=0 ):m_p(p), m_step(step){
         }

@@ -67,6 +67,8 @@ GatherView::GatherView( QWidget* parent) : QScrollArea(parent)
 
 void GatherView::setGather( std::shared_ptr<seismic::Gather> g){
 
+    //std::cout<<"GatherView::setGather"<<std::endl;
+
     if( g==m_gather) return;
 
     m_gather=g;
@@ -234,7 +236,12 @@ QStringList GatherView::traceAnnotation( size_t traceNumber )const{
     QStringList annos;
     for( auto key : m_annotationKeys){
         seismic::Trace& trc=(*m_gather)[traceNumber];
-        annos.push_back( toQString( trc.header().at( key ) ) );
+        if(trc.header().find(key)!=trc.header().end()  ){       // header word exists
+            annos.push_back( toQString( trc.header().at( key ) ) );
+        }
+        else{   // no such header word
+            annos.push_back( "N/A");
+        }
     }
 
     return annos;
@@ -249,6 +256,8 @@ QStringList GatherView::traceAnnotation( size_t traceNumber )const{
  }
 
 void GatherView::setPixelPerTrace( qreal ppt ){
+
+    //std::cout<<"GatherView::setPixelPerTrace "<<m_pixelPerTrace<<" -> "<<ppt<<std::endl;
 
     if( m_fixedScale) return;
 
@@ -276,7 +285,7 @@ void GatherView::setPixelPerTrace( qreal ppt ){
 
     adjustScrollBar( horizontalScrollBar(), factor);
 
-    m_topRuler->update();
+    m_topRuler->repaint();
 }
 
 void GatherView::setPixelPerSecond( qreal pps ){
@@ -350,6 +359,8 @@ void GatherView::normalize(){
 
 
 void GatherView::zoom( QRect rect ){
+
+    //std::cout<<"GatherView::zoom"<<std::endl<<std::flush;
 
     if( m_fixedScale ) return;
 
@@ -435,9 +446,12 @@ void GatherView::zoomBy( qreal factor ){
 
 void GatherView::updateLayout(){
 
+    //std::cout<<"GatherView::updateLayout"<<std::endl<<std::flush;
+
     m_leftRuler->setGeometry( 0, viewport()->y(), RULER_WIDTH, viewport()->height() );
     m_topRuler->setGeometry( viewport()->x(), 0, viewport()->width(), RULER_HEIGHT);
     m_axxisLabelWidget->setGeometry(0, 0, viewport()->x(), viewport()->y());
+
 }
 
 
@@ -468,6 +482,7 @@ void GatherView::updateTimeRange(){
 
 void GatherView::resizeEvent(QResizeEvent *ev){
 //
+    //std::cout<<"GatherView::resizeEvent"<<std::endl<<std::flush;
 
     if( !m_fixedScale){
         int oldlblw=m_gatherLabel->width();
@@ -493,6 +508,18 @@ void GatherView::resizeEvent(QResizeEvent *ev){
     updateLayout();
 
    // update();
+
+    /*
+   std::cout<<"aftzer resize:"<<std::endl;
+   std::cout<<"gatherview width="<<width()<<std::endl;
+   std::cout<<"gatherlabel width="<<m_gatherLabel->width()<<std::endl;
+   std::cout<<"topruler width="<<m_topRuler->width()<<std::endl;
+   std::cout<<"topruler x="<<m_topRuler->x()<<std::endl;
+   std::cout<<"vert sb width="<<verticalScrollBar()->width()<<std::endl;
+   std::cout<<"vert sb x="<<verticalScrollBar()->x()<<std::endl;
+   std::cout<<"ppt="<<m_pixelPerTrace<<std::endl;
+   std::cout<<std::flush;
+   */
 }
 
 
@@ -684,7 +711,12 @@ bool GatherView::eventFilter(QObject *obj, QEvent *ev){
 
     QKeyEvent* keyEvent=dynamic_cast<QKeyEvent*>(ev);
     if(keyEvent){
-        std::cout<<"Keyevent!"<<std::endl<<std::flush;
+
+        // clear buffered picks in any mode
+        if( keyEvent->key()==Qt::Key_Escape){
+            m_picker->clearBuffer();
+            update();
+        }
     }
 
     if( !widget || !mouseEvent ) return QObject::eventFilter(obj,ev);
@@ -911,7 +943,7 @@ QPoint GatherView::mouseEventToLabel( QPoint pt, bool start ){
             pt.setX(horizontalScrollBar()->value());
         }
         else{
-            pt.setX(horizontalScrollBar()->value()+horizontalScrollBar()->pageStep());
+            pt.setX(horizontalScrollBar()->value()+(m_gatherLabel->width()-1));
         }
         pt.setY(verticalScrollBar()->value() + pt.y() );
     }
@@ -921,7 +953,7 @@ QPoint GatherView::mouseEventToLabel( QPoint pt, bool start ){
            pt.setY( verticalScrollBar()->value() );
         }
         else{
-             pt.setY( verticalScrollBar()->value() + verticalScrollBar()->pageStep() );
+             pt.setY( verticalScrollBar()->value() + (m_gatherLabel->height()-1) );
         }
     }
 

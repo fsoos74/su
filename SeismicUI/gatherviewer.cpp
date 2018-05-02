@@ -125,7 +125,7 @@ void GatherViewer::setupPickMenus(){
 
     QActionGroup* pickTypeGroup=new QActionGroup(this);
     pickTypeGroup->setExclusive(true);
-    std::array<PickType,4> types{PickType::Minimum, PickType::Maximum, PickType::Zero, PickType::Free };
+    std::array<PickType,4> types{PickType::Free, PickType::Minimum, PickType::Maximum, PickType::Zero };
     for( PickType type : types){
         QAction* act = new QAction( toQString(type), this);
         act->setCheckable(true);
@@ -477,12 +477,14 @@ void GatherViewer::onMouseOver(int trace, qreal secs){
     if( ui->actionShare_Current_Position->isChecked()){
 
         const seismic::Trace& trc=(*m_gather)[trace];
-        int iline=trc.header().at("iline").intValue();
-        int xline=trc.header().at("xline").intValue();
-        SelectionPoint sp(iline, xline, secs);
-
-        gatherView->setCursorPosition(sp);      // need to set this because the send point will not be received by this viewer
-        sendPoint( sp, PointCode::VIEWER_CURRENT_CDP);
+        auto & header=trc.header();
+        if( header.find("iline")!=header.end() && header.find("xline")!=header.end()){  // beware of incomplete headers
+            int iline=trc.header().at("iline").intValue();
+            int xline=trc.header().at("xline").intValue();
+            SelectionPoint sp(iline, xline, secs);
+            gatherView->setCursorPosition(sp);      // need to set this because the send point will not be received by this viewer
+            sendPoint( sp, PointCode::VIEWER_CURRENT_CDP);
+        }
     }
 
 }
@@ -950,19 +952,17 @@ void GatherViewer::leaveEvent(QEvent *){
 
 void GatherViewer::keyPressEvent(QKeyEvent * event){
 
-    std::cout<<"GatherViewer::keyPressEvent"<<std::endl<<std::flush;
-
     switch(event->key()){
-    case Qt::Key_F: emit firstRequested(); break;
-    case Qt::Key_L: emit lastRequested(); break;
-    case Qt::Key_N: emit nextRequested(); break;
-    case Qt::Key_P: emit previousRequested(); break;
-    case Qt::Key_Plus: zoomIn(); break;
-    case Qt::Key_Minus: zoomOut(); break;
-    case Qt::Key_0: zoomFitWindow(); break;
-    default: break;
+    case Qt::Key_F: emit firstRequested();break;
+    case Qt::Key_L: emit lastRequested();break;
+    case Qt::Key_N: emit nextRequested();break;
+    case Qt::Key_P: emit previousRequested();break;
+    case Qt::Key_Plus: zoomIn();break;
+    case Qt::Key_Minus: zoomOut();break;
+    case Qt::Key_0: zoomFitWindow();break;
+    case Qt::Key_Escape: ui->gatherView->picker()->clearBuffer(); ui->gatherView->update();break;       // a hack!!!
+    default: BaseViewer::keyPressEvent(event) ;break;       // pass the event for handling it elsewhere
     }
-    event->accept();
 }
 
 void GatherViewer::saveSettings(){
