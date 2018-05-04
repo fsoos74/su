@@ -1,8 +1,9 @@
 #include "seismicdatasetreader.h"
 #include<xsireader.h>
 
+#include<QProgressDialog>
 
-SeismicDatasetReader::SeismicDatasetReader(const SeismicDatasetInfo& info):m_info(info)
+SeismicDatasetReader::SeismicDatasetReader(const SeismicDatasetInfo& info, QObject* parent):QObject(parent),m_info(info)
 {
     openDatabase();
     openSEGYFile();
@@ -14,6 +15,39 @@ void SeismicDatasetReader::close(){
     closeSEGYFile();
 }
 
+ssize_t SeismicDatasetReader::sizeTraces(){
+    return m_reader->trace_count();
+}
+
+bool SeismicDatasetReader::good(){
+    if( !m_reader) return false;
+    return m_reader->current_trace() < m_reader->trace_count();
+}
+
+ssize_t SeismicDatasetReader::tellTrace(){
+    return m_reader->current_trace();
+}
+
+void SeismicDatasetReader::seekTrace(ssize_t no){
+
+    m_reader->seek_trace(no);
+}
+
+seismic::Trace SeismicDatasetReader::readTrace(){
+    auto trc=m_reader->read_trace();
+    addDData(trc);
+    return trc;
+}
+
+std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather(QString key, ssize_t maxTraces){
+    auto gt = m_reader->read_gather(key.toStdString().c_str(), maxTraces);
+    if(!gt) return gt;
+    for( auto it=gt->begin(); it!=gt->end(); it++){
+        addDData(*it);
+    }
+
+    return gt;
+}
 
 std::pair<int, int> SeismicDatasetReader::firstTraceInlineCrossline(){
 
@@ -490,8 +524,19 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
         throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));
     }
 
-
+    // determine size, size() does not work for sqlite
+    query.last();
+    int n=query.at();
+    if(n>maxTraces) n=maxTraces;
+    query.first();
     std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
+
+    emit started(n);
+    qApp->processEvents();
+
+   // auto progress=new QProgressDialog("Reading traces...","",0,query.size());
+   // progress->show();
+   // qApp->processEvents();
 
     while( query.next() && gather->size()<maxTraces){
 
@@ -509,7 +554,15 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
 
         gather->push_back(trc);
 
+        emit progress(gather->size());
+        //progress->setValue(gather->size());
+        //std::cout<<gather->size()<<" of "<<n<<std::endl<<std::flush;
+        qApp->processEvents();
     }
+
+    emit finished();
+    //progress->close();
+    qApp->processEvents();
 
     return gather;
 }

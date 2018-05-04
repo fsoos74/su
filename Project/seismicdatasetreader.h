@@ -8,11 +8,12 @@
 #include <stdexcept>
 #include <segyreader.h>
 #include <gather.h>
-
+#include <qobject.h>
 #include"projectgeometry.h"
 
-class SeismicDatasetReader
+class SeismicDatasetReader : public QObject
 {
+    Q_OBJECT
 public:
 
     class Exception : public std::runtime_error{
@@ -21,7 +22,7 @@ public:
         }
     };
 
-    SeismicDatasetReader(const SeismicDatasetInfo&);
+    SeismicDatasetReader(const SeismicDatasetInfo&, QObject* parent=nullptr);
 
     void close();
 
@@ -33,8 +34,18 @@ public:
         return m_info;
     }
 
-    std::shared_ptr<seismic::Trace> readFirstTrace( const QString& key1, const QString& value1, const QString& key2, const QString& value2);
 
+    // sequential access
+    bool good();   // can read trace
+    ssize_t sizeTraces();
+    ssize_t tellTrace();
+    void seekTrace(ssize_t no);
+    seismic::Trace readTrace();
+    std::shared_ptr<seismic::Gather> readGather(QString key, ssize_t maxTraces=10000);
+
+    // sorted access
+    std::shared_ptr<seismic::Trace> readFirstTrace( const QString& key1, const QString& value1,
+                                                    const QString& key2, const QString& value2);
     std::shared_ptr<seismic::Gather> readGather( const QString& key1, const QString& min1, const QString& max1,
                                                  size_t maxTraces=999999999);
     std::shared_ptr<seismic::Gather> readGather( const QString& key1, const QString& min1, const QString& max1,
@@ -49,6 +60,11 @@ public:
     bool extractGeometry(ProjectGeometry&);
 
     void setOrder(const QString& key1, bool ascending1, const QString& key2, bool ascending2, const QString& key3, bool ascending3 );
+
+signals:
+    void started(int);
+    void progress(int);
+    void finished();
 
 private:
 
