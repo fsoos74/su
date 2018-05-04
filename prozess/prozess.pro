@@ -100,7 +100,8 @@ SOURCES += prozess.cpp \
     exportlogprocess.cpp \
     punchoutvolumeprocess.cpp \
     horizontotopprocess.cpp \
-    tabletohorizonprocess.cpp
+    tabletohorizonprocess.cpp \
+    exporttableprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -182,7 +183,8 @@ HEADERS += prozess.h\
     exportlogprocess.h \
     punchoutvolumeprocess.h \
     horizontotopprocess.h \
-    tabletohorizonprocess.h
+    tabletohorizonprocess.h \
+    exporttableprocess.h
 
 unix {
     target.path = /usr/lib

@@ -37,7 +37,7 @@ private slots:
     void on_cbColor_clicked();
 
 private:
-    Ui::PointDisplayOptionsDialog *ui;
+    Ui::LineDisplayOptionsDialog *ui;
 };
 
 #endif // LINEDISPLAYOPTIONSDIALOG_H

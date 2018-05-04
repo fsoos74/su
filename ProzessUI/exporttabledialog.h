@@ -20,6 +20,7 @@ public:
 
 public slots:
     void setTables( const QStringList&);
+    void setFixedTable(const QString&);
 
 private slots:
     void on_pbBrowse_clicked();

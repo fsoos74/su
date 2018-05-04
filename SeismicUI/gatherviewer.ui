@@ -44,23 +44,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <widget class="QMenu" name="menu_Open">
-     <property name="title">
-      <string>&amp;Open</string>
-     </property>
-     <addaction name="openGridAct"/>
-     <addaction name="actionOpenVolume"/>
-    </widget>
-    <widget class="QMenu" name="menu_Close">
-     <property name="title">
-      <string>&amp;Close</string>
-     </property>
-     <addaction name="closeGridAct"/>
-     <addaction name="actionCloseVolume"/>
-    </widget>
     <addaction name="separator"/>
-    <addaction name="menu_Open"/>
-    <addaction name="menu_Close"/>
     <addaction name="separator"/>
     <addaction name="exitAct"/>
    </widget>
@@ -85,6 +69,7 @@
     <addaction name="separator"/>
     <addaction name="action_Trace_Options"/>
     <addaction name="actionVolume_Options"/>
+    <addaction name="action_Horizon_Display_Options"/>
     <addaction name="action_Point_Display_Options"/>
     <addaction name="actionPick_Display_Options"/>
     <addaction name="actionDensity_Color_Table"/>
@@ -136,8 +121,18 @@
     <addaction name="menuPick_Mode"/>
     <addaction name="actionConservative"/>
    </widget>
+   <widget class="QMenu" name="menu_Items">
+    <property name="title">
+     <string>&amp;Items</string>
+    </property>
+    <addaction name="actionSeismic_Dataset_Info"/>
+    <addaction name="separator"/>
+    <addaction name="actionSetup_Horizons"/>
+    <addaction name="actionSetup_Volume"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menuView"/>
+   <addaction name="menu_Items"/>
    <addaction name="menuDisplay"/>
    <addaction name="menu_Picking"/>
    <addaction name="menu_Window"/>
@@ -193,16 +188,16 @@
    <addaction name="separator"/>
    <addaction name="actionTrace_Scaling"/>
    <addaction name="actionDensity_Color_Table"/>
+   <addaction name="separator"/>
    <addaction name="action_Trace_Options"/>
-   <addaction name="actionGather_Histogram"/>
-   <addaction name="separator"/>
-   <addaction name="actionVolume_Color_Table"/>
-   <addaction name="actionVolume_Display_Range"/>
    <addaction name="actionVolume_Options"/>
-   <addaction name="actionVolume_Histogram"/>
    <addaction name="separator"/>
+   <addaction name="action_Horizon_Display_Options"/>
    <addaction name="action_Point_Display_Options"/>
    <addaction name="actionPick_Display_Options"/>
+   <addaction name="actionSeismic_Dataset_Info"/>
+   <addaction name="actionGather_Histogram"/>
+   <addaction name="actionVolume_Histogram"/>
    <addaction name="separator"/>
    <addaction name="action_Receive_CDPs"/>
    <addaction name="action_Dispatch_CDPs"/>
@@ -574,6 +569,34 @@
    </property>
    <property name="text">
     <string>P&amp;ick Display Options</string>
+   </property>
+  </action>
+  <action name="actionSeismic_Dataset_Info">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/info-icon-32x32.png</normaloff>:/images/info-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Seismic Dataset &amp;Info</string>
+   </property>
+  </action>
+  <action name="actionSetup_Horizons">
+   <property name="text">
+    <string>Setup &amp;Horizons</string>
+   </property>
+  </action>
+  <action name="actionSetup_Volume">
+   <property name="text">
+    <string>Setup &amp;Volume</string>
+   </property>
+  </action>
+  <action name="action_Horizon_Display_Options">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/images/horizon-display-options-icon-32x32.png</normaloff>:/images/horizon-display-options-icon-32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Horizon Display Options</string>
    </property>
   </action>
  </widget>

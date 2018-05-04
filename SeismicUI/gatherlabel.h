@@ -29,6 +29,24 @@ public:
 
     enum class TraceDisplayMode{ WigglesVariableArea, Density };
 
+    struct PointDisplayOptions{
+        int size;
+        QColor color;
+        int opacity;
+        bool operator==(const PointDisplayOptions& other)const{
+            return size==other.size && color==other.color && opacity==other.opacity;
+        }
+    };
+
+    struct LineDisplayOptions{
+        int width;
+        QColor color;
+        int opacity;
+        bool operator==(const LineDisplayOptions& other)const{
+            return width==other.width && color==other.color && opacity==other.opacity;
+        }
+    };
+
     GatherLabel( GatherView* parent);
 
     GatherView* view()const{
@@ -55,18 +73,6 @@ public:
         return m_highlightedTrace;
     }
 
-    const QColor& horizonColor()const{
-        return m_horizonColor;
-    }
-
-    int highlightedPointSize()const{
-        return m_highlightedPointSize;
-    }
-
-    const QColor& highlightedPointColor()const{
-        return m_highlightedPointColor;
-    }
-
     ColorTable* colorTable()const{
         return m_colorTable;
     }
@@ -91,16 +97,53 @@ public:
         return m_volumeOpacity;
     }
 
+    PointDisplayOptions pickDisplayOptions()const{
+        return m_pickDisplayOptions;
+    }
+
     int pickSize()const{
-        return m_pickSize;
+        return m_pickDisplayOptions.size;
     }
 
     QColor pickColor()const{
-        return m_pickColor;
+        return m_pickDisplayOptions.color;
     }
 
     int pickOpacity()const{
-        return m_pickOpacity;
+        return m_pickDisplayOptions.opacity;
+    }
+
+    PointDisplayOptions highlightedPointDisplayOptions()const{
+        return m_highlightedPointDisplayOptions;
+    }
+
+    int highlightedPointSize()const{
+        return m_highlightedPointDisplayOptions.size;
+    }
+
+    QColor highlightedPointColor()const{
+        return m_highlightedPointDisplayOptions.color;
+    }
+
+    int highlightedPointOpacity()const{
+        return m_highlightedPointDisplayOptions.opacity;
+    }
+
+
+    LineDisplayOptions horizonDisplayOptions(const QString& name)const{
+        return m_horizonDisplayOptions.value(name, LineDisplayOptions{1,Qt::black,100});
+    }
+
+    int horizonWidth(const QString& name)const{
+        return horizonDisplayOptions(name).width;
+    }
+
+    QColor horizonColor(const QString& name)const{
+        return horizonDisplayOptions(name).color;
+    }
+
+    int horizonOpacity(const QString& name)const{
+        return horizonDisplayOptions(name).opacity;
     }
 
     int viewerCurrentTrace()const{
@@ -112,13 +155,25 @@ public slots:
     void setTraceColor(QColor);
     void setTraceOpacity(int);
     void setDensityOpacity(int);
+
     void setVolumeOpacity(int);
+
+    void setPickDisplayOptions(PointDisplayOptions);
     void setPickSize(int);
     void setPickColor(QColor);
     void setPickOpacity(int);
-    void setHorizonColor(QColor);
+
+    void setHighlightedPointDisplayOptions(PointDisplayOptions);
     void setHighlightedPointSize(int);
     void setHighlightedPointColor(QColor);
+    void setHighlightedPointOpacity(int);
+
+    void removeHorizonDisplayOptions(QString);
+    void setHorizonDisplayOptions( QString, LineDisplayOptions);
+    void setHorizonWidth(QString,int);
+    void setHorizonColor(QString,QColor);
+    void setHorizonOpacity(QString,int);
+
     void setDisplayDensity(bool);
     void setDisplayWiggles(bool);
     void setDisplayVariableArea(bool);
@@ -135,7 +190,6 @@ signals:
     void displayWigglesChanged(bool);
     void displayVariableAreaChanged(bool);
     void displayLinesChanged(bool);
-    void horizonColorChanged(QColor);
 
 protected:
 
@@ -149,7 +203,7 @@ private slots:
 private:
 
     void drawHorizons( QPainter& painter );
-    void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen);
+    void drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, LineDisplayOptions);
     void drawPicks(QPainter& painter, Table* picks);
     void drawHorizontalLines(QPainter& painter, const QRect& rect);
     void drawHighlightedPoints( QPainter& painter, const QVector<SelectionPoint>& points);
@@ -183,14 +237,10 @@ private:
     int m_densityOpacity=100;
     int m_volumeOpacity=50;
 
-    int m_pickSize=4;
-    int m_pickOpacity=50;
-    QColor m_pickColor=Qt::blue;
+    PointDisplayOptions m_pickDisplayOptions=PointDisplayOptions{4,Qt::blue,50};
+    PointDisplayOptions m_highlightedPointDisplayOptions=PointDisplayOptions{4,Qt::red,100};
+    QMap<QString, LineDisplayOptions> m_horizonDisplayOptions;
 
-    int m_highlightedPointSize=4;
-    QColor m_highlightedPointColor=Qt::red;
-
-    QColor m_horizonColor=Qt::red;
     bool m_highlightTrace=false;
     int m_highlightedTrace=-1;
     int m_viewerCurrentTrace=-1;

@@ -1,4 +1,4 @@
-#include "exportgridprocess.h"
+#include "exporttableprocess.h"
 
 #include <avoproject.h>
 #include <fstream>
@@ -9,27 +9,23 @@
 using namespace std::placeholders;
 
 
-ExportGridProcess::ExportGridProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Export Grid"), project, parent){
+ExportTableProcess::ExportTableProcess( AVOProject* project, QObject* parent) :
+    ProjectProcess( QString("Export Table"), project, parent){
 
 }
 
 
-ProjectProcess::ResultCode ExportGridProcess::init( const QMap<QString, QString>& parameters ){
+ProjectProcess::ResultCode ExportTableProcess::init( const QMap<QString, QString>& parameters ){
 
     setParams(parameters);
 
     project()->geometry().computeTransforms(m_xy_to_ilxl, m_ilxl_to_xy);
 
-    GridType gtype;
-    QString  gname;
+    QString  tname;
     GridFormat format;
     try{
        m_outputName=getParam( parameters, QString("output-file") );
-       gname=getParam( parameters, QString("input-name") );
-       QString tstr=getParam( parameters, "input-type");
-       gtype=toGridType(tstr);
-       m_null_value=getParam( parameters, "null-value");
+       tname=getParam( parameters, QString("table") );
        QString fstr=getParam( parameters, "format");
        format=toGridFormat(fstr);
     }
@@ -40,20 +36,20 @@ ProjectProcess::ResultCode ExportGridProcess::init( const QMap<QString, QString>
 
     switch( format ){
     case GridFormat::XYZ:
-        m_formatLineFunction=std::bind( &ExportGridProcess::formatLineXYZ, this, _1, _2, _3); break;
+        m_formatLineFunction=std::bind( &ExportTableProcess::formatLineXYZ, this, _1, _2, _3); break;
     case GridFormat::ILXLZ:
-        m_formatLineFunction=std::bind( &ExportGridProcess::formatLineILXLZ, this, _1, _2, _3); break;
+        m_formatLineFunction=std::bind( &ExportTableProcess::formatLineILXLZ, this, _1, _2, _3); break;
     case GridFormat::XYILXLZ:
-        m_formatLineFunction=std::bind( &ExportGridProcess::formatLineXYILXLZ, this, _1, _2, _3); break;
+        m_formatLineFunction=std::bind( &ExportTableProcess::formatLineXYILXLZ, this, _1, _2, _3); break;
     default:
         setErrorString("Unhandled Format");
         return ResultCode::Error;
     }
 
-    //load input grid
-    m_inputGrid=project()->loadGrid( gtype, gname);
-    if( !m_inputGrid ){
-        setErrorString("Loading grid failed!");
+    //load input table
+    m_inputTable=project()->loadTable( tname);
+    if( !m_inputTable ){
+        setErrorString("Loading table failed!");
         return ResultCode::Error;
     }
 
@@ -62,7 +58,7 @@ ProjectProcess::ResultCode ExportGridProcess::init( const QMap<QString, QString>
 }
 
 
-ProjectProcess::ResultCode ExportGridProcess::run(){
+ProjectProcess::ResultCode ExportTableProcess::run(){
 
     std::ofstream os(m_outputName.toStdString());
     if( !os.good()){
@@ -70,22 +66,22 @@ ProjectProcess::ResultCode ExportGridProcess::run(){
         return ResultCode::Error;
     }
 
-    Grid2DBounds bounds=m_inputGrid->bounds();
-
-    emit currentTask("Iterating cdps");
-    emit started(bounds.height());
+    emit currentTask("Writing Table");
+    emit started(m_inputTable->size());
     qApp->processEvents();
 
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
+    // this assumes table is iline/xline/value, check for other tables, if no iline and xline also disable formats with xy
 
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            auto z=(*m_inputGrid)(i,j);
-            auto line=m_formatLineFunction(i,j,z);
-            os<<line.toStdString()<<std::endl;
-        }
-
-        emit progress(i-bounds.i1());
+    int n=0;
+    for( auto it = m_inputTable->cbegin(); it!=m_inputTable->cend(); it++){
+        auto k12=m_inputTable->split_key( it.key() );
+        auto il=k12.first;
+        auto xl=k12.second;
+        auto z=it.value();
+        auto line=m_formatLineFunction(il,xl,z);
+        os<<line.toStdString()<<std::endl;
+        n++;
+        emit progress(n);
         qApp->processEvents();
     }
 
@@ -96,17 +92,12 @@ ProjectProcess::ResultCode ExportGridProcess::run(){
 }
 
 
-QString ExportGridProcess::zToQString(double z){
+QString ExportTableProcess::zToQString(double z){
 
-    if( z!=m_inputGrid->NULL_VALUE){
-        return QString::number(z);
-    }
-    else{
-        return m_null_value;
-    }
+    return QString::number(z);
 }
 
-QString ExportGridProcess::formatLineXYZ(int il, int xl, double z){
+QString ExportTableProcess::formatLineXYZ(int il, int xl, double z){
 
     QPointF xy=m_ilxl_to_xy.map(QPoint(il, xl));
     QString line;
@@ -115,7 +106,7 @@ QString ExportGridProcess::formatLineXYZ(int il, int xl, double z){
     return line;
 }
 
-QString ExportGridProcess::formatLineILXLZ(int il, int xl, double z){
+QString ExportTableProcess::formatLineILXLZ(int il, int xl, double z){
 
     QString line;
     line.sprintf( "%5d %5d ", il, xl );
@@ -123,7 +114,7 @@ QString ExportGridProcess::formatLineILXLZ(int il, int xl, double z){
     return line;
 }
 
-QString ExportGridProcess::formatLineXYILXLZ(int il, int xl, double z){
+QString ExportTableProcess::formatLineXYILXLZ(int il, int xl, double z){
 
     QString line;
     QPointF xy=m_ilxl_to_xy.map(QPoint(il, xl));

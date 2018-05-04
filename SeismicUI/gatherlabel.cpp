@@ -104,35 +104,6 @@ void GatherLabel::setViewerCurrentTrace( int t){
     update();
 }
 
-void GatherLabel::setHorizonColor(QColor color){
-
-    if( color==m_horizonColor) return;
-
-    m_horizonColor=color;
-
-    update();
-
-    emit horizonColorChanged(color);
-}
-
-void GatherLabel::setHighlightedPointSize(int s){
-
-    if( s==m_highlightedPointSize) return;
-
-    m_highlightedPointSize=s;
-
-    update();
-}
-
-void GatherLabel::setHighlightedPointColor(QColor c){
-
-    if( c==m_highlightedPointColor ) return;
-
-    m_highlightedPointColor=c;
-
-    update();
-}
-
 void GatherLabel::setTraceColor(QColor rgb){
 
     if(rgb==m_traceColor) return;
@@ -165,22 +136,87 @@ void GatherLabel::setVolumeOpacity(int o){
     updateBuffers();
 }
 
+void GatherLabel::setPickDisplayOptions(PointDisplayOptions opt){
+    if( opt==m_pickDisplayOptions) return;
+    m_pickDisplayOptions=opt;
+    updateBuffers();
+}
+
 void GatherLabel::setPickSize(int s){
-    if( s==m_pickSize) return;
-    m_pickSize=s;
+    if( s==pickSize()) return;
+    m_pickDisplayOptions.size=s;
     updateBuffers();
 }
 
 void GatherLabel::setPickColor(QColor c){
-    if(c==m_pickColor) return;
-    m_pickColor=c;
+    if(c==pickColor()) return;
+    m_pickDisplayOptions.color=c;
     updateBuffers();
 }
 
 void GatherLabel::setPickOpacity(int o){
-    if(o==m_pickOpacity) return;
-    m_pickOpacity=o;
+    if(o==pickOpacity()) return;
+    m_pickDisplayOptions.opacity=o;
     updateBuffers();
+}
+
+void GatherLabel::setHighlightedPointDisplayOptions(PointDisplayOptions opt){
+    if( opt==m_pickDisplayOptions) return;
+    m_highlightedPointDisplayOptions=opt;
+    updateBuffers();
+}
+
+void GatherLabel::setHighlightedPointSize(int s){
+    if( s==highlightedPointSize()) return;
+    m_highlightedPointDisplayOptions.size=s;
+    updateBuffers();
+}
+
+void GatherLabel::setHighlightedPointColor(QColor c){
+    if(c==highlightedPointColor()) return;
+    m_highlightedPointDisplayOptions.color=c;
+    updateBuffers();
+}
+
+void GatherLabel::setHighlightedPointOpacity(int o){
+    if(o==highlightedPointOpacity()) return;
+    m_highlightedPointDisplayOptions.opacity=o;
+    updateBuffers();
+}
+
+void GatherLabel::removeHorizonDisplayOptions(QString name){
+    m_horizonDisplayOptions.remove(name);
+    updateBuffers();
+}
+
+void GatherLabel::setHorizonDisplayOptions(QString name, LineDisplayOptions opt){
+    if(opt==m_horizonDisplayOptions.value(name)) return;
+    m_horizonDisplayOptions.insert(name,opt);
+    updateBuffers();
+}
+
+void GatherLabel::setHorizonWidth(QString name, int w){
+    if( !m_horizonDisplayOptions.contains(name)) return;
+    auto opt=m_horizonDisplayOptions.value(name);
+    if( opt.width==w) return;
+    opt.width=w;
+    m_horizonDisplayOptions.insert(name, opt);
+}
+
+void GatherLabel::setHorizonColor(QString name, QColor color){
+    if( !m_horizonDisplayOptions.contains(name)) return;
+    auto opt=m_horizonDisplayOptions.value(name);
+    if( opt.color==color) return;
+    opt.color=color;
+    m_horizonDisplayOptions.insert(name, opt);
+}
+
+void GatherLabel::setHorizonOpacity(QString name, int o){
+    if( !m_horizonDisplayOptions.contains(name)) return;
+    auto opt=m_horizonDisplayOptions.value(name);
+    if( opt.opacity==o) return;
+    opt.opacity=o;
+    m_horizonDisplayOptions.insert(name, opt);
 }
 
 void GatherLabel::onViewGatherChanged(std::shared_ptr<seismic::Gather>){
@@ -261,14 +297,10 @@ void GatherLabel::drawHorizons( QPainter& painter ){
    for( int i=0; i<m_view->horizonList().size(); i++){
 
        QString name=m_view->horizonList()[i];
-       QColor color=m_view->horizonColor(name); //HorizonColors[ i % HorizonColors.size() ];
        std::shared_ptr<Grid2D<float>> horizon=m_view->horizon(name);
        if( !horizon ) continue;
 
-        QPen thePen( color, 2);
-        thePen.setCosmetic(true);
-
-        drawHorizon( painter, horizon, thePen  );
+        drawHorizon( painter, horizon, m_horizonDisplayOptions.value(name) );
   }
 
    painter.restore();
@@ -276,7 +308,7 @@ void GatherLabel::drawHorizons( QPainter& painter ){
 }
 
 
-void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, QPen thePen){
+void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> g, LineDisplayOptions opts){
 
      if(!m_view->gather()) return;
     const seismic::Gather& gather=*(m_view->gather() );
@@ -321,13 +353,16 @@ void GatherLabel::drawHorizon(QPainter& painter, std::shared_ptr<Grid2D<float>> 
 
    }
 
+   QColor color(opts.color);
+   color.setAlphaF(0.01*opts.opacity);
+   QPen thePen(color, opts.width);
+   thePen.setCosmetic(true);
+   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
    painter.strokePath(path, thePen);
 }
 
 
 void GatherLabel::drawPicks(QPainter &painter, Table* picks){
-
-    const int PICK_SIZE=m_pickSize;
 
     if( !picks ) return;
 
@@ -336,13 +371,12 @@ void GatherLabel::drawPicks(QPainter &painter, Table* picks){
 
     painter.save();
 
-    //painter.setPen(QPen(Qt::blue,2));
-    QColor color(m_pickColor);
-    color.setAlphaF(0.01*m_pickOpacity);
+    QColor color(pickColor());
+    color.setAlphaF(0.01*pickOpacity());
     QPen thePen(color, 2);
-
     painter.setPen(thePen);
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    auto PICK_SIZE=pickSize();
 
     qreal pixelPerTrace=m_view->pixelPerTrace();
     qreal pixelPerSecond=m_view->pixelPerSecond();
@@ -420,8 +454,14 @@ void GatherLabel::drawHighlightedPoints( QPainter& painter,
 
     painter.save();
 
-    painter.setPen( m_highlightedPointColor );
-    painter.setBrush(QBrush(m_highlightedPointColor));
+    painter.setPen( Qt::NoPen );
+    QColor color(highlightedPointColor());
+    color.setAlphaF(0.01*highlightedPointOpacity());
+    painter.setBrush(color);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    auto POINT_SIZE=highlightedPointSize();
+
+    painter.setBrush(QBrush(highlightedPointColor()));
     qreal pixelPerTrace=m_view->pixelPerTrace();
     qreal pixelPerSecond=m_view->pixelPerSecond();
     qreal ft=m_view->ft();
@@ -436,7 +476,7 @@ void GatherLabel::drawHighlightedPoints( QPainter& painter,
         qreal x= trc * pixelPerTrace;
         qreal y= ( p.time - ft )*pixelPerSecond;
 
-        painter.drawEllipse( QPointF(x,y) ,m_highlightedPointSize, m_highlightedPointSize);
+        painter.drawEllipse( QPointF(x,y) , POINT_SIZE, POINT_SIZE);
     }
 
     painter.restore();
@@ -659,6 +699,8 @@ void GatherLabel::updatePixmap(){
     painter.setOpacity(qreal(traceOpacity())/100);
 
     for( seismic::Gather::size_type idx=firstTrace; idx<= lastTrace; idx++){
+
+        if( idx>=traceScaleFactors.size()) continue;        // seems to be out of sync sometimes!!!
 
         const seismic::Trace& trc=gather[idx];
 

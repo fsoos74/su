@@ -27,12 +27,20 @@
 //#include<gridviewer.h>
 #include <histogramdialog.h>
 #include <QMessageBox>
+#include<agc.h>
+#include <multiitemselectiondialog.h>
+#include <linedisplayoptionsdialog.h>
 
 GatherViewer::GatherViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::GatherViewer)
 {
     ui->setupUi(this);
+
+    m_progressBar=new QProgressBar(this);
+    m_progressBar->setMinimum(0);
+    m_progressBar->setFixedWidth(100);
+    ui->statusBar->addPermanentWidget(m_progressBar);
 
     setAttribute( Qt::WA_DeleteOnClose);
 
@@ -74,13 +82,9 @@ GatherViewer::GatherViewer(QWidget *parent) :
 
 
     createDockWidgets();
-
     populateWindowMenu();
-
     setupPickMenus();
-
     setupMouseModes();
-
     setupGainToolBar();
 
     gatherView->picker()->setPicks(std::make_shared<Table>());
@@ -279,7 +283,10 @@ void GatherViewer::zoomFitWindow(){
     gatherView->normalize();
 }
 
-#include<agc.h>
+
+void GatherViewer::setDatasetInfo(const SeismicDatasetInfo & info){
+    m_datasetInfo=info;
+}
 
  void GatherViewer::setGather( std::shared_ptr<seismic::Gather> gather){
 
@@ -706,81 +713,6 @@ void GatherViewer::on_actionGather_Histogram_triggered()
 }
 
 
-void GatherViewer::on_openGridAct_triggered()
-{
-    static const QVector<QColor> HorizonColors{Qt::darkRed, Qt::darkGreen, Qt::darkBlue,
-                Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow,
-                Qt::red, Qt::green, Qt::blue,
-                Qt::cyan, Qt::magenta, Qt::yellow};
-
-    if( !m_project ) return;
-
-    bool ok=false;
-    QString gridName=QInputDialog::getItem(this, "Open Horizon", "Please select a horizon:",
-                                           m_project->gridList(GridType::Horizon), 0, false, &ok);
-
-    QColor color=HorizonColors[gatherView->horizonList().size() % HorizonColors.size()];
-
-    if( !gridName.isEmpty() && ok ){
-
-        std::shared_ptr<Grid2D<float> > grid=m_project->loadGrid(GridType::Horizon, gridName );
-
-        gatherView->addHorizon( gridName, grid, color );
-    }
-
-}
-
-void GatherViewer::on_closeGridAct_triggered()
-{
-    if( gatherView->horizonList().empty()) return;
-
-    bool ok=false;
-    QString name=QInputDialog::getItem(this, "Close Horizon", "Select horizon", gatherView->horizonList(), 0, false, &ok);
-
-    if( ok && !name.isEmpty()){
-        gatherView->removeHorizon(name);
-    }
-}
-
-void GatherViewer::on_actionOpenVolume_triggered()
-{
-    if( !m_project ) return;
-
-    bool ok=false;
-    QString volumeName=QInputDialog::getItem(this, "Open Volume", "Please select a volume:",
-                                           m_project->volumeList(), 0, false, &ok);
-
-    if( !volumeName.isEmpty() && ok ){
-
-        std::shared_ptr<Volume > volume=m_project->loadVolume(volumeName);
-
-        if( !volume ) return;
-
-        auto frange=volume->valueRange();   // XXX maybe put this into gatherview::setVolume
-
-        gatherView->setVolume( volume );
-
-
-        gatherView->gatherLabel()->volumeColorTable()->setRange(frange.first, frange.second);
-
-        m_attributeColorBarWidget->setLabel(volumeName);
-
-        // adjust the display range in volume options dialog if open
-        if( m_volumeDisplayRangeDialog ){
-            m_volumeDisplayRangeDialog->setRange(std::pair<double,double>(frange.first,frange.second));
-        }
-
-    }
-
-}
-
-
-void GatherViewer::on_actionCloseVolume_triggered()
-{
-    gatherView->setVolume(std::shared_ptr<Volume>());
-}
-
-
 void GatherViewer::on_action_Load_Picks_triggered()
 {
     if( !picksSaved()) return;
@@ -1084,11 +1016,14 @@ void GatherViewer::on_action_Point_Display_Options_triggered()
 
         m_pointDisplayOptionsDialog->setPointSize( gatherLabel->highlightedPointSize());
         m_pointDisplayOptionsDialog->setPointColor( gatherLabel->highlightedPointColor());
+        m_pointDisplayOptionsDialog->setOpacity( gatherLabel->highlightedPointOpacity());
 
         connect( m_pointDisplayOptionsDialog, SIGNAL( pointSizeChanged(int)),
                  gatherLabel, SLOT(setHighlightedPointSize(int)) );
         connect( m_pointDisplayOptionsDialog, SIGNAL(pointColorChanged(QColor)),
                  gatherLabel, SLOT(setHighlightedPointColor(QColor)) );
+        connect( m_pointDisplayOptionsDialog, SIGNAL(opacityChanged(int)),
+                 gatherLabel, SLOT(setHighlightedPointOpacity(int)));
     }
 
     m_pointDisplayOptionsDialog->show();
@@ -1230,4 +1165,103 @@ bool GatherViewer::picksSaved(){
 }
 
 
+void GatherViewer::on_actionSeismic_Dataset_Info_triggered()
+{
+    QString istr=tr("Name:       %1\n").arg(m_datasetInfo.name()) +
+                 tr("Domain:     %1\n").arg(datasetDomainToString(m_datasetInfo.domain())) +
+                 tr("Mode:       %1\n").arg(datasetModeToString(m_datasetInfo.mode())) +
+                 tr("ft:         %1\n").arg(QString::number(m_datasetInfo.ft())) +
+                 tr("dt:         %1\n").arg(QString::number(m_datasetInfo.dt())) +
+                 tr("nt:         %1\n").arg(QString::number(m_datasetInfo.nt()));
 
+    QMessageBox::information(this, "Dataset Info", istr, QMessageBox::Ok);
+}
+
+void GatherViewer::on_actionSetup_Horizons_triggered()
+{
+    Q_ASSERT(m_project);
+
+    QStringList avail=m_project->gridList(GridType::Horizon);
+    bool ok=false;
+    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Horizons"), tr("Select Grids:"), avail, &ok, ui->gatherView->horizonList());
+    if( !ok ) return;
+
+    // first pass remove items
+    for( auto name : ui->gatherView->horizonList() ){
+
+        if( !names.contains(name)) ui->gatherView->removeHorizon(name);
+        else names.removeAll(name);
+    }
+
+    // now we only have names that need to be added
+    // second pass add items
+    for( auto name : names){
+
+        auto g = m_project->loadGrid(GridType::Horizon, name);
+
+        if( !g ){
+            QMessageBox::critical(this, tr("Add Grid"), QString("Loading grid \"%1\" failed!").arg(name) );
+            break;
+        }
+
+        ui->gatherView->addHorizon(name, g);
+    }
+}
+
+void GatherViewer::on_actionSetup_Volume_triggered()
+{
+    QStringList avail;
+    avail<<"NONE";
+    avail.append(m_project->volumeList());
+    bool ok=false;
+    auto current=0;
+    QString name=QInputDialog::getItem(  this, "Setup Volume", "Select Volume:", avail, current, false, &ok);
+    if(name.isEmpty() || !ok) return;
+    if( name=="NONE"){
+        gatherView->setVolume(std::shared_ptr<Volume>());
+    }
+    else{
+        auto volume=m_project->loadVolume(name);
+        if( !volume){
+            QMessageBox::critical(0, "Load Volume", tr("Loading volume \"%1\" failed!").arg(name));
+            return;
+        }
+        auto frange=volume->valueRange();   // XXX maybe put this into gatherview::setVolume
+        gatherView->gatherLabel()->volumeColorTable()->setRange(frange.first, frange.second);
+        m_attributeColorBarWidget->setLabel(name);
+
+        // adjust the display range in volume options dialog if open
+        if( m_volumeDisplayRangeDialog ){
+            m_volumeDisplayRangeDialog->setRange(std::pair<double,double>(frange.first,frange.second));
+        }
+        gatherView->setVolume(volume);
+    }
+}
+
+void GatherViewer::on_action_Horizon_Display_Options_triggered()
+{
+    auto list=gatherView->horizonList();
+    QString name;
+    if( list.size()<1 ) return;
+    if( list.size()==1){
+        name=list.front();
+    }
+    else{
+        bool ok=false;
+        name=QInputDialog::getItem(this, "Horizon Display Options", "Select Horizon:", list, 0, false, &ok);
+        if( name.isEmpty() || !ok) return;
+    }
+
+    auto opts=gatherView->gatherLabel()->horizonDisplayOptions(name);
+    LineDisplayOptionsDialog dlg(this);
+    dlg.setWindowTitle(tr("Setup %1").arg(name));
+    dlg.setLineWidth(opts.width);
+    dlg.setColor(opts.color);
+    dlg.setOpacity(opts.opacity);
+    if( dlg.exec()==QDialog::Accepted){
+        opts.width=dlg.lineWidth();
+        opts.color=dlg.color();
+        opts.opacity=dlg.opacity();
+        gatherView->gatherLabel()->setHorizonDisplayOptions(name, opts);
+    }
+}

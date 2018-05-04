@@ -57,8 +57,6 @@ public:
 
     QStringList horizonList();
 
-    QColor horizonColor(QString);
-
     std::shared_ptr< Volume > volume()const;
 
     Picker* picker()const{
@@ -161,7 +159,7 @@ public slots:
     void setHighlightedPoints(QVector<SelectionPoint>);
     void setCursorPosition(SelectionPoint);
     void setMouseMode( MouseMode );
-    void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor);
+    void addHorizon( QString name, std::shared_ptr<Grid2D<float> > g);
     //void setHorizonColor( QString name, QColor);
     void removeHorizon( QString name);
     //void setPicks( std::shared_ptr<Grid2D<float>>);
@@ -205,8 +203,6 @@ private:
     GatherSortKey m_primarySortKey=GatherSortKey::None;
 
     QMap<QString, std::shared_ptr<Grid2D<float> > > m_horizons;
-    QMap<QString, QColor> m_horizonColors;
-
     std::shared_ptr<Volume> m_volume;
 
     Picker* m_picker=nullptr;

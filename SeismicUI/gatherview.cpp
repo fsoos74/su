@@ -188,15 +188,10 @@ std::shared_ptr<Grid2D<float> > GatherView::horizon(QString name)const{
     return m_horizons[name];
 }
 
-QColor GatherView::horizonColor(QString name){
-    return m_horizonColors.value(name);
-}
+void GatherView::addHorizon( QString name, std::shared_ptr<Grid2D<float> > g){
 
-void GatherView::addHorizon( QString name, std::shared_ptr<Grid2D<float> > g, QColor color){
-
-    m_horizons[name]=g;
-    m_horizonColors[name]=color;
-    m_gatherLabel->update();
+    m_horizons.insert(name,g);
+    gatherLabel()->setHorizonDisplayOptions(name, GatherLabel::LineDisplayOptions{2,Qt::red, 100});
 }
 
 
@@ -204,7 +199,7 @@ void GatherView::removeHorizon( QString name){
 
     if( m_horizons.contains(name)){
         m_horizons.remove(name);
-        m_gatherLabel->update();
+        m_gatherLabel->removeHorizonDisplayOptions(name);
     }
 }
 
@@ -667,7 +662,14 @@ bool GatherView::eventFilterPick(QWidget* widget, QMouseEvent *mouseEvent){
     if( ((mouseEvent->type() == QEvent::MouseButtonPress) && mouseEvent->buttons()&Qt::MiddleButton) ||
             (mouseEvent->type()==QEvent::MouseMove &&
              mouseEvent->buttons()&Qt::MiddleButton) ){
-        m_picker->deleteSingle(trace, secs);  // don't use pichmode
+        // could be several traces per pixel, delete them all
+        auto tracesPerPixel=static_cast<int>(std::ceil(1./m_pixelPerTrace));
+        int trace0=static_cast<int>(std::floor(static_cast<qreal>(p.x())/m_pixelPerTrace));
+        int trace1=trace0+tracesPerPixel;
+        for( int trace=trace0; trace<trace1; trace++){
+            m_picker->deleteSingle(trace,secs);  // don't use pickmode
+        }
+
     }
 
     if( (mouseEvent->type() == QEvent::MouseButtonPress ) && (mouseEvent->buttons()&Qt::RightButton)){
@@ -694,9 +696,14 @@ bool GatherView::eventFilterDeletePick(QWidget* widget, QMouseEvent *mouseEvent)
              (m_picker->mode()==PickMode::Single || m_picker->mode()==PickMode::Lines || m_picker->mode()==PickMode::Outline)) ){
 
         QPoint p=mouseEvent->pos();
-        int trace=static_cast<int>(std::round(static_cast<qreal>(p.x())/m_pixelPerTrace));
         qreal secs=m_ft + p.y()/m_pixelPerSecond;
-        m_picker->deletePick(trace,secs);
+        // could be several traces per pixel, delete them all
+        auto tracesPerPixel=static_cast<int>(std::ceil(1./m_pixelPerTrace));
+        int trace0=static_cast<int>(std::floor(static_cast<qreal>(p.x())/m_pixelPerTrace));
+        int trace1=trace0+tracesPerPixel;
+        for( int trace=trace0; trace<trace1; trace++){
+            m_picker->deletePick(trace,secs);  // use pickmode !!!
+        }
     }
 
     return true;

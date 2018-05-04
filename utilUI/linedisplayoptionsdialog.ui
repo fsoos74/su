@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PointDisplayOptionsDialog</class>
- <widget class="QDialog" name="PointDisplayOptionsDialog">
+ <class>LineDisplayOptionsDialog</class>
+ <widget class="QDialog" name="LineDisplayOptionsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>192</width>
-    <height>170</height>
+    <width>184</width>
+    <height>168</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,12 +19,12 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Size:</string>
+        <string>Width:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QSpinBox" name="sbSize">
+      <widget class="QSpinBox" name="sbWidth">
        <property name="minimum">
         <number>1</number>
        </property>
@@ -74,41 +74,11 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pbClose">
-       <property name="text">
-        <string>Close</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -122,18 +92,34 @@
  <resources/>
  <connections>
   <connection>
-   <sender>pbClose</sender>
-   <signal>clicked()</signal>
-   <receiver>PointDisplayOptionsDialog</receiver>
-   <slot>hide()</slot>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>LineDisplayOptionsDialog</receiver>
+   <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>177</x>
-     <y>215</y>
+     <x>91</x>
+     <y>144</y>
     </hint>
     <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
+     <x>91</x>
+     <y>83</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>LineDisplayOptionsDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>144</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>91</x>
+     <y>83</y>
     </hint>
    </hints>
   </connection>

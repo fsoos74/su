@@ -175,8 +175,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <editmarkersdialog.h>
 #include <fmcdp2ddialog.h>
 #include <fmcdp2dprocess.h>
-
-
+#include <exporttabledialog.h>
+#include <exporttableprocess.h>
 #include<axxisorientation.h>
 #include<projectgeometry.h>
 #include "selectgridtypeandnamedialog.h"
@@ -688,6 +688,11 @@ void ProjectViewer::on_actionExportSeismic_triggered()
 void ProjectViewer::on_actionExportLog_triggered()
 {
     selectAndExportLog();
+}
+
+void ProjectViewer::on_action_ExportTable_triggered()
+{
+    selectAndExportTable();
 }
 
 void ProjectViewer::on_actionSave_triggered()
@@ -2376,6 +2381,33 @@ void ProjectViewer::selectAndExportLog()
     runProcess( new ExportLogProcess( m_project, this ), params );
 }
 
+void ProjectViewer::selectAndExportTable()
+{
+    ExportTableDialog dlg;
+
+    auto tables=m_project->tableList();
+    dlg.setTables(tables);
+    dlg.setWindowTitle(tr("Export Table"));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    auto params=dlg.params();
+    runProcess( new ExportTableProcess( m_project, this ), params );
+}
+
+void ProjectViewer::exportTable(const QString& table)
+{
+    ExportTableDialog dlg;
+
+    dlg.setFixedTable(table);
+    dlg.setWindowTitle(tr("Export Table"));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    auto params=dlg.params();
+    runProcess( new ExportTableProcess( m_project, this ), params );
+}
+
 
 void ProjectViewer::on_datasetsView_doubleClicked(const QModelIndex &idx)
 {
@@ -2664,6 +2696,7 @@ void ProjectViewer::runTableContextMenu( const QPoint& pos){
     QMenu menu;
 
     menu.addAction("display");
+    menu.addAction("export");
     menu.addAction("rename");
     menu.addAction("remove");
 
@@ -2672,6 +2705,9 @@ void ProjectViewer::runTableContextMenu( const QPoint& pos){
 
     if( selectedAction->text()=="display" ){
         displayTable( names[0] );
+    }
+    else if( selectedAction->text()=="export" ){
+        exportTable( names[0] );
     }
     else if( selectedAction->text()=="rename" ){
         renameTable( names[0] );
@@ -3862,6 +3898,7 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         GatherViewer* viewer=new GatherViewer;//(this);
         viewer->setDispatcher(m_dispatcher);
         viewer->setWindowTitle( name );
+        viewer->setDatasetInfo(info);
 
         if( info.mode()==SeismicDatasetInfo::Mode::Prestack){
 
@@ -3944,6 +3981,9 @@ void ProjectViewer::displaySeismicDataset(const QString& name){
         connect( viewer, SIGNAL(lastRequested()), selector, SLOT(last()));
         viewer->navigationToolBar()->addWidget(selector);
         //viewer->view()->leftRuler()->setAxxisLabel(verticalAxisLabel);
+        connect( reader.get(), SIGNAL(started(int)), viewer->progressBar(), SLOT(setMaximum(int)));
+        connect( reader.get(), SIGNAL(progress(int)), viewer->progressBar(), SLOT(setValue(int)));
+        connect( reader.get(), SIGNAL(finished()), viewer->progressBar(), SLOT(reset()));
         viewer->show();
         viewer->setMinimumWidth(viewer->navigationToolBar()->width() + 100 );
 
@@ -4880,6 +4920,7 @@ void ProjectViewer::updateMenu(){
     ui->actionExportVolume->setEnabled(isProject);
     ui->actionExportSeismic->setEnabled(isProject);
     ui->actionExportLog->setEnabled(isProject);
+    ui->action_ExportTable->setEnabled(isProject);
     ui->actionExportProject->setEnabled(isProject);
     ui->actionCloseProject->setEnabled(isProject);
 
@@ -5024,6 +5065,7 @@ void ProjectViewer::on_actiontest_triggered()
 
 
 }
+
 
 
 

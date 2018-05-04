@@ -61,6 +61,7 @@ private slots:
     void on_actionExportVolume_triggered();
     void on_actionExportSeismic_triggered();
     void on_actionExportLog_triggered();
+    void on_action_ExportTable_triggered();
     void on_actionSaveProjectAs_triggered();
     void on_actionSave_triggered();
     void on_actionCloseProject_triggered();
@@ -188,6 +189,8 @@ private slots:
 
     void on_actiontest_triggered();
 
+
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);
@@ -274,6 +277,8 @@ private:
     void displayTable(const QString&);
     void renameTable(const QString&);
     void removeTables(const QStringList&);
+    void selectAndExportTable();
+    void exportTable(const QString&);
 
     void runProcess( ProjectProcess* process, QMap<QString, QString> params);
 

@@ -52,7 +52,8 @@ SOURCES += utilui.cpp \
     alignedtextitem.cpp \
     ruleraxisview.cpp \
     multiinputdialog.cpp \
-    selecttypeanditemdialog.cpp
+    selecttypeanditemdialog.cpp \
+    linedisplayoptionsdialog.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -84,7 +85,8 @@ HEADERS += utilui.h\
     axisconfigdialog.h \
     ruleraxisview.h \
     multiinputdialog.h \
-    selecttypeanditemdialog.h
+    selecttypeanditemdialog.h \
+    linedisplayoptionsdialog.h
 
 unix {
     target.path = /usr/lib
@@ -100,7 +102,8 @@ FORMS += \
     multiitemselectiondialog.ui \
     xyzimportdialog.ui \
     axisconfigdialog.ui \
-    selecttypeanditemdialog.ui
+    selecttypeanditemdialog.ui \
+    linedisplayoptionsdialog.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/release/ -lColorUI
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../ColorUI/debug/ -lColorUI

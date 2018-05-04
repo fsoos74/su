@@ -17,12 +17,14 @@
 #include "volumedisplayoptionsdialog.h"
 #include "pointdisplayoptionsdialog.h"
 #include "gathersortkey.h"
+#include <seismicdatasetinfo.h>
 #include "sectionscaledialog.h"
 
 #include <selectionpointbuffer.h>
 
 #include <baseviewer.h>
 #include <QDockWidget>
+#include <QProgressBar>
 #include<colorbarwidget.h>
 
 #include <histogramrangeselectiondialog.h>
@@ -51,6 +53,10 @@ public:
         return m_gather;
     }
 
+    SeismicDatasetInfo info()const{
+        return m_datasetInfo;
+    }
+
     const std::vector<seismic::SEGYHeaderWordDef>& traceHeaderDef()const{
         return m_traceHeaderDef;
     }
@@ -59,6 +65,10 @@ public:
 
     GatherView* view()const{
         return gatherView;
+    }
+
+    QProgressBar* progressBar(){
+        return m_progressBar;
     }
 
     const std::vector< std::pair< std::string, QString > >& traceAnnotations()const{
@@ -78,6 +88,7 @@ protected:
 
 public slots:
     void setProject( AVOProject*);
+    void setDatasetInfo(const SeismicDatasetInfo&);
     void setGather( std::shared_ptr<seismic::Gather>);
     void setAGCLen(int);
     void setTraceHeaderDef(const std::vector<seismic::SEGYHeaderWordDef>&);
@@ -115,10 +126,6 @@ private slots:
     void onMouseOver(int, qreal);
     void onTopRulerClicked( int trace );
     void onLeftRulerClicked( qreal secs);
-    void on_openGridAct_triggered();
-    void on_closeGridAct_triggered();
-    void on_actionOpenVolume_triggered();
-    void on_actionCloseVolume_triggered();
     void on_actionVolume_Options_triggered();
     void on_action_Trace_Options_triggered();
     void on_actionTrace_Scaling_triggered();
@@ -140,6 +147,11 @@ private slots:
     void fillModeSelected( QAction* );
     void on_actionGather_Histogram_triggered();
     void on_actionPick_Display_Options_triggered();
+    void on_actionSeismic_Dataset_Info_triggered();
+    void on_actionSetup_Horizons_triggered();
+    void on_actionSetup_Volume_triggered();
+
+    void on_action_Horizon_Display_Options_triggered();
 
 private:
 
@@ -163,6 +175,7 @@ private:
     Ui::GatherViewer *ui;
     GatherView* gatherView;
     std::shared_ptr<Gather> m_gather;
+    SeismicDatasetInfo m_datasetInfo;
     AVOProject* m_project;
     int m_agcLen=0;
     QString m_picksName;
@@ -182,6 +195,7 @@ private:
     ColorBarWidget* m_attributeColorBarWidget=nullptr;
     QDockWidget* m_densityColorBarDock=nullptr;
     QDockWidget* m_attributeColorBarDock=nullptr;
+    QProgressBar* m_progressBar=nullptr;
 
     QMap<PickMode, QAction*> m_pickModeActions;
     QMap<PickType, QAction*> m_pickTypeActions;

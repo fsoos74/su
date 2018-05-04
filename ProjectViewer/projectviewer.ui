@@ -262,6 +262,8 @@
      <addaction name="actionExportSeismic"/>
      <addaction name="separator"/>
      <addaction name="actionExportLog"/>
+     <addaction name="separator"/>
+     <addaction name="action_ExportTable"/>
     </widget>
     <widget class="QMenu" name="menu_Recent_Projects">
      <property name="title">
@@ -979,7 +981,12 @@
   </action>
   <action name="actionConvert_Picks_To_Horizon">
    <property name="text">
-    <string>Convert Picks To Horizon</string>
+    <string>&amp;Convert Picks To Horizon</string>
+   </property>
+  </action>
+  <action name="action_ExportTable">
+   <property name="text">
+    <string>&amp;Table</string>
    </property>
   </action>
  </widget>

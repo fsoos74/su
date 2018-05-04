@@ -8,6 +8,9 @@ LineDisplayOptionsDialog::LineDisplayOptionsDialog(QWidget *parent) :
     ui(new Ui::LineDisplayOptionsDialog)
 {
     ui->setupUi(this);
+
+    connect( ui->sbWidth, SIGNAL(valueChanged(int)), this, SIGNAL(lineWidthChanged(int)));
+    connect( ui->sbOpacity, SIGNAL(valueChanged(int)), this, SIGNAL(opacityChanged(int)));
 }
 
 LineDisplayOptionsDialog::~LineDisplayOptionsDialog()
@@ -15,54 +18,44 @@ LineDisplayOptionsDialog::~LineDisplayOptionsDialog()
     delete ui;
 }
 
-int LineDisplayOptionsDialog::pointSize()const{
+int LineDisplayOptionsDialog::lineWidth()const{
 
-    return ui->sbSize->value();
+    return ui->sbWidth->value();
 }
 
 int LineDisplayOptionsDialog::opacity()const{
     return ui->sbOpacity->value();
 }
 
-QColor LineDisplayOptionsDialog::pointColor()const{
+QColor LineDisplayOptionsDialog::color()const{
 
     return ui->cbColor->color();
 }
 
-void LineDisplayOptionsDialog::setPointSize(int size){
+void LineDisplayOptionsDialog::setLineWidth(int size){
 
-    ui->sbSize->setValue(size);
+    ui->sbWidth->setValue(size);
 }
 
 void LineDisplayOptionsDialog::setOpacity(int o){
     ui->sbOpacity->setValue(o);
 }
 
-void LineDisplayOptionsDialog::setPointColor(QColor color){
+void LineDisplayOptionsDialog::setColor(QColor c){
 
-    if( color==pointColor()) return;
+    if( c==color()) return;
 
-    ui->cbColor->setColor(color);
+    ui->cbColor->setColor(c);
 
-    emit pointColorChanged(color);
+    emit colorChanged(c);
 }
 
 void LineDisplayOptionsDialog::on_cbColor_clicked()
 {
-    const QColor color = QColorDialog::getColor( pointColor(), this, "Select Point Color");
+    const QColor c = QColorDialog::getColor( color(), this, "Select Point Color");
 
-    if (color.isValid()) {
+    if (c.isValid()) {
 
-      setPointColor(color);
+      setColor(c);
     }
-}
-
-void LineDisplayOptionsDialog::on_sbSize_valueChanged(int size)
-{
-    emit pointSizeChanged(size);
-}
-
-void LineDisplayOptionsDialog::on_sbOpacity_valueChanged(int arg1)
-{
-    emit opacityChanged(arg1);
 }

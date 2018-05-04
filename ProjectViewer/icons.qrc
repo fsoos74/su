@@ -112,5 +112,7 @@
         <file>../images/shrink-x-24x24.png</file>
         <file>../images/pick-lines-32x32.png</file>
         <file>../images/pick-display-options-icon-32x32.png</file>
+        <file>../images/info-icon-32x32.png</file>
+        <file>../images/horizon-display-options-icon-32x32.png</file>
     </qresource>
 </RCC>
