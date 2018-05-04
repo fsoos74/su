@@ -277,15 +277,6 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
     const int BufferInlineSize=2*QThreadPool::globalInstance()->maxThreadCount() + m_supergatherInlineSize - 1;     // with overlap
 
-    std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
-    if( !reader){
-        setErrorString("Invalid segyreader!");
-        return ResultCode::Error;
-    }
-
-    // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
-    setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
-
     int firstInline=m_reader->minInline();
     int lastInline=m_reader->maxInline();
     int firstCrossline=m_reader->minCrossline();
@@ -293,22 +284,28 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
     int inlinesToProcess=lastInline-firstInline+1;
     int inlinesProcessed=0;
 
-    emit currentTask("Processing inlines...");
-    emit started(100);  // percent
+    emit currentTask("Processing cdps...");
+    emit started(m_reader->sizeTraces());
     emit progress(0);
     qApp->processEvents();
 
-    reader->seek_trace(0);
+    ssize_t lastPercent=0;
+    m_reader->seekTrace(0);
     GatherBuffer buffer( m_reader->minInline(), m_reader->minCrossline(), BufferInlineSize, m_reader->maxCrossline()-m_reader->minCrossline()+1);
     int lastFullDataIline=buffer.lastIline()-m_supergatherInlineSize+1;
     GatherFilter filter(m_minimumOffset, m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
 
-    while( reader->current_trace()<reader->trace_count() ){
 
+    while( m_reader->good() ){
 
-        qApp->processEvents();
+        int percent=100*m_reader->tellTrace()/m_reader->sizeTraces();
+        if(percent!=lastPercent){
+            lastPercent=percent;
+            emit progress(m_reader->tellTrace());
+            qApp->processEvents();
+        }
 
-        std::shared_ptr<seismic::Gather> gather=reader->read_gather("cdp");
+        auto gather=m_reader->readGather("cdp");
         if( !gather ) break;
 
         // extract this before filter because filter could leave empty gather
@@ -316,9 +313,9 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
 
-        gather=filter.filter(gather);  // XXX
+        gather=filter.filter(gather);
 
-        // buffer full, now process
+        // buffer full? now process
         if( iline>lastFullDataIline){
 
             int firstIlineToProcess=buffer.firstIline();
@@ -330,9 +327,7 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
             // copy unfinished inlines to beginning of buffer
             buffer.advanceTo(lastFullDataIline+1);
-            int percentDone=100*(lastFullDataIline-firstInline+1)/(lastInline-firstInline+1);
             lastFullDataIline=buffer.lastIline()-m_supergatherInlineSize+1;
-             emit progress(percentDone);
         }
 
         buffer(iline, xline)=gather;
@@ -344,12 +339,11 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
     if( ! processBuffer_n( &buffer, firstIlineToProcess, lastIlineToProcess ) ){
         return ResultCode::Canceled;
     }
-    int percentDone=100;
-    emit progress(percentDone);
+
+    emit progress(m_reader->sizeTraces());
     qApp->processEvents();
 
-
-    // store result grids
+    // store result volumes
     if( !project()->addVolume( m_interceptName, m_intercept, params() )){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_interceptName) );
         return ResultCode::Error;
