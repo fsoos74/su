@@ -191,6 +191,8 @@ private slots:
 
 
 
+    void on_actionStack_To_Gather_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

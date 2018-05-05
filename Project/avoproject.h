@@ -230,6 +230,7 @@ public:
     bool addSeismicDataset( const QString& name, int dimensions, SeismicDatasetInfo::Domain domain, SeismicDatasetInfo::Mode mode,
                             const QString& path, const seismic::SEGYInfo& info);  // from SEGY
     bool addSeismicDataset( const QString& name, SeismicDatasetInfo info, const ProcessParams& pp=ProcessParams() );
+    bool existsSeismicDataset(const QString&);
     bool removeSeismicDataset( const QString& name);
     bool renameSeismicDataset( const QString& name, const QString& newName);
     std::shared_ptr<SeismicDatasetReader> openSeismicDataset(const QString& datasetName);

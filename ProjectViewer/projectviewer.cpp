@@ -70,9 +70,10 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<exportseismicdialog.h>
 #include<exportlogprocess.h>
 #include<exportlogdialog.h>
-
 #include <offsetstackdialog.h>
 #include <offsetstackprocess.h>
+#include <stacktogatherdialog.h>
+#include <stacktogatherprocess.h>
 #include <replacebadtracesdialog.h>
 #include <replacebadtracesprocess.h>
 #include <cropdatasetdialog.h>
@@ -985,6 +986,20 @@ void ProjectViewer::on_action_Offset_Stack_triggered()
     runProcess( new OffsetStackProcess( m_project, this ), params );
 }
 
+void ProjectViewer::on_actionStack_To_Gather_triggered()
+{
+    Q_ASSERT( m_project);
+
+    StackToGatherDialog dlg;
+    dlg.setWindowTitle("Stack(s) to Gather");
+    dlg.setInputStacks(m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Poststack));
+    dlg.setReservedDatasets( m_project->seismicDatasetList() );
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess( new StackToGatherProcess( m_project, this ), params );
+}
 
 
 /*
@@ -4929,6 +4944,8 @@ void ProjectViewer::updateMenu(){
     ui->actionDisplay_Map->setEnabled(isProject);
 
     ui->action_Offset_Stack->setEnabled(isProject);
+    ui->actionStack_To_Gather->setEnabled(isProject);
+
     ui->actionReplace_Bad_Traces->setEnabled(isProject);
     ui->actionCrop_Dataset->setEnabled(isProject);
     ui->actionCreateTimeslice->setEnabled(isProject);
@@ -5065,6 +5082,8 @@ void ProjectViewer::on_actiontest_triggered()
 
 
 }
+
+
 
 
 

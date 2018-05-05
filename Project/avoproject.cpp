@@ -1160,6 +1160,11 @@ bool AVOProject::addSeismicDataset( const QString& name, SeismicDatasetInfo info
     return true;
 }
 
+bool AVOProject::existsSeismicDataset( const QString& name ){
+
+    return m_seismicDatasetList.contains( name);
+}
+
 bool AVOProject::removeSeismicDataset( const QString& name){
 
     if( !seismicDatasetList().contains(name)) return false;

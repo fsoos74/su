@@ -44,6 +44,7 @@ public:
     std::shared_ptr<seismic::Gather> readGather(QString key, ssize_t maxTraces=10000);
 
     // sorted access
+    std::shared_ptr<seismic::Trace> readFirstTrace( const QString& key1, const QString& value1);
     std::shared_ptr<seismic::Trace> readFirstTrace( const QString& key1, const QString& value1,
                                                     const QString& key2, const QString& value2);
     std::shared_ptr<seismic::Gather> readGather( const QString& key1, const QString& min1, const QString& max1,

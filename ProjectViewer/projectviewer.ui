@@ -376,6 +376,7 @@
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
     <addaction name="separator"/>
     <addaction name="action_Offset_Stack"/>
+    <addaction name="actionStack_To_Gather"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Well">
     <property name="title">
@@ -987,6 +988,11 @@
   <action name="action_ExportTable">
    <property name="text">
     <string>&amp;Table</string>
+   </property>
+  </action>
+  <action name="actionStack_To_Gather">
+   <property name="text">
+    <string>Stack To Gather</string>
    </property>
   </action>
  </widget>

@@ -74,7 +74,8 @@ SOURCES += prozessui.cpp \
     punchoutvolumedialog.cpp \
     horizontotopdialog.cpp \
     tabletohorizondialog.cpp \
-    exporttabledialog.cpp
+    exporttabledialog.cpp \
+    stacktogatherdialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -132,7 +133,8 @@ HEADERS += prozessui.h\
     punchoutvolumedialog.h \
     horizontotopdialog.h \
     tabletohorizondialog.h \
-    exporttabledialog.h
+    exporttabledialog.h \
+    stacktogatherdialog.h
 
 unix {
     target.path = /usr/lib
@@ -193,7 +195,8 @@ FORMS += \
     punchoutvolumedialog.ui \
     horizontotopdialog.ui \
     tabletohorizondialog.ui \
-    exporttabledialog.ui
+    exporttabledialog.ui \
+    stacktogatherdialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

@@ -455,10 +455,38 @@ void SeismicDatasetReader::addDData(seismic::Trace& trc ){
     }
 }
 
+
+std::shared_ptr<seismic::Trace> SeismicDatasetReader::readFirstTrace( const QString& key1, const QString& value1){
+
+    QSqlQuery query("firsttrace1", m_db);
+    query.prepare(QString("select * from map where %1==%2 ").arg(key1, value1) );
+    if( !query.exec()){
+        throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));
+    }
+
+    if( !query.next()) return std::shared_ptr<seismic::Trace>();
+
+    bool ok=false;
+    int traceNo=query.value("trace").toInt(&ok);
+    if( !ok){
+        throw Exception(QString("Accessing trace number failed!"));
+    }
+
+    m_reader->seek_trace(traceNo);
+
+    auto trc = m_reader->read_trace();
+
+    addDData(trc);
+
+    return std::make_shared<seismic::Trace>(trc);
+}
+
+
+
 std::shared_ptr<seismic::Trace> SeismicDatasetReader::readFirstTrace( const QString& key1, const QString& value1,
                                                      const QString& key2, const QString& value2){
 
-    QSqlQuery query("firsttrace", m_db);
+    QSqlQuery query("firsttrace2", m_db);
     query.prepare(QString("select * from map where %1==%2 and %3==%4 ").arg(key1, value1, key2, value2 ) );
     if( !query.exec()){
         throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));

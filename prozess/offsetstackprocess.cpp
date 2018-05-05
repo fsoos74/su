@@ -43,21 +43,14 @@ ProjectProcess::ResultCode OffsetStackProcess::init( const QMap<QString, QString
 
 ProjectProcess::ResultCode OffsetStackProcess::run(){
 
-
-    std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
-    if( !reader){
-        setErrorString("Invalid segyreader!");
-        return ResultCode::Error;
-    }
-
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
                                                                m_reader->info().dimensions(), m_reader->info().domain(), SeismicDatasetInfo::Mode::Poststack,
                                                                m_reader->info().ft(), m_reader->info().dt(), m_reader->info().nt());
 
     m_writer = std::make_shared<SeismicDatasetWriter>( dsinfo );
 
-    emit started(reader->trace_count());
-    reader->seek_trace(0);
+    emit started(m_reader->sizeTraces());
+    m_reader->seekTrace(0);
 
     int stack_cdp=-1;
     int stack_fold=0;
@@ -66,9 +59,9 @@ ProjectProcess::ResultCode OffsetStackProcess::run(){
     seismic::Trace::Samples     stack_samples;
     seismic::Header             stack_header;
 
-    while( reader->current_trace() < reader->trace_count() ){
+    while( m_reader->good()){
 
-        seismic::Trace trace=reader->read_trace();
+        seismic::Trace trace=m_reader->readTrace();
         const seismic::Header& header=trace.header();
         int cdp=header.at("cdp").intValue();
         float offset=header.at("offset").floatValue();
@@ -103,7 +96,7 @@ ProjectProcess::ResultCode OffsetStackProcess::run(){
 
         stack_fold++;
 
-        emit progress( reader->current_trace());
+        emit progress( m_reader->tellTrace());
         qApp->processEvents();
         if( isCanceled()) return ResultCode::Canceled;
     }
