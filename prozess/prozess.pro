@@ -102,7 +102,8 @@ SOURCES += prozess.cpp \
     horizontotopprocess.cpp \
     tabletohorizonprocess.cpp \
     exporttableprocess.cpp \
-    stacktogatherprocess.cpp
+    stacktogatherprocess.cpp \
+    volumeiotestprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -186,7 +187,8 @@ HEADERS += prozess.h\
     horizontotopprocess.h \
     tabletohorizonprocess.h \
     exporttableprocess.h \
-    stacktogatherprocess.h
+    stacktogatherprocess.h \
+    volumeiotestprocess.h
 
 unix {
     target.path = /usr/lib

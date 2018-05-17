@@ -135,8 +135,6 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <frequencyvolumeprocess.h>
 #include <dipscandialog.h>
 #include <volumedipscanprocess.h>
-//#include <volumedipdialog.h>
-//#include <volumedipprocess.h>
 #include <curvaturevolumedialog.h>
 #include <curvaturevolumeprocess.h>
 #include <convertgriddialog.h>
@@ -178,6 +176,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <fmcdp2dprocess.h>
 #include <exporttabledialog.h>
 #include <exporttableprocess.h>
+#include <volumeiotestdialog.h>
+#include <volumeiotestprocess.h>
 #include<axxisorientation.h>
 #include<projectgeometry.h>
 #include "selectgridtypeandnamedialog.h"
@@ -817,6 +817,32 @@ void ProjectViewer::on_actionDisplay_Map_triggered()
     viewer->show();
 }
 
+
+void ProjectViewer::on_actionEdit_Tops_triggered()
+{
+    if( !m_project) return;
+
+    try{
+    auto tmgr = m_project->openTopsDatabase();
+    if( !tmgr){
+        QMessageBox::critical(this, "Edit Tops", "Open Database failed!", QMessageBox::Ok);
+        return;
+    }
+
+    auto mks = tmgr->markers();
+
+    EditMarkersDialog dlg;
+    dlg.setWindowTitle(QString("Edit Tops"));
+    dlg.setMarkers(mks);
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    mks=dlg.markers();
+    tmgr->replaceAll(mks.begin(), mks.end());
+    }
+    catch(std::exception& ex){
+        std::cerr<<"Exception: "<<ex.what()<<std::endl<<std::flush;
+    }
+}
 
 
 /*
@@ -5011,8 +5037,11 @@ void ProjectViewer::updateMenu(){
     ui->actionOpen_Slice_Viewer->setEnabled(isProject);
     ui->actionOpen_3D_Viewer->setEnabled(isProject);
     ui->actionOpen_Log_Viewer->setEnabled(isProject);
+
+    ui->actionVolume_IO_Test->setEnabled(isProject);
 }
 
+/*
 template<class RECT>
 void dumpRect(std::ostream& os, const std::string& label, const RECT& r){
     os<<label<<" ";
@@ -5028,66 +5057,20 @@ template<class POINT>
 void dumpPoint(std::ostream& os, const char* label, const POINT& p){
     os<<label<<" { "<<p.x()<<", "<<p.y()<<" }"<<std::endl;
 }
+*/
 
 
 
-void ProjectViewer::on_actionEdit_Tops_triggered()
+
+void ProjectViewer::on_actionVolume_IO_Test_triggered()
 {
-    if( !m_project) return;
+    Q_ASSERT( m_project );
 
-    try{
-    auto tmgr = m_project->openTopsDatabase();
-    if( !tmgr){
-        QMessageBox::critical(this, "Edit Tops", "Open Database failed!", QMessageBox::Ok);
-        return;
-    }
+    VolumeIOTestDialog dlg;
+    dlg.setInputs(m_project->volumeList());
 
-    auto mks = tmgr->markers();
-
-    EditMarkersDialog dlg;
-    dlg.setWindowTitle(QString("Edit Tops"));
-    dlg.setMarkers(mks);
     if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
 
-    mks=dlg.markers();
-    tmgr->replaceAll(mks.begin(), mks.end());
-    }
-    catch(std::exception& ex){
-        std::cerr<<"Exception: "<<ex.what()<<std::endl<<std::flush;
-    }
+    runProcess( new VolumeIOTestProcess( m_project, this ), params );
 }
-
-
-void ProjectViewer::on_actiontest_triggered()
-{
-
-    if( !m_project) return;
-
-    Table table("iline", "xline", true);
-
-    for( int il=1; il<=10; il++){
-        for( int xl=11; xl<=20; xl++){
-            for( int j=21; j<=30; j++){
-                table.insert(il,xl,0.001*j);
-            }
-        }
-    }
-
-    //m_project->addTable("test1112", table);
-
-    auto rtable=m_project->loadTable("test1112");
-
-    std::cout<<"size table="<<table.size()<<" rtable="<<rtable->size()<<std::endl<<std::flush;
-
-
-
-}
-
-
-
-
-
-
-
-
-

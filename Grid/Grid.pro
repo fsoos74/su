@@ -29,7 +29,9 @@ SOURCES += grid.cpp \
     volume.cpp \
     domain.cpp \
     gridtype.cpp \
-    volumetype.cpp
+    volumetype.cpp \
+    volumereader2.cpp \
+    volumewriter2.cpp
 
 HEADERS += grid.h\
         grid_global.h \
@@ -43,7 +45,9 @@ HEADERS += grid.h\
     volume.h \
     domain.h \
     gridtype.h \
-    volumetype.h
+    volumetype.h \
+    volumereader2.h \
+    volumewriter2.h
 
 unix {
     target.path = /usr/lib

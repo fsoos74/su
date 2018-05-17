@@ -8,8 +8,6 @@
 #include<segyreader.h>
 #include<trace.h>
 
-// necessary to speed up slow segy input
-const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "dt", "ns" };
 
 AmplitudeVolumeProcess::AmplitudeVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Amplitude Volume"), project, parent){
@@ -85,24 +83,15 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::init( const QMap<QString, QSt
 
 ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
 
-    std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
-    if( !reader){
-        setErrorString("Invalid segyreader!");
-        return ResultCode::Error;
-    }
-
-    // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
-    setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
-
     auto vbounds=m_volume->bounds();
 
-    emit started(reader->trace_count());
-    reader->seek_trace(0);
+    emit started(m_reader->sizeTraces());
+    m_reader->seekTrace(0);
 
 
-    while( reader->current_trace() < reader->trace_count() ){
+    while( m_reader->good() ){
 
-        seismic::Trace trace=reader->read_trace();
+        seismic::Trace trace=m_reader->readTrace();
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
@@ -126,7 +115,7 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
 
         }
 
-        emit progress( reader->current_trace());
+        emit progress( m_reader->tellTrace());
         qApp->processEvents();
         if( isCanceled()) return ResultCode::Canceled;
     }

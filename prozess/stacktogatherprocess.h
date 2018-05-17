@@ -23,6 +23,8 @@ private:
 
     QString m_outputName;
     QStringList m_inputNames;
+    QVector<double> m_inputValues;
+
 };
 
 #endif // StackToGatherProcess_H

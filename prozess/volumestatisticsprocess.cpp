@@ -275,9 +275,12 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
+    // why skip first and last lines? 2d is handled as just 1 inline, skipping first/last wont work!
+    //for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
+        //for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
 
-        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             //#pragma omp parallel for
             for( int k=0; k<bounds.nt(); k++){

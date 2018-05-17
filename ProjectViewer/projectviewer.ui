@@ -406,7 +406,7 @@
     <property name="title">
      <string>Test</string>
     </property>
-    <addaction name="actiontest"/>
+    <addaction name="actionVolume_IO_Test"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Table">
     <property name="title">
@@ -992,7 +992,12 @@
   </action>
   <action name="actionStack_To_Gather">
    <property name="text">
-    <string>Stack To Gather</string>
+    <string>Stac&amp;k To Gather</string>
+   </property>
+  </action>
+  <action name="actionVolume_IO_Test">
+   <property name="text">
+    <string>Volume IO Test</string>
    </property>
   </action>
  </widget>

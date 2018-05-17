@@ -225,6 +225,10 @@ public:
         return &m_values[0];
     }
 
+    const value_type* data()const{
+        return &m_values[0];
+    }
+
     size_t size()const{
         return m_values.size();
     }

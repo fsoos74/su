@@ -54,20 +54,14 @@ QMap<QString,QString> TrendBasedAttributesDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert(QString("type"), QString::number(ui->cbType->currentIndex()));
-
+    p.insert(QString("attribute"), QString::number(ui->cbType->currentIndex()));
     p.insert(QString("intercept"), ui->cbIntercept->currentText());
-
     p.insert(QString("gradient"), ui->cbGradient->currentText());
-
     p.insert(QString("compute-trend"), QString::number(ui->cbComputeTrend->isChecked() ) );
-
-    if( !ui->cbComputeTrend->isChecked() ){
-        p.insert(QString("trend-angle"), ui->leTrendAngle->text() );
-        p.insert(QString("trend-intercept"), ui->leTrendIntercept->text() );
-    }
-
-    QString fullGridName=(m_volumeMode) ? ui->leOutput->text() : createFullGridName( GridType::Attribute, ui->leOutput->text() );
+    p.insert(QString("trend-angle"), ui->leTrendAngle->text() );
+    p.insert(QString("trend-intercept"), ui->leTrendIntercept->text() );
+    QString fullGridName=(m_volumeMode) ? ui->leOutput->text() :
+                                          createFullGridName( GridType::Attribute, ui->leOutput->text() );
     p.insert(QString("output"), fullGridName );
 
     return p;

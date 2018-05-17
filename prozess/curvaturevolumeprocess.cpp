@@ -125,9 +125,11 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
-
-        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
+    // why skip first iline/xline? 2d requires first/last inline since it is handled as 2 inline!!!
+    // for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
+        //for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             #pragma omp parallel for
             for( int k=wnd_len/2+1; k<bounds.nt()-wnd_len/2-1; k++){

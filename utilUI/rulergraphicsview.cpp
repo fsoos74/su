@@ -128,23 +128,26 @@ void RulerGraphicsView::setSelectionMode(SelectionMode  mode){
     m_selectionMode=mode;
 }
 
-void RulerGraphicsView::resizeEvent(QResizeEvent *){
-/*
-    QRect mappedSceneRect=mapFromScene(sceneRect()).boundingRect();
-
-    if( viewport()->rect().width()>mappedSceneRect.width() ||
-            viewport()->rect().height()>mappedSceneRect.height() ){
-        fitInView(sceneRect());
-    }
-  */
+void RulerGraphicsView::resizeEvent(QResizeEvent * ev){
 
 
+/*  pre may 11 2018, works but always looses zoom on every resize of window
     if( scene() ){
         QRectF bounds = sceneRect();//scene()->itemsBoundingRect();
         //bounds.setWidth(bounds.width()*0.9);         // to tighten-up margins
         //bounds.setHeight(bounds.height()*0.9);       // same as above
         fitInView(bounds, aspectRatioMode() );
         centerOn(bounds.center());
+    }
+*/
+
+    // test on may 11 2018, seems to work as expected, resizing window does not change zoom
+    static bool first=true;
+    if( first && scene() ){
+        QRectF bounds = sceneRect();
+        fitInView(bounds, aspectRatioMode() );
+        centerOn(bounds.center());
+        first=false;
     }
 
     m_topRuler->update();

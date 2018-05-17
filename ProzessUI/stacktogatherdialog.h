@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include <QComboBox>
+#include <QLineEdit>
+#include <QDoubleValidator>
 #include <QLabel>
 #include <QGridLayout>
 #include <QMap>
@@ -26,6 +28,7 @@ public:
 
 public slots:
     void setInputStacks(QStringList);
+    void setProject( AVOProject*);
 
 private slots:
     void updateInputStackControls();
@@ -37,6 +40,8 @@ private:
     AVOProject* m_project=nullptr;
     QStringList m_inputStacks;
     QVector<QComboBox*> inputCB;
+    QVector<QLineEdit*> inputLE;
+    QDoubleValidator* leValidator;
 };
 
 #endif // STACKTOGATHERDIALOG_H

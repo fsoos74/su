@@ -14,6 +14,8 @@ StackToGatherDialog::StackToGatherDialog(QWidget *parent) :
     ui->setupUi(this);
 
     inputCB.resize(ui->sbInputStacks->maximum()); // fills with nullptr
+    inputLE.resize(ui->sbInputStacks->maximum()); // fills with nullptr
+    leValidator=new QDoubleValidator(this);
 
     connect( ui->sbInputStacks, SIGNAL(valueChanged(int)),
              this, SLOT(updateInputStackControls()));
@@ -45,17 +47,30 @@ void StackToGatherDialog::setInputStacks(QStringList lst){
     updateOkButton();
 }
 
+
+void StackToGatherDialog::setProject(AVOProject * prj){
+    if( prj==m_project) return;
+    m_project=prj;
+    updateOkButton();
+}
+
 QMap<QString,QString> StackToGatherDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("gather"), ui->leOutputGather->text() );
+    p.insert( "gather", ui->leOutputGather->text() );
 
     QStringList stacks;
     for( int i=0; i<ui->sbInputStacks->value(); i++){
         stacks<<inputCB[i]->currentText();
     }
     p.insert( QString("stacks"), packParamList(stacks) );
+
+    QStringList values;
+    for( int i=0; i<ui->sbInputStacks->value(); i++){
+        values<<inputLE[i]->text();
+    }
+    p.insert( QString("values"), packParamList(values) );
 
     return p;
 }
@@ -67,6 +82,9 @@ void StackToGatherDialog::updateInputStackControls(){
     }
 
     QGridLayout* layout=new QGridLayout(ui->wdInputStacks);
+    //layout->setColumnStretch(0,1);
+    //layout->setColumnStretch(1,0);
+    //layout->setColumnMinimumWidth(1,50);
     for( int i=0; i<ui->sbInputStacks->value(); i++){
 
         if( !inputCB[i]){
@@ -74,9 +92,15 @@ void StackToGatherDialog::updateInputStackControls(){
             cb->clear();
             cb->addItems(m_inputStacks);
             inputCB[i]=cb;
+            QLineEdit* le=new QLineEdit(this);
+            le->setValidator(leValidator);
+            le->setText(QString::number(i+1));
+            le->setFixedWidth(100);
+            inputLE[i]=le;
         }
 
         layout->addWidget(inputCB[i], i, 1);
+        layout->addWidget(inputLE[i], i, 2);
     }
 
     ui->wdInputStacks->setLayout(layout);
@@ -89,6 +113,7 @@ void StackToGatherDialog::updateOkButton(){
 
     bool ok=true;
 
+
     auto oname=ui->leOutputGather->text();
     QPalette palette;
     if( oname.isEmpty()){
@@ -99,6 +124,8 @@ void StackToGatherDialog::updateOkButton(){
         palette.setColor(QPalette::Text, Qt::red);
     }
     ui->leOutputGather->setPalette(palette);
+
+
 
     ui->pbOK->setEnabled(ok);
 }

@@ -343,6 +343,34 @@ bool AVOProject::addVolume( const QString& name, std::shared_ptr<Volume> volume,
     return true;
 }
 
+bool AVOProject::addVolume( const QString& name, const ProcessParams& pp){
+
+    if( name.isEmpty()) return false;
+
+    if( m_volumeList.contains( name)) return false;
+
+    QString filename=getVolumePath( name);
+    if( !QFile( filename ).exists()) return false;
+
+    if( !pp.isEmpty() ){
+
+        QString xpppath=getVolumePPPath( name );
+        QFile file(xpppath);
+        if (!file.open(QFile::WriteOnly | QFile::Text)) {
+            return false;
+        }
+        XPPWriter writer(pp);
+        if( !writer.writeFile(&file) ) return false; // need clean up
+        file.flush();
+    }
+
+    //syncVolumeList();
+    m_volumeList.append(name);
+    emit volumesChanged(); //changed();
+
+    return true;
+}
+
 bool AVOProject::removeVolume( const QString& name){
 
     if( !volumeList().contains(name)) return false;
@@ -381,7 +409,44 @@ bool AVOProject::renameVolume( const QString& name, const QString& newName){
     return res;
 }
 
+std::shared_ptr<Volume > AVOProject::loadVolume(const QString& name, bool showProgressDialog){
 
+    QString filename=getVolumePath( name);
+
+    VolumeReader2 reader(filename);
+    reader.open();
+
+    QProgressDialog pdlg;
+    if(showProgressDialog){
+        pdlg.setWindowTitle(tr("Loading Volume"));
+        pdlg.setLabelText(tr("Loading volume \"%1\"").arg(name));
+        pdlg.setCancelButton(nullptr);
+        pdlg.setRange(0,100);
+        pdlg.setMinimumDuration(0);
+        pdlg.show();
+        connect( &reader, SIGNAL( percentDone(int)), &pdlg, SLOT(setValue(int)) );
+    }
+
+    return reader.read();
+}
+
+std::shared_ptr<Volume > AVOProject::loadVolume(const QString& name, QProgressBar* pbar){
+
+    QString filename=getVolumePath( name);
+
+    VolumeReader2 reader(filename);
+    reader.open();
+
+    if(pbar){
+        pbar->setRange(0,100);
+        connect( &reader, SIGNAL( percentDone(int)), pbar, SLOT(setValue(int)) );
+    }
+
+    return reader.read();
+}
+
+
+/*
  std::shared_ptr<Volume > AVOProject::loadVolume(const QString& name, bool showProgressDialog){
 
      QString filename=getVolumePath( name);
@@ -431,8 +496,33 @@ bool AVOProject::renameVolume( const QString& name, const QString& newName){
 
      return ptr;
  }
+*/
 
 
+
+ std::shared_ptr<VolumeReader2> AVOProject::openVolumeReader( const QString& name){
+
+     QString filename=getVolumePath( name);
+
+     auto reader=std::make_shared<VolumeReader2>(filename);
+     reader->open();
+
+    return reader;
+ }
+
+ std::shared_ptr<VolumeWriter2> AVOProject::openVolumeWriter(
+         const QString& name, const Grid3DBounds& bounds, const Domain& domain, const VolumeType& type){
+
+    if( existsVolume(name)) return std::shared_ptr<VolumeWriter2>();
+
+    QString filename=getVolumePath( name);
+    auto writer=std::make_shared<VolumeWriter2>(filename);
+    if(!writer) return writer;
+
+    if( !writer->open(bounds, domain, type) )return std::shared_ptr<VolumeWriter2>();
+
+    return writer;
+ }
 
 bool AVOProject::saveVolume(const QString &name, std::shared_ptr<Volume> volume){
 

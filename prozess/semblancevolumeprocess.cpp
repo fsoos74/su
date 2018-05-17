@@ -86,9 +86,13 @@ ProjectProcess::ResultCode SemblanceVolumeProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
+    // why skip first and last lines? does not work for 2d which is handled as one inline!
+    //for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
+        //for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
 
-        for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
+    for( int i=bounds.i1(); i<=bounds.i2(); i++){
+
+        for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
             std::vector<std::pair<int,int>> locations;
             for( int ii=i-m_halfIlines; ii<=i+m_halfIlines; ii++){

@@ -16,25 +16,18 @@ ProjectProcess::ResultCode StackToGatherProcess::init( const QMap<QString, QStri
     setParams(parameters);
 
     try{
-       m_outputName=getParam( parameters, QString("gather") );
-       m_inputNames=unpackParamList( getParam( parameters, QString("stacks") ) );
+       m_outputName=getParam( parameters, "gather" );
+       m_inputNames=unpackParamList( getParam( parameters, "stacks" ) );
+       auto values=unpackParamList( getParam( parameters, "values" ) );
+       for( auto str : values){
+           m_inputValues.push_back(str.toDouble());
+       }
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
         return ResultCode::Error;
     }
-/*
-    m_reader= project()->openSeismicDataset( m_inputName );
-    if( !m_reader){
-        setErrorString(QString("Open dataset \"%1\" failed!").arg(m_inputName) );
-        return ResultCode::Error;
-    }
 
-    if( m_reader->info().mode()!=SeismicDatasetInfo::Mode::Prestack ){
-        setErrorString("This process was designed for unstacked data!");
-        return ResultCode::Error;
-    }
-*/
     return ResultCode::Ok;
 }
 
@@ -43,6 +36,7 @@ ProjectProcess::ResultCode StackToGatherProcess::run(){
 
     std::vector<std::shared_ptr<SeismicDatasetReader>> stack_readers;
     for( auto name : m_inputNames){
+        //std::cout<<"Attempting to open dataset "<<name.toStdString()<<std::endl<<std::flush;
         auto reader = project()->openSeismicDataset(name);
         if( !reader){
             setErrorString(tr("Open dataset \"%1\" failed!").arg(name));
@@ -84,8 +78,9 @@ ProjectProcess::ResultCode StackToGatherProcess::run(){
     while ( reader0->good()) {
 
         auto trace0=reader0->readTrace();
-        const seismic::Header& header0=trace0.header();
+        seismic::Header& header0=trace0.header();
         auto cdp=header0.at("cdp").intValue();
+        header0["offset"]=seismic::HeaderValue::makeFloatValue(m_inputValues[0]);
 
         writer->writeTrace(trace0);
 
@@ -93,13 +88,14 @@ ProjectProcess::ResultCode StackToGatherProcess::run(){
             auto reader1=stack_readers[i];
             while(reader1->good()){
                 auto trace1 = reader1->readTrace();
-                const seismic::Header& header1=trace1.header();
+                seismic::Header& header1=trace1.header();
                 auto cdp1=header1.at("cdp").intValue();
                 if( cdp1<cdp ) continue;  // search for cdp, data is assumed sorted so it has to be after this trace
                 if( cdp1>cdp ){           // we are past the cdp, put trace back for later
                     reader1->seekTrace(reader1->tellTrace()-1);
                     break;
                 }
+                header1["offset"]=seismic::HeaderValue::makeFloatValue(m_inputValues[i]);
                 writer->writeTrace(trace1);
             }
         }

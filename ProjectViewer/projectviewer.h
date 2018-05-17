@@ -81,6 +81,7 @@ private slots:
     void on_actionCompute_Intercept_Gradient_triggered();
     void on_actionCompute_Intercept_and_Gradient_Volumes_triggered();
     void on_action_Offset_Stack_triggered();
+    void on_actionStack_To_Gather_triggered();
 
     // Process grid menu
     void on_actionCreate_New_Grid_triggered();
@@ -187,11 +188,7 @@ private slots:
 
     void on_actionFD_CDP_Acoustic_triggered();
 
-    void on_actiontest_triggered();
-
-
-
-    void on_actionStack_To_Gather_triggered();
+    void on_actionVolume_IO_Test_triggered();
 
 protected:
 

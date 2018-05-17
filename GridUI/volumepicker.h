@@ -65,7 +65,7 @@ private:
     VolumeView* m_view;
     std::shared_ptr<Table>  m_picks;
 
-    bool m_dirty=false;
+    bool m_dirty;
     PickMode m_pickMode;
 };
 

@@ -14,6 +14,8 @@ class TrendBasedAttributeVolumesProcess : public ProjectProcess
 
 public:
 
+    const int CHUNK_ILINES=10;
+
     TrendBasedAttributeVolumesProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
@@ -21,24 +23,28 @@ public:
 
 private:
 
-    void computeTrend();
+    ResultCode computeTrend();
+    ResultCode initFunction();
 
     float FF(float, float);
     float LF(float, float);
     float PF(float, float);
     float AC(float, float);
 
-    QString m_interceptName;
-    QString m_gradientName;
     QString m_outputName;
 
-    std::shared_ptr<Volume > m_intercept;
-    std::shared_ptr<Volume > m_gradient;
-    std::shared_ptr<Volume > m_volume;
+    QString m_interceptName;
+    QString m_gradientName;
 
+    bool m_computeTrend;
     float m_trendIntercept;
     float m_trendAngle;
 
+    int m_attribute;
+
+    std::shared_ptr<VolumeReader2 > m_interceptReader;
+    std::shared_ptr<VolumeReader2 > m_gradientReader;
+    Grid3DBounds m_bounds;
     std::function<float(float, float)> m_func;
 
     float m_sinPhi;         // caching sin of trend_angle

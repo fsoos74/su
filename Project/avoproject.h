@@ -25,6 +25,8 @@ class QProgressBar;
 #include<processparams.h>
 #include<gridtype.h>
 #include <wellmarkers.h>
+#include <volumereader2.h>
+#include <volumewriter2.h>
 
 class WellPath;
 class CDPDatebase;
@@ -146,12 +148,15 @@ public:
     QString getVolumePPPath(const QString& name);
     std::shared_ptr<Volume> loadVolume(const QString& name, bool showProgessDialog);
     std::shared_ptr<Volume> loadVolume(const QString& name, QProgressBar* progressBar=nullptr);
+    std::shared_ptr<VolumeReader2> openVolumeReader( const QString& name);
+    std::shared_ptr<VolumeWriter2> openVolumeWriter( const QString&, const Grid3DBounds&, const Domain&, const VolumeType&);
     bool saveVolume(const QString& name, std::shared_ptr<Volume>);
     Grid3DBounds getVolumeBounds(const QString& name, Domain* domain=nullptr, VolumeType* type=nullptr);
     QFileInfo getVolumeFileInfo( const QString& name );
     ProcessParams getVolumeProcessParams(const QString& name);
     bool existsVolume( const QString& name );
     bool addVolume( const QString& name, std::shared_ptr<Volume> volume, const ProcessParams& params=ProcessParams()); // enforced only during refactor
+    bool addVolume( const QString& name, const ProcessParams& params=ProcessParams());
     bool removeVolume( const QString& name);
     bool renameVolume( const QString& name, const QString& newName);
 

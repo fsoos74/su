@@ -51,14 +51,14 @@
       <string>Crop Dataset</string>
      </property>
      <property name="checked">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="enabled">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="title">
       <string>Output Geometry</string>
@@ -88,7 +88,7 @@
       <item row="4" column="1">
        <widget class="QLineEdit" name="leMinZ">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>0</string>
@@ -108,7 +108,7 @@
       <item row="5" column="1">
        <widget class="QLineEdit" name="leMaxZ">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="text">
          <string>99999</string>
@@ -185,6 +185,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbDataset</tabstop>
+  <tabstop>leVolumeName</tabstop>
+  <tabstop>cbCrop</tabstop>
+  <tabstop>leMinIline</tabstop>
+  <tabstop>leMaxIline</tabstop>
+  <tabstop>leMinXline</tabstop>
+  <tabstop>leMaxXline</tabstop>
+  <tabstop>leMinZ</tabstop>
+  <tabstop>leMaxZ</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

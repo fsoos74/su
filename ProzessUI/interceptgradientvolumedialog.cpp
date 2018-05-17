@@ -81,22 +81,16 @@ QMap<QString,QString> InterceptGradientVolumeDialog::params(){
     p.insert( "minimum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMinAzimuth->text() : QString::number(0.));
     p.insert( "maximum-azimuth", ui->cbRestrictAzimuth->isChecked() ? ui->leMaxAzimuth->text() : QString::number(180.));
 
+    p.insert( "supergathers", QString::number(static_cast<int>(ui->cbSuperGather->isChecked())));
+    int ilsize=ui->sbInlines->value();
+    int xlsize=ui->sbCrosslines->value();
+    p.insert( QString("sg-inline-size"), QString::number(ilsize) );
+    p.insert( QString("sg-crossline-size"), QString::number(xlsize));
 
-    if( ui->cbSuperGather->isChecked()){
+    p.insert( "time-window", QString::number(static_cast<int>(ui->cbTimeWindow->isChecked())));
+    p.insert("window-start", ui->leWindowStart->text());
+    p.insert("window-end", ui->leWindowEnd->text());
 
-        int ilsize=ui->sbInlines->value();
-        int xlsize=ui->sbCrosslines->value();
-        p.insert( QString("sg-inline-size"), QString::number(ilsize) );
-        p.insert( QString("sg-crossline-size"), QString::number(xlsize));
-    }
-
-    if( ui->cbTimeWindow->isChecked()){
-
-        p.insert("window-mode", "TRUE");
-        p.insert("window-start", ui->leWindowStart->text());
-        p.insert("window-end", ui->leWindowEnd->text());
-
-    }
     return p;
 }
 

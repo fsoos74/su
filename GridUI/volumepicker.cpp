@@ -52,7 +52,7 @@ double lininterp(double x1, double y1, double x2, double y2, double x){
 }
 
 
-VolumePicker::VolumePicker(VolumeView *view) : QObject(view), m_view(view), m_pickMode(PickMode::Points)
+VolumePicker::VolumePicker(VolumeView *view) : QObject(view), m_view(view), m_dirty(false), m_pickMode(PickMode::Points)
 {
     m_picks=std::make_shared<Table>("iline", "xline", true);
     view->setSelectionMode(VolumeView::SELECTIONMODE::SinglePoint);
