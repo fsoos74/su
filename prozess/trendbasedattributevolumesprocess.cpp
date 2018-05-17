@@ -83,7 +83,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
     emit currentTask("Computing attribute...");
     qApp->processEvents();
 
-    for( int il1=m_bounds.i1(); il1<m_bounds.i2(); il1+=CHUNK_ILINES){
+    for( int il1=m_bounds.i1(); il1<=m_bounds.i2(); il1+=CHUNK_ILINES){
 
         auto il2=std::min(il1+CHUNK_ILINES, m_bounds.i2());
 
@@ -287,11 +287,15 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
     double sum_y_y=0;       // needed for correlation coefficient
     qint64 n=0;
 
-    for( int il1=m_bounds.i1(); il1<m_bounds.i2(); il1+=CHUNK_ILINES){
+    for( int il1=m_bounds.i1(); il1<=m_bounds.i2(); il1+=CHUNK_ILINES){
 
         auto il2=std::min(il1+CHUNK_ILINES, m_bounds.i2());
         auto subIntercept=m_interceptReader->read(il1,il2);
         auto subGradient=m_gradientReader->read(il1,il2);
+        if( !subIntercept || !subGradient){
+            setErrorString("Reading chunks failed!");
+            return ResultCode::Error;
+        }
 
         auto iti=subIntercept->cbegin();
         auto itg=subGradient->cbegin();

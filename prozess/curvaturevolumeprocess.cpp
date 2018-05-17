@@ -134,17 +134,25 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
             #pragma omp parallel for
             for( int k=wnd_len/2+1; k<bounds.nt()-wnd_len/2-1; k++){
 
-                int s1 = optimum_shift( *m_volume, i-1, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
-                int s2 = optimum_shift( *m_volume, i-1, j, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
-                int s3 = optimum_shift( *m_volume, i-1, j+1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
+                int s1 = (i>bounds.i1()) ?
+                            optimum_shift( *m_volume, i-1, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) : 0;
+                int s2 =(i>bounds.i1()) ?
+                            optimum_shift( *m_volume, i-1, j, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) : 0;
+                int s3 = (i>bounds.i1() && j<bounds.j2()) ?
+                            optimum_shift( *m_volume, i-1, j+1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) : 0;
 
-                int s4 = optimum_shift( *m_volume, i, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
+                int s4 = (j>bounds.j1()) ?
+                            optimum_shift( *m_volume, i, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) :0;
                 int s5 = 0;
-                int s6 = optimum_shift( *m_volume, i, j+1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
+                int s6 = ( j<bounds.j2()) ?
+                            optimum_shift( *m_volume, i, j+1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) :0;
 
-                int s7 = optimum_shift( *m_volume, i+1, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
-                int s8 = optimum_shift( *m_volume, i+1, j, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
-                int s9 = optimum_shift( *m_volume, i+1, j+1, i, j, k-wnd_len/2, wnd_len, max_abs_shift );
+                int s7 = (i<bounds.i1() && j>bounds.j1()) ?
+                            optimum_shift( *m_volume, i+1, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) :0;
+                int s8 = (i<bounds.i2()) ?
+                            optimum_shift( *m_volume, i+1, j, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) : 0;
+                int s9 = (i<bounds.i2() && j<bounds.j2()) ?
+                            optimum_shift( *m_volume, i+1, j+1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) :0;
 
                 float Z1=1000.*bounds.sampleToTime(k+s1);
                 float Z2=1000.*bounds.sampleToTime(k+s2);

@@ -41,7 +41,7 @@ std::shared_ptr<Volume> VolumeReader2::read(){
 
 std::shared_ptr<Volume> VolumeReader2::read(int i1, int i2){
 
-    if( i1>=i2 ) return std::shared_ptr<Volume>();
+    if( i1>i2 ) return std::shared_ptr<Volume>();
     if( i1<m_bounds.i1() || i2>m_bounds.i2()){
         setError("Requested inline range out of bounds");
         return std::shared_ptr<Volume>();

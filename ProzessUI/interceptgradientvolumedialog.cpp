@@ -60,12 +60,8 @@ QMap<QString,QString> InterceptGradientVolumeDialog::params(){
 
 
     p.insert( QString("intercept"), ui->leIntercept->text());
-
     p.insert( QString("gradient"), ui->leGradient->text() );
-
-    if( !ui->leQuality->text().isEmpty()){
-        p.insert( QString("quality"), ui->leQuality->text() );
-    }
+    p.insert( QString("quality"), ui->leQuality->text() );
 
     p.insert( QString("dataset"), ui->cbDataset->currentText());
 
