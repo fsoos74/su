@@ -57,6 +57,9 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::init( const QMap<QStr
         return ResultCode::Error;
     }
 
+    if( !m_supergatherMode){
+        m_supergatherInlineSize=m_supergatherCrosslineSize=1;
+    }
 
     m_reader= project()->openSeismicDataset( m_datasetName);
     if( !m_reader){
@@ -91,17 +94,40 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::init( const QMap<QStr
                            m_reader->minCrossline(), m_reader->maxCrossline(),
                            nt, ft, dt);
 
+
+
+#ifdef IO_VOLUMES
     m_interceptWriter=project()->openVolumeWriter(m_interceptName, m_bounds, Domain::Time, VolumeType::AVO);
     if( !m_interceptWriter){
         setErrorString("Open intercept writer failed!");
         return ResultCode::Error;
     }
+    m_interceptWriter->setParent(this);
 
     m_gradientWriter=project()->openVolumeWriter(m_gradientName, m_bounds, Domain::Time, VolumeType::AVO);
     if( !m_gradientWriter){
         setErrorString("Open gradient writer failed!");
         return ResultCode::Error;
     }
+    m_gradientWriter->setParent(this);
+#else
+    m_intercept=std::shared_ptr<Volume>(new Volume(m_bounds));
+    m_gradient=std::shared_ptr<Volume>(new Volume(m_bounds));
+    m_quality=std::shared_ptr<Volume>(new Volume(m_bounds));      // allways compute quality, just don't save it if not desired
+#endif
+
+    std::cout<<"minimum offset="<<m_minimumOffset<<std::endl;
+    std::cout<<"maximum offset="<<m_maximumOffset<<std::endl;
+    std::cout<<"minimum azimuth="<<m_minimumAzimuth<<std::endl;
+    std::cout<<"maximum azimuth="<<m_maximumAzimuth<<std::endl;
+    std::cout<<"supergather mode="<<std::boolalpha<<m_supergatherMode<<std::endl;
+    std::cout<<"sg inline size="<<m_supergatherInlineSize<<std::endl;
+    std::cout<<"sg crossline size="<<m_supergatherCrosslineSize<<std::endl;
+    std::cout<<"startMillis="<<m_windowStart<<std::endl;
+    std::cout<<"endMillis="<<m_windowEnd<<std::endl;
+    std::cout<<"startTraceSample="<<m_startTraceSample<<std::endl;
+    std::cout<<"Volumes: ft"<<m_bounds.ft()<<" lt="<<m_bounds.lt()<<" dt="<<m_bounds.dt()<<" nt="<<m_bounds.nt()<<std::endl;
+    std::cout<<std::flush;
 
     return ResultCode::Ok;
 }
@@ -198,6 +224,7 @@ private:
 
 ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int firstIlineToProcess, int lastIlineToProcess ){
 
+#ifdef IO_VOLUMES
     auto bounds=Grid3DBounds(firstIlineToProcess, lastIlineToProcess,
                              m_bounds.j1(), m_bounds.j2(), m_bounds.nt(), m_bounds.ft(), m_bounds.dt());
     auto intercept=std::make_shared<Volume>(bounds);
@@ -207,6 +234,7 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( Gath
         setErrorString("Allocating volumes failed!");
         return ResultCode::Error;
     }
+#endif
 
     const int nthreads=std::min(QThreadPool::globalInstance()->maxThreadCount(), QThread::idealThreadCount() );
     volatile bool stopped=false;
@@ -226,11 +254,18 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( Gath
         job.supergatherCrosslineSize=m_supergatherCrosslineSize;
         job.startTraceSample=m_startTraceSample;
 
+#ifdef IO_VOLUMES
         job.intercept=intercept.get();
         job.gradient=gradient.get();
         job.quality=quality.get();
+#else
+        job.intercept=m_intercept.get();
+        job.gradient=m_gradient.get();
+        job.quality=m_quality.get();
+#endif
 
         QThreadPool::globalInstance()->start( new Worker(job, &stopped));
+
     }
 
     // Wait for worker threads to finish, use polling for now
@@ -240,13 +275,11 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( Gath
         QThread::msleep(CHECK_INTERVAL_MILLIS);
         qApp->processEvents();
         if( isCanceled() ) stopped=true;
-
     }
 
-    if( stopped){
-        return ResultCode::Canceled;
-    }
+    if( stopped) return ResultCode::Canceled;
 
+#ifdef IO_VOLUMES
     if( !m_interceptWriter->write(*intercept) ){
         setErrorString("Writing intercept failed!");
         return ResultCode::Error;
@@ -265,12 +298,153 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( Gath
     intercept.reset();
     gradient.reset();
     quality.reset();
+#endif
 
     return ResultCode::Ok;
 }
 
-/*
-bool InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int firstIlineToProcess, int lastIlineToProcess ){
+
+ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
+
+    const int BufferInlineSize=2*QThreadPool::globalInstance()->maxThreadCount() + m_supergatherInlineSize - 1;     // with overlap
+
+    int firstInline=m_reader->minInline();
+    int lastInline=m_reader->maxInline();
+    int firstCrossline=m_reader->minCrossline();
+    int lastCrossline=m_reader->maxCrossline();
+    int inlinesToProcess=lastInline-firstInline+1;
+    int inlinesProcessed=0;
+
+    emit currentTask("Processing cdps...");
+    emit started(m_reader->sizeTraces());
+    emit progress(0);
+    qApp->processEvents();
+
+    ssize_t lastPercent=0;
+    m_reader->seekTrace(0);
+    GatherBuffer buffer( m_reader->minInline(), m_reader->minCrossline(), BufferInlineSize, m_reader->maxCrossline()-m_reader->minCrossline()+1);
+    int lastFullDataIline=buffer.lastIline()-m_supergatherInlineSize+1;
+    GatherFilter filter(m_minimumOffset, m_maximumOffset, m_minimumAzimuth, m_maximumAzimuth);
+
+
+    while( m_reader->good() ){
+
+        int percent=100*m_reader->tellTrace()/m_reader->sizeTraces();
+        if(percent!=lastPercent){
+            lastPercent=percent;
+            emit progress(m_reader->tellTrace());
+            qApp->processEvents();
+        }
+
+        auto gather=m_reader->readGather("cdp");
+        if( !gather ) break;
+
+        // extract this before filter because filter could leave empty gather
+        const seismic::Header& header=gather->front().header();
+        int iline=header.at("iline").intValue();
+        int xline=header.at("xline").intValue();
+
+        gather=filter.filter(gather);
+
+        // buffer full? now process
+        if( iline>lastFullDataIline){
+
+            int firstIlineToProcess=buffer.firstIline();
+            int lastIlineToProcess=firstIlineToProcess+buffer.ilineCount()-m_supergatherInlineSize;
+
+            auto res=processBuffer_n( &buffer, firstIlineToProcess, lastIlineToProcess  );
+            if( res!=ResultCode::Ok) return res;
+
+            // copy unfinished inlines to beginning of buffer
+            buffer.advanceTo(lastFullDataIline+1);
+            lastFullDataIline=buffer.lastIline()-m_supergatherInlineSize+1;
+        }
+
+        buffer(iline, xline)=gather;
+    }
+
+    // remember last chunk
+    int firstIlineToProcess=buffer.firstIline();
+    int lastIlineToProcess=std::min( buffer.firstIline()+buffer.ilineCount()-1, lastInline);
+    auto res= processBuffer_n( &buffer, firstIlineToProcess, lastIlineToProcess );
+    if( res!=ResultCode::Ok) return res;
+
+    emit progress(m_reader->sizeTraces());
+    qApp->processEvents();
+
+#ifdef IO_VOLUMES
+    m_interceptWriter->flush();
+    m_interceptWriter->close();
+    m_gradientWriter->flush();
+    m_gradientWriter->close();
+    if( !project()->addVolume( m_interceptName, params() )){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_interceptName) );
+        return ResultCode::Error;
+    }
+
+    if( !project()->addVolume( m_gradientName, params() )){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_gradientName) );
+        return ResultCode::Error;
+    }
+
+    if( m_qualityWriter ){
+
+        m_qualityWriter->flush();
+        m_qualityWriter->close();
+        if( !project()->addVolume( m_qualityName, params() )){
+            setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_qualityName) );
+            return ResultCode::Error;
+        }
+
+    }
+
+#else
+
+    // store result volumes
+    if( !project()->addVolume( m_interceptName, m_intercept, params() )){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_interceptName) );
+        return ResultCode::Error;
+    }
+
+    if( !project()->addVolume( m_gradientName, m_gradient, params() )){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_gradientName) );
+        return ResultCode::Error;
+    }
+
+    if( !m_qualityName.isEmpty() ){    // only save quality if name is specified
+
+        if( !project()->addVolume( m_qualityName, m_quality, params() )){
+            setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_qualityName) );
+            return ResultCode::Error;
+        }
+
+    }
+#endif
+
+    emit finished();
+    qApp->processEvents();
+
+    return ResultCode::Ok;
+
+}
+
+
+
+
+/* original
+ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int firstIlineToProcess, int lastIlineToProcess ){
+
+#ifdef IO_VOLUMES
+    auto bounds=Grid3DBounds(firstIlineToProcess, lastIlineToProcess,
+                             m_bounds.j1(), m_bounds.j2(), m_bounds.nt(), m_bounds.ft(), m_bounds.dt());
+    auto intercept=std::make_shared<Volume>(bounds);
+    auto gradient=std::make_shared<Volume>(bounds);
+    auto quality=std::make_shared<Volume>(bounds);
+    if( !intercept || !gradient || !quality){
+        setErrorString("Allocating volumes failed!");
+        return ResultCode::Error;
+    }
+#endif
 
     const int nthreads=std::min(QThreadPool::globalInstance()->maxThreadCount(), QThread::idealThreadCount() );
     volatile bool stopped=false;
@@ -290,10 +464,15 @@ bool InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int 
         job.supergatherCrosslineSize=m_supergatherCrosslineSize;
         job.startTraceSample=m_startTraceSample;
 
+#ifdef IO_VOLUMES
+        job.intercept=intercept.get();
+        job.gradient=gradient.get();
+        job.quality=quality.get();
+#else
         job.intercept=m_intercept.get();
         job.gradient=m_gradient.get();
         job.quality=m_quality.get();
-
+#endif
         QThreadPool::globalInstance()->start( new Worker(job, &stopped));
     }
 
@@ -307,9 +486,33 @@ bool InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int 
 
     }
 
-    return !stopped;
+    if( stopped){
+        return ResultCode::Canceled;
+    }
+
+#ifdef IO_VOLUMES
+    if( !m_interceptWriter->write(*intercept) ){
+        setErrorString("Writing intercept failed!");
+        return ResultCode::Error;
+    }
+
+    if( !m_gradientWriter->write(*gradient) ){
+        setErrorString("Writing gradient failed!");
+        return ResultCode::Error;
+    }
+
+    if( m_qualityWriter && !m_qualityWriter->write(*quality) ){
+        setErrorString("Writing quality failed!");
+        return ResultCode::Error;
+    }
+
+    intercept.reset();
+    gradient.reset();
+    quality.reset();
+#endif
+
+    return ResultCode::Ok;
 }
-*/
 
 ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
@@ -378,6 +581,7 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
     emit progress(m_reader->sizeTraces());
     qApp->processEvents();
 
+#ifdef IO_VOLUMES
     m_interceptWriter->flush();
     m_interceptWriter->close();
     m_gradientWriter->flush();
@@ -403,10 +607,34 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
     }
 
+#else
+    // store result volumes
+    if( !project()->addVolume( m_interceptName, m_intercept, params() )){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_interceptName) );
+        return ResultCode::Error;
+    }
+
+    if( !project()->addVolume( m_gradientName, m_gradient, params() )){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_gradientName) );
+        return ResultCode::Error;
+    }
+
+    if( !m_qualityName.isEmpty() ){    // only save quality if name is specified
+
+        if( !project()->addVolume( m_qualityName, m_quality, params() )){
+            setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_qualityName) );
+            return ResultCode::Error;
+        }
+
+    }
+#endif
+
     emit finished();
     qApp->processEvents();
 
     return ResultCode::Ok;
 
 }
+
+*/
 

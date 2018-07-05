@@ -1,6 +1,8 @@
 #include "projectviewer.h"
 #include <QApplication>
 #include <QMessageBox>
+#include <QStyleFactory>
+
 
 //uncomment to use demo data on linux
 //#define DEMO 1
@@ -44,6 +46,25 @@ int main(int argc, char *argv[]){
     try{
 
     MyApplication a(argc, argv);
+    qApp->setStyle(QStyleFactory::create("Fusion"));
+/* too dark, need to change icons
+    QPalette darkPalette;
+    darkPalette.setColor(QPalette::Window, QColor(53,53,53));
+    darkPalette.setColor(QPalette::WindowText, Qt::white);
+    darkPalette.setColor(QPalette::Base, QColor(25,25,25));
+    darkPalette.setColor(QPalette::AlternateBase, QColor(53,53,53));
+    darkPalette.setColor(QPalette::ToolTipBase, Qt::white);
+    darkPalette.setColor(QPalette::ToolTipText, Qt::white);
+    darkPalette.setColor(QPalette::Text, Qt::white);
+    darkPalette.setColor(QPalette::Button, QColor(53,53,53));
+    darkPalette.setColor(QPalette::ButtonText, Qt::white);
+    darkPalette.setColor(QPalette::BrightText, Qt::red);
+    darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
+    darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+    darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+    qApp->setPalette(darkPalette);
+    qApp->setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }");
+*/
 
     #ifdef USE_KEYLOCK_LICENSE
     {

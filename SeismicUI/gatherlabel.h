@@ -247,6 +247,7 @@ private:
 
     QMap<int,int> traceLookup;
     QVector<qreal> traceScaleFactors;
+    qreal bias=0;
     QVector<QPainterPath> m_traceWigglePaths;
     QVector<QPainterPath> m_traceVariableAreaPaths;
     QPixmap m_densityPlot;

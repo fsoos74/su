@@ -1,6 +1,10 @@
 #include "volumewriter2.h"
+#include <cstring> // memcpy
+#include<QVector>
+#include<iostream>
 
-VolumeWriter2::VolumeWriter2(const QString& fname):m_file(fname){
+
+VolumeWriter2::VolumeWriter2(const QString& fname, QObject* parent):QObject(parent),m_file(fname){
 
 }
 
@@ -28,12 +32,16 @@ bool VolumeWriter2::open(const Grid3DBounds &bounds, const Domain &domain, const
         return false;
     }
 
+    m_file.flush();
+
+    m_dataStart=m_file.pos();
+
     qint64 filesize = m_file.pos() + bounds.ni()*bounds.nj()*bounds.nt()*sizeof(float);
     m_file.resize(filesize);
+
     if( m_file.error()!=QFile::FileError::NoError) return false;
 
     m_bounds=bounds;
-    m_dataStart=m_file.pos();
 
     return true;
 }
@@ -57,6 +65,26 @@ bool VolumeWriter2::write(const Volume&  volume){
     }
 
     return writeData((const char*) volume.data(), volume.bounds().i1(), volume.bounds().ni());
+}
+
+bool VolumeWriter2::writeK(const Volume &volume){
+
+    if(m_file.error()!=QFile::FileError::NoError) return false;
+
+    if( (volume.bounds().i1()!=m_bounds.i1() ) ||
+            (volume.bounds().i2()!=m_bounds.i2() ) ||
+            (volume.bounds().j1()!=m_bounds.j1() ) ||
+            (volume.bounds().j2()!=m_bounds.j2() ) ||
+            (volume.bounds().ft()<m_bounds.ft() )  ||
+            (volume.bounds().lt()>m_bounds.lt() ) ){
+        setError("Volume has invalid bounds!");
+        return false;
+    }
+
+    int k0=m_bounds.timeToSample(volume.bounds().ft());     // first sample in reader bounds == sample 0 in volume
+    int nk=volume.bounds().nt();
+
+    return writeDataK( (const char*) volume.data(), k0, nk);
 }
 
 void VolumeWriter2::removeFile(){
@@ -111,7 +139,7 @@ bool VolumeWriter2::writeDomainAndType(QFile& file, const Domain& domain, const 
     return (file.error()==QFile::FileError::NoError);
 }
 
-// writes whole inlines from file
+// writes whole inlines to file
 // first inline=il0, number of inlines=nil
 // p must point to a buffer that has nil * (number of xlines) * sizeof(float) memory
 bool VolumeWriter2::writeData(const char* p, int il0, int nil){
@@ -124,6 +152,25 @@ bool VolumeWriter2::writeData(const char* p, int il0, int nil){
 
     return true;
 }
+
+// writes whole time/depth slices to file
+// first sample = k0, number of samples=nk
+// p must point to a buffer that has (number of ilines) * (number of xlines) * nk* sizeof(float) memory
+bool VolumeWriter2::writeDataK(const char* p, int k0, int nk){
+
+    // iterate over cdps
+    for( int i=0; i<m_bounds.ni()*m_bounds.nj(); i++){
+
+        auto pos0=m_dataStart + (i*m_bounds.nt()+k0)*sizeof(float);
+        auto ps=p+(i*nk)*sizeof(float);
+        m_file.seek(pos0);
+        if( m_file.error()!=QFile::FileError::NoError) return false;
+        if( m_file.write(ps, nk*sizeof(float))!=nk*sizeof(float) ) return false;
+    }
+
+    return true;
+}
+
 
 void VolumeWriter2::setError(const QString& msg){
     m_file.close();

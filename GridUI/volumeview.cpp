@@ -5,6 +5,8 @@
 #include<iostream>
 #include<cmath>
 #include<volumepicker.h>
+#include<matrix.h>
+
 
 namespace  {
 
@@ -14,6 +16,93 @@ namespace  {
         { VolumeView::SliceType::Crossline, "Crossline"},
         { VolumeView::SliceType::Z, "Z"}
     };
+
+}
+
+namespace{
+
+Matrix<double> buildSharpenKernel( int size, double power){
+
+    Matrix<double> m(size,size, -power);
+    m(size/2, size/2)=size*size-power;
+    return m;
+}
+
+QImage convolve( QImage src, Matrix<double> kernel){
+
+    QImage dest(src);//src.width(), src.height(), src.format());
+
+    for( int i=kernel.rows()/2; i<src.height()-kernel.rows()/2; i++){
+
+        for( int j=kernel.columns()/2; j<src.width()-kernel.columns()/2; j++){
+
+           qreal sr=0;
+           qreal sg=0;
+           qreal sb=0;
+           qreal sc=0;
+
+            for( int ii=0; ii<kernel.rows(); ii++){
+
+                for( int jj=0; jj<kernel.columns(); jj++){
+
+                    auto rgb=src.pixel( j+jj-kernel.columns()/2, i+ii-kernel.rows()/2);
+                    auto ciijj=kernel(ii,jj);
+                    sc+=ciijj;
+                    sr+=ciijj*qRed(rgb);
+                    sg+=ciijj*qGreen(rgb);
+                    sb+=ciijj*qBlue(rgb);
+                }
+
+            }
+            auto r=std::max(0,std::min(255, static_cast<int>(std::round(sr/sc))));
+            auto g=std::max(0,std::min(255, static_cast<int>(std::round(sg/sc))));
+            auto b=std::max(0,std::min(255, static_cast<int>(std::round(sb/sc))));
+            dest.setPixel(j,i, qRgb(r,g,b));
+        }
+    }
+
+    return dest;
+}
+
+/*
+QImage convolve( QImage src, int size, QVector<qreal> coeff){
+
+    if( size*size<coeff.size() ) return QImage();
+
+    QImage dest(src);//src.width(), src.height(), src.format());
+
+    for( int i=size/2; i<src.height()-size/2; i++){
+
+        for( int j=size/2; j<src.width()-size/2; j++){
+
+           qreal sr=0;
+           qreal sg=0;
+           qreal sb=0;
+           qreal sc=0;
+
+            for( int ii=0; ii<size; ii++){
+
+                for( int jj=0; jj<size; jj++){
+
+                    auto rgb=src.pixel( j+jj-size/2, i+ii-size/2);
+                    auto ciijj=coeff[ii*size+jj];
+                    sc+=ciijj;
+                    sr+=ciijj*qRed(rgb);
+                    sg+=ciijj*qGreen(rgb);
+                    sb+=ciijj*qBlue(rgb);
+                }
+
+            }
+            auto r=std::max(0,std::min(255, static_cast<int>(std::round(sr/sc))));
+            auto g=std::max(0,std::min(255, static_cast<int>(std::round(sg/sc))));
+            auto b=std::max(0,std::min(255, static_cast<int>(std::round(sb/sc))));
+            dest.setPixel(j,i, qRgb(r,g,b));
+        }
+    }
+
+    return dest;
+}
+*/
 
 }
 
@@ -160,6 +249,8 @@ void VolumeView::setSlice(SliceDef d){
     m_sliceList.push_back(m_slice);
     if( m_sliceList.size()>MAX_HISTORY) m_sliceList.pop_front();
 
+    auto oldXMinView=xAxis()->minView();
+    auto oldXMaxView=xAxis()->maxView();
     auto oldZMinView=zAxis()->minView();
     auto oldZMaxView=zAxis()->maxView();
     auto oldType=m_slice.type;
@@ -168,10 +259,23 @@ void VolumeView::setSlice(SliceDef d){
     updateAxes();
     refreshScene();
 
-    // keep vertical zoom if switching between inlines and crosslines
-    if( (oldType==SliceType::Inline || oldType==SliceType::Crossline) &&
-            (d.type==SliceType::Inline || d.type==SliceType::Crossline) ) zAxis()->setViewRange(oldZMinView, oldZMaxView);
-
+    if( d.type==oldType){ // keep zoom if same slice type
+        xAxis()->setViewRange(oldXMinView, oldXMaxView);
+        zAxis()->setViewRange(oldZMinView, oldZMaxView);
+    }
+    else if( d.type==SliceType::Z){ // new approach to keep fixed aspect ratio
+        setKeepAspectRatio(true);
+        zoomFitWindow();
+    }
+    else if( (oldType==SliceType::Inline || oldType==SliceType::Crossline) &&
+             (d.type==SliceType::Inline || d.type==SliceType::Crossline) ){
+        // keep vertical zoom if switching between inlines and crosslines
+         zAxis()->setViewRange(oldZMinView, oldZMaxView);
+     }
+    else{
+        setKeepAspectRatio(false);
+        zoomFitWindow();
+    }
     emit sliceChanged(d);
 }
 
@@ -187,6 +291,18 @@ void VolumeView::back(){
 void VolumeView::setWellViewDist(int d){
     if( d==m_wellViewDist) return;
     m_wellViewDist=d;
+    refreshScene();
+}
+
+void VolumeView::setSharpenPercent(int s){
+    if( s==m_sharpenPercent) return;
+    m_sharpenPercent=s;
+    refreshScene();
+}
+
+void VolumeView::setSharpenKernelSize(int s){
+    if( s==m_sharpenKernelSize) return;
+    m_sharpenKernelSize=s;
     refreshScene();
 }
 
@@ -993,6 +1109,12 @@ void VolumeView::renderLastViewed(QGraphicsScene * scene){
     }
 }
 
+QImage VolumeView::enhance(QImage src){
+    if( m_sharpenPercent==0) return src;
+    auto kernel=buildSharpenKernel(m_sharpenKernelSize,0.01*m_sharpenPercent);
+    return convolve(src,kernel);
+}
+
 void VolumeView::fillSceneInline(QGraphicsScene * scene){
 
     if( !scene ) return;
@@ -1017,6 +1139,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
         auto lt=vbounds.lt()-0.001*m_flattenRange.first;
         auto ct = vitem.colorTable;
         QImage vimg=intersectVolumeInline(*v, ct, il, ft, lt);
+        vimg=enhance(vimg);
         painter.setOpacity(vitem.alpha);
         painter.drawImage( vbounds.j1()-bounds.j1(), bounds.timeToSample(ft), vimg);
     }
@@ -1059,6 +1182,7 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
         auto lt=vbounds.lt()-0.001*m_flattenRange.first;
         auto ct = vitem.colorTable;
         QImage vimg=intersectVolumeCrossline(*v, ct, xl, ft, lt);
+        vimg=enhance(vimg);
         painter.setOpacity(vitem.alpha);
         painter.drawImage( vbounds.i1()-bounds.i1(), bounds.timeToSample(ft), vimg);
     }
@@ -1097,6 +1221,7 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
         auto vbounds=v->bounds();
         auto ct = vitem.colorTable;
         QImage vimg=intersectVolumeTime(*v, ct, m_slice.value);
+        vimg=enhance(vimg);
         painter.setOpacity(vitem.alpha);
         painter.drawImage( vbounds.i1()-bounds.i1(), vbounds.i2()-bounds.i2(), vimg);
     }

@@ -10,6 +10,7 @@ TraceScalingDialog::TraceScalingDialog(QWidget *parent) :
 
     QDoubleValidator* validator=new QDoubleValidator(this);
     ui->leScalingFactor->setValidator(validator);
+    ui->leBias->setValidator(validator);
 }
 
 TraceScalingDialog::~TraceScalingDialog()
@@ -45,6 +46,11 @@ void TraceScalingDialog::setScalingFactor(qreal factor){
     ui->leScalingFactor->setText(QString::number(factor));
 }
 
+void TraceScalingDialog::setBias(qreal b){
+
+    ui->leScalingFactor->setText(QString::number(b));
+}
+
 void TraceScalingDialog::on_cbScalingMode_currentIndexChanged(int idx){
 
     GatherScaler::Mode mode;
@@ -76,4 +82,11 @@ void TraceScalingDialog::on_leScalingFactor_returnPressed()
     qreal factor=ui->leScalingFactor->text().toDouble();
 
     emit scalingFactorChanged(factor);
+}
+
+void TraceScalingDialog::on_leBias_returnPressed()
+{
+    qreal b=ui->leBias->text().toDouble();
+
+    emit biasChanged(b);
 }

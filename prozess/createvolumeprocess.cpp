@@ -7,7 +7,7 @@
 #include<iostream>
 
 CreateVolumeProcess::CreateVolumeProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Create Volume"), project, parent){
+    VolumesProcess( QString("Create Volume"), project, parent){
 
 }
 
@@ -23,12 +23,13 @@ ProjectProcess::ResultCode CreateVolumeProcess::init( const QMap<QString, QStrin
     int minZ;
     int maxZ;
     int dz;
+    QString name;
     Domain domain;
     VolumeType type;
 
     try{
 
-        m_outputName=getParam(parameters, "volume");
+        name=getParam(parameters, "volume");
         minIline=getParam(parameters, "min-iline").toInt();
         maxIline=getParam( parameters, "max-iline").toInt();
         minXline=getParam( parameters, "min-xline").toInt();
@@ -47,36 +48,25 @@ ProjectProcess::ResultCode CreateVolumeProcess::init( const QMap<QString, QStrin
     }
 
     int nz=1 + ( maxZ - minZ )/dz;
-    Grid3DBounds bounds(minIline, maxIline, minXline, maxXline, nz, 0.001*minZ, 0.001*dz);
-    m_volume=std::shared_ptr<Volume >( new Volume(bounds));
-    m_volume->setDomain(domain);
-    m_volume->setType(type);
+    auto b=Grid3DBounds(minIline, maxIline, minXline, maxXline, nz, 0.001*minZ, 0.001*dz);
 
-    if( !m_volume){
-        setErrorString("Allocating volume failed!");
-        return ResultCode::Error;
-    }
+    setBounds(b);
+
+    auto res=addOutputVolume( name, b, domain, type);
+    if( res!=ResultCode::Ok) return res;
 
     return ResultCode::Ok;
 }
 
-ProjectProcess::ResultCode CreateVolumeProcess::run(){
+ProjectProcess::ResultCode CreateVolumeProcess::processInline(
+        QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
 
-    emit currentTask("Saving result volume");
-    emit started(1);
-    emit progress(0);
-    qApp->processEvents();
-
-    if( !project()->addVolume( m_outputName, m_volume, params() ) ){
-        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_outputName) );
-        return ResultCode::Error;
+    auto output=outputs[0];
+    for( int j=bounds().j1(); j<bounds().j2(); j++){
+        for(int k=0; k<bounds().nt(); k++){
+            (*output)(iline,j,k)=output->NULL_VALUE;
+        }
     }
-    emit progress(1);
-    qApp->processEvents();
-
-    emit finished();
-    qApp->processEvents();
-
 
     return ResultCode::Ok;
 }

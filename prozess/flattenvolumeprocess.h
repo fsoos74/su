@@ -2,34 +2,37 @@
 #define FLATTENVOLUMEPROCESS_H
 
 #include "projectprocess.h"
+#include "volumesprocess.h"
 #include <QObject>
 #include<grid2d.h>
-#include<grid3d.h>
-#include <seismicdatasetreader.h>   // this gives qApp
 #include<memory>
 
-class FlattenVolumeProcess : public ProjectProcess
+
+class FlattenVolumeProcess : public VolumesProcess
 {
 
     Q_OBJECT
 
 public:
 
+    enum class Mode{Flatten, Unflatten};
+    static QString toQString(Mode);
+    static Mode toMode(QString);
+
     FlattenVolumeProcess( AVOProject* project, QObject* parent=nullptr);
+    ResultCode init(const QMap<QString, QString>& parameters)override;
 
-    ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
-
+protected:
+    ResultCode processInline(
+            QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 private:
 
-    QString m_inputName;
-    QString m_outputName;
-    QString m_horizonName;
+    int m_start;
     int m_length;
+    Mode m_mode;
 
-    std::shared_ptr<Volume> m_inputVolume;
     std::shared_ptr<Grid2D<float>> m_horizon;
-    std::shared_ptr<Volume> m_volume;
+
 };
 
 #endif // SECONDARYATTRBUTEVOLUMESPROCESS_H

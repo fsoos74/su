@@ -2,6 +2,8 @@
 
 #include<cstring>
 #include<QApplication>  // qApp
+#include<cmath>
+#include<iostream>
 
 
 VolumeReader2::VolumeReader2(const QString& fname, QObject* parent ):QObject(parent),m_file(fname){
@@ -39,7 +41,7 @@ std::shared_ptr<Volume> VolumeReader2::read(){
     return readData(m_bounds);
 }
 
-std::shared_ptr<Volume> VolumeReader2::read(int i1, int i2){
+std::shared_ptr<Volume> VolumeReader2::readIl(int i1, int i2){
 
     if( i1>i2 ) return std::shared_ptr<Volume>();
     if( i1<m_bounds.i1() || i2>m_bounds.i2()){
@@ -51,6 +53,39 @@ std::shared_ptr<Volume> VolumeReader2::read(int i1, int i2){
 
     return readData(bounds);
 }
+
+std::shared_ptr<Volume> VolumeReader2::readXl(int j1, int j2){
+    return std::shared_ptr<Volume>();
+}
+
+std::shared_ptr<Volume> VolumeReader2::readK(int k1, int k2){
+
+    std::shared_ptr<Volume> volume;
+
+    if( k1>k2 ) return volume;
+    if( k1<0 || k2>=m_bounds.nt()){
+        setError("Requested sample range out of bounds");
+        return volume;
+    }
+
+    auto nk=k2-k1+1;
+    Grid3DBounds bounds(m_bounds.i1(), m_bounds.i2(), m_bounds.j1(), m_bounds.j2(),
+                        nk, m_bounds.ft()+k1*m_bounds.dt(), m_bounds.dt());
+
+    try{
+        volume=std::make_shared<Volume>(bounds);
+    }
+    catch(std::exception& ex){
+        setError(QString("Allocating volume failed: ") + QString(ex.what() ));
+        return std::shared_ptr<Volume>();
+    }
+
+    readDataK((char*)volume->data(), k1, nk);
+
+    return volume;
+}
+
+
 
 std::shared_ptr<Volume> VolumeReader2::readData(const Grid3DBounds& bounds){
 
@@ -64,7 +99,7 @@ std::shared_ptr<Volume> VolumeReader2::readData(const Grid3DBounds& bounds){
         return std::shared_ptr<Volume>();
     }
 
-    if( !readData((char*) volume->data(), volume->bounds().i1(), volume->bounds().ni())) volume.reset();
+    if( !readDataIl((char*) volume->data(), volume->bounds().i1(), volume->bounds().ni())) volume.reset();
 
     return volume;
 }
@@ -167,8 +202,8 @@ bool VolumeReader::readData(std::ifstream& istr, float* p, size_t count ){
 
 // reads whole inlines from file
 // first inline=il0, number of inlines=nil
-// p must point to a buffer that has nil * (number of xlines) * sizeof(float) memory
-bool VolumeReader2::readData(char* p, int il0, int nil){
+// p must point to a buffer that has nil * (number of xlines) * (number of samples) * sizeof(float) memory
+bool VolumeReader2::readDataIl(char* p, int il0, int nil){
 
     const qint64 ilsize=m_bounds.nj()*m_bounds.nt()*sizeof(float);
     qint64 pos0 = m_dataStart + (il0-m_bounds.i1())*ilsize;
@@ -184,6 +219,27 @@ bool VolumeReader2::readData(char* p, int il0, int nil){
 
     return true;
 }
+
+
+// reads whole time/depth slices
+// first slice = k0, nk = number of slices
+// p must point to a buffer that has (number of ilines ) * (number of xlines) * nk * sizeof(float) memory
+bool VolumeReader2::readDataK(char* p, int k0, int nk){
+
+    // iterate over cdps
+    for( int i = 0; i<m_bounds.ni()*m_bounds.nj(); i++){
+
+        qint64 pos0=m_dataStart + (i*m_bounds.nt() + k0)*sizeof(float);
+        auto pd= p + i*nk*sizeof(float);
+        unsigned n=nk*sizeof(float);
+        m_file.seek(pos0);
+        if( m_file.error()!=QFile::NoError) return false;
+        if( m_file.read(pd, n)!=n) return false;
+    }
+
+    return true;
+}
+
 
 void VolumeReader2::setError(const QString& msg){
     m_file.close();

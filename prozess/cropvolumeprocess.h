@@ -2,12 +2,10 @@
 #define CROPVOLUMEPROCESS_H
 
 #include "projectprocess.h"
-#include <QObject>
-#include<grid3d.h>
-#include <seismicdatasetreader.h>   // this gives qApp
-#include<memory>
+#include "volumesprocess.h"
 
-class CropVolumeProcess : public ProjectProcess
+
+class CropVolumeProcess : public VolumesProcess
 {
 
     Q_OBJECT
@@ -16,16 +14,13 @@ public:
 
     CropVolumeProcess( AVOProject* project, QObject* parent=nullptr);
 
-    ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
+    ResultCode init(const QMap<QString, QString>& parameters)override;
+
+protected:
+    ResultCode processInline(QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 
 private:
 
-    QString m_inputName;
-    QString m_outputName;
-
-    std::shared_ptr<Volume > m_inputVolume;
-    std::shared_ptr<Volume > m_volume;
 };
 
-#endif // SECONDARYATTRBUTEVOLUMESPROCESS_H
+#endif // CROPVOLUMEPROCESS_H

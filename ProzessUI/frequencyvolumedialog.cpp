@@ -12,11 +12,9 @@ FrequencyVolumeDialog::FrequencyVolumeDialog(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
     QDoubleValidator* dvalidator=new QDoubleValidator(this);
     ui->leMinimumFrequency->setValidator(dvalidator);
     ui->leMaximumFrequency->setValidator(dvalidator);
-
 
     connect( ui->leMinimumFrequency, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->leMaximumFrequency, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -34,21 +32,21 @@ void FrequencyVolumeDialog::setInputs( const QStringList& h){
     ui->cbInputVolume->addItems(h);
 }
 
+void FrequencyVolumeDialog::setProject(AVOProject *p){
+    if( p==m_project) return;
+    m_project=p;
+    updateOkButton();
+}
 
 QMap<QString,QString> FrequencyVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
-
-    p.insert( QString("output-volume"), ui->leVolumeName->text() );
-
-    p.insert( QString("input-volume"), ui->cbInputVolume->currentText());
-
-    p.insert( QString("minimum-frequency"), ui->leMinimumFrequency->text() );
-
-    p.insert( QString("maximum-frequency"), ui->leMaximumFrequency->text() );
-
-    p.insert( QString("window-samples"), ui->cbWindowSamples->currentText() );
+    p.insert( "output-volume", ui->leVolumeName->text() );
+    p.insert( "input-volume", ui->cbInputVolume->currentText());
+    p.insert( "minimum-frequency", ui->leMinimumFrequency->text() );
+    p.insert( "maximum-frequency", ui->leMaximumFrequency->text() );
+    p.insert( "window-samples", ui->cbWindowSamples->currentText() );
 
     return p;
 }
@@ -60,7 +58,7 @@ void FrequencyVolumeDialog::updateOkButton(){
 
     QPalette volumePalette;
     if( ui->leVolumeName->text().isEmpty() ||
-            reservedVolumes().contains(ui->leVolumeName->text() ) ){
+            (m_project && m_project->volumeList().contains(ui->leVolumeName->text() ) ) ){
         ok=false;
         volumePalette.setColor(QPalette::Text, Qt::red);
     }

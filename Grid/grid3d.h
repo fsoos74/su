@@ -4,6 +4,8 @@
 #include<array3d.h>
 #include<algorithm>
 #include<stdexcept>
+#include<grid2d.h>
+
 
 class Grid3DBounds{
 public:
@@ -210,8 +212,10 @@ public:
         if( k>=m_bounds.nt()) return NULL_VALUE;
 
         // linear interpolation between nearest samples
-        auto fraction=(t-m_bounds.sampleToTime(k))/m_bounds.dt();
         auto v0 = (*this)(i, j, k);
+        if( k+1==m_bounds.nt()) return v0;
+
+        auto fraction=(t-m_bounds.sampleToTime(k))/m_bounds.dt();
         auto v1 = (*this)(i, j, k+1);
 
         if( !fraction) return v0;   // no interpolation
@@ -274,6 +278,32 @@ public:
     void setDT( double dt){     // this is save becauseit does not change the number of samples
         m_bounds=Grid3DBounds(m_bounds.i1(), m_bounds.i2(), m_bounds.j1(), m_bounds.j2(),
                               m_bounds.nt(), m_bounds.ft(), dt );
+    }
+
+    Grid2D<T> atK(int k)const{
+        Grid2DBounds b2d(m_bounds.i1(), m_bounds.j1(), m_bounds.i2(), m_bounds.j2() );
+        Grid2D<T> g2d(b2d);     // initialized with NULL_VALUE
+        if( k<0 || k>=m_bounds.nt()) return g2d;
+        for(int i=b2d.i1(); i<=b2d.i2(); i++){
+            for( int j=b2d.j1(); j<=b2d.j2(); j++){
+                auto v=(*this)(i,j,k);
+                if( v!=NULL_VALUE) g2d(i,j)=v;
+            }
+        }
+        return g2d;
+    }
+
+    bool setK(int k, const Grid2D<T>& g2d){
+        if( k<0 || k>=m_bounds.nt()) return false;
+        auto b2d=g2d.bounds();
+        if( b2d.i1()!=m_bounds.i1() || b2d.i2()!=m_bounds.i2() || b2d.j1()!=m_bounds.j1() || b2d.j2()!=m_bounds.j2() ) return false;
+        for(int i=b2d.i1(); i<=b2d.i2(); i++){
+            for( int j=b2d.j1(); j<=b2d.j2(); j++){
+                auto v=g2d(i,j);
+                if( v!=g2d.NULL_VALUE) (*this)(i,j,k)=v;
+            }
+        }
+        return true;
     }
 
 private:

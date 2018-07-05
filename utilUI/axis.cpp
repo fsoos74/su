@@ -157,6 +157,7 @@ void Axis::setViewRange(qreal min, qreal max){
     if(min>max) std::swap(min,max);
     m_minView=min;
     m_maxView=max;
+
     emit viewRangeChanged(min, max);
 
     if(  m_automatic) computeAutomaticInterval();

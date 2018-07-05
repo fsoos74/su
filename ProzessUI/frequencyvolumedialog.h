@@ -5,7 +5,7 @@
 #include <QMap>
 
 #include "processparametersdialog.h"
-
+#include <avoproject.h>
 
 namespace Ui {
 class FrequencyVolumeDialog;
@@ -22,6 +22,7 @@ public:
     QMap<QString,QString> params();
 
 public slots:
+    void setProject( AVOProject* p);
     void setInputs( const QStringList&);
 
 private slots:
@@ -30,7 +31,8 @@ private slots:
 private:
     Ui::FrequencyVolumeDialog *ui;
 
-    QStringList m_volumeList;           // need this to check whether volume allready exists
+    QStringList m_volumeList;
+    AVOProject* m_project=nullptr;
 };
 
 #endif // FREQUENCYVOLUMEDIALOG_H

@@ -18,14 +18,17 @@ public:
 public slots:
     void setScalingMode( GatherScaler::Mode mode);
     void setScalingFactor(qreal);
+    void setBias(qreal);
 
 signals:
     void scalingModeChanged( GatherScaler::Mode);
     void scalingFactorChanged( qreal );
+    void biasChanged(qreal);
 
 private slots:
     void on_cbScalingMode_currentIndexChanged(int index);
     void on_leScalingFactor_returnPressed();
+    void on_leBias_returnPressed();
 
 private:
     Ui::TraceScalingDialog *ui;

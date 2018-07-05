@@ -1,31 +1,29 @@
 #ifndef FREQUENCYVOLUMEPROCESS_H
 #define FREQUENCYVOLUMEPROCESS_H
 
+#include "projectprocess.h"
+#include"volumesprocess.h"
+#include <QObject>
 
-#include<projectprocess.h>
-#include<grid3d.h>
-
-class FrequencyVolumeProcess : public ProjectProcess
+class FrequencyVolumeProcess : public VolumesProcess
 {
     Q_OBJECT
 
 public:
 
     FrequencyVolumeProcess( AVOProject* project, QObject* parent=nullptr);
+    ResultCode init(const QMap<QString, QString>& parameters)override;
 
-    ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
+protected:
+    ResultCode processInline(
+            QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 
 private:
 
     size_t m_windowSamples;
     double m_minimumFrequency;
     double m_maximumFrequency;
-    QString m_volumeName;
 
-    std::shared_ptr<Volume > m_inputVolume;
-    Grid3DBounds  m_bounds;
-    std::shared_ptr<Volume > m_volume;
 };
 
 #endif // FrequencyVolumeProcess_H

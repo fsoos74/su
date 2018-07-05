@@ -23,7 +23,12 @@ private:
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
     Grid3DBounds  m_bounds;
+#ifdef IO_VOLUMES
+    const int CHUNK_SIZE=10;
+    VolumeWriter2* m_volumeWriter;
+#else
     std::shared_ptr<Volume > m_volume;
+#endif
 };
 
 #endif // AMPLITUDEVOLUMEPROCESS_H

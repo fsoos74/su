@@ -232,6 +232,9 @@
      <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuImport">
+     <property name="toolTip">
+      <string/>
+     </property>
      <property name="title">
       <string>&amp;Import</string>
      </property>
@@ -250,6 +253,9 @@
      <addaction name="actionWell_Markers"/>
     </widget>
     <widget class="QMenu" name="menuExport">
+     <property name="toolTip">
+      <string/>
+     </property>
      <property name="title">
       <string>&amp;Export</string>
      </property>
@@ -343,7 +349,6 @@
     <addaction name="actionPunch_Out_Volume"/>
     <addaction name="actionVolume_Math"/>
     <addaction name="actionFlatten_Volume"/>
-    <addaction name="actionUnflatten_Volume"/>
     <addaction name="separator"/>
     <addaction name="actionExtract_Timeslice"/>
     <addaction name="actionExtract_Dataset"/>
@@ -356,7 +361,11 @@
     <addaction name="actionInstantaneous_Attribute_Volumes"/>
     <addaction name="separator"/>
     <addaction name="actionTrend_Based_Attribute_Volumes"/>
-    <addaction name="actionSecondary_Attribute_Volumes"/>
+    <addaction name="separator"/>
+    <addaction name="actionVolume_Circle_Detection"/>
+    <addaction name="separator"/>
+    <addaction name="actionNN_Volume_Trainer"/>
+    <addaction name="actionNN_Volume_Classification"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Volume_Script"/>
     <addaction name="separator"/>
@@ -407,6 +416,7 @@
      <string>Test</string>
     </property>
     <addaction name="actionVolume_IO_Test"/>
+    <addaction name="actionIntercept_And_Gradient_Volume_old"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Table">
     <property name="title">
@@ -430,10 +440,16 @@
    <property name="text">
     <string>&amp;Horizon</string>
    </property>
+   <property name="toolTip">
+    <string>Import a horizon</string>
+   </property>
   </action>
   <action name="actionImportSeismic">
    <property name="text">
     <string>&amp;Seismic</string>
+   </property>
+   <property name="iconText">
+    <string>Import Seismic</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -451,6 +467,9 @@
    <property name="toolTip">
     <string>New Project</string>
    </property>
+   <property name="whatsThis">
+    <string>Create a new project.</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
@@ -463,6 +482,9 @@
    <property name="text">
     <string>&amp;Save</string>
    </property>
+   <property name="iconText">
+    <string>Save the project</string>
+   </property>
    <property name="toolTip">
     <string>Save Project</string>
    </property>
@@ -473,6 +495,9 @@
   <action name="actionSaveProjectAs">
    <property name="text">
     <string>Save &amp;As</string>
+   </property>
+   <property name="iconText">
+    <string>Save the project with a new name</string>
    </property>
    <property name="toolTip">
     <string>Save Project As</string>
@@ -485,6 +510,9 @@
    </property>
    <property name="text">
     <string>&amp;Open</string>
+   </property>
+   <property name="iconText">
+    <string>Open a project</string>
    </property>
   </action>
   <action name="actionCreateTimeslice">
@@ -553,10 +581,16 @@
    <property name="text">
     <string>&amp;Attribute Grid</string>
    </property>
+   <property name="toolTip">
+    <string>Import an attribute grid</string>
+   </property>
   </action>
   <action name="actionImportOtherGrid">
    <property name="text">
     <string>&amp;Other Grid</string>
+   </property>
+   <property name="toolTip">
+    <string>Import a general grid</string>
    </property>
   </action>
   <action name="actionExportAttributeGrid">
@@ -577,6 +611,9 @@
   <action name="actionImportVolume">
    <property name="text">
     <string>&amp;Volume</string>
+   </property>
+   <property name="toolTip">
+    <string>Import a volume</string>
    </property>
   </action>
   <action name="action_Geometry">
@@ -660,7 +697,7 @@
   </action>
   <action name="actionTrend_Based_Attribute_Volumes">
    <property name="text">
-    <string>Trend &amp;Based Attribute Volumes</string>
+    <string>&amp;AVO Attribute Volumes</string>
    </property>
   </action>
   <action name="actionDisplay_Map">
@@ -803,6 +840,9 @@
    <property name="text">
     <string>&amp;Logs</string>
    </property>
+   <property name="toolTip">
+    <string>Import logs from a single well</string>
+   </property>
   </action>
   <action name="actionCrossplot_Logs">
    <property name="icon">
@@ -839,15 +879,24 @@
    <property name="text">
     <string>Logs (&amp;Bulk Mode)</string>
    </property>
+   <property name="toolTip">
+    <string>Import logs from multiple wells</string>
+   </property>
   </action>
   <action name="actionWellpaths_Bulk_Mode">
    <property name="text">
     <string>Wellpaths (Bulk &amp;Mode)</string>
    </property>
+   <property name="toolTip">
+    <string>Import the eell paths of multiple wells</string>
+   </property>
   </action>
   <action name="actionWellpath">
    <property name="text">
     <string>&amp;Wellpath</string>
+   </property>
+   <property name="toolTip">
+    <string>Import the well path of a single well</string>
    </property>
   </action>
   <action name="actionTest">
@@ -905,6 +954,9 @@
   <action name="actionWell_Markers">
    <property name="text">
     <string>&amp;Tops</string>
+   </property>
+   <property name="toolTip">
+    <string>Import formation tops/markerss</string>
    </property>
   </action>
   <action name="actionImport_Attached_Datasets">
@@ -997,7 +1049,27 @@
   </action>
   <action name="actionVolume_IO_Test">
    <property name="text">
-    <string>Volume IO Test</string>
+    <string>&amp;Volume IO Test</string>
+   </property>
+  </action>
+  <action name="actionIntercept_And_Gradient_Volume_old">
+   <property name="text">
+    <string>&amp;Intercept And Gradient Volume (old)</string>
+   </property>
+  </action>
+  <action name="actionNN_Volume_Trainer">
+   <property name="text">
+    <string>NN Vol&amp;ume Trainer*</string>
+   </property>
+  </action>
+  <action name="actionNN_Volume_Classification">
+   <property name="text">
+    <string>NN Volume Classification</string>
+   </property>
+  </action>
+  <action name="actionVolume_Circle_Detection">
+   <property name="text">
+    <string>Volume Circle Detection</string>
    </property>
   </action>
  </widget>

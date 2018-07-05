@@ -33,7 +33,8 @@ HEADERS += utilfs.h\
     range.h \
     interp.h \
     volumedimensions.h \
-    tree2d.h   
+    tree2d.h \
+    matrix.h   
 
 unix {
     target.path = /usr/lib

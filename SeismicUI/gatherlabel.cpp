@@ -235,6 +235,7 @@ void GatherLabel::updateTraceScaleFactors(){
     if( !m_view->gather()) return;
 
     traceScaleFactors=m_view->gatherScaler()->computeScalingFactors(m_view->gather());
+    bias=m_view->gatherScaler()->bias();
 
     updateBuffers();
 }
@@ -777,9 +778,9 @@ void GatherLabel::updateTracePaths(){
 
         QPainterPath wiggles;
 
-        wiggles.moveTo( samples[0], 0 );
+        wiggles.moveTo( samples[0]-bias, 0 );
         for( seismic::Trace::size_type j=0; j<samples.size(); j++ ){
-            wiggles.lineTo( samples[j], j);
+            wiggles.lineTo( samples[j]-bias, j);
         }
 
 
@@ -793,7 +794,7 @@ void GatherLabel::updateTracePaths(){
         }
         for( size_t j=0; j<samples.size(); j++){
 
-            qreal x=samples[j];
+            qreal x=samples[j]-bias;
             qreal y=j;
              if( polygon.size()>0){
 
@@ -853,7 +854,7 @@ void GatherLabel::updateDensityPlot(){
         qreal factor=traceScaleFactors[j];
         for( size_t i=0; i<samples.size(); i++ ){
 
-            ColorTable::color_type color=colorTable->map(factor * samples[i]);
+            ColorTable::color_type color=colorTable->map(factor * ( samples[i] - bias ) );
 
             image.setPixel( j, i, color);//qRgba( qRed(color), qGreen(color), qBlue(color), a ) );// color);
 

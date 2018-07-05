@@ -2,15 +2,12 @@
 #define CREATEVOLUMEPROCESS_H
 
 #include "projectprocess.h"
+#include "volumesprocess.h"
 #include <QObject>
-#include<grid2d.h>
-#include<grid3d.h>
-#include <seismicdatasetreader.h>   // this gives qApp
 #include<memory>
-#include<log.h>
-#include<QVector3D>
 
-class CreateVolumeProcess : public ProjectProcess
+
+class CreateVolumeProcess : public VolumesProcess
 {
 
     Q_OBJECT
@@ -20,12 +17,13 @@ public:
     CreateVolumeProcess( AVOProject* project, QObject* parent=nullptr);
 
     ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
+
+protected:
+    virtual ResultCode processInline(
+            QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 
 private:
 
-    QString m_outputName;
-    std::shared_ptr<Volume > m_volume;
 };
 
 #endif // CREATEVOLUMESPROCESS_H

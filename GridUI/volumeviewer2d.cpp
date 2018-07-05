@@ -37,6 +37,11 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     setupFlattenToolBar();
     setupWellToolBar();
     setupPickingToolBar();
+    setupEnhanceToolBar();
+    populateWindowMenu();
+    m_flattenToolBar->setVisible(false);
+    m_wellToolBar->setVisible(false);
+    m_pickToolBar->setVisible(false);
     setAttribute( Qt::WA_DeleteOnClose);
 
     ui->volumeView->setZoomMode(AxisView::ZOOMMODE::BOTH);
@@ -112,7 +117,7 @@ void VolumeViewer2D::cbSlice_currentIndexChanged(QString s)
     if(m_noupdate) return;
 
     auto t=VolumeView::toSliceType(s);
-    auto v=sbSlice->value();
+    auto v=m_sbSlice->value();
     v=ui->volumeView->adjustToVolume(t,v);
     ui->volumeView->setSlice(t,v);
 }
@@ -213,55 +218,78 @@ void VolumeViewer2D::setupMouseModes(){
 
 
 void VolumeViewer2D::setupSliceToolBar(){
-    QToolBar* toolBar=new QToolBar( "Slice", this);
+    m_sliceToolBar=new QToolBar( "Slice", this);
     auto widget=new QWidget(this);
     auto label=new QLabel(tr("Slice:"));
-    cbSlice=new QComboBox;
-    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Inline));
-    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
-    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
-    cbSlice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    sbSlice=new QSpinBox;
+    m_cbSlice=new QComboBox;
+    m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Inline));
+    m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
+    m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
+    m_cbSlice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    m_sbSlice=new QSpinBox;
     auto layout=new QHBoxLayout;
     layout->addWidget(label);
-    layout->addWidget(cbSlice);
-    layout->addWidget(sbSlice);
+    layout->addWidget(m_cbSlice);
+    layout->addWidget(m_sbSlice);
     widget->setLayout(layout);
-    toolBar->addWidget(widget);
-    addToolBar(toolBar);
-    connect(cbSlice, SIGNAL(currentIndexChanged(QString)), this, SLOT(cbSlice_currentIndexChanged(QString)) );
-    connect(sbSlice, SIGNAL(valueChanged(int)), this, SLOT(sbSlice_valueChanged(int)) );
+    m_sliceToolBar->addWidget(widget);
+    addToolBar(m_sliceToolBar);
+    connect(m_cbSlice, SIGNAL(currentIndexChanged(QString)), this, SLOT(cbSlice_currentIndexChanged(QString)) );
+    connect(m_sbSlice, SIGNAL(valueChanged(int)), this, SLOT(sbSlice_valueChanged(int)) );
 }
 
 void VolumeViewer2D::setupFlattenToolBar(){
-    QToolBar* toolBar=new QToolBar( "Flatten", this);
+    m_flattenToolBar=new QToolBar( "Flatten", this);
     auto widget=new QWidget(this);
     auto label=new QLabel(tr("Flatten:"));
-    cbHorizon=new QComboBox;
+    m_cbHorizon=new QComboBox;
     auto layout=new QHBoxLayout;
     layout->addWidget(label);
-    layout->addWidget(cbHorizon);
+    layout->addWidget(m_cbHorizon);
     widget->setLayout(layout);
-    toolBar->addWidget(widget);
-    addToolBar(toolBar);
-    connect(cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
+    m_flattenToolBar->addWidget(widget);
+    addToolBar(m_flattenToolBar);
+    connect(m_cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
 }
 
 void VolumeViewer2D::setupWellToolBar(){
-    QToolBar* toolBar=new QToolBar( "Well", this);
+    m_wellToolBar=new QToolBar( "Well", this);
     auto widget=new QWidget(this);
     auto label=new QLabel(tr("Dist:"));
-    sbWellViewDist=new QSpinBox;
+    auto sbWellViewDist=new QSpinBox;
     auto layout=new QHBoxLayout;
     layout->addWidget(label);
     layout->addWidget(sbWellViewDist);
     widget->setLayout(layout);
-    toolBar->addWidget(widget);
-    addToolBar(toolBar);
+    m_wellToolBar->addWidget(widget);
+    addToolBar(m_wellToolBar);
     connect(sbWellViewDist, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setWellViewDist(int)) );
 
     sbWellViewDist->setRange(0, 9999);
     sbWellViewDist->setValue(ui->volumeView->welViewDist());
+}
+
+void VolumeViewer2D::setupEnhanceToolBar(){
+    m_enhanceToolBar=new QToolBar( "Enhance", this);
+    auto widget=new QWidget(this);
+    auto label=new QLabel(tr("Sharpen:"));
+    auto sbSharpenKernelSize=new QSpinBox;
+    auto sbSharpenPercent=new QSpinBox;
+    auto layout=new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(sbSharpenKernelSize);
+    layout->addWidget(sbSharpenPercent);
+    widget->setLayout(layout);
+    m_enhanceToolBar->addWidget(widget);
+    addToolBar(m_enhanceToolBar);
+    connect(sbSharpenKernelSize, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setSharpenKernelSize(int)));
+    connect(sbSharpenPercent, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setSharpenPercent(int)) );
+
+    sbSharpenKernelSize->setRange(3, 11);
+    sbSharpenKernelSize->setSingleStep(2);
+    sbSharpenKernelSize->setValue(ui->volumeView->sharpenKernelSize());
+    sbSharpenPercent->setRange(0, 100);
+    sbSharpenPercent->setValue(ui->volumeView->sharpenPercent());
 }
 
 /*
@@ -322,32 +350,32 @@ void VolumeViewer2D::setupToolBarControls(){
 
 void VolumeViewer2D::setupPickingToolBar(){
 
-    QToolBar* toolBar=new QToolBar( "Picking", this);
+    m_pickToolBar=new QToolBar( "Picking", this);
     auto widget=new QWidget(this);
     auto label=new QLabel(tr("Pick:"));
-    m_cbPickMode=new QComboBox(this);
-    m_cbPickMode->addItems(volumePickModeNames());
-    m_cbPickMode->setCurrentText(toQString(VolumePicker::PickMode::Points));
-    m_cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    auto cbPickMode=new QComboBox(this);
+    cbPickMode->addItems(volumePickModeNames());
+    cbPickMode->setCurrentText(toQString(VolumePicker::PickMode::Points));
+    cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     auto layout=new QHBoxLayout;
     layout->addWidget(label);
-    layout->addWidget(m_cbPickMode);
+    layout->addWidget(cbPickMode);
     widget->setLayout(layout);
-    toolBar->addWidget(widget);
-    addToolBar(toolBar);
-    connect( m_cbPickMode, SIGNAL(currentIndexChanged(QString)), ui->volumeView->picker(), SLOT(setPickMode(QString)));
+    m_pickToolBar->addWidget(widget);
+    addToolBar(m_pickToolBar);
+    connect( cbPickMode, SIGNAL(currentIndexChanged(QString)), ui->volumeView->picker(), SLOT(setPickMode(QString)));
 }
 
 
 void VolumeViewer2D::updateFlattenHorizons(){
 
-    cbHorizon->clear();
-    cbHorizon->addItem(NO_HORIZON);
+    m_cbHorizon->clear();
+    m_cbHorizon->addItem(NO_HORIZON);
 
     if( !m_project) return;
 
     for( auto name:m_project->gridList(GridType::Horizon)){
-        cbHorizon->addItem(name);
+        m_cbHorizon->addItem(name);
     }
 }
 
@@ -518,7 +546,7 @@ void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
     if( m_noupdate) return;
 
     m_noupdate=true;
-    cbSlice->setCurrentText(VolumeView::toQString(d.type));
+    m_cbSlice->setCurrentText(VolumeView::toQString(d.type));
 
     int min=0;
     int max=0;
@@ -546,9 +574,9 @@ void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
     }
     }
 
-    sbSlice->setRange(min,max);
-    sbSlice->setSingleStep(step);
-    sbSlice->setValue(d.value);
+    m_sbSlice->setRange(min,max);
+    m_sbSlice->setSingleStep(step);
+    m_sbSlice->setValue(d.value);
 
     m_noupdate=false;
 
@@ -562,17 +590,17 @@ void VolumeViewer2D::onMouseOver(QPointF p){
 
     switch(ui->volumeView->slice().type){
     case VolumeView::SliceType::Inline:
-        il=sbSlice->value();
+        il=m_sbSlice->value();
         xl=static_cast<int>(std::round(p.x()));
         z=p.y();
         break;
     case VolumeView::SliceType::Crossline:
-        xl=sbSlice->value();
+        xl=m_sbSlice->value();
         il=static_cast<int>(std::round(p.x()));
         z=p.y();
         break;
     case VolumeView::SliceType::Z:
-        z=sbSlice->value();
+        z=m_sbSlice->value();
         il=static_cast<int>(std::round(p.x()));
         xl=static_cast<int>(std::round(p.y()));
         break;
@@ -960,14 +988,25 @@ void VolumeViewer2D::keyPressEvent(QKeyEvent * event){
     std::cout<<"GatherViewer::keyPressEvent"<<std::endl<<std::flush;
 
     switch(event->key()){
-    case Qt::Key_F: sbSlice->setValue(sbSlice->minimum()); break;
-    case Qt::Key_L: sbSlice->setValue(sbSlice->maximum()); break;
-    case Qt::Key_N: sbSlice->stepUp(); break;
-    case Qt::Key_P: sbSlice->stepDown(); break;
+    case Qt::Key_F: m_sbSlice->setValue(m_sbSlice->minimum()); break;
+    case Qt::Key_L: m_sbSlice->setValue(m_sbSlice->maximum()); break;
+    case Qt::Key_N: m_sbSlice->stepUp(); break;
+    case Qt::Key_P: m_sbSlice->stepDown(); break;
     //case Qt::Key_Plus: zoomIn(); break;
     //case Qt::Key_Minus: zoomOut(); break;
     //case Qt::Key_0: zoomFitWindow(); break;
     default: break;
     }
     event->accept();
+}
+
+void VolumeViewer2D::populateWindowMenu(){
+
+    ui->menu_Window->addAction( ui->toolBar->toggleViewAction());
+    ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
+    ui->menu_Window->addAction( m_sliceToolBar->toggleViewAction());
+    ui->menu_Window->addAction( m_flattenToolBar->toggleViewAction());
+    ui->menu_Window->addAction( m_wellToolBar->toggleViewAction());
+    ui->menu_Window->addAction( m_enhanceToolBar->toggleViewAction());
+    ui->menu_Window->addAction( m_pickToolBar->toggleViewAction());
 }

@@ -7,7 +7,7 @@
 #include<iostream>
 
 PunchOutVolumeProcess::PunchOutVolumeProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Punch Out Volume"), project, parent){
+    VolumesProcess( QString("Punch Out Volume"), project, parent){
 
 }
 
@@ -15,10 +15,12 @@ ProjectProcess::ResultCode PunchOutVolumeProcess::init( const QMap<QString, QStr
 
     setParams(parameters);
 
-    try{
+    QString outputName;
+    QString inputName;
 
-        m_outputName=getParam(parameters, "output-volume");
-        m_inputName=getParam(parameters, "input-volume");
+    try{
+        outputName=getParam(parameters, "output-volume");
+        inputName=getParam(parameters, "input-volume");
         m_tableName=getParam(parameters, "points-table");
         m_keepPoints=static_cast<bool>(getParam(parameters, "keep-points").toInt());
     }
@@ -27,11 +29,11 @@ ProjectProcess::ResultCode PunchOutVolumeProcess::init( const QMap<QString, QStr
         return ResultCode::Error;
     }
 
-    m_inputVolume=project()->loadVolume(m_inputName);
-    if( !m_inputVolume ){
-        setErrorString(QString("Loading volume \"%1\" failed!").arg(m_inputName));
-        return ResultCode::Error;
-    }
+    auto res=addInputVolume(inputName);
+    if( res!=ResultCode::Ok ) return res;
+
+    auto bounds=inputBounds(0);
+    setBounds(bounds);
 
     m_table=project()->loadTable(m_tableName);
     if( !m_table ){
@@ -39,73 +41,55 @@ ProjectProcess::ResultCode PunchOutVolumeProcess::init( const QMap<QString, QStr
         return ResultCode::Error;
     }
 
-    if( m_keepPoints){  // fill with null and fill later
-        m_volume= std::shared_ptr<Volume >( new Volume(m_inputVolume->bounds()));
-    }
-    else{   // copy and null later
-        m_volume=std::make_shared<Volume>(*m_inputVolume);
-    }
-    if( !m_volume){
-        setErrorString("Allocating volume failed!");
-        return ResultCode::Error;
-    }
+    res=addOutputVolume(outputName, bounds, inputDomain(0), inputType(0));
+    if( res!=ResultCode::Ok) return res;
 
     return ResultCode::Ok;
 }
 
-ProjectProcess::ResultCode PunchOutVolumeProcess::run(){
+ProjectProcess::ResultCode PunchOutVolumeProcess::processInline(
+        QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
 
 
-    Grid3DBounds bounds=m_volume->bounds();
+    auto input=inputs[0];
+    auto output=outputs[0];
 
-    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
-
-    emit currentTask("Computing output volume");
-    emit started(bounds.i2()-bounds.i1());
-    qApp->processEvents();
-
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
-
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            if( !m_table->contains(i,j)){
-                continue;
+    // first step copy input to output or fill output with null
+    if(m_keepPoints){   // fill with null, next step will copy the points within the body from input
+        for( int j=bounds().j1(); j<=bounds().j2(); j++){
+            for( int k=0; k<bounds().nt(); k++){
+                (*output)(iline,j,k)=output->NULL_VALUE;
             }
+        }
+    }
+    else{               // copy input to output, next step will null out points within geobody
+        for( int j=bounds().j1(); j<=bounds().j2(); j++){
+            for( int k=0; k<bounds().nt(); k++){
+                (*output)(iline,j,k)=(*input)(iline,j,k);
+            }
+        }
+    }
 
-            auto times=m_table->values(i,j);
+    // second step assign null or copy from input
+    for( int j=bounds().j1(); j<=bounds().j2(); j++){
 
-            if( m_keepPoints){
-                for( auto t : times){
-                    auto k=bounds.timeToSample(t);
-                    (*m_volume)(i,j,k)=(*m_inputVolume)(i,j,k);
-                }
-            }else{
-                for( auto t : times){
-                    auto k=bounds.timeToSample(t);
-                    (*m_volume)(i,j,k)=m_volume->NULL_VALUE;
-                }
+        if(!m_table->contains(iline,j)) continue;
+
+        auto times=m_table->values(iline,j);
+
+        if( m_keepPoints){
+            for( auto t : times){
+                auto k=bounds().timeToSample(t);
+                (*output)(iline,j,k)=(*input)(iline,j,k);
+            }
+        }else{
+            for( auto t : times){
+                auto k=bounds().timeToSample(t);
+                (*output)(iline,j,k)=output->NULL_VALUE;
             }
         }
 
-        emit progress(i-bounds.i1());
-        qApp->processEvents();
     }
-
-    emit currentTask("Saving result volume");
-    emit started(1);
-    emit progress(0);
-    qApp->processEvents();
-
-    if( !project()->addVolume( m_outputName, m_volume, params() ) ){
-        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_outputName) );
-        return ResultCode::Error;
-    }
-    emit progress(1);
-    qApp->processEvents();
-
-    emit finished();
-    qApp->processEvents();
-
 
     return ResultCode::Ok;
 }

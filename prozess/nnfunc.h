@@ -2,7 +2,7 @@
 #define NNFUNC_H
 
 #include "matrix.h"
-
+#include<iterator>
 
 inline double sigmoid(double x){
 	return 1./(1.+std::exp(-x));
@@ -29,21 +29,20 @@ inline double leaky_relu_prime( double x ){
 }
 
 
-
 template<class Iter>
-void norm( Iter begin, Iter end, std::pair<double, double> r, const double& NULL_VALUE=std::numeric_limits<double>::max()){
-
+void norm( Iter begin, Iter end, std::pair<double, double> r, double NULL_VALUE=std::numeric_limits<double>::max()){
+    typedef decltype(*begin) value_type;    // this works without iterator_traits
     if( r.first==r.second ) return;
     std::for_each( begin, end,
-        [r, NULL_VALUE](double& x){if(x!=NULL_VALUE) x=(x-r.first)/(r.second-r.first);});
+        [r, NULL_VALUE](value_type & x){if(x!=NULL_VALUE) x=(x-r.first)/(r.second-r.first);});
 }
 
 template<class Iter>
 void unnorm( Iter begin, Iter end, std::pair<double, double> r, const double& NULL_VALUE=std::numeric_limits<double>::max()){
-
+    typedef decltype(*begin) value_type;    // this works without iterator_traits
     if( r.first==r.second ) return;
     std::for_each( begin, end,
-        [r, NULL_VALUE](double& x){if(x!=NULL_VALUE) x=r.first + x*(r.second-r.first);});
+        [r, NULL_VALUE](value_type& x){if(x!=NULL_VALUE) x=r.first + x*(r.second-r.first);});
 }
 
 #endif

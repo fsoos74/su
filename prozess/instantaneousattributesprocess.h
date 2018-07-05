@@ -1,32 +1,23 @@
 #ifndef INSTANTANEOUSATTRIBUTESPROCESS_H
 #define INSTANTANEOUSATTRIBUTESPROCESS_H
 
-#include "projectprocess.h"
+#include "volumesprocess.h"
 #include <QObject>
-#include<grid3d.h>
-#include <seismicdatasetreader.h>   // this gives qApp
-#include<memory>
-#include<QSet>
 
-class InstantaneousAttributesProcess : public ProjectProcess
+
+class InstantaneousAttributesProcess : public VolumesProcess
 {
-
     Q_OBJECT
 
 public:
 
     InstantaneousAttributesProcess( AVOProject* project, QObject* parent=nullptr);
 
-    ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
+    ResultCode init(const QMap<QString, QString>& parameters)override;
 
-private:
-
-    std::shared_ptr<Volume > m_inputVolume;
-
-    QString m_amplitudeVolumeName;
-    QString m_phaseVolumeName;
-    QString m_frequencyVolumeName;
+protected:
+    ResultCode processInline(QVector<std::shared_ptr<Volume> > outputs,
+                        QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 };
 
 #endif // InstantaneousAttributesProcess_H

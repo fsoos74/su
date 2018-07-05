@@ -55,7 +55,7 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::init( const QMap<QString, QSt
 
     auto dz=1000*m_reader->info().dt();          // sec -> msec
     auto minz=static_cast<int>( 1000*m_reader->info().ft()); // sec -> msec
-    auto maxz=static_cast<int>(1000*(m_reader->info().ft()+m_reader->info().nt()*m_reader->info().dt()));   // sec -> msec
+    auto maxz=static_cast<int>(1000*(m_reader->info().ft()+(m_reader->info().nt()-1)*m_reader->info().dt()));   // sec -> msec
     auto minil=m_reader->minInline();
     auto maxil=m_reader->maxInline();
     auto minxl=m_reader->minCrossline();
@@ -75,7 +75,20 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::init( const QMap<QString, QSt
 
     m_bounds=Grid3DBounds( minil, maxil, minxl, maxxl, nz, 0.001*minz, 0.001*dz );  // msec -> sec
 
-    m_volume=std::shared_ptr<Volume>(new Volume(m_bounds));
+#ifdef IO_VOLUMES
+    m_volumeWriter=project()->openVolumeWriter(m_volumeName, m_bounds, Domain::Other, VolumeType::Other );
+    if( !m_volumeWriter){
+        setErrorString("Open volume writer failed!");
+        return ResultCode::Error;
+    }
+    m_volumeWriter->setParent(this);
+#else
+    m_volume=std::make_shared<Volume>(m_bounds);
+    if( !m_volume){
+        setErrorString("Allocating volume failed!");
+        return ResultCode::Error;
+    }
+#endif
 
     return ResultCode::Ok;
 }
@@ -83,11 +96,19 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::init( const QMap<QString, QSt
 
 ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
 
-    auto vbounds=m_volume->bounds();
-
     emit started(m_reader->sizeTraces());
     m_reader->seekTrace(0);
 
+    Grid3DBounds vbounds;
+    std::shared_ptr<Volume> volume;
+
+#ifdef IO_VOLUMES
+    vbounds=Grid3DBounds(0,0, m_bounds.j1(),m_bounds.j2(), m_bounds.nt(),m_bounds.ft(),m_bounds.dt());
+    volume.reset();
+#else
+    vbounds=m_volume->bounds();
+    volume=m_volume;
+#endif
 
     while( m_reader->good() ){
 
@@ -95,6 +116,26 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
+
+#ifdef IO_VOLUMES
+        if( iline>vbounds.i2()){ // finished chunk
+            if(volume){  // save old
+                if( !m_volumeWriter->write(*volume)){
+                    setErrorString(QString("Writing chunk failed: %1").arg(m_volumeWriter->lastError()));
+                    return ResultCode::Error;
+                }
+            }
+
+            int il1=iline;
+            int il2=std::min(il1+CHUNK_SIZE, m_bounds.i2());
+            vbounds=Grid3DBounds(il1,il2, m_bounds.j1(),m_bounds.j2(), m_bounds.nt(),m_bounds.ft(),m_bounds.dt());
+            volume=std::make_shared<Volume>(vbounds);
+            if( !volume){
+                setErrorString("Allocating subvolume failed!");
+                return ResultCode::Error;
+            }
+        }
+#endif
 
         if( vbounds.isInside(iline, xline) ){
 
@@ -108,7 +149,7 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
                 x-=j;
                 if( x<0 ) x=0;
                 if( x>=0 && j<trace.samples().size()){
-                    (*m_volume)(iline, xline, i)=( 1.-x) * trace.samples()[j] + x*trace.samples()[j+1];
+                    (*volume)(iline, xline, i)=( 1.-x) * trace.samples()[j] + x*trace.samples()[j+1];
                 }
 
             }
@@ -121,10 +162,26 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
     }
 
 
+#ifdef IO_VOLUMES
+    if(volume){  // save last chunk if necessary
+        if( !m_volumeWriter->write(*volume)){
+            setErrorString("Writing chunk failed!");
+            return ResultCode::Error;
+        }
+    }
+    m_volumeWriter->flush();
+    m_volumeWriter->close();
+    if( !project()->addVolume( m_volumeName, params() ) ){
+        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_volumeName) );
+        return ResultCode::Error;
+    }
+#else
     if( !project()->addVolume( m_volumeName, m_volume, params() ) ){
         setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_volumeName) );
         return ResultCode::Error;
     }
+#endif
+
     emit finished();
 
 

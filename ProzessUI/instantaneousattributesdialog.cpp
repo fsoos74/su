@@ -45,6 +45,8 @@ void InstantaneousAttributesDialog::updateOkButton(){
 
     for( auto p : {ui->leAmplitude, ui->lePhase, ui->leFrequency } ){
 
+        if(p->text().isEmpty()) ok=false;
+
         QPalette palette;
         if( reservedVolumes().contains(p->text())){
             ok=false;

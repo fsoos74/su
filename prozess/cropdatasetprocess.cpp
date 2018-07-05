@@ -44,14 +44,7 @@ ProjectProcess::ResultCode CropDatasetProcess::init( const QMap<QString, QString
 
 ProjectProcess::ResultCode CropDatasetProcess::run(){
 
-
-    std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
-    if( !reader){
-        setErrorString("Invalid segyreader!");
-        return ResultCode::Error;
-    }
-
-    int odtms = 1000 * m_reader->segyReader()->dt();
+    int odtms = 1000 * m_reader->info().dt();
     int ons = (m_maxMSec - m_minMSec) / odtms + 1;
 
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
@@ -59,14 +52,15 @@ ProjectProcess::ResultCode CropDatasetProcess::run(){
                                                                0.001*m_minMSec, m_reader->info().dt(), static_cast<size_t>(ons));
 
 
+    m_reader->seekTrace(0);
     m_writer = std::make_shared<SeismicDatasetWriter>( dsinfo );
 
-    emit started(reader->trace_count());
-    reader->seek_trace(0);
+    emit started(m_reader->sizeTraces() );
+    qApp->processEvents();
 
-    while( reader->current_trace() < reader->trace_count() ){
+    while( m_reader->good() ){
 
-        seismic::Trace trace=reader->read_trace();
+        seismic::Trace trace=m_reader->readTrace();
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
@@ -87,7 +81,7 @@ ProjectProcess::ResultCode CropDatasetProcess::run(){
             m_writer->writeTrace(otrace);
         }
 
-        emit progress( reader->current_trace());
+        emit progress( m_reader->tellTrace());
         qApp->processEvents();
         if( isCanceled()) return ResultCode::Canceled;
     }

@@ -18,13 +18,13 @@ public:
 
 private:
 
-    QString m_horizonName;
     QString m_sliceName;
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
     std::shared_ptr<Grid2D<float> > m_horizon;
     std::shared_ptr<Grid2D<float> > m_slice;
     qreal m_sliceTime;
+    bool m_useHorizon;
 };
 
 

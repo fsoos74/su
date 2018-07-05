@@ -148,8 +148,8 @@ public:
     QString getVolumePPPath(const QString& name);
     std::shared_ptr<Volume> loadVolume(const QString& name, bool showProgessDialog);
     std::shared_ptr<Volume> loadVolume(const QString& name, QProgressBar* progressBar=nullptr);
-    std::shared_ptr<VolumeReader2> openVolumeReader( const QString& name);
-    std::shared_ptr<VolumeWriter2> openVolumeWriter( const QString&, const Grid3DBounds&, const Domain&, const VolumeType&);
+    VolumeReader2* openVolumeReader( const QString& name);  // dont use shared_ptr with qobjects !!
+    VolumeWriter2* openVolumeWriter( const QString&, const Grid3DBounds&, const Domain&, const VolumeType&);  // no shared_ptr!!
     bool saveVolume(const QString& name, std::shared_ptr<Volume>);
     Grid3DBounds getVolumeBounds(const QString& name, Domain* domain=nullptr, VolumeType* type=nullptr);
     QFileInfo getVolumeFileInfo( const QString& name );

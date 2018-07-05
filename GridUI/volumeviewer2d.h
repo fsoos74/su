@@ -82,18 +82,28 @@ private:
     void setupFlattenToolBar();
     void setupWellToolBar();
     void setupPickingToolBar();
+    void setupEnhanceToolBar();
     void updateFlattenHorizons();
+    void populateWindowMenu();
     //void orientate();
 
     Ui::VolumeViewer2D *ui;
     DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
     QVBoxLayout* m_colorbarsLayout;
-    QComboBox* m_cbPickMode;
-    QComboBox* cbSlice;
-    QSpinBox* sbSlice;
-    //QPushButton* pbSlice;
-    QSpinBox* sbWellViewDist;
-    QComboBox* cbHorizon;
+    //QComboBox* m_cbPickMode;
+    QComboBox* m_cbSlice;
+    QSpinBox* m_sbSlice;
+
+    //QSpinBox* sbWellViewDist;
+    //QSpinBox* sbSharpenPercent;
+    //QSpinBox* sbSharpenKernelSize;
+    QComboBox* m_cbHorizon;
+
+    QToolBar* m_sliceToolBar;
+    QToolBar* m_flattenToolBar;
+    QToolBar* m_wellToolBar;
+    QToolBar* m_enhanceToolBar;
+    QToolBar* m_pickToolBar;
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     QMap<QString, Histogram> m_volumeHistograms;
     //QMap<QString, std::pair<double,double>> m_volumeRanges;

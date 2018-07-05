@@ -2,14 +2,12 @@
 
 #include <avoproject.h>
 #include "utilities.h"
-#include <QApplication>
 #include<iostream>
+#include<QApplication>
 
-#include<functional>
-using namespace std::placeholders;
 
 VolumeMathProcess::VolumeMathProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Volume Math"), project, parent){
+    VolumesProcess( QString("Volume Math"), project, parent){
 
 }
 
@@ -18,6 +16,7 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
     setParams(parameters);
 
     QString func;
+    QString oname;
     QString iname1;
     QString iname2;
     double value=0;
@@ -26,7 +25,7 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
 
     try{
         func=getParam(parameters, "function");
-        m_outputName=getParam(parameters, "output-volume");
+        oname=getParam(parameters, "output-volume");
         iname1=getParam(parameters, "input-volume1");
         iname2=getParam(parameters, "input-volume2");
         value=getParam(parameters, "value").toDouble();
@@ -39,28 +38,22 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
         return ResultCode::Error;
     }
 
-    int nv=(iname2.isEmpty()) ? 1 :  2;
-    emit currentTask("Loading Volumes");
-    emit started(nv);
-    qApp->processEvents();
-    m_inputVolume1=project()->loadVolume(iname1);
-    if( !m_inputVolume1){
-        setErrorString(QString("Loading input volume 1 failed!"));
-        return ResultCode::Error;
-    }
-    emit progress(1);
-    qApp->processEvents();
-
+    ProjectProcess::ResultCode res=addInputVolume(iname1);
+    if(res!=ResultCode::Ok) return res;
 
     if( !iname2.isEmpty()){
-        m_inputVolume2=project()->loadVolume(iname2);
-        if( !m_inputVolume2){
-            setErrorString(QString("Loading input volume 2 failed!"));
+        res=addInputVolume(iname2);
+        if(res!=ResultCode::Ok) return res;
+        if(inputBounds(0)!=inputBounds(1)){
+            setErrorString("Input volumes have different bounds!");
             return ResultCode::Error;
         }
-        emit progress(2);
-        qApp->processEvents();
     }
+
+    setBounds(inputBounds(0));
+
+    res=addOutputVolume(oname, bounds(), inputDomain(0), inputType(0));
+    if( res!=ResultCode::Ok) return res;
 
     emit currentTask("Loading Horizons");
     emit started(2);
@@ -85,95 +78,64 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
     emit progress(2);
     qApp->processEvents();
 
-    m_outputVolume=std::make_shared<Volume>(m_inputVolume1->bounds());
-
-    if( !m_outputVolume){
-        setErrorString("Allocating volume failed!");
-        return ResultCode::Error;
-    }
-
     m_processor.setOP(MathProcessor::toOP(func));
     m_processor.setValue(value);
-    m_processor.setInputNullValue(m_inputVolume1->NULL_VALUE);
 
     return ResultCode::Ok;
 }
 
+#include<iostream>
+ProjectProcess::ResultCode VolumeMathProcess::processInline(
+        QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
 
-ProjectProcess::ResultCode VolumeMathProcess::run(){
-
+    std::cout<<"processInline ni="<<inputs.size()<<" no="<<outputs.size()<<" iline="<<iline<<std::endl<<std::flush;
+    std::shared_ptr<Volume> input1=inputs[0];
+    std::shared_ptr<Volume> input2;
+    if( inputs.size()>1) input2=inputs[1];      // only used when op needs 2 input values
+    std::shared_ptr<Volume> output=outputs[0];
 
     if( m_editMode){
-        std::copy( m_inputVolume1->cbegin(), m_inputVolume1->cend(), m_outputVolume->begin());
+        for( int j=bounds().j1(); j<=bounds().j2(); j++){
+            for( int k=0; k<bounds().nt(); k++){
+                (*output)(iline,j,k)=(*input1)(iline,j,k);
+            }
+        }
     }
 
-
-    Grid3DBounds bounds=m_outputVolume->bounds();
-
-    emit currentTask("Computing output volume");
-    emit started(bounds.ni());
-    qApp->processEvents();
-
+    m_processor.setInputNullValue(input1->NULL_VALUE);
     int k1=0;
-    int k2=bounds.nt();
+    int k2=bounds().nt();
 
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
+    for( int j=bounds().j1(); j<=bounds().j2(); j++){
 
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            if( m_topHorizon ){
-                auto z = m_topHorizon->valueAt(i,j);
-                if( z==m_topHorizon->NULL_VALUE) continue;      // skip cdp without top horizon
-                k1=std::max( 0, static_cast<int>( std::round( ( 0.001*z -bounds.ft() ) / bounds.dt() ) ) );        // maybe use this as time to sample in bounds
-            }
-            if( m_bottomHorizon ){
-                auto z = m_bottomHorizon->valueAt(i,j);
-                if( z==m_bottomHorizon->NULL_VALUE) continue;      // skip cdp without bottom horizon
-                k2=std::min( bounds.nt(), static_cast<int>( std::round( ( 0.001*z -bounds.ft() ) / bounds.dt() ) ) );
-            }
-            for( int k=k1; k<k2; k++){
-
-                auto ivalue1=(*m_inputVolume1)(i,j,k);
-                m_processor.setInput1(ivalue1);
-
-                if(m_inputVolume2){
-                    auto ivalue2=(*m_inputVolume2)(i,j,k);
-                    m_processor.setInput2(ivalue2);
-                }
-
-                (*m_outputVolume)(i,j,k)=m_processor.compute();
-            }
+        if( m_topHorizon ){
+            auto z = m_topHorizon->valueAt(iline,j);
+            if( z==m_topHorizon->NULL_VALUE) continue;      // skip cdp without top horizon
+            k1=std::max( 0, static_cast<int>( std::round( ( 0.001*z -bounds().ft() ) / bounds().dt() ) ) );        // maybe use this as time to sample in bounds
         }
+        if( m_bottomHorizon ){
+            auto z = m_bottomHorizon->valueAt(iline,j);
+            if( z==m_bottomHorizon->NULL_VALUE) continue;      // skip cdp without bottom horizon
+            k2=std::min( bounds().nt(), static_cast<int>( std::round( ( 0.001*z -bounds().ft() ) / bounds().dt() ) ) );
+        }
+        for( int k=k1; k<k2; k++){
 
-        emit progress( i-bounds.i1() );
-        qApp->processEvents();
+            auto ivalue1=(*input1)(iline,j,k);
+            m_processor.setInput1(ivalue1);
 
-    }
+            if(input2){
+                auto ivalue2=(*input2)(iline,j,k);
+                m_processor.setInput2(ivalue2);
+            }
 
-    emit currentTask("Saving output volume");
-    emit started(1);
-    emit progress(0);
-    qApp->processEvents();
+            auto res=m_processor.compute();
+            if( res==m_processor.NULL_VALUE){
+                res=output->NULL_VALUE;
+            }
 
-    if( project()->existsVolume(m_outputName)){   // overwrite existing volume, must be input-volume 1 from dialog
-        if( !project()->saveVolume( m_outputName, m_outputVolume )){    // XXX NEED TO handle process params!!!
-            setErrorString( QString("Could not save volume \"%1\"!").arg(m_outputName) );
-            return ResultCode::Error;
+            (*output)(iline,j,k)=res;
         }
     }
-    else{       // new volume
-        if( !project()->addVolume( m_outputName, m_outputVolume, params() )){
-            setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_outputName) );
-            return ResultCode::Error;
-        }
-    }
-
-    emit progress(1);
-    qApp->processEvents();
-
-    emit finished();
-    qApp->processEvents();
-
 
     return ResultCode::Ok;
 }

@@ -42,6 +42,10 @@ public:
         return m_zAxis;
     }
 
+    bool keepAspectRatio()const{
+        return m_keepAspectRatio;
+    }
+
     bool xMesh()const{
         return m_xMesh;
     }
@@ -85,6 +89,7 @@ public:
     QRectF viewRectFromView();
 
 public slots:
+    void setKeepAspectRatio(bool);
     void clearSelection();
     void setZoomMode(ZOOMMODE);
     void setCursorMode(CURSORMODE);
@@ -97,11 +102,13 @@ public slots:
     void showXCursor(qreal);
     void showZCursor(qreal);
     void zoomFitWindow();
+    void zoom(QRectF rect);
     void zoomBy(qreal factor);
     void zoomIn();
     void zoomOut();
 
 signals:
+    void keepAspectRatioChanged(bool);
     void mouseModeChanged(MouseMode);
     void mouseDoubleClick(QPointF);
     void mouseOver( QPointF);
@@ -146,10 +153,12 @@ private slots:
     void removeSelectionPoint( QPointF p);
 
 private:
+    QRectF adjustViewRect(const QRectF& r);
     void updateSceneSelection();
 
     Axis* m_xAxis=nullptr;
     Axis* m_zAxis=nullptr;
+    bool m_keepAspectRatio=false;
     bool m_xMesh=false;
     bool m_zMesh=false;
     bool m_zoomActive=false;

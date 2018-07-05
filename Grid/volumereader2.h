@@ -46,7 +46,13 @@ public:
     std::shared_ptr<Volume> read();
 
     // read inlines [il1..il2], return them as volume, null ptr on error
-    std::shared_ptr<Volume> read(int il1, int il2);
+    std::shared_ptr<Volume> readIl(int il1, int il2);
+
+    // read crosslines [xl1..xl2], return them as volume, null ptr on error
+    std::shared_ptr<Volume> readXl(int xl1, int ix2);
+
+    // read time/depth slices at samples [k1..k2], return them as volume, null ptr on error
+    std::shared_ptr<Volume> readK(int k1, int k2);
 
 signals:
     void percentDone(int);
@@ -57,7 +63,9 @@ private:
     bool readBounds(QFile&, Grid3DBounds&);
     bool readDomainAndType(QFile&, Domain&, VolumeType&);
     std::shared_ptr<Volume>  readData(const Grid3DBounds& bounds);
-    bool readData(char* p, int il0, int nil);
+    bool readDataIl(char* p, int il0, int nil);
+    bool readDataXl(char* p, int xl0, int nxl);
+    bool readDataK(char* p, int k0, int nk);
     void setError(const QString& msg);
 
     QFile m_file;

@@ -26,6 +26,16 @@ void GatherScaler::setFixedScaleFactor(qreal fac){
     emit fixedScaleFactorChanged(fac);
 }
 
+void GatherScaler::setBias(qreal b){
+
+    if( b==m_bias) return;
+
+    m_bias=b;
+
+    emit changed();
+    emit biasChanged(b);
+}
+
 // rms scaling, experimental - NOT WORKING YET!!!
 /*
 QVector<qreal> GatherScaler::computeScalingFactors( std::shared_ptr<seismic::Gather> gather){

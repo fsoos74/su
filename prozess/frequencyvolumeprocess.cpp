@@ -1,83 +1,43 @@
 #include "frequencyvolumeprocess.h"
 
-#include "utilities.h"      // setRequiredHeaderwords
-
-#include<seismicdatasetreader.h>
-#include<segyinfo.h>
-#include<segy_header_def.h>
-#include<segyreader.h>
-#include<trace.h>
 #include<fft.h>
 #include<frequencyspectra.h>
 #include<spectrum.h>
-#include<future>
 
 #include <omp.h>
 
-// necessary to speed up slow segy input
-const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "dt", "ns" };
 
 FrequencyVolumeProcess::FrequencyVolumeProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Frequency Volume"), project, parent){
-
+    VolumesProcess( QString("Frequency Volume"), project, parent){
 }
+
+
 
 ProjectProcess::ResultCode FrequencyVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
     setParams(parameters);
 
-    if( !parameters.contains(QString("input-volume"))){
-
-        setErrorString("Parameters contain no input-volume!");
+    QString inputName;
+    QString outputName;
+    try{
+        outputName=getParam(parameters, "output-volume");
+        inputName=getParam(parameters, "input-volume");
+        m_minimumFrequency=getParam( parameters, "minimum-frequency").toDouble();
+        m_maximumFrequency=getParam( parameters, "maximum-frequency").toDouble();
+        m_windowSamples=getParam( parameters, "window-samples").toInt();
+    }
+    catch(std::exception& ex){
+        setErrorString(ex.what());
         return ResultCode::Error;
     }
-    QString inputName=parameters.value( QString("input-volume") );
-    m_inputVolume=project()->loadVolume( inputName );
-    if( !m_inputVolume ){
-        setErrorString("Loading volume failed!");
-        return ResultCode::Error;
-    }
-    m_bounds=m_inputVolume->bounds();
-
-    if( !parameters.contains(QString("output-volume"))){
-        setErrorString("Parameters contain no output volume name!");
-        return ResultCode::Error;
-    }
-    m_volumeName=parameters.value(QString("output-volume"));
-
-    m_volume=std::shared_ptr<Volume>(new Volume(m_bounds));
-
-    if( !m_volume ){
-        setErrorString("Allocating volume failed!");
-        return ResultCode::Error;
-    }
-
-    if( !parameters.contains(QString("minimum-frequency"))){
-
-        setErrorString("Parameters don't contain minimum-frequency");
-        return ResultCode::Error;
-    }
-    m_minimumFrequency=parameters.value("minimum-frequency").toDouble();
-
-    if( !parameters.contains(QString("maximum-frequency"))){
-
-        setErrorString("Parameters don't contain maximum-frequency");
-        return ResultCode::Error;
-    }
-    m_maximumFrequency=parameters.value("maximum-frequency").toDouble();
-
-    if( !parameters.contains(QString("window-samples"))){
-
-        setErrorString("Parameters don't contain window-samples");
-        return ResultCode::Error;
-    }
-    m_windowSamples=parameters.value("window-samples").toInt();
-
-
+    ProjectProcess::ResultCode res=addInputVolume(inputName);
+    if( res!=ResultCode::Ok) return res;
+    auto ibounds=inputBounds(0);
+    setBounds(ibounds);
+    res=addOutputVolume(outputName, bounds(), inputDomain(0), VolumeType::Other);
+    if( res!=ResultCode::Ok) return res;
     return ResultCode::Ok;
 }
-
-
 
 
 template< typename CONST_ITERATOR >
@@ -100,52 +60,27 @@ float frequencyAmplitude( CONST_ITERATOR first, CONST_ITERATOR last, const std::
 }
 
 
+ProjectProcess::ResultCode FrequencyVolumeProcess::processInline(
+        QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
+    auto output=outputs[0];
+    auto input=inputs[0];
+    auto freqs = fft_freqs(bounds().dt(), m_windowSamples);
+    int k1=static_cast<int>(m_windowSamples/2);
+    int k2=bounds().nt()-k1;
 
-ProjectProcess::ResultCode FrequencyVolumeProcess::run(){
+    for( int j=bounds().j1(); j<=bounds().j2(); j++){
 
-    auto bounds=m_volume->bounds();
+        #pragma omp parallel for
+        for( int k=k1; k<k2; k++){
 
-    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
-
-    auto freqs = fft_freqs(bounds.dt(), m_windowSamples);
-
-    emit currentTask("Computing output volume");
-    emit started(100);
-    qApp->processEvents();
-
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
-
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            #pragma omp parallel for
-            for( int k=m_windowSamples/2; k<m_bounds.nt()-m_windowSamples/2; k++){
-
-                auto spectrum=computeSpectrum( &((*m_inputVolume)(i,j,k)), m_windowSamples, bounds.dt() );
-                auto all=integratedPower(spectrum, 0, 1000);
-                if(all<=0) continue;
-                auto area=integratedPower(spectrum, m_minimumFrequency, m_maximumFrequency );
-                (*m_volume)(i, j, k)=area/all;
-
-            }
-
+            auto spectrum=computeSpectrum( &((*input)(iline,j,k)), m_windowSamples, bounds().dt() );
+            auto all=integratedPower(spectrum, 0, 1000);
+            if(all<=0) continue;
+            auto area=integratedPower(spectrum, m_minimumFrequency, m_maximumFrequency );
+            (*output)(iline, j, k)=area/all;
         }
 
-        if( (i-bounds.i1()) % onePercent==0 ){
-            emit progress((i-bounds.i1()) / onePercent);
-            qApp->processEvents();
-        }
     }
-
-    emit currentTask("Saving result volume");
-    emit started(1);
-    emit progress(0);
-    qApp->processEvents();
-    if( !project()->addVolume( m_volumeName, m_volume, params() ) ) {
-        setErrorString( QString("Could not add grid \"%1\" to project!").arg(m_volumeName) );
-        return ResultCode::Error;
-    }
-    emit progress(1);
-    qApp->processEvents();
 
     return ResultCode::Ok;
 }

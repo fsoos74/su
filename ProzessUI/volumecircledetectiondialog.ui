@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>UnflattenVolumeDialog</class>
- <widget class="QDialog" name="UnflattenVolumeDialog">
+ <class>VolumeCircleDetectionDialog</class>
+ <widget class="QDialog" name="VolumeCircleDetectionDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
-    <height>264</height>
+    <width>385</width>
+    <height>230</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Flatten Volume</string>
+   <string>Volume IO Test</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../ProjectViewer/icons.qrc">
@@ -20,14 +20,28 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Maximum Radius (lines):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QLabel" name="lbInput">
        <property name="text">
         <string>Input Volume:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>output Volume:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
       <widget class="QComboBox" name="cbInputName">
        <property name="minimumSize">
         <size>
@@ -43,53 +57,29 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Unflattened Volume:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
+     <item row="2" column="2">
       <widget class="QLineEdit" name="leOutputName"/>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Horizon:</string>
+        <string>Minimum Radius (lines):</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cbHorizon">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_4">
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="leMinRadius">
        <property name="text">
-        <string>Start(ms):</string>
+        <string>2</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="leStart">
+     <item row="4" column="2">
+      <widget class="QLineEdit" name="leMaxRadius">
        <property name="text">
-        <string>0</string>
+        <string>10</string>
        </property>
       </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Length(ms):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="leLength"/>
      </item>
     </layout>
    </item>
@@ -125,7 +115,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>UnflattenVolumeDialog</receiver>
+   <receiver>VolumeCircleDetectionDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -141,7 +131,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>UnflattenVolumeDialog</receiver>
+   <receiver>VolumeCircleDetectionDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

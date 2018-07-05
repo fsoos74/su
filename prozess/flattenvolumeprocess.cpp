@@ -3,11 +3,31 @@
 #include <avoproject.h>
 #include "utilities.h"
 #include <processparams.h>
-
+#include <QMap>
 #include<iostream>
 
+#include<QApplication>
+
+namespace{
+
+QMap<FlattenVolumeProcess::Mode, QString> lookup{
+    { FlattenVolumeProcess::Mode::Flatten, "Flatten"},
+    { FlattenVolumeProcess::Mode::Unflatten, "Unflatten"}
+};
+
+}
+
+QString FlattenVolumeProcess::toQString(FlattenVolumeProcess::Mode m){
+    return lookup.value(m);
+}
+
+FlattenVolumeProcess::Mode FlattenVolumeProcess::toMode(QString str){
+    return lookup.key(str);
+}
+
+
 FlattenVolumeProcess::FlattenVolumeProcess( AVOProject* project, QObject* parent) :
-    ProjectProcess( QString("Flatten Volume"), project, parent){
+    VolumesProcess( QString("Flatten Volume"), project, parent){
 
 }
 
@@ -15,37 +35,38 @@ ProjectProcess::ResultCode FlattenVolumeProcess::init( const QMap<QString, QStri
 
     setParams(parameters);
 
-    try{
+    QString outputName;
+    QString inputName;
+    QString horizonName;
 
-        m_outputName=getParam(parameters, "output-volume");
-        m_inputName=getParam(parameters, "input-volume");
-        m_horizonName=getParam(parameters, "horizon" );
+    try{
+        outputName=getParam(parameters, "output-volume");
+        inputName=getParam(parameters, "input-volume");
+        horizonName=getParam(parameters, "horizon" );
+        m_start=getParam(parameters, "start").toInt();
         m_length=getParam(parameters, "length").toInt();
+        m_mode=toMode(getParam(parameters, "mode"));
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
         return ResultCode::Error;
     }
 
-    m_inputVolume=project()->loadVolume(m_inputName);
-    if( !m_inputVolume ){
-        setErrorString(QString("Loading volume \"%1\" failed!").arg(m_inputName));
-        return ResultCode::Error;
-    }
+    ProjectProcess::ResultCode res=addInputVolume(inputName);
+    if(res!=ResultCode::Ok) return res;
 
-    m_horizon=project()->loadGrid(GridType::Horizon, m_horizonName);
+    auto ibounds=inputBounds(0);
+    int ont = static_cast<int>(1 + 0.001*m_length / ibounds.dt());  // length is in millis
+    float oft=0.001*m_start;        //msec -> sec
+    auto obounds=Grid3DBounds( ibounds.i1(), ibounds.i2(), ibounds.j1(), ibounds.j2(), ont, oft, ibounds.dt());
+    setBounds(obounds);
+
+    res=addOutputVolume(outputName, obounds, inputDomain(0), inputType(0) );
+    if( res!=ResultCode::Ok) return res;
+
+    m_horizon=project()->loadGrid(GridType::Horizon, horizonName);
     if( !m_horizon){
-        setErrorString(QString("Loading horizon \"%1\" failed!").arg(m_horizonName));
-        return ResultCode::Error;
-    }
-
-    auto bounds=m_inputVolume->bounds();
-    int out_nt = static_cast<int>(1 + 0.001*m_length / bounds.dt());  // length is in millis
-    auto out_bounds=Grid3DBounds( bounds.i1(), bounds.i2(), bounds.j1(), bounds.j2(), out_nt, 0, bounds.dt());
-    m_volume=std::shared_ptr<Volume >( new Volume(out_bounds));
-
-    if( !m_volume){
-        setErrorString("Allocating volume failed!");
+        setErrorString(QString("Loading horizon \"%1\" failed!").arg(horizonName));
         return ResultCode::Error;
     }
 
@@ -53,53 +74,31 @@ ProjectProcess::ResultCode FlattenVolumeProcess::init( const QMap<QString, QStri
 }
 
 
+ProjectProcess::ResultCode FlattenVolumeProcess::processInline(
+        QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
 
-ProjectProcess::ResultCode FlattenVolumeProcess::run(){
+    std::shared_ptr<Volume> input=inputs[0];
+    std::shared_ptr<Volume> output=outputs[0];
 
+    for( int j=bounds().j1(); j<=bounds().j2(); j++){
 
-    Grid3DBounds bounds=m_volume->bounds();
+        auto thms=m_horizon->valueAt(iline,j);
+        if( thms==m_horizon->NULL_VALUE) continue;
+        auto th = 0.001*thms;
 
-    int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
-
-    emit currentTask("Computing output volume");
-    emit started(100);
-    qApp->processEvents();
-
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
-
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            auto thms=m_horizon->valueAt(i,j);
-            if( thms==m_horizon->NULL_VALUE) continue;
-
-            auto th = 0.001*thms;
-
-            for( int k=0; k<bounds.nt(); k++){
-                (*m_volume)(i,j,k)=m_inputVolume->value( i, j, th + bounds.sampleToTime(k));
+        if( m_mode==Mode::Flatten){
+            for( int k=0; k<bounds().nt(); k++){
+                (*output)(iline,j,k)=input->value( iline, j, th + k*bounds().dt());
             }
         }
-
-        if( (i-bounds.i1()) % onePercent==0 ){
-            emit progress((i-bounds.i1()) / onePercent);
-            qApp->processEvents();
+        else{   // unflatten
+            for( int k=0; k<bounds().nt(); k++){
+                auto tk = bounds().sampleToTime(k);
+                auto tflat = tk - th;
+                (*output)(iline,j,k)=input->value( iline, j, tflat);  // this doesinterpolation
+            }
         }
     }
-
-    emit currentTask("Saving result volume");
-    emit started(1);
-    emit progress(0);
-    qApp->processEvents();
-
-    if( !project()->addVolume( m_outputName, m_volume, params() )){
-        setErrorString( QString("Could not add volume \"%1\" to project!").arg(m_outputName) );
-        return ResultCode::Error;
-    }
-    emit progress(1);
-    qApp->processEvents();
-
-    emit finished();
-    qApp->processEvents();
-
 
     return ResultCode::Ok;
 }

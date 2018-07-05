@@ -35,7 +35,6 @@ SOURCES += prozessui.cpp \
     amplitudevolumedialog.cpp \
     semblancevolumedialog.cpp \
     secondaryavoattributesdialog.cpp \
-    trendbasedattributesdialog.cpp \
     cropvolumedialog.cpp \
     convertgriddialog.cpp \
     smoothgriddialog.cpp \
@@ -51,7 +50,6 @@ SOURCES += prozessui.cpp \
     cropdatasetdialog.cpp \
     replacebadtracesdialog.cpp \
     flattenvolumedialog.cpp \
-    unflattenvolumedialog.cpp \
     volumestatisticsdialog.cpp \
     buildwellvolumedialog.cpp \
     volumemathdialog.cpp \
@@ -76,7 +74,12 @@ SOURCES += prozessui.cpp \
     tabletohorizondialog.cpp \
     exporttabledialog.cpp \
     stacktogatherdialog.cpp \
-    volumeiotestdialog.cpp
+    volumeiotestdialog.cpp \
+    interceptgradientvolumedialog_2.cpp \
+    trendbasedattributegridsdialog.cpp \
+    trendbasedattributevolumesdialog.cpp \
+    nnvolumeclassificationdialog.cpp \
+    volumecircledetectiondialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -95,7 +98,6 @@ HEADERS += prozessui.h\
     amplitudevolumedialog.h \
     semblancevolumedialog.h \
     secondaryavoattributesdialog.h \
-    trendbasedattributesdialog.h \
     cropvolumedialog.h \
     convertgriddialog.h \
     smoothgriddialog.h \
@@ -111,7 +113,6 @@ HEADERS += prozessui.h\
     cropdatasetdialog.h \
     replacebadtracesdialog.h \
     flattenvolumedialog.h \
-    unflattenvolumedialog.h \
     volumestatisticsdialog.h \
     buildwellvolumedialog.h \
     volumemathdialog.h \
@@ -136,7 +137,12 @@ HEADERS += prozessui.h\
     tabletohorizondialog.h \
     exporttabledialog.h \
     stacktogatherdialog.h \
-    volumeiotestdialog.h
+    volumeiotestdialog.h \
+    interceptgradientvolumedialog_2.h \
+    trendbasedattributegridsdialog.h \
+    trendbasedattributevolumesdialog.h \
+    nnvolumeclassificationdialog.h \
+    volumecircledetectiondialog.h
 
 unix {
     target.path = /usr/lib
@@ -158,7 +164,6 @@ FORMS += \
     amplitudevolumedialog.ui \
     semblancevolumedialog.ui \
     secondaryavoattributesdialog.ui \
-    trendbasedattributesdialog.ui \
     cropvolumedialog.ui \
     convertgriddialog.ui \
     smoothgriddialog.ui \
@@ -174,7 +179,6 @@ FORMS += \
     cropdatasetdialog.ui \
     replacebadtracesdialog.ui \
     flattenvolumedialog.ui \
-    unflattenvolumedialog.ui \
     volumestatisticsdialog.ui \
     buildwellvolumedialog.ui \
     volumemathdialog.ui \
@@ -199,7 +203,12 @@ FORMS += \
     tabletohorizondialog.ui \
     exporttabledialog.ui \
     stacktogatherdialog.ui \
-    volumeiotestdialog.ui
+    volumeiotestdialog.ui \
+    interceptgradientvolumedialog_2.ui \
+    trendbasedattributegridsdialog.ui \
+    trendbasedattributevolumesdialog.ui \
+    nnvolumeclassificationdialog.ui \
+    volumecircledetectiondialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

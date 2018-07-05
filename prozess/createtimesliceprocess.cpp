@@ -18,39 +18,25 @@ ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QSt
 
     setParams(parameters);
 
-    if( !parameters.contains(QString("input"))){
-        setErrorString("Parameters contain no dataset!");
-        return ResultCode::Error;
-    }
-    QString dataset=parameters.value(QString("input"));
+    QString horizonName;
+    QString inputName;
 
-    if( !parameters.contains(QString("slice"))){
-        setErrorString("Parameters contain no output slice!");
-        return ResultCode::Error;
-    }
-    m_sliceName=parameters.value(QString("slice"));
-
-    if( !parameters.contains(QString("horizon"))){
-
-        if(!parameters.contains(QString("time"))){
-            setErrorString("Parameters contain neither horizon nor time!");
-            return ResultCode::Error;
-        }
-
+    try{
+        inputName=getParam(parameters, "input");
+        m_sliceName=getParam(parameters, "slice");
+        m_useHorizon=static_cast<bool>(getParam(parameters, "use-horizon").toInt());
+        horizonName=getParam(parameters, "horizon");
         m_sliceTime = parameters.value(QString("time")).toDouble();
+
     }
-    else{
-        m_horizonName=parameters.value( QString("horizon") );
-        m_horizon=project()->loadGrid( GridType::Horizon, m_horizonName);
-        if( !m_horizon ){
-            setErrorString("Loading horizon failed!");
-            return ResultCode::Error;
-        }
+    catch(std::exception& ex){
+        setErrorString(ex.what());
+        return ResultCode::Error;
     }
 
-    m_reader= project()->openSeismicDataset( dataset);
+    m_reader= project()->openSeismicDataset(inputName);
     if( !m_reader){
-        setErrorString(QString("Open dataset \"%1\" failed!").arg(dataset) );
+        setErrorString(QString("Open dataset \"%1\" failed!").arg(inputName) );
         return ResultCode::Error;
     }
 
@@ -58,18 +44,27 @@ ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QSt
         setErrorString("This process was designed for stacked data!");
         return ResultCode::Error;
     }
-    //std::cout<<"Dataset: "<<dataset.toStdString()<<std::endl;
-    //std::cout<<"iline range: "<< m_reader->minInline()<<" - "<< m_reader->maxInline()<<std::endl;
-    //std::cout<<"xline range: "<< m_reader->minCrossline()<<" - "<< m_reader->maxCrossline()<<std::endl;
 
-    if( m_horizon){
-         m_slice=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(m_horizon->bounds()));
+    auto vbounds=Grid2DBounds(m_reader->minInline(), m_reader->minCrossline(),
+            m_reader->maxInline(), m_reader->maxCrossline() );
+    Grid2DBounds bounds;
+
+    if( m_useHorizon){
+        m_horizon=project()->loadGrid( GridType::Horizon, horizonName);
+        if( !m_horizon ){
+            setErrorString("Loading horizon failed!");
+            return ResultCode::Error;
+        }
+        auto hbounds=m_horizon->bounds();
+        // find area covered by volume and horizon
+        bounds=Grid2DBounds( std::max(hbounds.i1(),vbounds.i1()), std::min(hbounds.i2(),vbounds.i2()),
+                                  std::max(hbounds.j1(),vbounds.j1()), std::min(hbounds.j2(),vbounds.j2()));
+
+    }else{
+        bounds=vbounds;
     }
-    else{
-        Grid2DBounds bounds( m_reader->minInline(), m_reader->minCrossline(),
-                           m_reader->maxInline(), m_reader->maxCrossline() );
-        m_slice=std::shared_ptr<Grid2D<float> >( new Grid2D<float>(bounds));
-    }
+
+    m_slice=std::make_shared<Grid2D<float> >( Grid2DBounds(bounds.i1(), bounds.j1(), bounds.i2(), bounds.j2()) );
 
     if( !m_slice ){
         setErrorString("Allocating slice failed!");
@@ -81,27 +76,19 @@ ProjectProcess::ResultCode CreateTimesliceProcess::init( const QMap<QString, QSt
 
 ProjectProcess::ResultCode CreateTimesliceProcess::run(){
 
-    std::shared_ptr<seismic::SEGYReader> reader=m_reader->segyReader();
-    if( !reader){
-        setErrorString("Invalid segyreader!");
-        return ResultCode::Error;
-    }
+    emit started(m_reader->sizeTraces());
+    m_reader->seekTrace(0);
 
-    // workaround: convert only required trace header words on input, seems to be necessary on windows because otherwise too slow!!!
-    setRequiredHeaderwords(*reader, REQUIRED_HEADER_WORDS);
+    while( m_reader->good() ){
 
-    emit started(reader->trace_count());
-    reader->seek_trace(0);
-
-    while( reader->current_trace() < reader->trace_count() ){
-
-        seismic::Trace trace=reader->read_trace();
+        seismic::Trace trace=m_reader->readTrace();
         const seismic::Header& header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
 
-        qreal t=0.001*m_sliceTime;  // slicetime in millisecs
-        if( m_horizon){ // we are using a horizon and not constant time
+        qreal t;
+
+        if( m_useHorizon){ // we are using a horizon and not constant time
 
             //if( !m_horizon->bounds().isInside(iline, xline)) continue; // don't need this anymore. valueAt does the job
             Grid2D<float>::value_type v=m_horizon->valueAt(iline, xline);
@@ -109,15 +96,19 @@ ProjectProcess::ResultCode CreateTimesliceProcess::run(){
 
             t=0.001 * v;    // horizon in millis
         }
+        else{
+            t=0.001*m_sliceTime;  // slicetime in millisecs
+        }
+
         // interpolate between nearest samples, should add this to trace
         qreal x=(t - trace.ft() )/trace.dt();
         size_t i=std::truncf(x);
         x-=i;
-        if( x>=0 || i<trace.samples().size()){
+        if( x>=0 && i<trace.samples().size()){
             (*m_slice)(iline, xline)=( 1.-x) * trace.samples()[i] + x*trace.samples()[i+1];
         }
 
-        emit progress( reader->current_trace());
+        emit progress( m_reader->tellTrace());
         qApp->processEvents();
         if( isCanceled()) return ResultCode::Canceled;
     }

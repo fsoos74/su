@@ -25,6 +25,9 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::init( const QMap<Q
         m_outputName=getParam(parameters, "output");
         m_interceptName=getParam(parameters, "intercept");
         m_gradientName=getParam(parameters, "gradient");
+        m_useLayer=static_cast<bool>(getParam(parameters,"select-layer").toInt());
+        m_topHorizonName=getParam(parameters, "top-horizon");
+        m_bottomHorizonName=getParam(parameters, "bottom-horizon");
         m_computeTrend=static_cast<bool>(getParam(parameters,"compute-trend").toInt());
         m_trendIntercept=getParam(parameters,"trend-intercept").toFloat();
         m_trendAngle=getParam(parameters,"trend-angle").toFloat();
@@ -41,17 +44,21 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::init( const QMap<Q
 
 ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
 
+    // open intercept volume
     m_interceptReader=project()->openVolumeReader(m_interceptName);
     if(!m_interceptReader){
         setErrorString("Open intercept reader failed!");
         return ResultCode::Error;
     }
+    m_interceptReader->setParent(this);
 
+    // open gradient volume
     m_gradientReader=project()->openVolumeReader(m_gradientName);
     if(!m_gradientReader){
         setErrorString("Open gradient volume failed!");
         return ResultCode::Error;
     }
+    m_gradientReader->setParent(this);
 
     if( m_interceptReader->bounds()!=m_gradientReader->bounds()){
         setErrorString("Intercept and gradient dimensions do not match!");
@@ -59,6 +66,37 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
     }
 
     m_bounds=m_interceptReader->bounds();
+
+    if( m_useLayer){
+        m_topHorizon=project()->loadGrid(GridType::Horizon, m_topHorizonName);
+        if(!m_topHorizon){
+            setErrorString("Loading top horizon failed!");
+            return ResultCode::Error;
+        }
+        auto top=m_bounds.lt();     // sec
+        for( auto x : *m_topHorizon){   // x in msec
+            if(x!=m_topHorizon->NULL_VALUE && 0.001*x<top) top=0.001*x;
+        }
+
+        m_bottomHorizon=project()->loadGrid(GridType::Horizon, m_bottomHorizonName);
+        if(!m_bottomHorizon){
+            setErrorString("Loading bottom horizon failed!");
+            return ResultCode::Error;
+        }
+        auto bottom=m_bounds.ft();  // sec
+        for( auto x : *m_bottomHorizon){    // x in msec
+            if(x!=m_bottomHorizon->NULL_VALUE && 0.001*x>bottom) bottom=0.001*x;
+        }
+
+        // adjust bounds sampling to layer/horizons
+        auto dt=m_bounds.dt();
+        auto ft=dt*std::floor(top/dt);
+        auto lt=dt*std::ceil(bottom/dt);
+        auto nt=static_cast<int>(std::ceil((lt-ft)/dt)+1);
+        m_bounds=Grid3DBounds(m_bounds.i1(), m_bounds.i2(), m_bounds.j1(), m_bounds.j2(), nt, ft, dt);
+        //std::cout<<"top="<<top<<" bottom="<<bottom<<std::endl;
+        //std::cout<<"ft="<<ft<<" lt="<<lt<<" dt="<<dt<<" nt="<<nt<<std::endl<<std::flush;
+    }
 
     if( initFunction()!=ResultCode::Ok){
         return ResultCode::Error;
@@ -68,12 +106,12 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
         auto res= computeTrend();     // will put result in m_trendIntercept and m_trendAngle
         if( res!=ResultCode::Ok) return res;
     }
-
+//std::cout<<"trend: intercept="<<m_trendIntercept<<" angle="<<m_trendAngle*57.296<<"°"<<std::endl<<std::flush;
     m_sinPhi=std::sin(m_trendAngle);
     m_cosPhi=std::cos(m_trendAngle);
     m_tanPhi=std::tan(m_trendAngle);
 
-    auto writer=project()->openVolumeWriter(m_outputName, m_bounds, Domain::Other, VolumeType::AVO);
+    auto writer=project()->openVolumeWriter(m_outputName, m_bounds, Domain::Other, VolumeType::AVO);    // use layer adjusted sampling if required
     if( !writer ){
         setErrorString("Open volume writer failed!");
         return ResultCode::Error;
@@ -83,24 +121,28 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
     emit currentTask("Computing attribute...");
     qApp->processEvents();
 
+    // process chunks
     for( int il1=m_bounds.i1(); il1<=m_bounds.i2(); il1+=CHUNK_ILINES){
 
         auto il2=std::min(il1+CHUNK_ILINES, m_bounds.i2());
 
-        auto subIntercept=m_interceptReader->read(il1,il2);
+        auto subIntercept=m_interceptReader->readIl(il1,il2);
         if( !subIntercept){
             setErrorString("Reading intercept chunk failed!");
             writer->removeFile();
             return ResultCode::Error;
         }
-        auto subGradient=m_gradientReader->read(il1,il2);
+        auto subGradient=m_gradientReader->readIl(il1,il2);
         if( !subGradient){
             setErrorString("Reading gradient chunk failed!");
             writer->removeFile();
             return ResultCode::Error;
         }
 
-        auto sbounds=subIntercept->bounds();
+        // adjust output subvolume bounds for possibly different sampling
+        auto ibounds=subIntercept->bounds();
+        Grid3DBounds sbounds(ibounds.i1(), ibounds.i2(), ibounds.j1(), ibounds.j2(), m_bounds.nt(), m_bounds.ft(), m_bounds.dt());
+        auto dk=static_cast<int>(std::round((m_bounds.ft()-ibounds.ft())/m_bounds.dt()));       // add this to output k to get input k
         auto svolume=std::make_shared<Volume>(sbounds);
         if( !svolume){
             setErrorString("Creating subvolume failed!");
@@ -108,26 +150,31 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
             return ResultCode::Error;
         }
 
-        qint64 size=svolume->size();
-        Q_ASSERT( subIntercept->size()==size && subGradient->size()==size);
+        // process chunk
+        for( int i=ibounds.i1(); i<=ibounds.i2(); i++){
+
+            for( int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+
+                int k1=0;
+                int k2=m_bounds.nt();
+                if(m_useLayer){
+                    auto ttop=0.001*m_topHorizon->valueAt(i,j);         // msec -> sec
+                    auto tbottom=0.001*m_bottomHorizon->valueAt(i,j);   // msec -> sec
+                    k1=m_bounds.timeToSample(ttop);
+                    k2=m_bounds.timeToSample(tbottom);
+                }
 
 
-        //  start chunk processing
-        for( qint64 i=0; i<size; i++){
-
-            auto I=(*subIntercept)[i];
-            auto G=(*subGradient)[i];
-            if( I==subIntercept->NULL_VALUE || G==subGradient->NULL_VALUE){
-                (*svolume)[i]=svolume->NULL_VALUE;
+                for( int k=k1; k<k2; k++){                              // iterate over output samples
+                    auto I=(*subIntercept)(i,j,k+dk);
+                    auto G=(*subGradient)(i,j,k+dk);
+                    if( I==subIntercept->NULL_VALUE || G==subGradient->NULL_VALUE ) continue;
+                    (*svolume)(i,j,k)=m_func(I,G);
+                }
             }
-            else{
-                (*svolume)[i]=m_func(I,G);
-            }
-
         }
-        // END chunk processing
 
-        std::cout<<"output inlines: "<<svolume->bounds().i1()<<" - "<<svolume->bounds().i2()<<std::endl<<std::flush;
+
         if(!writer->write(*svolume)){
             setErrorString("Writing subvolume failed!");
             writer->removeFile();
@@ -274,6 +321,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::initFunction(){
 }
 
 
+// use layer if required
 ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
 
     emit started(m_bounds.ni());
@@ -290,8 +338,87 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
     for( int il1=m_bounds.i1(); il1<=m_bounds.i2(); il1+=CHUNK_ILINES){
 
         auto il2=std::min(il1+CHUNK_ILINES, m_bounds.i2());
-        auto subIntercept=m_interceptReader->read(il1,il2);
-        auto subGradient=m_gradientReader->read(il1,il2);
+        auto subIntercept=m_interceptReader->readIl(il1,il2);
+        auto subGradient=m_gradientReader->readIl(il1,il2);
+        if( !subIntercept || !subGradient){
+            setErrorString("Reading chunks failed!");
+            return ResultCode::Error;
+        }
+        auto ibounds=subIntercept->bounds();
+
+        // process chunk
+        for( int i=il1; i<=il2; i++){
+
+            for( int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+
+                int k1=0;
+                int k2=ibounds.nt();
+                if(m_useLayer){
+                    auto ttop=0.001*m_topHorizon->valueAt(i,j);         // msec -> sec
+                    auto tbottom=0.001*m_bottomHorizon->valueAt(i,j);   // msec -> sec
+                    k1=ibounds.timeToSample(ttop);
+                    k2=ibounds.timeToSample(tbottom);
+                }
+
+                for( int k=k1; k<k2; k++){
+                    auto x=(*subIntercept)(i,j,k);
+                    auto y=(*subGradient)(i,j,k);
+                    if( x==subIntercept->NULL_VALUE || y==subGradient->NULL_VALUE ) continue;
+                    sum_x+=x;
+                    sum_x_x+=x*x;
+                    sum_x_y+=x*y;
+                    sum_y+=y;
+                    sum_y_y+=y*y;
+                    n++;
+                }
+            }
+        }
+
+        subIntercept.reset();
+        subGradient.reset();
+
+        emit progress(il2-m_bounds.i1());
+        qApp->processEvents();
+    }
+
+    if( n==0 || sum_x==0 ){
+        setErrorString("No valid (non-null) input data!");
+        return ResultCode::Error;
+    }
+
+    double Sxx=sum_x_x - sum_x*sum_x/n;
+    double Syy=sum_y_y - sum_y*sum_y/n;
+    double Sxy=sum_x_y - sum_x * sum_y / n;
+
+    double gradient = Sxy / Sxx;
+    double intercept= sum_y/n - gradient*sum_x/n;
+
+    m_trendAngle=std::fabs(std::atan(gradient ) );
+    m_trendIntercept=intercept;
+
+    return ResultCode::Ok;
+}
+
+
+/*
+ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
+
+    emit started(m_bounds.ni());
+    emit currentTask("Computing trend...");
+    qApp->processEvents();
+
+    double sum_x=0;
+    double sum_x_x=0;
+    double sum_x_y=0;
+    double sum_y=0;
+    double sum_y_y=0;       // needed for correlation coefficient
+    qint64 n=0;
+
+    for( int il1=m_bounds.i1(); il1<=m_bounds.i2(); il1+=CHUNK_ILINES){
+
+        auto il2=std::min(il1+CHUNK_ILINES, m_bounds.i2());
+        auto subIntercept=m_interceptReader->readIl(il1,il2);
+        auto subGradient=m_gradientReader->readIl(il1,il2);
         if( !subIntercept || !subGradient){
             setErrorString("Reading chunks failed!");
             return ResultCode::Error;
@@ -333,13 +460,6 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
     m_trendAngle=std::fabs(std::atan(gradient ) );
     m_trendIntercept=intercept;
 
-   /*
-    std::cout<<"computing trend...input size="<<m_intercept->size()<<std::endl<<std::flush;
-    Q_ASSERT(m_intercept->size()==m_gradient->size());
-    QPointF trendInterceptAndGradient=linearRegression(m_intercept->data(), m_gradient->data(), m_intercept->size(), m_intercept->NULL_VALUE);
-    m_trendAngle=std::fabs(std::atan(trendInterceptAndGradient.y() ) );
-    m_trendIntercept=trendInterceptAndGradient.x();
-    */
-
     return ResultCode::Ok;
 }
+*/

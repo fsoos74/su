@@ -20,6 +20,7 @@ include(../common.pri)
 #QMAKE_CXXFLAGS += -fopenmp
 #QMAKE_LFLAGS += -fopenmp
 
+
 TARGET = prozess
 TEMPLATE = lib
 
@@ -48,7 +49,6 @@ SOURCES += prozess.cpp \
     semblancevolumeprocess.cpp \
     semblance.cpp \
     secondaryattributesprocess.cpp \
-    secondaryattributevolumesprocess.cpp \
     trendbasedattributesprocess.cpp \
     trendbasedattributevolumesprocess.cpp \
     cropvolumeprocess.cpp \
@@ -69,7 +69,6 @@ SOURCES += prozess.cpp \
     replacebadtracesprocess.cpp \
     variancevolumeprocess.cpp \
     flattenvolumeprocess.cpp \
-    unflattenvolumeprocess.cpp \
     volumestatisticsprocess.cpp \
     buildwellvolumeprocess.cpp \
     volumemathprocess.cpp \
@@ -103,7 +102,12 @@ SOURCES += prozess.cpp \
     tabletohorizonprocess.cpp \
     exporttableprocess.cpp \
     stacktogatherprocess.cpp \
-    volumeiotestprocess.cpp
+    volumeiotestprocess.cpp \
+    interceptgradientvolumeprocess_2.cpp \
+    volumesprocess.cpp \
+    nnvolumetrainer.cpp \
+    nnvolumeclassificationprocess.cpp \
+    volumecircledetectionprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -129,7 +133,6 @@ HEADERS += prozess.h\
     semblancevolumeprocess.h \
     semblance.h \
     secondaryattributesprocess.h \
-    secondaryattributevolumesprocess.h \
     trendbasedattributesprocess.h \
     trendbasedattributevolumesprocess.h \
     cropvolumeprocess.h \
@@ -152,7 +155,6 @@ HEADERS += prozess.h\
     replacebadtracesprocess.h \
     variancevolumeprocess.h \
     flattenvolumeprocess.h \
-    unflattenvolumeprocess.h \
     volumestatisticsprocess.h \
     buildwellvolumeprocess.h \
     volumemathprocess.h \
@@ -174,7 +176,6 @@ HEADERS += prozess.h\
     fmcdp2dprocess.h \
     volumedipscanprocess.h \
     nn.h \
-    matrix.h \
     nnfunc.h \
     xnlwriter.h \
     xnlreader.h \
@@ -188,7 +189,12 @@ HEADERS += prozess.h\
     tabletohorizonprocess.h \
     exporttableprocess.h \
     stacktogatherprocess.h \
-    volumeiotestprocess.h
+    volumeiotestprocess.h \
+    interceptgradientvolumeprocess_2.h \
+    volumesprocess.h \
+    nnvolumetrainer.h \
+    nnvolumeclassificationprocess.h \
+    volumecircledetectionprocess.h
 
 unix {
     target.path = /usr/lib
@@ -262,4 +268,5 @@ INCLUDEPATH += $$PWD/../Statistics
 DEPENDPATH += $$PWD/../Statistics
 
 FORMS += \
-    nnlogtrainer.ui
+    nnlogtrainer.ui \
+    nnvolumetrainer.ui

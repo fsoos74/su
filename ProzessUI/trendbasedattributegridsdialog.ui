@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TrendBasedAttributesDialog</class>
- <widget class="QDialog" name="TrendBasedAttributesDialog">
+ <class>TrendBasedAttributeGridsDialog</class>
+ <widget class="QDialog" name="TrendBasedAttributeGridsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>302</width>
-    <height>353</height>
+    <width>330</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,13 +17,50 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Intercept:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cbIntercept">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Gradient:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cbGradient"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Output Volume:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="leOutput"/>
+     </item>
+     <item row="3" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Attribute:</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="3" column="1">
       <widget class="QComboBox" name="cbType">
        <item>
         <property name="text">
@@ -47,104 +84,53 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0" colspan="2">
+      <widget class="QCheckBox" name="cbComputeTrend">
        <property name="text">
-        <string>Intercept:</string>
+        <string>Compute Trend</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Angle:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QComboBox" name="cbIntercept"/>
+      <widget class="QLineEdit" name="leTrendAngle">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>0.0</string>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Gradient:</string>
+        <string>Gradient(0):</string>
        </property>
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QComboBox" name="cbGradient"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0" colspan="2">
-        <widget class="QCheckBox" name="cbComputeTrend">
-         <property name="text">
-          <string>Compute Trend</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Angle:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="leTrendAngle">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>0.0</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Gradient(0):</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="leTrendIntercept">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>0.0</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QLineEdit" name="leTrendIntercept">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Output:</string>
+        <string>0.0</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="leOutput"/>
      </item>
     </layout>
    </item>
@@ -178,7 +164,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>TrendBasedAttributesDialog</receiver>
+   <receiver>TrendBasedAttributeGridsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -194,7 +180,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>TrendBasedAttributesDialog</receiver>
+   <receiver>TrendBasedAttributeGridsDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -47,20 +47,11 @@ QMap<QString,QString> CreateTimesliceDialog::params(){
 
     QString fullSliceName=createFullGridName( GridType::Other, ui->leSliceName->text());
 
-    p.insert( QString("slice"), fullSliceName );
-
-    p.insert( QString("input"), ui->cbInput->currentText());
-
-    if( ui->cbUseHorizon->isChecked()){
-        p.insert( QString("horizon"), ui->cbHorizon->currentText() );
-    }
-    else{
-        p.insert( QString("time"), ui->leTime->text());
-    }
-
-    if( ui->cbDisplay->isChecked()){
-        p.insert(QString("display-grid"), fullSliceName);
-    }
+    p.insert( "slice", fullSliceName );
+    p.insert( "input", ui->cbInput->currentText());
+    p.insert( "use-horizon", QString::number(static_cast<int>(ui->cbUseHorizon->isChecked())));
+    p.insert( "horizon", ui->cbHorizon->currentText() );
+    p.insert( "time", ui->leTime->text());
 
     return p;
 }

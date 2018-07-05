@@ -5,13 +5,19 @@
 #include<QIntValidator>
 #include<QPushButton>
 
+#include<flattenvolumeprocess.h>    // mode
 
 FlattenVolumeDialog::FlattenVolumeDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
     ui(new Ui::FlattenVolumeDialog)
 {
     ui->setupUi(this);
+
+    ui->cbMode->addItem(FlattenVolumeProcess::toQString(FlattenVolumeProcess::Mode::Flatten));
+    ui->cbMode->addItem(FlattenVolumeProcess::toQString(FlattenVolumeProcess::Mode::Unflatten));
+
     QIntValidator* validator=new QIntValidator(this);
+    ui->leStart->setValidator(validator);
     ui->leLength->setValidator(validator);
 
     connect( ui->leOutputName, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -40,14 +46,12 @@ QMap<QString,QString> FlattenVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("output-volume"),  ui->leOutputName->text() );
-
-    p.insert( QString("input-volume"), ui->cbInputName->currentText());
-
-    p.insert( QString("horizon"), ui->cbHorizon->currentText() );
-
-    p.insert( QString("length"), ui->leLength->text());
-
+    p.insert( "output-volume",  ui->leOutputName->text() );
+    p.insert( "input-volume", ui->cbInputName->currentText());
+    p.insert( "horizon", ui->cbHorizon->currentText() );
+    p.insert( "start", ui->leStart->text());
+    p.insert( "length", ui->leLength->text());
+    p.insert( "mode", ui->cbMode->currentText());
     return p;
 }
 

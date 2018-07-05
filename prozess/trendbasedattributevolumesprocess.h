@@ -36,14 +36,20 @@ private:
     QString m_interceptName;
     QString m_gradientName;
 
+    bool m_useLayer;
+    QString m_topHorizonName;
+    QString m_bottomHorizonName;
+
     bool m_computeTrend;
     float m_trendIntercept;
     float m_trendAngle;
 
     int m_attribute;
 
-    std::shared_ptr<VolumeReader2 > m_interceptReader;
-    std::shared_ptr<VolumeReader2 > m_gradientReader;
+    std::shared_ptr<Grid2D<float>> m_topHorizon;
+    std::shared_ptr<Grid2D<float>> m_bottomHorizon;
+    VolumeReader2* m_interceptReader;
+    VolumeReader2* m_gradientReader;
     Grid3DBounds m_bounds;
     std::function<float(float, float)> m_func;
 

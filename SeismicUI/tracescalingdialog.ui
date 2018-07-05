@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>209</width>
-    <height>149</height>
+    <width>207</width>
+    <height>198</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,13 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Bias:</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
@@ -60,6 +67,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="leScalingFactor"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="leBias"/>
      </item>
     </layout>
    </item>

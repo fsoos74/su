@@ -99,7 +99,7 @@ ProjectProcess::ResultCode ExtractDatasetProcess::run(){
     for( int il1=bounds.i1(); il1<bounds.i2(); il1+=CHUNK_ILINES){
 
         auto il2=std::min(il1+CHUNK_ILINES, bounds.i2());
-        auto subvolume=reader->read(il1, il2);
+        auto subvolume=reader->readIl(il1, il2);
         if( !subvolume){
             setErrorString("Reading subvolume failed!");
             return ResultCode::Error;

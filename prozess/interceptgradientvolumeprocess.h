@@ -1,6 +1,7 @@
 #ifndef INTERCEPTGRADIENTVOLUMEPROCESS_H
 #define INTERCEPTGRADIENTVOLUMEPROCESS_H
 
+
 #include <QObject>
 
 #include "projectprocess.h"
@@ -44,10 +45,17 @@ private:
     int m_startTraceSample=0;               // shift between trace samples and volume samples, since volume is created here dt are the same!
 
     std::shared_ptr<SeismicDatasetReader> m_reader;
-    std::shared_ptr<VolumeWriter2> m_interceptWriter;
-    std::shared_ptr<VolumeWriter2> m_gradientWriter;
-    std::shared_ptr<VolumeWriter2> m_qualityWriter;
+#ifdef IO_VOLUMES
+    VolumeWriter2* m_interceptWriter=nullptr;
+    VolumeWriter2* m_gradientWriter=nullptr;
+    VolumeWriter2* m_qualityWriter=nullptr;
+#else
+    std::shared_ptr<Volume > m_intercept;
+    std::shared_ptr<Volume > m_gradient;
+    std::shared_ptr<Volume > m_quality;
+#endif
     Grid3DBounds  m_bounds;
+
 };
 
 #endif // INTERCEPTGRADIENTVOLUMEPROCESS_H

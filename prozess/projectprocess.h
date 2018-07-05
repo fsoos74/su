@@ -24,6 +24,8 @@ public:
 
     ProjectProcess( const QString& name, AVOProject* project, QObject *parent = 0);
 
+    virtual ~ProjectProcess(){}
+
     const QString& name()const{
         return m_name;
     }

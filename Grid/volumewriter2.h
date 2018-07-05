@@ -4,14 +4,16 @@
 
 #include<QString>
 #include<QFile>
+#include<QObject>
 
 #include<volume.h>
 
-class VolumeWriter2
+class VolumeWriter2 : public QObject
 {
+Q_OBJECT
 public:
 
-    VolumeWriter2(const QString& name);
+    VolumeWriter2(const QString& name, QObject* parent=nullptr );
 
     bool open(const Grid3DBounds& bounds, const Domain& domain, const VolumeType& type);
     void flush();
@@ -29,8 +31,8 @@ public:
         return str;
     }
 
-    bool write(const Volume& volume);
-
+    bool write(const Volume& volume);   // whole in inlines
+    bool writeK(const Volume& volume);  // whole timeslices, horizontal geom must be the same, volume ft is used to find start sample
     void removeFile();
 
 private:
@@ -39,6 +41,7 @@ private:
    bool writeBounds(QFile&, const Grid3DBounds&);
    bool writeDomainAndType(QFile&, const Domain&, const VolumeType&);
    bool writeData(const char* p, int il0, int nil);
+   bool writeDataK(const char* p, int k0, int nk);
 
    void setError(const QString& msg);
 

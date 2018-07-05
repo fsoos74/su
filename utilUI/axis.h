@@ -148,6 +148,7 @@ private:
     qreal m_cursorPosition=NO_CURSOR;           // in axis coords
     int m_labelPrecision=6;                          // double conversion format for labels
     int m_viewPixelLength=100;
+    Axis* m_buddy=nullptr;
 };
 
 

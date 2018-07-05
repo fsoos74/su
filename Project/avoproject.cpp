@@ -500,26 +500,31 @@ std::shared_ptr<Volume > AVOProject::loadVolume(const QString& name, QProgressBa
 
 
 
- std::shared_ptr<VolumeReader2> AVOProject::openVolumeReader( const QString& name){
+ VolumeReader2* AVOProject::openVolumeReader( const QString& name){
 
      QString filename=getVolumePath( name);
 
-     auto reader=std::make_shared<VolumeReader2>(filename);
-     reader->open();
+     auto reader=new VolumeReader2(filename, this);
+     if( reader ){
+        reader->open();
+     }
 
-    return reader;
+     return reader;
  }
 
- std::shared_ptr<VolumeWriter2> AVOProject::openVolumeWriter(
+ VolumeWriter2* AVOProject::openVolumeWriter(
          const QString& name, const Grid3DBounds& bounds, const Domain& domain, const VolumeType& type){
 
-    if( existsVolume(name)) return std::shared_ptr<VolumeWriter2>();
+    if( existsVolume(name)) return nullptr;
 
     QString filename=getVolumePath( name);
-    auto writer=std::make_shared<VolumeWriter2>(filename);
+    auto writer=new VolumeWriter2(filename, this);
     if(!writer) return writer;
 
-    if( !writer->open(bounds, domain, type) )return std::shared_ptr<VolumeWriter2>();
+    if( !writer->open(bounds, domain, type) ){
+        delete writer;
+        return nullptr;
+    };
 
     return writer;
  }

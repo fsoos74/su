@@ -20,21 +20,24 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="3" column="0">
+     <item row="3" column="2">
+      <widget class="QComboBox" name="cbMode"/>
+     </item>
+     <item row="4" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Horizon:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
+     <item row="4" column="2">
       <widget class="QComboBox" name="cbHorizon">
        <property name="enabled">
         <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Length(ms):</string>
@@ -44,7 +47,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Flattened Volume:</string>
+        <string>Result Volume:</string>
        </property>
       </widget>
      </item>
@@ -74,8 +77,29 @@
      <item row="2" column="2">
       <widget class="QLineEdit" name="leOutputName"/>
      </item>
-     <item row="4" column="2">
+     <item row="6" column="2">
       <widget class="QLineEdit" name="leLength"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Mode:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Start(ms):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <widget class="QLineEdit" name="leStart">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

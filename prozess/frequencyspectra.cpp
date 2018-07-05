@@ -26,7 +26,7 @@ Spectrum computeSpectrum( const float* p, size_t window_len, double dt){
 
     // fill input buffer for fft, apply window taper function
     std::vector<float> ibuf(fftlen);
-    std::copy( p, p+window_len+1, ibuf.begin() );
+    std::copy( p, p+window_len, ibuf.begin() );
     //apply window function
     auto wf=std::bind( hanning, _1, window_len);
     for( int i=0; i<window_len; i++){

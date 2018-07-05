@@ -93,6 +93,12 @@ void AxisView::clearSelection(){
     scene()->update();
 }
 
+void AxisView::setKeepAspectRatio(bool on){
+    if(on==m_keepAspectRatio) return;
+    m_keepAspectRatio=on;
+    emit keepAspectRatioChanged(on);
+}
+
 void AxisView::setZoomMode(ZOOMMODE m){
 
     if( m==m_zoomMode) return;
@@ -270,9 +276,9 @@ void AxisView::updateSceneRectFromAxes(){
 }
 
 void AxisView::updateViewRectFromAxes(){
-    //auto r=viewRectFromAxes();
-    //refreshScene(); // XXX    try without this to avoid multiple scene building, changing scales are handled by drawbaground not scene items
-    fitInView(viewRectFromAxes(), Qt::IgnoreAspectRatio);       // viewrectfromaxes in scene coords
+
+    auto r=viewRectFromAxes();
+    fitInView(r, Qt::IgnoreAspectRatio);       // viewrectfromaxes in scene coords
 }
 
 void AxisView::updateAxesRangeFromSceneRect(){
@@ -388,9 +394,71 @@ void AxisView::showZCursor(qreal z){    // z is value
     m_zCursorRubberband->show();
 }
 
+
+//adjust to aspect ratio by shrinking (new testing)
+QRectF AxisView::adjustViewRect(const QRectF& r){
+    if( !m_keepAspectRatio) return r;
+    qreal x0=r.x();
+    qreal x1=x0+r.width();
+    qreal dx=x1-x0;
+    qreal z0=r.y();
+    qreal z1=z0+r.height();
+    qreal dz=z1-z0;
+    qreal dxpix=viewport()->width();
+    qreal dzpix=viewport()->height();
+    qreal ppx=dxpix/dx;
+    qreal ppz=dzpix/dz;
+
+    if(ppx>ppz){
+        x1=x0+dxpix/ppz;
+    }
+    else if(ppx<ppz){
+        z1=z0+dzpix/ppx;
+    }
+
+    dx=x1-x0;
+    dz=z1-z0;
+    ppx=dxpix/dx;
+    ppz=dzpix/dz;
+
+    return QRectF(x0,z0,x1-x0,z1-z0);
+}
+
+
+/*
+//adjust to aspect ratio by growing (old working)
+QRectF AxisView::adjustViewRect(const QRectF& r){
+    if( !m_keepAspectRatio) return r;
+    qreal x0=r.x();
+    qreal x1=x0+r.width();
+    qreal dx=x1-x0;
+    qreal z0=r.y();
+    qreal z1=z0+r.height();
+    qreal dz=z1-z0;
+    qreal dxpix=viewport()->width();
+    qreal dzpix=viewport()->height();
+    qreal ppx=dxpix/dx;
+    qreal ppz=dzpix/dz;
+    if(ppx>ppz){
+        z1=z0+dzpix/ppx;
+    }
+    else if(ppx<ppz){
+        x1=x0+dxpix/ppz;
+    }
+
+    dx=x1-x0;
+    dz=z1-z0;
+    ppx=dxpix/dx;
+    ppz=dzpix/dz;
+
+    return QRectF(x0,z0,x1-x0,z1-z0);
+}
+*/
+
+
 void AxisView::zoomFitWindow(){
-    m_xAxis->setViewRange( m_xAxis->min(), m_xAxis->max() );
-    m_zAxis->setViewRange( m_zAxis->min(), m_zAxis->max() );
+
+    zoom( sceneRectFromAxes() );
 }
 
 void AxisView::zoomBy(qreal factor){
@@ -403,6 +471,17 @@ void AxisView::zoomBy(qreal factor){
     auto h= m_zAxis->maxView() - m_zAxis->minView();
     h*=factor;
     m_zAxis->setViewRange( std::max( m_zAxis->min(), zc - h/2), std::min(m_zAxis->max(), zc+h/2) );
+}
+
+void AxisView::zoom(QRectF rect){
+    QRectF r=adjustViewRect( rect );
+    qreal x0=r.x();
+    qreal x1=x0+r.width();
+    qreal z0=r.y();
+    qreal z1=z0+r.height();
+
+    m_xAxis->setViewRange( x0, x1);
+    m_zAxis->setViewRange( z0, z1 );
 }
 
 void AxisView::zoomIn(){
@@ -534,40 +613,50 @@ void AxisView::mouseReleaseEvent(QMouseEvent * event){
 
         auto deltaPix=selStopPix - selStartPix;
 
+        qreal x0, x1;
+        qreal z0, z1;
+        m_xAxis->setSelection(0,0); // hide rubberband
+        m_zAxis->setSelection(0,0); // hide rubberband
+
         switch (m_zoomMode) {
         case ZOOMMODE::X:
-            m_xAxis->setSelection(0,0); // hide rubberband
             if(std::abs(deltaPix.x())<ZOOM_PIXEL_THRESHOLD){
-                m_xAxis->setViewRange( m_xAxis->min(), m_xAxis->max() );
+                x0=m_xAxis->min(); x1=m_xAxis->max();
             }
             else{
-                m_xAxis->setViewRange( m_selStart.x(), selStopAxis.x() );
+                x0=m_selStart.x(); x1=selStopAxis.x();
             }
+            z0=m_zAxis->minView();
+            z1=m_zAxis->maxView();
             break;
         case ZOOMMODE::Z:
-            m_zAxis->setSelection(0,0); // hide rubberband
             if(std::abs(deltaPix.y())<ZOOM_PIXEL_THRESHOLD ){
-                m_zAxis->setViewRange( m_zAxis->min(), m_zAxis->max());
+                z0=m_zAxis->min(); z1=m_zAxis->max();
             }
             else{
-                m_zAxis->setViewRange(m_selStart.y(), selStopAxis.y() );
+                z0=m_selStart.y(); z1=selStopAxis.y();
             }
+            x0=m_xAxis->minView();
+            x1=m_xAxis->maxView();
             break;
         case ZOOMMODE::BOTH:
-            m_xAxis->setSelection(0,0); // hide rubberband
-            m_zAxis->setSelection(0,0); // hide rubberband
+
             if(std::sqrt(deltaPix.x()*deltaPix.x() + deltaPix.y()*deltaPix.y())<ZOOM_PIXEL_THRESHOLD ){
-                m_xAxis->setViewRange( m_xAxis->min(), m_xAxis->max() );
-                m_zAxis->setViewRange( m_zAxis->min(), m_zAxis->max() ); //m_zAxis->min(), m_zAxis->max());
+                x0=m_xAxis->min(); x1=m_xAxis->max();
+                z0=m_zAxis->min(); z1=m_zAxis->max();
             }
             else{
-                m_xAxis->setViewRange( m_selStart.x(), selStopAxis.x() );
-                m_zAxis->setViewRange(m_selStart.y(), selStopAxis.y() );
+                x0=m_selStart.x(); x1=selStopAxis.x();
+                z0=m_selStart.y(); z1=selStopAxis.y();
             }
             break;
         default:
             break;
         }
+
+        if(x0>x1) std::swap(x0,x1);
+        if(z0>z1) std::swap(z0,z1);
+        zoom( QRectF(x0,z0,x1-x0,z1-z0));
 
         m_zoomActive=false;
     }
@@ -669,13 +758,23 @@ void AxisView::leaveEvent(QEvent *){
 
 void AxisView::resizeEvent(QResizeEvent *){
 
-    if( scene() ){
-        QRectF bounds = viewRectFromAxes(); //sceneRectFromAxes(); // XXX
-        fitInView(bounds, Qt::IgnoreAspectRatio );
-    }
-
     m_xAxis->setViewPixelLength(viewport()->width());
     m_zAxis->setViewPixelLength(viewport()->height());
+
+    if( scene() ){
+        QRectF r=viewRectFromAxes();
+        r=adjustViewRect(r);
+        fitInView(r, Qt::IgnoreAspectRatio  );
+        auto x0=r.x();
+        auto x1=x0+r.width();
+        auto z0=r.y();
+        auto z1=z0+r.height();
+        m_xAxis->setViewRange(x0,x1);
+        m_zAxis->setViewRange(z0,z1);
+    }
+
+
+
 }
 
 

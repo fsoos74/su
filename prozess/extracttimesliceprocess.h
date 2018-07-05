@@ -1,12 +1,13 @@
 #ifndef EXTRACTTIMESLICEPROCESS_H
 #define EXTRACTTIMESLICEPROCESS_H
 
-#include "projectprocess.h"
-#include <seismicdatasetreader.h>
+#include "volumesprocess.h"
 #include <grid2d.h>
 #include <grid3d.h>
+#include <memory>
 
-class ExtractTimesliceProcess : public ProjectProcess{
+
+class ExtractTimesliceProcess : public VolumesProcess{
 
     Q_OBJECT
 
@@ -14,16 +15,18 @@ public:
 
     ExtractTimesliceProcess( AVOProject* project, QObject* parent=nullptr);
 
-    ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
+    ResultCode init(const QMap<QString, QString>& parameters)override;
+
+protected:
+    ResultCode processInline(QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
+    ResultCode finalize()override;
 
 private:
-
     QString m_sliceName;
-    std::shared_ptr<Grid3D<float> > m_volume;
+    bool m_useHorizon;
+    qreal m_sliceTime;
     std::shared_ptr<Grid2D<float> > m_horizon;
     std::shared_ptr<Grid2D<float> > m_slice;
-    qreal m_sliceTime;
 };
 
 

@@ -110,9 +110,9 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <fluidfactorvolumedialog.h>
 #include <trendbasedattributesprocess.h>
 #include <trendbasedattributevolumesprocess.h>
-#include <trendbasedattributesdialog.h>
+#include <trendbasedattributegridsdialog.h>
+#include <trendbasedattributevolumesdialog.h>
 #include <secondaryattributesprocess.h>
-#include <secondaryattributevolumesprocess.h>
 #include <secondaryavoattributesdialog.h>
 #include <createvolumedialog.h>
 #include <createvolumeprocess.h>
@@ -124,8 +124,6 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <volumemathprocess.h>
 #include <flattenvolumedialog.h>
 #include <flattenvolumeprocess.h>
-#include <unflattenvolumedialog.h>
-#include <unflattenvolumeprocess.h>
 #include <extracttimesliceprocess.h>
 #include <extractdatasetdialog.h>
 #include <extractdatasetprocess.h>
@@ -145,6 +143,11 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <gridmathprocess.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
+#include <volumecircledetectiondialog.h>
+#include <volumecircledetectionprocess.h>
+#include <nnvolumetrainer.h>
+#include <nnvolumeclassificationdialog.h>
+#include <nnvolumeclassificationprocess.h>
 #include <runvolumescriptdialog.h>
 #include <runvolumescriptprocess.h>
 #include <windowreductionfunction.h>
@@ -178,6 +181,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <exporttableprocess.h>
 #include <volumeiotestdialog.h>
 #include <volumeiotestprocess.h>
+#include <interceptgradientvolumeprocess_2.h>
+#include<interceptgradientvolumedialog_2.h>
 #include<axxisorientation.h>
 #include<projectgeometry.h>
 #include "selectgridtypeandnamedialog.h"
@@ -239,6 +244,12 @@ ProjectViewer::ProjectViewer(QWidget *parent) :
     m_dispatcher( new PointDispatcher )   // dont want dispatcher to deleted together with childs because they might use it
 {
     ui->setupUi(this);
+
+    for( auto child : ui->menuBar->children() ){
+        if( auto p=dynamic_cast<QMenu*>(child)){
+            p->setToolTipsVisible(true);
+        }
+    }
 
     QAction* recentProjectAction = nullptr;
     for(int i = 0; i < maxRecentProjectCount; ++i){
@@ -652,8 +663,8 @@ void ProjectViewer::on_actionWell_Markers_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ImportMarkersProcess( m_project, this ), params );
-
+    //runProcess( (std::make_shared<ImportMarkersProcess>( m_project, this )).get(), params );
+    runProcess<ImportMarkersProcess>(params);
 }
 
 
@@ -859,14 +870,22 @@ void ProjectViewer::on_actionCrop_Dataset_triggered()
     dlg.setReservedDatasets( m_project->seismicDatasetList() );
 
     ProjectGeometry geom=m_project->geometry();
-    dlg.setInlineRange( geom.linesRange().first.x(), geom.linesRange().second.x() );
-    dlg.setCrosslineRange( geom.linesRange().first.y(), geom.linesRange().second.y() );
+    QPoint min=geom.linesRange().first;
+    QPoint max=geom.linesRange().second;
+    if( min!=max){      // geometry assigned
+        dlg.setInlineRange( min.x(), max.x() );
+        dlg.setCrosslineRange( min.y(), max.y() );
+    }
+    else{               // geometry not set
+        dlg.setInlineRange( 0, (std::numeric_limits<int>::max)() );
+        dlg.setCrosslineRange( 0, (std::numeric_limits<int>::max)() );
+    }
 
     if( dlg.exec()!=QDialog::Accepted) return;
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CropDatasetProcess( m_project, this ), params );
+    runProcess<CropDatasetProcess>( params );
 }
 
 
@@ -883,7 +902,7 @@ void ProjectViewer::on_actionCreateTimeslice_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CreateTimesliceProcess( m_project, this ), params );
+    runProcess<CreateTimesliceProcess>( params );
 }
 
 
@@ -903,7 +922,7 @@ void ProjectViewer::on_actionHorizon_Amplitudes_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new HorizonAmplitudesProcess( m_project, this ), params );
+    runProcess<HorizonAmplitudesProcess>( params );
 }
 
 
@@ -925,7 +944,7 @@ void ProjectViewer::on_actionHorizon_Frequencies_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new HorizonFrequenciesProcess( m_project, this ), params );
+    runProcess<HorizonFrequenciesProcess>( params );
 }
 
 
@@ -940,7 +959,7 @@ void ProjectViewer::on_actionHorizon_Semblance_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new HorizonSemblanceProcess( m_project, this ), params );
+    runProcess<HorizonSemblanceProcess>( params );
 
 }
 
@@ -959,7 +978,7 @@ void ProjectViewer::on_actionVolume_Amplitudes_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new AmplitudeVolumeProcess( m_project, this ), params );
+    runProcess<AmplitudeVolumeProcess>( params );
 }
 
 
@@ -981,7 +1000,7 @@ void ProjectViewer::on_actionCompute_Intercept_Gradient_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ComputeInterceptGradientProcess( m_project, this ), params );
+    runProcess<ComputeInterceptGradientProcess>(params );
 
 }
 
@@ -994,7 +1013,7 @@ void ProjectViewer::on_actionCompute_Intercept_and_Gradient_Volumes_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new InterceptGradientVolumeProcess( m_project, this ), params );
+    runProcess<InterceptGradientVolumeProcess>( params );
 }
 
 
@@ -1009,7 +1028,7 @@ void ProjectViewer::on_action_Offset_Stack_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new OffsetStackProcess( m_project, this ), params );
+    runProcess< OffsetStackProcess>( params );
 }
 
 void ProjectViewer::on_actionStack_To_Gather_triggered()
@@ -1024,7 +1043,7 @@ void ProjectViewer::on_actionStack_To_Gather_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new StackToGatherProcess( m_project, this ), params );
+    runProcess<StackToGatherProcess>( params );
 }
 
 
@@ -1044,7 +1063,7 @@ void ProjectViewer::on_actionCreate_New_Grid_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CreateGridProcess( m_project, this ), params );
+    runProcess<CreateGridProcess>( params );
 }
 
 void ProjectViewer::on_actionConvert_Grid_triggered()
@@ -1061,7 +1080,7 @@ void ProjectViewer::on_actionConvert_Grid_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ConvertGridProcess( m_project, this ), params );
+    runProcess<ConvertGridProcess>( params );
 }
 
 
@@ -1086,7 +1105,7 @@ void ProjectViewer::on_actionCrop_Grid_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CropGridProcess( m_project, this ), params );
+    runProcess<CropGridProcess>( params );
 }
 
 
@@ -1104,7 +1123,7 @@ void ProjectViewer::on_actionSmooth_Grid_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new SmoothGridProcess( m_project, this ), params );
+    runProcess<SmoothGridProcess>( params );
 }
 
 
@@ -1119,7 +1138,7 @@ void ProjectViewer::on_actionGrid_Math_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new GridMathProcess( m_project, this ), params );
+    runProcess<GridMathProcess>( params );
 }
 
 
@@ -1133,7 +1152,7 @@ void ProjectViewer::on_actionHorizon_Curvature_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new HorizonCurvatureProcess( m_project, this ), params );
+    runProcess<HorizonCurvatureProcess>( params );
 
 }
 
@@ -1150,7 +1169,7 @@ void ProjectViewer::on_actionFluid_Factor_Grid_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new FluidFactorProcess( m_project, this ), params );
+    runProcess<FluidFactorProcess>( params );
 }
 
 
@@ -1158,20 +1177,20 @@ void ProjectViewer::on_actionTrend_Based_Attribute_Grids_triggered()
 {
     Q_ASSERT(m_project);
 
-    TrendBasedAttributesDialog dlg;
+    TrendBasedAttributeGridsDialog dlg;
     dlg.setWindowTitle(tr("Trend Based Attribute Grids"));
     dlg.setInterceptList( m_project->gridList(GridType::Attribute));
     dlg.setGradientList( m_project->gridList(GridType::Attribute));
     dlg.setReservedGrids(m_project->gridList(GridType::Attribute));
+
     dlg.setComputeTrend(true);
     dlg.setTrendIntercept(0);
     dlg.setTrendAngle(0);
-    dlg.setVolumeMode(false);
 
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new TrendBasedAttributesProcess( m_project, this ), params );
+    runProcess<TrendBasedAttributesProcess>( params );
 }
 
 
@@ -1190,7 +1209,7 @@ void ProjectViewer::on_actionSecondary_Attribute_Grids_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new SecondaryAttributesProcess( m_project, this ), params );
+    runProcess<SecondaryAttributesProcess>( params );
 
 }
 
@@ -1209,7 +1228,7 @@ void ProjectViewer::on_actionRun_Grid_User_Script_triggered()
      if( dlg.exec()!=QDialog::Accepted) return;
      QMap<QString,QString> params=dlg.params();
 
-     runProcess( new RunGridScriptProcess( m_project, this ), params );
+     runProcess<RunGridScriptProcess>( params );
 }
 
 
@@ -1227,7 +1246,7 @@ void ProjectViewer::on_actionCreate_New_Volume_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CreateVolumeProcess( m_project, this ), params );
+    runProcess<CreateVolumeProcess>(  params );
 }
 
 void ProjectViewer::on_action_Crop_Volume_triggered()
@@ -1240,18 +1259,24 @@ void ProjectViewer::on_action_Crop_Volume_triggered()
     dlg.setInputVolumes(m_project->volumeList());
 
     ProjectGeometry geom=m_project->geometry();
+
     QPoint min=geom.linesRange().first;
     QPoint max=geom.linesRange().second;
-
-    dlg.setInlineRange( min.x(), max.x() );
-    dlg.setCrosslineRange( min.y(), max.y() );
+    if( min!=max){      // geometry assigned
+        dlg.setInlineRange( min.x(), max.x() );
+        dlg.setCrosslineRange( min.y(), max.y() );
+    }
+    else{               // geometry not set
+        dlg.setInlineRange( 0, (std::numeric_limits<int>::max)() );
+        dlg.setCrosslineRange( 0, (std::numeric_limits<int>::max)() );
+    }
 
     dlg.setTimeRange( 0, 99999 );
 
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CropVolumeProcess( m_project, this ), params );
+    runProcess<CropVolumeProcess>( params );
 }
 
 void ProjectViewer::on_actionPunch_Out_Volume_triggered()
@@ -1264,7 +1289,7 @@ void ProjectViewer::on_actionPunch_Out_Volume_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new PunchOutVolumeProcess( m_project, this ), params );
+    runProcess<PunchOutVolumeProcess>( params );
 }
 
 void ProjectViewer::on_actionVolume_Math_triggered()
@@ -1277,7 +1302,7 @@ void ProjectViewer::on_actionVolume_Math_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new VolumeMathProcess( m_project, this ), params );
+    runProcess<VolumeMathProcess>( params );
 }
 
 
@@ -1292,22 +1317,7 @@ void ProjectViewer::on_actionFlatten_Volume_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new FlattenVolumeProcess( m_project, this ), params );
-}
-
-
-void ProjectViewer::on_actionUnflatten_Volume_triggered()
-{
-    Q_ASSERT( m_project );
-
-    UnflattenVolumeDialog dlg;
-    dlg.setInputs(m_project->volumeList());
-    dlg.setHorizons(m_project->gridList(GridType::Horizon));
-
-    if( dlg.exec()!=QDialog::Accepted) return;
-    QMap<QString,QString> params=dlg.params();
-
-    runProcess( new UnflattenVolumeProcess( m_project, this ), params );
+    runProcess<FlattenVolumeProcess>( params );
 }
 
 
@@ -1324,7 +1334,7 @@ void ProjectViewer::on_actionExtract_Timeslice_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ExtractTimesliceProcess( m_project, this ), params );
+    runProcess<ExtractTimesliceProcess>( params );
 }
 
 
@@ -1349,7 +1359,7 @@ void ProjectViewer::on_actionExtract_Dataset_triggered()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ExtractDatasetProcess( m_project, this ), params );
+    runProcess<ExtractDatasetProcess>( params );
 }
 
 
@@ -1383,19 +1393,26 @@ void ProjectViewer::on_actionVolume_Dip_triggered()
 
     auto params=dlg.params();
 
-    runProcess( new VolumeDipScanProcess( m_project, this ), params );
+    runProcess<VolumeDipScanProcess>(params );
 }
 
 void ProjectViewer::on_actionVolume_Frequencies_triggered()
 {
+
+    Q_ASSERT(m_project);
     FrequencyVolumeDialog dlg;
     dlg.setWindowTitle(tr("Volume Frequencies"));
+    dlg.setProject(m_project);
     dlg.setInputs( m_project->volumeList());
-    dlg.setReservedVolumes(m_project->volumeList());
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
-
-    runProcess( new FrequencyVolumeProcess( m_project, this ), params );
+/*
+    QMap<QString,QString> params{
+            {"input-volume", "stack2"}, {"output-volume", "dumsynth02"},
+            {"window-samples","32"}, {"minimum-frequency", "30."}, {"maximum-frequency","40.2"}
+            };
+  */
+  runProcess<FrequencyVolumeProcess>( params );
 }
 
 
@@ -1407,7 +1424,7 @@ void ProjectViewer::on_actionVolume_Semblance_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new SemblanceVolumeProcess( m_project, this ), params );
+    runProcess<SemblanceVolumeProcess>(params );
 }
 
 
@@ -1420,7 +1437,7 @@ void ProjectViewer::on_actionVolume_Variance_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new VarianceVolumeProcess( m_project, this ), params );
+    runProcess<VarianceVolumeProcess>( params );
 }
 
 
@@ -1433,7 +1450,7 @@ void ProjectViewer::on_actionVolume_Statistics_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new VolumeStatisticsProcess( m_project, this ), params );
+    runProcess<VolumeStatisticsProcess>( params );
 }
 
 
@@ -1444,7 +1461,7 @@ void ProjectViewer::on_actionVolume_Curvature_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new CurvatureVolumeProcess( m_project, this ), params );
+    runProcess<CurvatureVolumeProcess>( params );
 }
 
 
@@ -1456,9 +1473,47 @@ void ProjectViewer::on_actionInstantaneous_Attribute_Volumes_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new InstantaneousAttributesProcess( m_project, this ), params );
+    runProcess<InstantaneousAttributesProcess>( params );
 }
 
+void ProjectViewer::on_actionVolume_Circle_Detection_triggered()
+{
+    Q_ASSERT( m_project );
+
+    VolumeCircleDetectionDialog dlg;
+    dlg.setInputs(m_project->volumeList());
+    dlg.setWindowTitle("Volume Circle Detection");
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<VolumeCircleDetectionProcess>( params );
+}
+
+
+void ProjectViewer::on_actionNN_Volume_Trainer_triggered()
+{
+    Q_ASSERT( m_project );
+
+    NNVolumeTrainer dlg;
+    dlg.setWindowTitle(tr("NN Volume Trainer"));
+    dlg.setProject(m_project);
+
+    dlg.exec();
+}
+
+void ProjectViewer::on_actionNN_Volume_Classification_triggered()
+{
+    Q_ASSERT( m_project );
+
+    NNVolumeClassificationDialog dlg;
+    dlg.setWindowTitle(tr("NN Volume Classification"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<NNVolumeClassificationProcess>( params );
+}
 
 void ProjectViewer::on_actionFluid_Factor_Volume_triggered()
 {
@@ -1472,7 +1527,7 @@ void ProjectViewer::on_actionFluid_Factor_Volume_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new FluidFactorVolumeProcess( m_project, this ), params );
+    runProcess<FluidFactorVolumeProcess>( params );
 }
 
 
@@ -1480,39 +1535,20 @@ void ProjectViewer::on_actionTrend_Based_Attribute_Volumes_triggered()
 {
     Q_ASSERT(m_project);
 
-    TrendBasedAttributesDialog dlg;
+    TrendBasedAttributeVolumesDialog dlg;
     dlg.setWindowTitle(tr("Trend Based Attribute Volumes"));
     dlg.setInterceptList( m_project->volumeList());
     dlg.setGradientList( m_project->volumeList());
     dlg.setReservedGrids(m_project->volumeList());
+    dlg.setHorizons( m_project->gridList(GridType::Horizon));
     dlg.setComputeTrend(true);
     dlg.setTrendIntercept(0);
     dlg.setTrendAngle(0);
-    dlg.setVolumeMode(true);
 
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new TrendBasedAttributeVolumesProcess( m_project, this ), params );
-}
-
-
-void ProjectViewer::on_actionSecondary_Attribute_Volumes_triggered()
-{
-    Q_ASSERT(m_project);
-
-    SecondaryAVOAttributesDialog dlg;
-    dlg.setWindowTitle(tr("Secondary Attribute Volumes"));
-    dlg.setInterceptList( m_project->volumeList());
-    dlg.setGradientList( m_project->volumeList());
-    dlg.setFluidFactorList( m_project->volumeList());
-    dlg.setReservedGrids(m_project->volumeList());
-    dlg.setVolumeMode(true);
-
-    if( dlg.exec()!=QDialog::Accepted) return;
-    QMap<QString,QString> params=dlg.params();
-
-    runProcess( new SecondaryAttributeVolumesProcess( m_project, this ), params );
+    runProcess<TrendBasedAttributeVolumesProcess>( params );
 }
 
 
@@ -1527,7 +1563,7 @@ void ProjectViewer::on_actionRun_Volume_Script_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new RunVolumeScriptProcess( m_project, this ), params );
+    runProcess<RunVolumeScriptProcess>( params );
 }
 
 
@@ -1548,7 +1584,7 @@ void ProjectViewer::on_action_Smooth_Log_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new SmoothLogProcess( m_project, this ), params );
+    runProcess<SmoothLogProcess>( params );
 }
 
 
@@ -1563,7 +1599,7 @@ void ProjectViewer::on_actionLog_Math_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new LogMathProcess( m_project, this ), params );
+    runProcess<LogMathProcess>( params );
 }
 
 
@@ -1578,7 +1614,7 @@ void ProjectViewer::on_actionLog_Integration_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new LogIntegrationProcess( m_project, this ), params );
+    runProcess<LogIntegrationProcess>( params );
 }
 
 void ProjectViewer::on_actionNN_Log_old_triggered()
@@ -1592,7 +1628,7 @@ void ProjectViewer::on_actionNN_Log_old_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new NNLogProcess( m_project, this ), params );
+    runProcess<NNLogProcess>( params );
 }
 
 void ProjectViewer::on_actionTrain_NN_Log_triggered()
@@ -1617,7 +1653,7 @@ void ProjectViewer::on_actionNN_Log_Interpolation_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new NNLogInterpolationProcess( m_project, this ), params );
+    runProcess<NNLogInterpolationProcess>( params );
 }
 
 
@@ -1632,7 +1668,7 @@ void ProjectViewer::on_actionVShale_Computation_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new VShaleProcess( m_project, this ), params );
+    runProcess<VShaleProcess>( params );
 }
 
 
@@ -1647,7 +1683,7 @@ void ProjectViewer::on_actionRun_Log_Script_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new LogScriptProcess( m_project, this ), params );
+    runProcess<LogScriptProcess>( params );
 }
 
 
@@ -1661,7 +1697,7 @@ void ProjectViewer::on_actionBuild_Volume_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new BuildWellVolumeProcess( m_project, this ), params );
+    runProcess<BuildWellVolumeProcess>( params );
 }
 
 
@@ -1675,7 +1711,7 @@ void ProjectViewer::on_actionTops_from_Horizon_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new HorizonToTopProcess( m_project, this ), params );
+    runProcess<HorizonToTopProcess>( params );
 }
 
 
@@ -1695,7 +1731,7 @@ void ProjectViewer::on_actionConvert_Picks_To_Horizon_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new TableToHorizonProcess( m_project, this ), params );
+    runProcess<TableToHorizonProcess>( params );
 }
 
 
@@ -1714,7 +1750,7 @@ void ProjectViewer::on_actionFD_CDP_Acoustic_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new FMCDP2DProcess( m_project, this ), params );
+    runProcess<FMCDP2DProcess>( params );
 }
 
 
@@ -2348,7 +2384,7 @@ void ProjectViewer::importGrid(GridType gridType){
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ImportGridProcess( m_project, this ), params );
+    runProcess<ImportGridProcess>( params );
 }
 
 
@@ -2363,7 +2399,7 @@ void ProjectViewer::selectAndExportSeismicDataset(){
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ExportSeismicProcess( m_project, this ), params );
+    runProcess<ExportSeismicProcess>( params );
 }
 
 void ProjectViewer::exportSeismicDataset( QString name ){
@@ -2376,7 +2412,7 @@ void ProjectViewer::exportSeismicDataset( QString name ){
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ExportSeismicProcess( m_project, this ), params );
+    runProcess<ExportSeismicProcess>( params );
 }
 
 void ProjectViewer::selectAndExportGrid(GridType gridType)
@@ -2390,7 +2426,7 @@ void ProjectViewer::selectAndExportGrid(GridType gridType)
     if( dlg.exec()!=QDialog::Accepted) return;
 
     auto params=dlg.params();
-    runProcess( new ExportGridProcess( m_project, this ), params );
+    runProcess<ExportGridProcess>( params );
 }
 
 
@@ -2406,7 +2442,7 @@ void ProjectViewer::exportGrid( GridType gridType, QString gridName){
     if( dlg.exec()!=QDialog::Accepted) return;
 
     auto params=dlg.params();
-    runProcess( new ExportGridProcess( m_project, this ), params );
+    runProcess<ExportGridProcess>( params );
 }
 
 void ProjectViewer::selectAndExportLog()
@@ -2419,7 +2455,7 @@ void ProjectViewer::selectAndExportLog()
     if( dlg.exec()!=QDialog::Accepted) return;
 
     auto params=dlg.params();
-    runProcess( new ExportLogProcess( m_project, this ), params );
+    runProcess<ExportLogProcess>( params );
 }
 
 void ProjectViewer::selectAndExportTable()
@@ -2433,7 +2469,7 @@ void ProjectViewer::selectAndExportTable()
     if( dlg.exec()!=QDialog::Accepted) return;
 
     auto params=dlg.params();
-    runProcess( new ExportTableProcess( m_project, this ), params );
+    runProcess<ExportTableProcess>( params );
 }
 
 void ProjectViewer::exportTable(const QString& table)
@@ -2446,7 +2482,7 @@ void ProjectViewer::exportTable(const QString& table)
     if( dlg.exec()!=QDialog::Accepted) return;
 
     auto params=dlg.params();
-    runProcess( new ExportTableProcess( m_project, this ), params );
+    runProcess<ExportTableProcess>( params );
 }
 
 
@@ -2958,7 +2994,7 @@ void ProjectViewer::selectAndExportVolume()
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ExportVolumeProcess( m_project, this ), params );
+    runProcess<ExportVolumeProcess>( params );
 }
 
 
@@ -3146,7 +3182,7 @@ void ProjectViewer::exportVolume( QString volumeName){
 
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new ExportVolumeProcess( m_project, this ), params );
+    runProcess<ExportVolumeProcess>( params );
 
 }
 
@@ -4832,8 +4868,76 @@ void ProjectViewer::updateProjectViews(){
     updateTablesView();
 }
 
+template<class PROCESS>
+void ProjectViewer::runProcess( const QMap<QString, QString>& params)
+{
+
+    Q_ASSERT(m_project);
+
+    try{
+
+    auto process=new PROCESS(m_project, this);
+    QDateTime start=QDateTime::currentDateTime();
+
+    QString name=process->name();
+
+    statusBar()->showMessage(QString("Started %1 at %2").arg(name).arg(start.time().toString() ) );
+    auto res= process->init(params);
+    if( res!=ProjectProcess::ResultCode::Ok){
+
+        QMessageBox::critical(this, process->name(), process->lastError());
+        delete process;
+
+        statusBar()->showMessage( QString("Canceled %1 at %2").arg(name).arg(QDateTime::currentDateTime().time().toString()) );
+        return;
+    }
+    QProgressDialog* progress=new QProgressDialog(this);        // add destroy on close??
+    progress->setWindowTitle(name);
+    connect( process, SIGNAL( currentTask(QString)), progress, SLOT( setLabelText(QString)) );
+    connect( process, SIGNAL( started(int)), progress, SLOT(setMaximum(int)) );
+    connect( process, SIGNAL( progress(int)), progress, SLOT(setValue(int)) );
+    connect( process, SIGNAL( finished()), progress, SLOT(close()));
+    connect( progress, SIGNAL(canceled()), process, SLOT( cancel()));
+    progress->show();
+    ProjectProcess::ResultCode code=process->run();
+    if( code == ProjectProcess::ResultCode::Error){
+        std::cout<<"ERROR"<<std::endl<<std::flush;
+        QMessageBox::critical(this, process->name(), process->lastError());
+    }
+    else if( code== ProjectProcess::ResultCode::Canceled){
+        std::cout<<"CANCELED"<<std::endl<<std::flush;
+        QMessageBox::information(this, process->name(), "Process was canceled by user.");
+    }
+
+    process->deleteLater();
+    progress->deleteLater();
+
+    if( code != ProjectProcess::ResultCode::Ok){
+        statusBar()->showMessage( QString("Canceled %1 at %2").arg(name).arg(QDateTime::currentDateTime().time().toString()) );
+        return;
+    }
+
+    //updateProjectViews();
+
+    QDateTime end=QDateTime::currentDateTime();
+    qreal duration=0.001*start.msecsTo(end);
+    statusBar()->showMessage(QString("Finished %1 at %2 after %3 seconds").arg(name).arg(end.time().toString()).arg(duration) );
+
+    if( params.contains(QString("display-grid"))){
+        for( QString gridName : params.values(QString("display-grid"))){
+            auto gridTypeAndName=splitFullGridName(gridName);
+            displayGrid( gridTypeAndName.first, gridTypeAndName.second);
+        }
+    }
+
+    }catch( std::exception& ex ){
+        QMessageBox::critical(this, tr("Unhandled Exception Running Process"), ex.what() );
+    }
+
+}
 
 
+/*
 void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> params)
 {
 
@@ -4875,8 +4979,6 @@ void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> 
 
 
     delete progress;
-    delete process;
-
 
     if( code != ProjectProcess::ResultCode::Ok){
         statusBar()->showMessage( QString("Canceled %1 at %2").arg(name).arg(QDateTime::currentDateTime().time().toString()) );
@@ -4901,7 +5003,7 @@ void ProjectViewer::runProcess( ProjectProcess* process, QMap<QString, QString> 
     }
 
 }
-
+*/
 
 void ProjectViewer::saveSettings(){
 
@@ -5008,6 +5110,9 @@ void ProjectViewer::updateMenu(){
     ui->actionTrend_Based_Attribute_Volumes->setEnabled(isProject);
     ui->actionSecondary_Attribute_Volumes->setEnabled(isProject);
     ui->actionPunch_Out_Volume->setEnabled(isProject);
+    ui->actionVolume_Circle_Detection->setEnabled(isProject);
+    ui->actionNN_Volume_Trainer->setEnabled(isProject);
+    ui->actionNN_Volume_Classification->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->action_Smooth_Log->setEnabled(isProject);
@@ -5039,25 +5144,9 @@ void ProjectViewer::updateMenu(){
     ui->actionOpen_Log_Viewer->setEnabled(isProject);
 
     ui->actionVolume_IO_Test->setEnabled(isProject);
+    ui->actionIntercept_And_Gradient_Volume_old->setEnabled(isProject);
 }
 
-/*
-template<class RECT>
-void dumpRect(std::ostream& os, const std::string& label, const RECT& r){
-    os<<label<<" ";
-    os<<"Rect{ x="<<r.x();
-    os<<" y="<<r.y();
-    os<<" w="<<r.width();
-    os<<" h="<<r.height();
-    os<<" }";
-    os<<std::endl;
-}
-
-template<class POINT>
-void dumpPoint(std::ostream& os, const char* label, const POINT& p){
-    os<<label<<" { "<<p.x()<<", "<<p.y()<<" }"<<std::endl;
-}
-*/
 
 
 
@@ -5072,5 +5161,22 @@ void ProjectViewer::on_actionVolume_IO_Test_triggered()
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 
-    runProcess( new VolumeIOTestProcess( m_project, this ), params );
+    runProcess<VolumeIOTestProcess>( params );
 }
+
+void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
+{
+    Q_ASSERT(m_project);
+    InterceptGradientVolumeDialog_2 dlg;
+    dlg.setDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Prestack));
+    dlg.setReservedVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<InterceptGradientVolumeProcess_2>( params );
+}
+
+
+
+
+

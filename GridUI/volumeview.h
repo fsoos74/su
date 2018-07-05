@@ -44,6 +44,14 @@ public:
         return m_wellViewDist;
     }
 
+    int sharpenPercent()const{
+        return m_sharpenPercent;
+    }
+
+    int sharpenKernelSize()const{
+        return m_sharpenKernelSize;
+    }
+
     SliceDef slice()const{
         return m_slice;
     }
@@ -108,6 +116,8 @@ public slots:
     void setSlice(SliceType,int);
     void setSlice(VolumeView::SliceDef);
     void setWellViewDist(int);
+    void setSharpenPercent(int);
+    void setSharpenKernelSize(int);
 
     void addVolume(QString name, std::shared_ptr<Volume> );
     void removeVolume(QString name);
@@ -200,6 +210,7 @@ private:
     QVector<std::pair<QPointF, QString>> projectMarkersCrossline(int xline);
     QLineF intersectSlices(const SliceDef& s1, const SliceDef& s2);
 
+    QImage enhance(QImage);
     void fillSceneInline(QGraphicsScene*);
     void fillSceneCrossline(QGraphicsScene*);
     void fillSceneTime(QGraphicsScene*);
@@ -210,6 +221,8 @@ private:
 
     SliceDef m_slice;
     int m_wellViewDist=100;
+    int m_sharpenPercent=0;
+    int m_sharpenKernelSize=3;
     QMap<QString, VolumeItem> m_volumes;
     QMap<QString, HorizonItem> m_horizons;
     QMap<QString, std::shared_ptr<WellPath>> m_wells;

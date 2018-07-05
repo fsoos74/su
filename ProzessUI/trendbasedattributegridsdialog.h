@@ -1,5 +1,5 @@
-#ifndef TRENDBASEDATTRIBUTESDIALOG_H
-#define TRENDBASEDATTRIBUTESDIALOG_H
+#ifndef TRENDBASEDATTRIBUTEGRIDSDIALOG_H
+#define TRENDBASEDATTRIBUTEGRIDSDIALOG_H
 
 #include <QDialog>
 #include <QMap>
@@ -8,10 +8,10 @@
 
 
 namespace Ui {
-class TrendBasedAttributesDialog;
+class TrendBasedAttributeGridsDialog;
 }
 
-class TrendBasedAttributesDialog : public ProcessParametersDialog
+class TrendBasedAttributeGridsDialog : public ProcessParametersDialog
 {
     Q_OBJECT
 
@@ -19,14 +19,10 @@ public:
 
     enum TypeIndex{ FF=0, LF, PI, AC };
 
-    explicit TrendBasedAttributesDialog(QWidget *parent = 0);
-    ~TrendBasedAttributesDialog();
+    explicit TrendBasedAttributeGridsDialog(QWidget *parent = 0);
+    ~TrendBasedAttributeGridsDialog();
 
     QMap<QString,QString> params();
-
-    bool isVolumeMode()const{
-        return m_volumeMode;
-    }
 
 public slots:
     void setInterceptList( const QStringList&);
@@ -34,15 +30,12 @@ public slots:
     void setComputeTrend(bool);
     void setTrendIntercept(double);
     void setTrendAngle(double);
-    void setVolumeMode(bool);
 
 private slots:
     void updateOkButton();
 
 private:
-    Ui::TrendBasedAttributesDialog *ui;
-
-    bool m_volumeMode=false;
+    Ui::TrendBasedAttributeGridsDialog *ui;
 };
 
 #endif // TRENDBASEDATTRIBUTESDIALOG_H

@@ -106,7 +106,7 @@ void CreateVolumeDialog::updateOkButton(){
     // test inline range
     {
     QPalette palette;
-    if( ui->leMinIline->text().toInt() >= ui->leMaxIline->text().toInt() ){
+    if( ui->leMinIline->text().toInt() > ui->leMaxIline->text().toInt() ){
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }
@@ -117,7 +117,7 @@ void CreateVolumeDialog::updateOkButton(){
     // test crossline range
     {
     QPalette palette;
-    if( ui->leMinXline->text().toInt() >=ui->leMaxXline->text().toInt() ){
+    if( ui->leMinXline->text().toInt() >ui->leMaxXline->text().toInt() ){
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }
@@ -128,7 +128,7 @@ void CreateVolumeDialog::updateOkButton(){
     // test depth/time range
     {
     QPalette palette;
-    if( ui->leMinZ->text().toInt() >= ui->leMaxZ->text().toInt() ){
+    if( ui->leMinZ->text().toInt() > ui->leMaxZ->text().toInt() ){
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }

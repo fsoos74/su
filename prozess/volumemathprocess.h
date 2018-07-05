@@ -2,14 +2,13 @@
 #define VOLUMEMATHPROCESS_H
 
 #include "projectprocess.h"
+#include "volumesprocess.h"
 #include <QObject>
 #include<grid2d.h>
-#include<grid3d.h>
 #include<memory>
 #include<mathprocessor.h>
 
-
-class VolumeMathProcess : public ProjectProcess
+class VolumeMathProcess : public VolumesProcess
 {
 
     Q_OBJECT
@@ -17,20 +16,24 @@ class VolumeMathProcess : public ProjectProcess
 public:
 
     VolumeMathProcess( AVOProject* project, QObject* parent=nullptr);
+    ~VolumeMathProcess(){
+        std::cout<<"marker="<<marker<<std::endl<<std::flush;
+    }
+    ResultCode init(const QMap<QString, QString>& parameters)override;
 
-    ResultCode init(const QMap<QString, QString>& parameters);
-    ResultCode run();
+protected:
+    ResultCode processInline(
+            QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 
 private:
 
     bool m_editMode;
-    QString m_outputName;
-    std::shared_ptr<Volume > m_inputVolume1;
-    std::shared_ptr<Volume > m_inputVolume2;
-    std::shared_ptr<Volume > m_outputVolume;
     std::shared_ptr<Grid2D<float>> m_topHorizon;
     std::shared_ptr<Grid2D<float>> m_bottomHorizon;
     MathProcessor m_processor;
+
+
+    long long marker=123456789;
 };
 
 #endif // VOLUMEMATHPROCESS_H

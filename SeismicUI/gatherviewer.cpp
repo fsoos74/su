@@ -532,6 +532,8 @@ void GatherViewer::on_actionTrace_Scaling_triggered()
                  scaler, SLOT(setMode(GatherScaler::Mode)));
         connect( m_traceScalingDialog, SIGNAL( scalingFactorChanged(qreal)),
                  scaler, SLOT( setFixedScaleFactor(qreal)));
+        connect( m_traceScalingDialog, SIGNAL( biasChanged(qreal)),
+                 scaler, SLOT( setBias(qreal)));
     }
 
     m_traceScalingDialog->show();
