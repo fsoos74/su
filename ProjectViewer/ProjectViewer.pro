@@ -318,8 +318,14 @@ win32{
   LIBS += -luser32
   LIBS += -ladvapi32
   LIBS += -lshell32
-  LIBS += -L$$PWD/../../../Keylok/API/Windows/VS2013/ -lkfunc64MD
-  LIBS += -L$$PWD/../../build-dongle-Desktop_Qt_5_5_1_MSVC2013_64bit-Release/release/ -ldongle
+
+  #this is for msvc2013 on dell
+  #LIBS += -L$$PWD/../../../Keylok/API/Windows/VS2013/ -lkfunc64MD
+  #LIBS += -L$$PWD/../../build-dongle-Desktop_Qt_5_5_1_MSVC2013_64bit-Release/release/ -ldongle
+
+  #this is for msvc2017 on hp
+  LIBS += -L$$PWD/../../../Keylok/API/Windows/VS2015/ -lkfunc64MD       # binary compatible
+  LIBS += -L$$PWD/../../build-dongle-Desktop_Qt_5_11_1_MSVC2017_64bit-Release/release/ -ldongle
 
   INCLUDEPATH += $$PWD/../../dongle
   DEPENDPATH += $$PWD/../../dongle

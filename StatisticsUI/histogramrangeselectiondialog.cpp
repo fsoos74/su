@@ -3,7 +3,7 @@
 
 #include <QDoubleValidator>
 #include <QKeyEvent>
-
+#include<QButtonGroup>
 #include<iostream>
 #include<iomanip>
 

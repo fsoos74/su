@@ -2,6 +2,7 @@
 #include "ui_volumedisplayoptionsdialog.h"
 
 #include<QKeyEvent>
+#include<QAction>
 
 #include<colortabledialog.h>
 
