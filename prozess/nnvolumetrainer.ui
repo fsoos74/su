@@ -106,7 +106,7 @@
        <item row="5" column="1">
         <widget class="QLineEdit" name="leTrainingRatio">
          <property name="text">
-          <string>0.1</string>
+          <string>100</string>
          </property>
         </widget>
        </item>
@@ -127,7 +127,7 @@
        <item row="5" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Training Data Ratio:</string>
+          <string>Mini Batch Size:</string>
          </property>
         </widget>
        </item>

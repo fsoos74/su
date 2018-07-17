@@ -83,6 +83,10 @@ void train( NN& nn, const Matrix<double>& X, const Matrix<double>& Y,
             std::function<void(size_t,double)> progress=[](size_t,double){return;});
 
 
+void train_stochastic_gradient_descent( NN& nn, const Matrix<double>& X, const Matrix<double>& Y,
+            const int mini_batch_size, const int max_epochs,
+            std::function<void(size_t,double)> progress=[](size_t,double){return;});
+
 
 #endif
 

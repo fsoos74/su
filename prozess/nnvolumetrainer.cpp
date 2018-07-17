@@ -70,7 +70,7 @@ void NNVolumeTrainer::getParamsFromControls(){
     }
     m_hiddenNeurons=static_cast<unsigned>(ui->sbNeurons->value());
     m_trainingEpochs=ui->leTrainingEpochs->text().toUInt();
-    m_trainingRatio=ui->leTrainingRatio->text().toDouble();
+    m_miniBatchSize=ui->leTrainingRatio->text().toDouble();
     m_learningRate=ui->leLearningRate->text().toDouble();
     m_maxNoDecrease=static_cast<unsigned>(ui->sbIncreasingEpochs->value());
 }
@@ -321,79 +321,55 @@ void NNVolumeTrainer::prepareTraining(){
 
 }
 
+// stochastic gradient descent
 void NNVolumeTrainer::runTraining(){
 
-    setValidNN(false);
+  setValidNN(false);
 
-    const Matrix<double>& X=m_X;
-    const Matrix<double>& Y=m_Y;
-
-  // split training data into input and test data
+  Matrix<double> XMini(m_miniBatchSize, m_X.columns());
+  Matrix<double> YMini(m_miniBatchSize, m_Y.columns());
   std::vector<size_t> indices;
-  indices.reserve(X.rows());
-  for( size_t i=0; i<X.rows(); i++){
+  indices.reserve(m_X.rows());
+  for( size_t i=0; i<m_X.rows(); i++){
       indices.push_back(i);
   }
-  std::random_shuffle(indices.begin(), indices.end());
 
-  size_t ntrain=std::min(X.rows(),static_cast<size_t>( m_trainingRatio*X.rows()) );
-  size_t ntest=X.rows()-ntrain;
-
-  // extract training data
-  Matrix<double> Xtrain(ntrain, X.columns());
-  Matrix<double> Ytrain(ntrain, Y.columns());
-  for( size_t i=0; i<Xtrain.rows(); i++){
-      auto irow=indices[i];
-      for( size_t j=0; j<X.columns(); j++){
-          Xtrain(i,j)=X(irow,j);
-      }
-      for( size_t j=0; j<Y.columns(); j++){
-          Ytrain(i,j)=Y(irow,j);
-      }
-  }
-
-  // extract test data
-  Matrix<double> Xtest(ntest, X.columns());
-  Matrix<double> Ytest(ntest, Y.columns());
-  for( size_t i=0; i<Xtest.rows(); i++){
-      auto irow=indices[i+ntrain];
-      for( size_t j=0; j<X.columns(); j++){
-          Xtest(i,j)=X(irow,j);
-      }
-      for( size_t j=0; j<Y.columns(); j++){
-          Ytest(i,j)=Y(irow,j);
-      }
-  }
-
-  double last_error=std::numeric_limits<double>::max();
-  double err=last_error;
+  double last_err=std::numeric_limits<double>::max();
+  double err=last_err;
   size_t epoch=0;
-  size_t n_inc_error=0;
+  size_t n_increasing=0;
 
   while( m_running && (epoch<m_trainingEpochs) ){
 
-      try{
-      m_nn.train(Xtrain,Ytrain,1);
-      }catch(std::exception& ex){
-          error(QString(ex.what()));
+      std::random_shuffle( indices.begin(), indices.end());
+      for( int i=0; i<m_miniBatchSize; i++){
+          auto idx=indices[i];
+          for(int j=0; j<m_X.columns(); j++) XMini(i,j)=m_X(idx,j);
+          for(int j=0; j<m_Y.columns(); j++) YMini(i,j)=m_Y(idx,j);
       }
+      NN last_nn=m_nn;
+      m_nn.train(XMini,YMini,1);
+      auto err=average_error(m_nn,m_X,m_Y);
 
-      last_error=err;
-      err=average_error(m_nn, Xtest,Ytest);
-      epoch++;
-      std::cout<<"epoch: "<<epoch<<" err: "<<err<<std::endl<<std::flush;
-      if( err>=last_error ){
-          n_inc_error++;
-          if( n_inc_error>m_maxNoDecrease ) break;
+      if(err>last_err){
+          if( n_increasing==0){
+              m_nn=last_nn;
+          }
+          n_increasing++;
+          if( n_increasing==m_maxNoDecrease){
+              m_nn=last_nn;
+              break;
+          }
       }
       else{
-          n_inc_error=0;
+          n_increasing=0;
       }
+      last_err=err;
 
-      //progress(epoch,err);
       ui->teProgress->appendPlainText(tr("epoch=%1 error=%2").arg(QString::number(epoch+1), QString::number(err)));
       qApp->processEvents();
 
+      epoch++;
   }
 
   setValidNN(true);

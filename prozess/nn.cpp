@@ -202,3 +202,47 @@ void train( NN& nn, const Matrix<double>& X, const Matrix<double>& Y,
         progress(epoch,err);
     }
 }
+
+
+void train_stochastic_gradient_descent( NN& nn, const Matrix<double>& X, const Matrix<double>& Y,
+                                        const int mini_batch_size, const int max_epochs,
+                                        std::function<void(size_t,double)> progress){
+
+    const int max_increasing=3;
+    Matrix<double> XMini(mini_batch_size, X.columns());
+    Matrix<double> YMini(mini_batch_size, Y.columns());
+    std::vector<int> indices(mini_batch_size);
+    for( int i=0; i<mini_batch_size; i++)
+        indices[i]=i;
+
+    double last_err=std::numeric_limits<double>::max();
+    int n_increasing=0;
+
+    for( int it=0; it<max_epochs; it++){
+        std::random_shuffle( indices.begin(), indices.end());
+        for( int i=0; i<mini_batch_size; i++){
+            auto idx=indices[i];
+            for(int j=0; j<X.columns(); j++) XMini(i,j)=X(idx,j);
+            for(int j=0; j<Y.columns(); j++) YMini(i,j)=Y(idx,j);
+        }
+        NN last_nn=nn;
+        nn.train(XMini,YMini,1);
+        auto err=average_error(nn,X,Y);
+        progress( static_cast<size_t>(it), err);
+        if(err>last_err){
+            if( n_increasing==0){
+                nn=last_nn;
+            }
+            n_increasing++;
+            if( n_increasing==max_increasing){
+                nn=last_nn;
+                break;
+            }
+        }
+        else{
+            n_increasing=0;
+        }
+        last_err=err;
+    }
+}
+
