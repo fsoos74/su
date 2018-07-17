@@ -24,7 +24,6 @@ ProjectProcess::ResultCode CropVolumeProcess::init( const QMap<QString, QString>
     int minMSec;
     int maxMSec;
     try{
-
         outputName=getParam(parameters, "output-volume");
         inputName=getParam(parameters, "input-volume");
         minIline=getParam(parameters, "min-iline").toInt();

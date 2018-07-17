@@ -110,7 +110,7 @@ ProjectProcess::ResultCode SemblanceVolumeProcess::run(){
             }
             }
 
-            else{
+            else{   // track dips
                 for( int k=0; k<bounds.nt(); k++){
                     auto t0=m_inputVolume->bounds().sampleToTime(k);
                     std::vector<std::tuple<int,int,double>> path;

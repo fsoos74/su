@@ -5,6 +5,7 @@
 #include <QApplication>
 #include<iostream>
 #include <semblance.h>
+#include <volumeinterpolation.h>
 
 VolumeDipScanProcess::VolumeDipScanProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Volume Dip"), project, parent){
@@ -75,8 +76,35 @@ ProjectProcess::ResultCode VolumeDipScanProcess::run(){
     emit started(bounds.ni() - 2);
     qApp->processEvents();
 
+    // test scan only intervals
+    int w_lines=m_windowLines/2;
+    int w_samples=m_windowSamples/2;
 
+    // first step scan semblance on interval
+    for( int i=bounds.i1(); i<=bounds.i2(); i+=w_lines){
 
+        for( int j=bounds.j1(); j<bounds.j2(); j+=w_lines){
+
+            #pragma omp parallel for
+            for( int k=0; k<bounds.nt(); k+=w_samples){
+
+                scan_maximum_semblance(i,j,k);
+                // testing
+                //(*m_ilineDipVolume)(i,j,k)=k;
+            }
+        }
+
+        emit progress( i-bounds.i1() -1 );
+        qApp->processEvents();
+    }
+
+    // next step interpolate intermediate values
+    interpolateIntermediate(*m_ilineDipVolume, w_lines, w_samples);
+    interpolateIntermediate(*m_xlineDipVolume, w_lines, w_samples);
+    interpolateIntermediate(*m_semblanceVolume, w_lines, w_samples);
+
+    /* working old version
+    // scan each and every sample
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
         for( int j=bounds.j1(); j<bounds.j2(); j++){
@@ -91,29 +119,29 @@ ProjectProcess::ResultCode VolumeDipScanProcess::run(){
 
         emit progress( i-bounds.i1() -1 );
         qApp->processEvents();
-
     }
+    */
 
     emit currentTask("Saving output volumes");
     emit started(3);
     emit progress(0);
     qApp->processEvents();
 
-    if( !project()->addVolume( m_ilineDipName, m_ilineDipVolume,  params() )){
+    if( !m_ilineDipName.isEmpty() && !project()->addVolume( m_ilineDipName, m_ilineDipVolume,  params() )){
         setErrorString( QString("Could not save volume \"%1\"!").arg(m_ilineDipName) );
         return ResultCode::Error;
     }
     emit progress(1);
     qApp->processEvents();
 
-    if( !project()->addVolume( m_xlineDipName, m_xlineDipVolume,  params() )){
+    if( !m_xlineDipName.isEmpty() && !project()->addVolume( m_xlineDipName, m_xlineDipVolume,  params() )){
         setErrorString( QString("Could not save volume \"%1\"!").arg(m_xlineDipName) );
         return ResultCode::Error;
     }
     emit progress(2);
     qApp->processEvents();
 
-    if( !project()->addVolume( m_semblanceName, m_semblanceVolume,  params() )){
+    if( !m_semblanceName.isEmpty() && !project()->addVolume( m_semblanceName, m_semblanceVolume,  params() )){
         setErrorString( QString("Could not save volume \"%1\"!").arg(m_semblanceName) );
         return ResultCode::Error;
     }
@@ -145,7 +173,7 @@ void VolumeDipScanProcess::scan_maximum_semblance( int i, int j, int k){
     auto best_semblance=std::numeric_limits<double>::lowest();
     for( int idip=0; idip<m_dipCount; idip++){
 
-        double dip=m_minimumDip + idip*(m_maximumDip-m_minimumDip)/(m_dipCount-1);
+        double dip=m_minimumDip + idip*double(m_maximumDip-m_minimumDip)/(m_dipCount-1);
 
         for( int itr=-m_windowLines/2; itr<=m_windowLines/2; itr++ ){
 
@@ -169,11 +197,11 @@ void VolumeDipScanProcess::scan_maximum_semblance( int i, int j, int k){
 
    for( int idip=0; idip<m_dipCount; idip++){
 
-       double dip=m_minimumDip + idip*(m_maximumDip-m_minimumDip)/(m_dipCount-1);
+       double dip=m_minimumDip + idip*double(m_maximumDip-m_minimumDip)/(m_dipCount-1);
 
        for( int itr=-m_windowLines/2; itr<=m_windowLines/2; itr++ ){
 
-           path[itr + m_windowLines/2 ]=std::make_tuple( i, j+itr, t0 + itr*dip*dt);
+           path[itr + m_windowLines/2 ]=std::make_tuple( i, j+itr, t0 + 0.001*itr*dip); // msec -> sec
        }
 
        auto s = semblance( *m_inputVolume, path, W/2);

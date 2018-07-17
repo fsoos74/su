@@ -107,7 +107,8 @@ SOURCES += prozess.cpp \
     volumesprocess.cpp \
     nnvolumetrainer.cpp \
     nnvolumeclassificationprocess.cpp \
-    volumecircledetectionprocess.cpp
+    volumecircledetectionprocess.cpp \
+    volumeinterpolation.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -194,7 +195,8 @@ HEADERS += prozess.h\
     volumesprocess.h \
     nnvolumetrainer.h \
     nnvolumeclassificationprocess.h \
-    volumecircledetectionprocess.h
+    volumecircledetectionprocess.h \
+    volumeinterpolation.h
 
 unix {
     target.path = /usr/lib
