@@ -95,60 +95,70 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
     qApp->processEvents();
 
     // process chunks
-    for( int il1=bounds.i1(); il1<=bounds.i2(); il1+=CHUNK_ILINES){
+    for( int il=bounds.i1()+NIL/2; il<=bounds.i2()-NIL/2; il++){
 
-        auto il2=std::min(il1+CHUNK_ILINES, bounds.i2());
-
+        // read sub volumes
         std::vector<std::shared_ptr<Volume>> subvols;
         for( int vi=0; vi<m_inputVolumeReaders.size(); vi++){
-            auto subvol=m_inputVolumeReaders[vi]->readIl(il1,il2);
+            auto subvol=m_inputVolumeReaders[vi]->readIl(il-NIL/2, il+NIL/2);
             if( !subvol){
                 setErrorString(tr("Reading chunk(%1-%2) from volume #%3 failed!").arg(
-                                   QString::number(il1), QString::number(il2), QString::number(vi+1)));
+                                   QString::number(il-NIL/2), QString::number(il+NIL/2), QString::number(vi+1)));
                 writer->removeFile();
                 return ResultCode::Error;
             }
             subvols.push_back(subvol);
         }
 
-        auto sbounds=subvols.front()->bounds();
-        auto svolume=std::make_shared<Volume>(sbounds);
-        if( !svolume){
-            setErrorString("Creating subvolume failed!");
-            writer->removeFile();
-            return ResultCode::Error;
-        }
-
-        // process chunk
-
+        // norm sub volumes
         for(int vi=0; vi<subvols.size(); vi++){
             norm(subvols[vi]->begin(), subvols[vi]->end(), m_Xmm[vi], subvols[vi]->NULL_VALUE);
         }
 
-        Matrix<double> x(1, subvols.size());
+        auto sbounds=subvols.front()->bounds();
+        auto obounds=Grid3DBounds(il,il, sbounds.j1(),sbounds.j2(), bounds.nt(), sbounds.ft(), sbounds.dt() );
+        auto ovolume=std::make_shared<Volume>(obounds);
+        if( !ovolume){
+            setErrorString("Creating output subvolume failed!");
+            writer->removeFile();
+            return ResultCode::Error;
+        }        
+
+        Matrix<double> x(1, subvols.size()*NIL*NXL);
         Matrix<double> y( 1, 1);
-        for( size_t i=0; i<svolume->size(); i++){
 
-            bool ok=true;
-            for( size_t j=0; j<subvols.size(); j++){
-                auto v=(*(subvols[j]))[i];
-                if( v==subvols[j]->NULL_VALUE ){
-                    ok=false;
-                    break;
+        // process chunk
+
+        // iterate over samples
+        for( int k=0; k<sbounds.nt(); k++){
+            // iterate over crosslines
+            for( int j=obounds.j1()+NXL/2; j<=obounds.j2()-NXL/2; j++){
+                bool ok=true;   // detect  NULL values
+                // iterate over il aperture
+                for( int ii=0; ii<NIL; ii++){
+                    //iterate over xl aperture
+                    for( int jj=0; jj<NXL; jj++){
+                        // iterate over volumes
+                        for( int vi=0; vi<subvols.size(); vi++){
+                            auto col=(ii*NXL + jj)*subvols.size()+vi;
+                            auto v=(*subvols[vi])(il+ii-NIL/2, j+jj-NXL/2, k);
+                            if(v==subvols[vi]->NULL_VALUE){
+                                ok=false;
+                            }
+                            x(0,col)=v;
+                        }
+                    }
                 }
-                x(0,j)=v;
+                if(ok){     // only compute if no NULL values in input
+                    y = m_nn.feed_forward(x);
+                    (*ovolume)(il,j,k)=y(0,0);
+                }
             }
-
-            y = m_nn.feed_forward(x);
-            //std::cout<<x<<" -> "<<y<<std::endl;
-            (*svolume)[i]=y(0,0);
-            //emit progress(it);
-            //qApp->processEvents();
         }
 
-        unnorm( svolume->begin(), svolume->end(), m_Ymm, svolume->NULL_VALUE);
+        unnorm( ovolume->begin(), ovolume->end(), m_Ymm, ovolume->NULL_VALUE);
 
-        if(!writer->write(*svolume)){
+        if(!writer->write(*ovolume)){
             setErrorString("Writing subvolume failed!");
             writer->removeFile();
             return ResultCode::Error;
@@ -157,10 +167,15 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         for(int vi=0; vi<subvols.size(); vi++){
             subvols[vi].reset();
         }
-        svolume.reset();
+        ovolume.reset();
 
-        emit progress(il2-bounds.i1());
+        emit progress(il-bounds.i1());
         qApp->processEvents();
+
+        if(isCanceled()){
+            writer->removeFile();
+            return ResultCode::Canceled;
+        }
     }
 
     writer->flush();

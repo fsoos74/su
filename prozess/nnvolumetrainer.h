@@ -41,6 +41,9 @@ private:
 
     Ui::NNVolumeTrainer *ui;
 
+    static const int NIL=3;
+    static const int NXL=3;
+
     AVOProject* m_project=nullptr;
 
     QString m_matchingName;

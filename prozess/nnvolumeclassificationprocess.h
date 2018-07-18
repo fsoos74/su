@@ -24,6 +24,9 @@ private:
 
     ResultCode processWell(QString);
 
+    static const int NIL=3;
+    static const int NXL=3;
+
     QString m_inputFile;
     QString m_outputName;
     NN m_nn;

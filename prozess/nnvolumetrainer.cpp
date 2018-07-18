@@ -163,7 +163,7 @@ void NNVolumeTrainer::on_pbStop_clicked()
 
 void NNVolumeTrainer::buildNN(){
     //create NN
-    NN nn{ static_cast<size_t>(m_inputNames.size()), m_hiddenNeurons, 1};      // XXX
+    NN nn{ static_cast<size_t>(m_inputNames.size()*NIL*NXL), m_hiddenNeurons, 1};
 
     nn.setSigma(leaky_relu);
     nn.setSigmaPrime(leaky_relu_prime);
@@ -220,28 +220,28 @@ void NNVolumeTrainer::prepareTraining(){
 
     // collect all data (training/testing)
     int nInputPoints = m_matching->size() + m_nonMatching->size();
-    auto allX=Matrix<double>(nInputPoints, m_inputVolumeReaders.size() );
+    auto allX=Matrix<double>(nInputPoints, m_inputVolumeReaders.size()*NIL*NXL );
     auto allY=Matrix<double>(nInputPoints,1);
 
     // use stupid approach for now to get started, improve later!!!
     auto bounds=m_inputVolumeReaders.front()->bounds();
-    int ii=0;       // row in allX/allY matrix
+    int row=0;       // row in allX/allY matrix
 
     // iterate over inlines
-    for( int i = bounds.i1(); i<=bounds.i2(); i++){
+    for( int i = bounds.i1()+NIL/2; i<=bounds.i2()-NIL/2; i++){
 
         // load inline for all input volumes
         QVector<std::shared_ptr<Volume>> ilvols;
         for( int l = 0; l<static_cast<int>(m_inputVolumeReaders.size()); l++){
-            auto ilvol = m_inputVolumeReaders[l]->readIl(i,i);
+            auto ilvol = m_inputVolumeReaders[l]->readIl(i-NIL/2,i+NIL/2);
             if(!ilvol){
-                return error( tr("Reading iline=%1 from volume \"%2\" failed!").arg(QString::number(i), m_inputNames[l]));
+                return error( tr("Reading around iline=%1 from volume \"%2\" failed!").arg(QString::number(i), m_inputNames[l]));
             }
             ilvols.push_back(ilvol);
         }
 
         // iterate over crosslines
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
+        for( int j=bounds.j1()+NXL/2; j<=bounds.j2()-NXL/2; j++){
 
             if( !m_matching->contains(i,j) && !m_nonMatching->contains(i,j)) continue;
 
@@ -249,15 +249,21 @@ void NNVolumeTrainer::prepareTraining(){
             auto table=m_matching->values(i,j);
             for( auto t : table){
 
-                // iterate over volumes
-                for( int jj=0; jj<ilvols.size(); jj++){
-                    auto vl=ilvols[jj]->value(i,j,t);
-                    allX(ii, jj)=vl;
+                // iterate over il aperture
+                for( int ii=0; ii<NIL; ii++){
+                    //iterate over xl aperture
+                    for( int jj=0; jj<NXL; jj++){
+                        // iterate over volumes
+                        for( int vi=0; vi<ilvols.size(); vi++){
+                            auto col=(ii*NXL + jj)*ilvols.size()+vi;
+                            allX(row,col)=ilvols[vi]->value(i+ii-NIL/2,j+jj-NXL/2,t);
+                        }
+                    }
                 }
 
-                allY( ii, 0)=1.;            // matching == 1
+                allY( row, 0)=1.;            // matching == 1
 
-                ii++;                       // next row
+                row++;                       // next row
             }
 
 
@@ -265,15 +271,21 @@ void NNVolumeTrainer::prepareTraining(){
             table=m_nonMatching->values(i,j);
             for( auto t : table){
 
-                // iterate over volumes
-                for( int jj=0; jj<ilvols.size(); jj++){
-                    auto vl=ilvols[jj]->value(i,j,t);
-                    allX(ii, jj)=vl;
+                // iterate over il aperture
+                for( int ii=0; ii<NIL; ii++){
+                    //iterate over xl aperture
+                    for( int jj=0; jj<NXL; jj++){
+                        // iterate over volumes
+                        for( int vi=0; vi<ilvols.size(); vi++){
+                            auto col=(ii*NXL + jj)*ilvols.size()+vi;
+                            allX(row,col)=ilvols[vi]->value(i+ii-NIL/2,j+jj-NXL/2,t);
+                        }
+                    }
                 }
 
-                allY( ii, 0)=0.;            // non matching == 0
+                allY( row, 0)=0.;            // non matching == 0
 
-                ii++;                       // next row
+                row++;                       // next row
             }
         }
     }
@@ -293,7 +305,7 @@ void NNVolumeTrainer::prepareTraining(){
     return;
 */
     // build training input and result matrices
-    int ntraining=ii;
+    int ntraining=row;
     if( ntraining<=0 ){
         return error("Not enought training data!!!");
     }
