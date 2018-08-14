@@ -41,9 +41,6 @@ private:
 
     Ui::NNVolumeTrainer *ui;
 
-    static const int NIL=3;
-    static const int NXL=3;
-
     AVOProject* m_project=nullptr;
 
     QString m_matchingName;
@@ -52,6 +49,7 @@ private:
     unsigned m_hiddenNeurons;
     unsigned m_trainingEpochs;
     double m_learningRate;
+    unsigned m_apertureLines=1;
     unsigned m_maxNoDecrease=3;
     unsigned m_miniBatchSize=100;
     std::shared_ptr<Table> m_matching;

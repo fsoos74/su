@@ -24,13 +24,11 @@ private:
 
     ResultCode processWell(QString);
 
-    static const int NIL=3;
-    static const int NXL=3;
-
     QString m_inputFile;
     QString m_outputName;
     NN m_nn;
     QStringList m_inames;
+    int m_apertureLines;
     std::vector<std::pair<double,double>> m_Xmm;
     std::pair<double,double> m_Ymm;
     std::vector<VolumeReader2*> m_inputVolumeReaders;

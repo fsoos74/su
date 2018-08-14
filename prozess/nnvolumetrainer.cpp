@@ -32,6 +32,7 @@ NNVolumeTrainer::NNVolumeTrainer(QWidget *parent) :
     ui->leLearningRate->setValidator(dvalid);
 
     connect(ui->lwInput->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(invalidateNN()));
+    connect(ui->sbApertureLines, SIGNAL(valueChanged(int)), this, SLOT(invalidateNN()));
     connect(ui->sbNeurons, SIGNAL(valueChanged(int)), this, SLOT(invalidateNN()));
 }
 
@@ -68,6 +69,7 @@ void NNVolumeTrainer::getParamsFromControls(){
     for( auto idx : ids){
         m_inputNames<<ui->lwInput->item(idx.row())->text();
     }
+    m_apertureLines=static_cast<unsigned>(ui->sbApertureLines->value());
     m_hiddenNeurons=static_cast<unsigned>(ui->sbNeurons->value());
     m_trainingEpochs=ui->leTrainingEpochs->text().toUInt();
     m_miniBatchSize=ui->leTrainingRatio->text().toDouble();
@@ -137,6 +139,7 @@ void NNVolumeTrainer::setRunning(bool on){
     ui->cbMatching->setEnabled(!m_running);
     ui->cbNonMatching->setEnabled(!m_running);
     ui->lwInput->setEnabled(!m_running);
+    ui->sbApertureLines->setEnabled(!m_running);
     ui->sbNeurons->setEnabled(!m_running);
     ui->pbRun->setEnabled(!m_running);
     ui->pbSave->setEnabled(!m_running);
@@ -163,7 +166,7 @@ void NNVolumeTrainer::on_pbStop_clicked()
 
 void NNVolumeTrainer::buildNN(){
     //create NN
-    NN nn{ static_cast<size_t>(m_inputNames.size()*NIL*NXL), m_hiddenNeurons, 1};
+    NN nn{ static_cast<size_t>(m_inputNames.size()*m_apertureLines*m_apertureLines), m_hiddenNeurons, 1};
 
     nn.setSigma(leaky_relu);
     nn.setSigmaPrime(leaky_relu_prime);
@@ -220,7 +223,7 @@ void NNVolumeTrainer::prepareTraining(){
 
     // collect all data (training/testing)
     int nInputPoints = m_matching->size() + m_nonMatching->size();
-    auto allX=Matrix<double>(nInputPoints, m_inputVolumeReaders.size()*NIL*NXL );
+    auto allX=Matrix<double>(nInputPoints, m_inputVolumeReaders.size()*m_apertureLines*m_apertureLines);
     auto allY=Matrix<double>(nInputPoints,1);
 
     // use stupid approach for now to get started, improve later!!!
@@ -228,12 +231,12 @@ void NNVolumeTrainer::prepareTraining(){
     int row=0;       // row in allX/allY matrix
 
     // iterate over inlines
-    for( int i = bounds.i1()+NIL/2; i<=bounds.i2()-NIL/2; i++){
+    for( int i = bounds.i1()+m_apertureLines/2; i<=bounds.i2()-m_apertureLines/2; i++){
 
         // load inline for all input volumes
         QVector<std::shared_ptr<Volume>> ilvols;
         for( int l = 0; l<static_cast<int>(m_inputVolumeReaders.size()); l++){
-            auto ilvol = m_inputVolumeReaders[l]->readIl(i-NIL/2,i+NIL/2);
+            auto ilvol = m_inputVolumeReaders[l]->readIl(i-m_apertureLines/2,i+m_apertureLines/2);
             if(!ilvol){
                 return error( tr("Reading around iline=%1 from volume \"%2\" failed!").arg(QString::number(i), m_inputNames[l]));
             }
@@ -241,7 +244,7 @@ void NNVolumeTrainer::prepareTraining(){
         }
 
         // iterate over crosslines
-        for( int j=bounds.j1()+NXL/2; j<=bounds.j2()-NXL/2; j++){
+        for( int j=bounds.j1()+m_apertureLines/2; j<=bounds.j2()-m_apertureLines/2; j++){
 
             if( !m_matching->contains(i,j) && !m_nonMatching->contains(i,j)) continue;
 
@@ -250,13 +253,13 @@ void NNVolumeTrainer::prepareTraining(){
             for( auto t : table){
 
                 // iterate over il aperture
-                for( int ii=0; ii<NIL; ii++){
+                for( int ii=0; ii<m_apertureLines; ii++){
                     //iterate over xl aperture
-                    for( int jj=0; jj<NXL; jj++){
+                    for( int jj=0; jj<m_apertureLines; jj++){
                         // iterate over volumes
                         for( int vi=0; vi<ilvols.size(); vi++){
-                            auto col=(ii*NXL + jj)*ilvols.size()+vi;
-                            allX(row,col)=ilvols[vi]->value(i+ii-NIL/2,j+jj-NXL/2,t);
+                            auto col=(ii*m_apertureLines + jj)*ilvols.size()+vi;
+                            allX(row,col)=ilvols[vi]->value(i+ii-m_apertureLines/2,j+jj-m_apertureLines/2,t);
                         }
                     }
                 }
@@ -272,13 +275,13 @@ void NNVolumeTrainer::prepareTraining(){
             for( auto t : table){
 
                 // iterate over il aperture
-                for( int ii=0; ii<NIL; ii++){
+                for( int ii=0; ii<m_apertureLines; ii++){
                     //iterate over xl aperture
-                    for( int jj=0; jj<NXL; jj++){
+                    for( int jj=0; jj<m_apertureLines; jj++){
                         // iterate over volumes
                         for( int vi=0; vi<ilvols.size(); vi++){
-                            auto col=(ii*NXL + jj)*ilvols.size()+vi;
-                            allX(row,col)=ilvols[vi]->value(i+ii-NIL/2,j+jj-NXL/2,t);
+                            auto col=(ii*m_apertureLines + jj)*ilvols.size()+vi;
+                            allX(row,col)=ilvols[vi]->value(i+ii-m_apertureLines/2,j+jj-m_apertureLines/2,t);
                         }
                     }
                 }

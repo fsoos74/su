@@ -57,6 +57,9 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
     m_nn.setSigma(leaky_relu);
     m_nn.setSigmaPrime(leaky_relu_prime);
 
+    // determine lines aperture from number of input neurons and number of input volumes
+    m_apertureLines=static_cast<int>(std::round(std::sqrt(m_nn.layer_size(0)/m_inames.size())));
+
     // open input volumes
     m_inputVolumeReaders.clear();
 
@@ -95,15 +98,15 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
     qApp->processEvents();
 
     // process chunks
-    for( int il=bounds.i1()+NIL/2; il<=bounds.i2()-NIL/2; il++){
+    for( int il=bounds.i1()+m_apertureLines/2; il<=bounds.i2()-m_apertureLines/2; il++){
 
         // read sub volumes
         std::vector<std::shared_ptr<Volume>> subvols;
         for( int vi=0; vi<m_inputVolumeReaders.size(); vi++){
-            auto subvol=m_inputVolumeReaders[vi]->readIl(il-NIL/2, il+NIL/2);
+            auto subvol=m_inputVolumeReaders[vi]->readIl(il-m_apertureLines/2, il+m_apertureLines/2);
             if( !subvol){
                 setErrorString(tr("Reading chunk(%1-%2) from volume #%3 failed!").arg(
-                                   QString::number(il-NIL/2), QString::number(il+NIL/2), QString::number(vi+1)));
+                                   QString::number(il-m_apertureLines/2), QString::number(il+m_apertureLines/2), QString::number(vi+1)));
                 writer->removeFile();
                 return ResultCode::Error;
             }
@@ -124,7 +127,7 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
             return ResultCode::Error;
         }        
 
-        Matrix<double> x(1, subvols.size()*NIL*NXL);
+        Matrix<double> x(1, subvols.size()*m_apertureLines*m_apertureLines);
         Matrix<double> y( 1, 1);
 
         // process chunk
@@ -132,16 +135,16 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         // iterate over samples
         for( int k=0; k<sbounds.nt(); k++){
             // iterate over crosslines
-            for( int j=obounds.j1()+NXL/2; j<=obounds.j2()-NXL/2; j++){
+            for( int j=obounds.j1()+m_apertureLines/2; j<=obounds.j2()-m_apertureLines/2; j++){
                 bool ok=true;   // detect  NULL values
                 // iterate over il aperture
-                for( int ii=0; ii<NIL; ii++){
+                for( int ii=0; ii<m_apertureLines; ii++){
                     //iterate over xl aperture
-                    for( int jj=0; jj<NXL; jj++){
+                    for( int jj=0; jj<m_apertureLines; jj++){
                         // iterate over volumes
                         for( int vi=0; vi<subvols.size(); vi++){
-                            auto col=(ii*NXL + jj)*subvols.size()+vi;
-                            auto v=(*subvols[vi])(il+ii-NIL/2, j+jj-NXL/2, k);
+                            auto col=(ii*m_apertureLines + jj)*subvols.size()+vi;
+                            auto v=(*subvols[vi])(il+ii-m_apertureLines/2, j+jj-m_apertureLines/2, k);
                             if(v==subvols[vi]->NULL_VALUE){
                                 ok=false;
                             }

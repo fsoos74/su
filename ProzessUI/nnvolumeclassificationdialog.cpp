@@ -97,9 +97,13 @@ void NNVolumeClassificationDialog::on_leInputFile_textChanged(const QString & na
 
     ui->teInfo->clear();
     QString text;
-    text+="Required volumes:\n";
+    int apertureLines=static_cast<int>(std::round(std::sqrt(nn.layer_size(0)/inames.size())));
+    text+=QString("Aperture(Lines): %1\n").arg(apertureLines);
+    text+=QString("Required volumes: %1\n").arg(inames.size());
     text+=inames.join("\n");
     ui->teInfo->appendPlainText(text);
+
+
 }
 
 
