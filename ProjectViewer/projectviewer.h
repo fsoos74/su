@@ -189,6 +189,8 @@ private slots:
     void on_actionVolume_IO_Test_triggered();
     void on_actionIntercept_And_Gradient_Volume_old_triggered();
 
+    void on_actionImportTable_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

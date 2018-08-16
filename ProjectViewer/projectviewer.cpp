@@ -174,6 +174,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <tabletohorizonprocess.h>
 #include <importmarkersdialog.h>
 #include <importmarkersprocess.h>
+#include <importtabledialog.h>
+#include <importtableprocess.h>
 #include <editmarkersdialog.h>
 #include <fmcdp2ddialog.h>
 #include <fmcdp2dprocess.h>
@@ -667,6 +669,19 @@ void ProjectViewer::on_actionWell_Markers_triggered()
     runProcess<ImportMarkersProcess>(params);
 }
 
+
+void ProjectViewer::on_actionImportTable_triggered()
+{
+    Q_ASSERT( m_project );
+
+    ImportTableDialog dlg;
+    dlg.setWindowTitle("Import Table");
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<ImportTableProcess>(params);
+}
 
 void ProjectViewer::on_actionExportHorizon_triggered()
 {
@@ -5057,6 +5072,7 @@ void ProjectViewer::updateMenu(){
     ui->actionWellpath->setEnabled(isProject);
     ui->actionWellpaths_Bulk_Mode->setEnabled(isProject);
     ui->actionWell_Markers->setEnabled(isProject);
+    ui->actionImportTable->setEnabled(isProject);
     ui->actionExportHorizon->setEnabled(isProject);
     ui->actionExportOtherGrid->setEnabled(isProject);
     ui->actionExportAttributeGrid->setEnabled(isProject);
@@ -5175,6 +5191,8 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
     runProcess<InterceptGradientVolumeProcess_2>( params );
 }
+
+
 
 
 

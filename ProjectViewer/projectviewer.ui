@@ -251,6 +251,8 @@
      <addaction name="actionWellpath"/>
      <addaction name="actionWellpaths_Bulk_Mode"/>
      <addaction name="actionWell_Markers"/>
+     <addaction name="separator"/>
+     <addaction name="actionImportTable"/>
     </widget>
     <widget class="QMenu" name="menuExport">
      <property name="toolTip">
@@ -1070,6 +1072,11 @@
   <action name="actionVolume_Circle_Detection">
    <property name="text">
     <string>Volume Circle Detection</string>
+   </property>
+  </action>
+  <action name="actionImportTable">
+   <property name="text">
+    <string>Table</string>
    </property>
   </action>
  </widget>
