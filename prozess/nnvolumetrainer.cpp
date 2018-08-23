@@ -7,7 +7,9 @@
 #include<QFileDialog>
 #include<QMessageBox>
 #include<QInputDialog>
-
+#include<QGraphicsScene>
+#include<QGraphicsPathItem>
+#include<QPainterPath>
 #include<QFile>
 #include "nn.h"
 #include "nnfunc.h"
@@ -20,6 +22,8 @@ NNVolumeTrainer::NNVolumeTrainer(QWidget *parent) :
     ui(new Ui::NNVolumeTrainer)
 {
     ui->setupUi(this);
+
+    ui->gvError->scale(1,-1);
 
     auto ivalid=new QIntValidator(this);
     ivalid->setBottom(1);
@@ -129,6 +133,8 @@ void NNVolumeTrainer::setRunning(bool on){
     if( m_running){
         ui->teProgress->clear();
         ui->teProgress->appendPlainText("Training Started.");
+        m_errors.clear();
+        refreshScene();
     }else{
         ui->teProgress->appendPlainText("Training Stopped.");
     }
@@ -384,11 +390,39 @@ void NNVolumeTrainer::runTraining(){
       ui->teProgress->appendPlainText(tr("epoch=%1 error=%2").arg(QString::number(epoch+1), QString::number(err)));
       qApp->processEvents();
 
+      m_errors.push_back(err);
+      refreshScene();
+
       epoch++;
   }
 
   setValidNN(true);
 
+}
+
+void NNVolumeTrainer::refreshScene(){
+
+    auto scene=new QGraphicsScene(this);
+    QPolygonF poly;
+    for(int i=0; i<m_errors.size(); i++){
+        poly.push_back(QPointF(i,m_errors[i]));
+    }
+    QPainterPath path;
+    path.addPolygon(poly);
+    auto item=new QGraphicsPathItem(path);
+    scene->addItem(item);
+    QPen pen(Qt::red, 2);
+    pen.setCosmetic(true);
+    item->setPen(pen);
+    ui->gvError->setScene(scene);
+
+    auto it=std::max_element(m_errors.begin(), m_errors.end());
+    if( it!=m_errors.end()){
+        auto maxError=*it;
+        QRectF r(0,0,std::max(ui->gvError->width(),m_errors.size()), maxError);
+        scene->setSceneRect(r);
+        ui->gvError->fitInView(r, Qt::IgnoreAspectRatio);
+    }
 }
 
 

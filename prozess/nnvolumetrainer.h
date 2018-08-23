@@ -30,6 +30,7 @@ private slots:
     void on_pbRun_clicked();
     void on_pbSave_clicked();
     void on_pbStop_clicked();
+    void refreshScene();
 
 private:
 
@@ -63,6 +64,7 @@ private:
     NN m_nn;
     bool m_running=false;
     bool m_validNN=false;
+    QVector<double> m_errors;
 };
 
 #endif // NNVOLUMETRAINER_H
