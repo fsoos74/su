@@ -3735,10 +3735,19 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
             return;
         }
 
-        auto wp=m_project->loadWellPath(well);
+        std::shared_ptr<WellPath> wp=m_project->loadWellPath(well);
         if( !wp ){
-            QMessageBox::critical( this, "Crossplot Logs", QString("Loading wellpath for well \"%1\" failed!").arg(well), QMessageBox::Ok);
-            return;
+            QMessageBox::warning( this, "Crossplot Logs", QString("Loading wellpath for well \"%1\" failed!\nUsing generic wellpath...").arg(well),
+                                  QMessageBox::Ok);
+            QVector<QVector3D> points;
+            for(int i=0; i<log1->nz(); i++){
+                points.push_back(QVector3D(0,0,-log1->index2z(i)));  // z means md here!!!
+            }
+            wp=std::make_shared<WellPath>(points);
+            if( !wp ){
+                QMessageBox::critical(this, "Crossplot Logs", "Creating generic wellpath failed!", QMessageBox::Ok);
+                return;
+            }
         }
 
         auto wdata=crossplot::createFromLogs( log1.get(), log2.get(), log3.get(), *wp, xy_to_ilxl);
