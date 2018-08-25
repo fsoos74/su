@@ -355,10 +355,10 @@ void NNVolumeTrainer::runTraining(){
       indices.push_back(i);
   }
 
-  double last_err=std::numeric_limits<double>::max();
-  double err=last_err;
   size_t epoch=0;
-  size_t n_increasing=0;
+  size_t n_noDecrease=0;
+  NN tmp_nn=m_nn;
+  auto err=std::numeric_limits<double>::max();
 
   while( m_running && (epoch<m_trainingEpochs) ){
 
@@ -368,33 +368,32 @@ void NNVolumeTrainer::runTraining(){
           for(int j=0; j<m_X.columns(); j++) XMini(i,j)=m_X(idx,j);
           for(int j=0; j<m_Y.columns(); j++) YMini(i,j)=m_Y(idx,j);
       }
-      NN last_nn=m_nn;
-      m_nn.train(XMini,YMini,1);
-      auto err=average_error(m_nn,m_X,m_Y);
+      tmp_nn.train(XMini,YMini,1);
+      auto tmp_err=average_error(tmp_nn,m_X,m_Y);
 
-      if(err>last_err){
-          if( n_increasing==0){
-              m_nn=last_nn;
-          }
-          n_increasing++;
-          if( n_increasing==m_maxNoDecrease){
-              m_nn=last_nn;
+      if(tmp_err<err){
+          err=tmp_err;
+          m_nn=tmp_nn;
+          n_noDecrease=0;
+      }
+      else{
+          n_noDecrease++;
+          if(n_noDecrease==m_maxNoDecrease){
               break;
           }
       }
-      else{
-          n_increasing=0;
-      }
-      last_err=err;
 
-      ui->teProgress->appendPlainText(tr("epoch=%1 error=%2").arg(QString::number(epoch+1), QString::number(err)));
+      ui->teProgress->appendPlainText(tr("epoch=%1 error=%2").arg(QString::number(epoch+1), QString::number(tmp_err)));
       qApp->processEvents();
 
-      m_errors.push_back(err);
+      m_errors.push_back(tmp_err);
       refreshScene();
 
       epoch++;
   }
+
+  ui->teProgress->appendPlainText(tr("final error=%1").arg(QString::number(err)));
+  qApp->processEvents();
 
   setValidNN(true);
 
