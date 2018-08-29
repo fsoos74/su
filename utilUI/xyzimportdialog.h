@@ -28,21 +28,18 @@ public:
         return m_data;
     }
 
-    int skipLines()const{
-        return m_skipLines;
-    }
-
-    int xColumn()const{
-        return m_xColumn;
-    }
-
-    int yColumn()const{
-        return m_yColumn;
-    }
-
-    int zColumn()const{
-        return m_zColumn;
-    }
+    int skipLines();
+    int xColumn();
+    int yColumn();
+    int zColumn();
+    double x0();
+    double y0();
+    double z0();
+    double sx();
+    double sy();
+    double sz();
+    QString nullValue();
+    QString filename();
 
     std::pair<double, double> xRange()const{
         return m_xRange;
@@ -65,23 +62,17 @@ public slots:
     void setXColumn( int );
     void setYColumn( int );
     void setZColumn( int );
+    void setX0(double);
+    void setY0(double);
+    void setZ0(double);
+    void setSX(double);
+    void setSY(double);
+    void setSZ(double);
     void setNullValue( const QString& );
     void setFilename( const QString& );
     void setXRange( std::pair<double,double> );
     void setYRange( std::pair<double,double> );
     void setZRange( std::pair<double,double> );
-
-signals:
-
-    void skipLinesChanged(int);
-    void xColumnChanged( int );
-    void yColumnChanged( int );
-    void zColumnChanged( int );
-    void xRangeChanged( std::pair<double,double>);
-    void yRangeChanged( std::pair<double,double>);
-    void zRangeChanged( std::pair<double,double>);
-    void nullValueChanged( const QString& );
-    void filenameChanged( const QString& );
 
 private slots:
 
@@ -96,16 +87,22 @@ protected:
 
 private:
 
-    bool splitLine( const QString& line, double& x, double& y, double& z);
-    void updateLastUsedColumn();
-    void connectToUI();
+    bool processLine( const QString& line, double& x, double& y, double& z);
+    void updateParamsFromControls();
 
     Ui::XYZImportDialog *ui;
 
+    // keep variables to avoid getting values from controls for each line, e.g. xColumn()
     int m_skipLines=0;
     int m_xColumn=0;
     int m_yColumn=1;
     int m_zColumn=2;
+    double m_x0=0;
+    double m_y0=0;
+    double m_z0=0;
+    double m_sx=1;
+    double m_sy=1;
+    double m_sz=1;
     int m_lastUsedColumn=2;
     QString m_nullValue="-999.99";
     QString m_filename;

@@ -9,6 +9,7 @@
 #include<iostream>
 
 #include<QProgressDialog>
+#include<QDoubleValidator>
 #include<QStringList>
 
 #include<QDebug>
@@ -18,7 +19,13 @@ XYZImportDialog::XYZImportDialog(QWidget *parent) :
     ui(new Ui::XYZImportDialog)
 {
     ui->setupUi(this);
-    connectToUI();
+    auto validator=new QDoubleValidator(this);
+    ui->leX0->setValidator(validator);
+    ui->leY0->setValidator(validator);
+    ui->leZ0->setValidator(validator);
+    ui->leSX->setValidator(validator);
+    ui->leSY->setValidator(validator);
+    ui->leSZ->setValidator(validator);
 }
 
 XYZImportDialog::~XYZImportDialog()
@@ -26,6 +33,53 @@ XYZImportDialog::~XYZImportDialog()
     delete ui;
 }
 
+int XYZImportDialog::xColumn(){
+    return ui->sbX->value();
+}
+
+int XYZImportDialog::yColumn(){
+    return ui->sbY->value();
+}
+
+int XYZImportDialog::zColumn(){
+    return ui->sbZ->value();
+}
+
+double XYZImportDialog::x0(){
+    return ui->leX0->text().toDouble();
+}
+
+double XYZImportDialog::y0(){
+    return ui->leY0->text().toDouble();
+}
+
+double XYZImportDialog::z0(){
+    return ui->leZ0->text().toDouble();
+}
+
+double XYZImportDialog::sx(){
+    return ui->leSX->text().toDouble();
+}
+
+double XYZImportDialog::sy(){
+    return ui->leSY->text().toDouble();
+}
+
+double XYZImportDialog::sz(){
+    return ui->leSZ->text().toDouble();
+}
+
+int XYZImportDialog::skipLines(){
+    return ui->sbSkip->value();
+}
+
+QString XYZImportDialog::nullValue(){
+    return ui->leNull->text();
+}
+
+QString XYZImportDialog::filename(){
+    return ui->lePath->text();
+}
 
 QVector<QVector3D> XYZImportDialog::loadData(){
     load();
@@ -34,91 +88,52 @@ QVector<QVector3D> XYZImportDialog::loadData(){
 
 void XYZImportDialog::setSkipLines( int n ){
 
-    if( n==m_skipLines) return;
-
-    if( n<0 ){
-        qWarning( "Skiplines cannot be less than zero!");
-        return;
-    }
-
-    m_skipLines=n;
-
-    emit( skipLinesChanged(m_skipLines));
+    ui->sbSkip->setValue(n);
 }
 
-// col is assumed 1-based
 void XYZImportDialog::setXColumn( int col ){
-
-    col--;
-
-    if( col == m_xColumn ) return;
-
-    if( col < 0 ){
-        qWarning( "X column cannot be less than zero!");
-        return;
-    }
-
-    m_xColumn=col;
-
-    updateLastUsedColumn();
-
-    emit( xColumnChanged(col+1)); // make 1-based
+    ui->sbX->setValue(col);
 }
 
-// col is assumed 1-based
 void XYZImportDialog::setYColumn( int col ){
-
-    col--;
-
-    if( col == m_yColumn ) return;
-
-    if( col<0 ){
-        qWarning( "Y column cannot be less than zero!");
-        return;
-    }
-
-    m_yColumn=col;
-
-    updateLastUsedColumn();
-
-    emit( yColumnChanged(col+1));  // make 1-based
+    ui->sbY->setValue(col);
 }
 
-// col is assumed 1-based
 void XYZImportDialog::setZColumn( int col ){
+    ui->sbZ->setValue(col);
+}
 
-    col--;
+void XYZImportDialog::setX0(double d){
+    ui->leX0->setText(QString::number(d));
+}
 
-    if( col == m_zColumn ) return;
+void XYZImportDialog::setY0(double d){
+    ui->leY0->setText(QString::number(d));
+}
 
-    if( col<0 ){
-        qWarning( "Z column cannot be less than zero!");
-        return;
-    }
+void XYZImportDialog::setZ0(double d){
+    ui->leZ0->setText(QString::number(d));
+}
 
-    m_zColumn=col;
+void XYZImportDialog::setSX(double d){
+    ui->leSX->setText(QString::number(d));
+}
 
-    updateLastUsedColumn();
+void XYZImportDialog::setSY(double d){
+    ui->leSY->setText(QString::number(d));
+}
 
-    emit( zColumnChanged(col+1));        // make 1-based
+void XYZImportDialog::setSZ(double d){
+    ui->leSZ->setText(QString::number(d));
 }
 
 void  XYZImportDialog::setNullValue( const QString& s ){
-
-    if( s==m_nullValue ) return;
-
-    m_nullValue = s;
-
-    emit( nullValueChanged( s ) );
+    ui->leNull->setText(s);
 }
 
 void XYZImportDialog::setFilename(const QString & s){
-
-    if( s==m_filename) return;
-
-    m_filename=s;
-
-    emit( filenameChanged(s) );
+    ui->lePath->setText(s);
+    updatePreview(s);
 }
 
 void XYZImportDialog::setXRange(std::pair<double, double> r){
@@ -134,8 +149,6 @@ void XYZImportDialog::setXRange(std::pair<double, double> r){
 
     ui->leMinX->setText( QString::number(r.first));
     ui->leMaxX->setText( QString::number(r.second));
-
-    emit( xRangeChanged(r));
 }
 
 void XYZImportDialog::setYRange(std::pair<double, double> r){
@@ -151,8 +164,6 @@ void XYZImportDialog::setYRange(std::pair<double, double> r){
 
     ui->leMinY->setText( QString::number(r.first));
     ui->leMaxY->setText( QString::number(r.second));
-
-    emit( yRangeChanged(r));
 }
 
 void XYZImportDialog::setZRange(std::pair<double, double> r){
@@ -168,8 +179,6 @@ void XYZImportDialog::setZRange(std::pair<double, double> r){
 
     ui->leMinZ->setText( QString::number(r.first));
     ui->leMaxZ->setText( QString::number(r.second));
-
-    emit( zRangeChanged(r));
 }
 
 
@@ -213,6 +222,8 @@ void XYZImportDialog::updatePreview(const QString& filename)
 
 void XYZImportDialog::scan(){
 
+    updateParamsFromControls();
+
     QFile file( m_filename);
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -250,7 +261,7 @@ void XYZImportDialog::scan(){
 
         double x,y,z;
 
-        if( !splitLine(line, x, y, z)) continue;
+        if( !processLine(line, x, y, z)) continue;
 
         if( x<minX) minX=x;
         if( x>maxX) maxX=x;
@@ -280,6 +291,8 @@ void XYZImportDialog::scan(){
 
 void XYZImportDialog::load(){
 
+    updateParamsFromControls();
+
     m_data.clear();
 
     QFile file( m_filename);
@@ -303,7 +316,6 @@ void XYZImportDialog::load(){
         n++;
 
         QString line=in.readLine();
-        int counter=max-file.bytesAvailable();
 
         if( n<=m_skipLines){
             continue;
@@ -311,7 +323,7 @@ void XYZImportDialog::load(){
 
         double x,y,z;
 
-        if( !splitLine(line, x, y, z)) continue;
+        if( !processLine(line, x, y, z)) continue;
 
         m_data.push_back( QVector3D(x,y,z) );
 
@@ -338,7 +350,7 @@ void XYZImportDialog::on_pbScan_clicked()
     scan();
 }
 
-bool XYZImportDialog::splitLine( const QString& line, double& x, double& y, double& z){
+bool XYZImportDialog::processLine( const QString& line, double& x, double& y, double& z){
 
      QRegExp sep("(\\s+)");
 
@@ -353,39 +365,31 @@ bool XYZImportDialog::splitLine( const QString& line, double& x, double& y, doub
      }
 
      bool ok;
-     x=col[m_xColumn].toDouble(&ok);
+     x=m_x0+m_sx*col[m_xColumn].toDouble(&ok);
      if( !ok ) return false;
-     y=col[m_yColumn].toDouble(&ok);
+     y=m_y0+m_sy*col[m_yColumn].toDouble(&ok);
      if( !ok ) return false;
-     z=col[m_zColumn].toDouble(&ok);
+     z=m_z0+m_sz*col[m_zColumn].toDouble(&ok);
      if( !ok ) return false;
 
      return true;
 }
 
- void XYZImportDialog::connectToUI(){
+ void XYZImportDialog::updateParamsFromControls(){
+     m_filename=filename();
+     m_nullValue=nullValue();
+     m_skipLines=skipLines();
+     m_xColumn=xColumn()-1;     // make 0 based
+     m_yColumn=yColumn()-1;     // make 0 based
+     m_zColumn=zColumn()-1;     // make 0 based
+     m_x0=x0();
+     m_y0=y0();
+     m_z0=z0();
+     m_sx=sx();
+     m_sy=sy();
+     m_sz=sz();
 
-     connect( this, SIGNAL( skipLinesChanged(int)), ui->sbSkip, SLOT(setValue(int)));
-     connect( ui->sbSkip, SIGNAL(valueChanged(int)), this, SLOT( setSkipLines(int)));
-
-     connect( this, SIGNAL( xColumnChanged(int)), ui->sbX, SLOT(setValue(int)));
-     connect( ui->sbX, SIGNAL(valueChanged(int)), this, SLOT( setXColumn(int)));
-
-     connect( this, SIGNAL( yColumnChanged(int)), ui->sbY, SLOT(setValue(int)));
-     connect( ui->sbY, SIGNAL(valueChanged(int)), this, SLOT( setYColumn(int)));
-
-     connect( this, SIGNAL( zColumnChanged(int)), ui->sbZ, SLOT( setValue(int)));
-     connect( ui->sbZ, SIGNAL( valueChanged(int)), this, SLOT( setZColumn(int)));
-
-     connect( this, SIGNAL(nullValueChanged(QString)), ui->leNull, SLOT( setText(QString)));
-     connect( ui->leNull, SIGNAL(textChanged(QString)), this, SLOT(setNullValue(QString)));
-
-     connect( this, SIGNAL( filenameChanged(QString)), this, SLOT( updatePreview(QString)));
-     connect( this, SIGNAL( filenameChanged(QString)), ui->lePath, SLOT( setText(QString)));
- }
-
- void XYZImportDialog::updateLastUsedColumn(){
-
+     // update last used column
      int l=m_xColumn;
      if( l<m_yColumn) l=m_yColumn;
      if( l<m_zColumn) l=m_zColumn;

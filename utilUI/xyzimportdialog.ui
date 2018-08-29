@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>607</width>
-    <height>587</height>
+    <width>639</width>
+    <height>541</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <iconset resource="../ProjectViewer/icons.qrc">
     <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLineEdit" name="lePath">
@@ -36,19 +36,22 @@
      </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item>
     <widget class="QTextEdit" name="teContent">
+     <property name="lineWrapMode">
+      <enum>QTextEdit::NoWrap</enum>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Number of &amp;lines to skip:</string>
+        <string>Nu&amp;mber of lines to skip:</string>
        </property>
        <property name="buddy">
         <cstring>sbSkip</cstring>
@@ -59,9 +62,12 @@
       <widget class="QSpinBox" name="sbSkip"/>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
+      <spacer name="horizontalSpacer_4">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -71,17 +77,6 @@
        </property>
       </spacer>
      </item>
-     <item>
-      <widget class="QPushButton" name="pbScan">
-       <property name="text">
-        <string>Scan</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="3" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <widget class="QLabel" name="label_8">
        <property name="text">
@@ -100,7 +95,7 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_4">
+      <spacer name="horizontalSpacer_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -114,7 +109,7 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <layout class="QGridLayout" name="gridLayout">
@@ -132,21 +127,21 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="2">
+       <item row="5" column="5">
         <widget class="QLineEdit" name="leMinZ">
          <property name="readOnly">
           <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="1" column="2" rowspan="2">
+       <item row="1" column="5" rowspan="2">
         <widget class="QLineEdit" name="leMinX">
          <property name="readOnly">
           <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="3" column="3" rowspan="2">
+       <item row="3" column="6" rowspan="2">
         <widget class="QLineEdit" name="leMaxY">
          <property name="readOnly">
           <bool>true</bool>
@@ -167,14 +162,14 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="2" rowspan="2">
+       <item row="3" column="5" rowspan="2">
         <widget class="QLineEdit" name="leMinY">
          <property name="readOnly">
           <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="5" column="3">
+       <item row="5" column="6">
         <widget class="QLineEdit" name="leMaxZ">
          <property name="readOnly">
           <bool>true</bool>
@@ -195,14 +190,14 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="3">
+       <item row="0" column="6">
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>Maximum</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="3" rowspan="2">
+       <item row="1" column="6" rowspan="2">
         <widget class="QLineEdit" name="leMaxX">
          <property name="readOnly">
           <bool>true</bool>
@@ -216,10 +211,66 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
+       <item row="0" column="5">
         <widget class="QLabel" name="label_6">
          <property name="text">
           <string>Minimum</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="3">
+        <widget class="QLineEdit" name="leY0">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="3">
+        <widget class="QLineEdit" name="leZ0">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QLineEdit" name="leX0">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Origin</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QLineEdit" name="leSX">
+         <property name="text">
+          <string>1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="4">
+        <widget class="QLineEdit" name="leSY">
+         <property name="text">
+          <string>1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="4">
+        <widget class="QLineEdit" name="leSZ">
+         <property name="text">
+          <string>1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Scaler</string>
          </property>
         </widget>
        </item>
@@ -240,8 +291,15 @@
      </item>
     </layout>
    </item>
-   <item row="5" column="0">
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pbScan">
+       <property name="text">
+        <string>Scan</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
