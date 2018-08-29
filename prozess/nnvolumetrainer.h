@@ -47,6 +47,7 @@ private:
     QString m_matchingName;
     QString m_nonMatchingName;
     QStringList m_inputNames;
+    unsigned m_hiddenLayers;
     unsigned m_hiddenNeurons;
     unsigned m_trainingEpochs;
     double m_learningRate;

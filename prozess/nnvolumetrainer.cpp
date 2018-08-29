@@ -74,6 +74,7 @@ void NNVolumeTrainer::getParamsFromControls(){
         m_inputNames<<ui->lwInput->item(idx.row())->text();
     }
     m_apertureLines=static_cast<unsigned>(ui->sbApertureLines->value());
+    m_hiddenLayers=static_cast<unsigned>(ui->sbLayers->value());
     m_hiddenNeurons=static_cast<unsigned>(ui->sbNeurons->value());
     m_trainingEpochs=ui->leTrainingEpochs->text().toUInt();
     m_miniBatchSize=ui->leTrainingRatio->text().toDouble();
@@ -146,6 +147,7 @@ void NNVolumeTrainer::setRunning(bool on){
     ui->cbNonMatching->setEnabled(!m_running);
     ui->lwInput->setEnabled(!m_running);
     ui->sbApertureLines->setEnabled(!m_running);
+    ui->sbLayers->setEnabled(!m_running);
     ui->sbNeurons->setEnabled(!m_running);
     ui->pbRun->setEnabled(!m_running);
     ui->pbSave->setEnabled(!m_running);
@@ -172,14 +174,20 @@ void NNVolumeTrainer::on_pbStop_clicked()
 
 void NNVolumeTrainer::buildNN(){
     //create NN
-    NN nn{ static_cast<size_t>(m_inputNames.size()*m_apertureLines*m_apertureLines), m_hiddenNeurons, 1};
+    //NN nn{ static_cast<size_t>(m_inputNames.size()*m_apertureLines*m_apertureLines), m_hiddenNeurons, 1};
+    std::vector<size_t> ll;
+    ll.push_back(m_inputNames.size()*m_apertureLines*m_apertureLines);  // input layer
+    for(int i=0; i<m_hiddenLayers; i++){
+        ll.push_back(m_hiddenNeurons);
+    }
+    ll.push_back(1);    // output layer
+    NN nn{ll};
 
     nn.setSigma(leaky_relu);
     nn.setSigmaPrime(leaky_relu_prime);
     nn.setEta(m_learningRate);
 
     m_nn = nn;
-
 }
 
 void NNVolumeTrainer::prepareTraining(){

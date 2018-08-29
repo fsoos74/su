@@ -51,6 +51,7 @@ private:
     std::vector<std::shared_ptr<Log>> m_inputLogs;
     QString m_predictedName;
     unsigned m_hiddenNeurons;
+    unsigned m_hiddenLayers;
     unsigned m_trainingEpochs;
     double m_trainingRatio;
     double m_learningRate;
