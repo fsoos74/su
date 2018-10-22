@@ -6,7 +6,8 @@
 #include <volumereader2.h>
 #include <QDialog>
 
-#include"nn.h"
+#include"simplemlp.h"
+
 
 namespace Ui {
 class NNVolumeTrainer;
@@ -25,12 +26,14 @@ public slots:
 
 private slots:
     void setRunning(bool);
+    void setProgress(size_t,double);
     void setValidNN(bool);
     void invalidateNN();
     void on_pbRun_clicked();
     void on_pbSave_clicked();
-    void on_pbStop_clicked();
     void refreshScene();
+
+    void on_pbStop_clicked();
 
 private:
 
@@ -47,25 +50,19 @@ private:
     QString m_matchingName;
     QString m_nonMatchingName;
     QStringList m_inputNames;
-    unsigned m_hiddenLayers;
     unsigned m_hiddenNeurons;
     unsigned m_trainingEpochs;
     double m_learningRate;
-    unsigned m_apertureLines=1;
-    unsigned m_maxNoDecrease=3;
-    unsigned m_miniBatchSize=100;
     std::shared_ptr<Table> m_matching;
     std::shared_ptr<Table> m_nonMatching;
     std::vector<VolumeReader2*> m_inputVolumeReaders;
 
     Matrix<double> m_X;
     Matrix<double> m_Y;
-    std::vector< std::pair<double,double> > m_Xmm;
-    std::pair<double,double> m_Ymm;
-    NN m_nn;
-    bool m_running=false;
+    SimpleMLP m_nn;
     bool m_validNN=false;
     QVector<double> m_errors;
+    bool m_running=false;
 };
 
 #endif // NNVOLUMETRAINER_H

@@ -7,6 +7,7 @@
 #include<nn.h>
 #include<volumereader2.h>
 #include<volumewriter2.h>
+#include "simplemlp.h"
 
 class NNVolumeClassificationProcess : public ProjectProcess
 {
@@ -14,6 +15,8 @@ class NNVolumeClassificationProcess : public ProjectProcess
     Q_OBJECT
 
 public:
+
+    using MLP=SimpleMLP;
 
     NNVolumeClassificationProcess( AVOProject* project, QObject* parent=nullptr);
 
@@ -26,11 +29,8 @@ private:
 
     QString m_inputFile;
     QString m_outputName;
-    NN m_nn;
+    MLP m_mlp;
     QStringList m_inames;
-    int m_apertureLines;
-    std::vector<std::pair<double,double>> m_Xmm;
-    std::pair<double,double> m_Ymm;
     std::vector<VolumeReader2*> m_inputVolumeReaders;
 };
 

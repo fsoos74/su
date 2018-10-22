@@ -7,9 +7,9 @@
 
 #include <QFile>
 
-#include "xnlreader.h"
+#include "xmlpreader.h"
 #include "matrix.h"
-#include "nn.h"
+#include "simplemlp.h"
 
 const int CHUNK_ILINES=1;
 
@@ -46,19 +46,13 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         return ResultCode::Error;
     }
 
-    XNLReader reader(m_nn, m_inames, m_Xmm, m_Ymm);
+    XMLPReader reader(m_mlp, m_inames);
     if (!reader.read(&file)) {
         setErrorString( tr("Parse error in file %1:\n\n%2")
                              .arg(m_inputFile)
                              .arg(reader.errorString()));
         return ResultCode::Error;
     }
-
-    m_nn.setSigma(leaky_relu);
-    m_nn.setSigmaPrime(leaky_relu_prime);
-
-    // determine lines aperture from number of input neurons and number of input volumes
-    m_apertureLines=static_cast<int>(std::round(std::sqrt(m_nn.layer_size(0)/m_inames.size())));
 
     // open input volumes
     m_inputVolumeReaders.clear();
@@ -97,25 +91,20 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
     emit currentTask("Computing Samples...");
     qApp->processEvents();
 
-    // process chunks
-    for( int il=bounds.i1()+m_apertureLines/2; il<=bounds.i2()-m_apertureLines/2; il++){
+    // process inlines
+    for( int il=bounds.i1(); il<=bounds.i2(); il++){
 
-        // read sub volumes
+        // read sub volumes (inlines)
         std::vector<std::shared_ptr<Volume>> subvols;
         for( int vi=0; vi<m_inputVolumeReaders.size(); vi++){
-            auto subvol=m_inputVolumeReaders[vi]->readIl(il-m_apertureLines/2, il+m_apertureLines/2);
+            auto subvol=m_inputVolumeReaders[vi]->readIl(il, il);
             if( !subvol){
                 setErrorString(tr("Reading chunk(%1-%2) from volume #%3 failed!").arg(
-                                   QString::number(il-m_apertureLines/2), QString::number(il+m_apertureLines/2), QString::number(vi+1)));
+                                   QString::number(il), QString::number(il), QString::number(vi+1)));
                 writer->removeFile();
                 return ResultCode::Error;
             }
             subvols.push_back(subvol);
-        }
-
-        // norm sub volumes
-        for(int vi=0; vi<subvols.size(); vi++){
-            norm(subvols[vi]->begin(), subvols[vi]->end(), m_Xmm[vi], subvols[vi]->NULL_VALUE);
         }
 
         auto sbounds=subvols.front()->bounds();
@@ -127,7 +116,7 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
             return ResultCode::Error;
         }        
 
-        Matrix<double> x(1, subvols.size()*m_apertureLines*m_apertureLines);
+        Matrix<double> x(1, subvols.size());
         Matrix<double> y( 1, 1);
 
         // process chunk
@@ -135,31 +124,24 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         // iterate over samples
         for( int k=0; k<sbounds.nt(); k++){
             // iterate over crosslines
-            for( int j=obounds.j1()+m_apertureLines/2; j<=obounds.j2()-m_apertureLines/2; j++){
-                bool ok=true;   // detect  NULL values
-                // iterate over il aperture
-                for( int ii=0; ii<m_apertureLines; ii++){
-                    //iterate over xl aperture
-                    for( int jj=0; jj<m_apertureLines; jj++){
-                        // iterate over volumes
-                        for( int vi=0; vi<subvols.size(); vi++){
-                            auto col=(ii*m_apertureLines + jj)*subvols.size()+vi;
-                            auto v=(*subvols[vi])(il+ii-m_apertureLines/2, j+jj-m_apertureLines/2, k);
-                            if(v==subvols[vi]->NULL_VALUE){
-                                ok=false;
-                            }
-                            x(0,col)=v;
-                        }
+            for( int j=obounds.j1(); j<=obounds.j2(); j++){
+                // NEED TO DETECT NULL
+                bool ok=true;
+                // iterate over volumes
+                for( int vi=0; vi<subvols.size(); vi++){
+                    auto v=(*subvols[vi])(il, j, k);
+                    if(v==subvols[vi]->NULL_VALUE){
+                        ok=false;
                     }
+                    x(0,vi)=v;
                 }
+
                 if(ok){     // only compute if no NULL values in input
-                    y = m_nn.feed_forward(x);
+                    y = m_mlp.predict(x);
                     (*ovolume)(il,j,k)=y(0,0);
                 }
             }
         }
-
-        unnorm( ovolume->begin(), ovolume->end(), m_Ymm, ovolume->NULL_VALUE);
 
         if(!writer->write(*ovolume)){
             setErrorString("Writing subvolume failed!");

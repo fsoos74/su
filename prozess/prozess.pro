@@ -109,7 +109,9 @@ SOURCES += prozess.cpp \
     nnvolumeclassificationprocess.cpp \
     volumecircledetectionprocess.cpp \
     volumeinterpolation.cpp \
-    importtableprocess.cpp
+    importtableprocess.cpp \
+    xmlpwriter.cpp \
+    xmlpreader.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -198,7 +200,10 @@ HEADERS += prozess.h\
     nnvolumeclassificationprocess.h \
     volumecircledetectionprocess.h \
     volumeinterpolation.h \
-    importtableprocess.h
+    importtableprocess.h \
+    simplemlp.h \
+    xmlpwriter.h \
+    xmlpreader.h
 
 unix {
     target.path = /usr/lib

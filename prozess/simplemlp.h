@@ -1,9 +1,14 @@
+#ifndef _SIMPLEMLP_H
+#define _SIMPLEMLP_H
+
+
 #include<cmath>
 #include<limits>
 #include<vector>
 #include<functional>    
 #include"matrix.h"
 
+/*
 inline double sigmoid(double x){
     return 1./(1.+std::exp(-x));
 }
@@ -22,6 +27,8 @@ inline double tanh(double x){
 inline double dx_tanh(double x){
     return (1.+x)/(1.-x);
 }
+*/
+
 
 // two hidden layers MLP 
 class SimpleMLP{
@@ -30,14 +37,47 @@ public:
 
     // nin: number of input, nh1: neurons hidden layer1
     // nh2: neurons hidden layer2, nout number of output neurons 
-    SimpleMLP( size_t nin, size_t nh1, size_t nh2, size_t nout):
+    SimpleMLP( size_t nin=2, size_t nh1=4, size_t nh2=4, size_t nout=1):
         m_nin(nin),m_nh1(nh1),m_nh2(nh2),m_nout(nout), 
         m_mm(nin,std::make_pair(0.,1.)){
         initWeights();
     }
 
+    size_t inputs()const{
+        return m_nin;
+    }
+
+    size_t outputs()const{
+        return m_nout;
+    }
+
+    size_t layers()const{
+        return m_w.size();
+    }
+
+    size_t neurons(size_t layer)const{
+        return m_w.at(layer).rows();
+    }
+
+    std::pair<double,double> scaling(size_t input)const{
+        return m_mm.at(input);
+    }
+
+    Matrix<double> weights(size_t layer)const{
+        return m_w.at(layer);
+    }
+
+    void setWeights( size_t layer, const Matrix<double>& W){
+        m_w[layer]=W;
+    }
+
+    void setScaling( size_t input, const std::pair<double,double>& mm){
+        m_mm[input]=mm;
+    }
+
     // set activation function and derivative
     // derivative must accept input with activation already applied
+    // works only with sigmoid for now!!!CHECK!!!
     void setSigma(std::function<double(double)> sigma,
                     std::function<double(double)> dx_sigma){
         m_sigma=sigma;
@@ -63,13 +103,25 @@ public:
         train(XX, Y, eta, maxiter, progress);
     }
 
+    void stop(){
+        m_running=false;
+    }
+
 protected:
 
     void adjustScaling(Matrix<double> X){
         for( size_t j=0; j<m_mm.size(); j++){
-            auto itmm = std::minmax_element( 
-                            X.column_begin(j), X.column_end(j));
-            m_mm[j]=std::make_pair(*itmm.first,*itmm.second);
+            // use loop instead of std::algorithm to exclude nan/inf values
+            // default scaling 0/1 is used to avoid special cases later
+            double min=0.;
+            double max=1.;
+            for( size_t i=0; i<X.rows(); i++){
+                auto x=X(i,j);
+                if( !std::isfinite(x)) continue;
+                if( x<min ) min=x;
+                if( x>max ) max=x;
+            }
+            m_mm[j]=std::make_pair(min,max);
         }
     }
 
@@ -99,7 +151,7 @@ protected:
     void train(Matrix<double> X, Matrix<double> Y, 
                 double eta, size_t maxiter,
                 std::function<void(size_t,double)> progress){
-        
+
         std::vector<Matrix<double>> dW;
         for( size_t i=0; i<m_w.size(); i++){
             dW.push_back(Matrix<double>(m_w[i].rows(), m_w[i].columns(), 0.));
@@ -109,6 +161,7 @@ protected:
         for( size_t i=0; i<X.rows(); i++) idx[i]=i;
         double minError=std::numeric_limits<double>::max();
         auto minW=m_w;
+        m_running=true;
         for( size_t iter=0; iter<maxiter; iter++){
 
             // update weights for all training examples separately
@@ -151,8 +204,11 @@ protected:
                 minW=m_w;
             }
             progress(iter,meanE);   // report progress
+            if( !m_running){
+                return;
+            }
         }
-
+        m_running=false;
         m_w=minW;
     }
 
@@ -172,8 +228,10 @@ private:
     size_t m_nout;
     std::vector<std::pair<double,double>> m_mm; // min max value per input value
     std::vector<Matrix<double>> m_w;            // weight matrices for layers
-    std::function<double(double)> m_sigma=sigmoid;  // activation function
-    std::function<double(double)> m_dx_sigma=dx_sigmoid; // derivative of activation function for input which already has activation function applied!!! 
+    std::function<double(double)> m_sigma=[](double x){return 1./(1.+std::exp(-x));};  // activation function
+    std::function<double(double)> m_dx_sigma=[](double x){return x*(1.-x);}; // derivative of activation function for input which already has activation function applied!!!
+    volatile bool m_running=false;
 };
 
 
+#endif

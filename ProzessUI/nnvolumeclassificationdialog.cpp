@@ -4,7 +4,7 @@
 #include<QPushButton>
 #include<QFileDialog>
 
-#include<xnlreader.h>
+#include<xmlpreader.h>
 
 
 NNVolumeClassificationDialog::NNVolumeClassificationDialog(QWidget *parent) :
@@ -86,19 +86,15 @@ void NNVolumeClassificationDialog::on_leInputFile_textChanged(const QString & na
         return;
     }
 
-    NN nn;
+    SimpleMLP mlp;
     QStringList inames;
-    std::vector<std::pair<double,double>> Xmm;
-    std::pair<double,double> Ymm;
-    XNLReader reader(nn,inames, Xmm, Ymm);
+    XMLPReader reader(mlp,inames);
     if (!reader.read(&f)) {
         return;
     }
 
     ui->teInfo->clear();
     QString text;
-    int apertureLines=static_cast<int>(std::round(std::sqrt(nn.layer_size(0)/inames.size())));
-    text+=QString("Aperture(Lines): %1\n").arg(apertureLines);
     text+=QString("Required volumes: %1\n").arg(inames.size());
     text+=inames.join("\n");
     ui->teInfo->appendPlainText(text);
