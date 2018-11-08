@@ -55,9 +55,8 @@ ProjectProcess::ResultCode InstantaneousAttributesProcess::processInline(
         std::vector<float> trc(bounds().nt(),0);
         for( int k=0; k<bounds().nt(); k++){
             auto val=(*inputVolume)(iline,j,k);
-            if(val!=inputVolume->NULL_VALUE) trc[k]=val;
+            if(val!=inputVolume->NULL_VALUE && std::isfinite(val) ) trc[k]=val;
         }
-
         auto ctrc = hilbert_trace(trc);
 
         for( int k=0; k<bounds().nt(); k++){

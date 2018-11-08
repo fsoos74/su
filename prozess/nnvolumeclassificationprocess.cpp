@@ -46,14 +46,14 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         return ResultCode::Error;
     }
 
-    XMLPReader reader(m_mlp, m_inames);
+    XMLPReader reader(m_mlp, m_inames, m_ilAperture, m_xlAperture);
     if (!reader.read(&file)) {
         setErrorString( tr("Parse error in file %1:\n\n%2")
                              .arg(m_inputFile)
                              .arg(reader.errorString()));
         return ResultCode::Error;
     }
-
+    std::cout<<"aperture "<<m_ilAperture<<"x"<<m_xlAperture<<std::endl<<std::flush;
     // open input volumes
     m_inputVolumeReaders.clear();
 
@@ -92,15 +92,15 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
     qApp->processEvents();
 
     // process inlines
-    for( int il=bounds.i1(); il<=bounds.i2(); il++){
+    for( int il=bounds.i1()+m_ilAperture/2; il<=bounds.i2()-m_ilAperture/2; il++){
 
         // read sub volumes (inlines)
         std::vector<std::shared_ptr<Volume>> subvols;
         for( int vi=0; vi<m_inputVolumeReaders.size(); vi++){
-            auto subvol=m_inputVolumeReaders[vi]->readIl(il, il);
+            auto subvol=m_inputVolumeReaders[vi]->readIl(il-m_ilAperture/2, il+m_ilAperture/2);
             if( !subvol){
                 setErrorString(tr("Reading chunk(%1-%2) from volume #%3 failed!").arg(
-                                   QString::number(il), QString::number(il), QString::number(vi+1)));
+                                   QString::number(il-m_ilAperture/2), QString::number(il+m_ilAperture/2), QString::number(vi+1)));
                 writer->removeFile();
                 return ResultCode::Error;
             }
@@ -116,7 +116,7 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
             return ResultCode::Error;
         }        
 
-        Matrix<double> x(1, subvols.size());
+        Matrix<double> x(1, subvols.size()*m_ilAperture*m_xlAperture);
         Matrix<double> y( 1, 1);
 
         // process chunk
@@ -124,16 +124,23 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         // iterate over samples
         for( int k=0; k<sbounds.nt(); k++){
             // iterate over crosslines
-            for( int j=obounds.j1(); j<=obounds.j2(); j++){
+            for( int j=obounds.j1()+m_xlAperture/2; j<=obounds.j2()-m_xlAperture/2; j++){
                 // NEED TO DETECT NULL
                 bool ok=true;
+                auto col=0;
                 // iterate over volumes
                 for( int vi=0; vi<subvols.size(); vi++){
-                    auto v=(*subvols[vi])(il, j, k);
-                    if(v==subvols[vi]->NULL_VALUE){
-                        ok=false;
+                    // iterate over aperture
+                    for( int ii=-m_ilAperture/2; ii<=m_ilAperture/2; ii++){
+                        for( int jj=-m_xlAperture/2;jj<=m_xlAperture/2;jj++){
+                            auto v=(*subvols[vi])(il+ii, j+jj, k);
+                            if(v==subvols[vi]->NULL_VALUE){
+                                ok=false;
+                            }
+                            x(0,col)=v;
+                            col++;
+                        }
                     }
-                    x(0,vi)=v;
                 }
 
                 if(ok){     // only compute if no NULL values in input

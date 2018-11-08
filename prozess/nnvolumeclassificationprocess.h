@@ -32,6 +32,8 @@ private:
     MLP m_mlp;
     QStringList m_inames;
     std::vector<VolumeReader2*> m_inputVolumeReaders;
+    int m_ilAperture=1;   // number of ilines
+    int m_xlAperture=1;   // number of xlines
 };
 
 #endif // NNVOLUMECLASSIFICATIONPROCESS_H

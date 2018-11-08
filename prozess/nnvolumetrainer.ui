@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>732</width>
-    <height>539</height>
+    <height>609</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,13 +18,27 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <layout class="QGridLayout" name="gridLayout">
+       <item row="4" column="1">
+        <widget class="QSpinBox" name="sbXLAperture">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Aperture (Crosslines):</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="1">
         <widget class="QComboBox" name="cbMatching"/>
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="cbNonMatching"/>
        </item>
-       <item row="6" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_6">
          <property name="text">
           <string>Maximum Training Epochs:</string>
@@ -38,7 +52,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="label_8">
          <property name="text">
           <string>Hidden Neurons (per Layer):</string>
@@ -52,14 +66,14 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="8" column="1">
         <widget class="QLineEdit" name="leTrainingEpochs">
          <property name="text">
           <string>500</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="7" column="1">
         <widget class="QLineEdit" name="leLearningRate">
          <property name="text">
           <string>0.5</string>
@@ -73,14 +87,14 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="7" column="0">
         <widget class="QLabel" name="label_7">
          <property name="text">
           <string>Learning Rate:</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="5" column="1">
         <widget class="QSpinBox" name="sbNeurons">
          <property name="minimum">
           <number>1</number>
@@ -97,6 +111,23 @@
         <widget class="QListWidget" name="lwInput">
          <property name="selectionMode">
           <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QSpinBox" name="sbILAperture">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Aperture (Inlines):</string>
          </property>
         </widget>
        </item>

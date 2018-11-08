@@ -11,7 +11,7 @@ public:
 
     using MLP=SimpleMLP;
 
-    XMLPReader(MLP& nn, QStringList& inames);
+    XMLPReader(MLP& nn, QStringList& inames, int& ilAperture, int& xlAperture);
 
     bool read(QIODevice *device);
 
@@ -27,11 +27,15 @@ private:
 
     void readINames( );
 
+    void readAperture();
+
     void readInputScaling( );
 
     QXmlStreamReader xml;
     MLP& mlp;
     QStringList& inames;
+    int& ilAperture;
+    int& xlAperture;
 };
 
 #endif // XMLPREADER_H

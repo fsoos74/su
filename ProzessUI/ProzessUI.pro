@@ -80,7 +80,8 @@ SOURCES += prozessui.cpp \
     trendbasedattributevolumesdialog.cpp \
     nnvolumeclassificationdialog.cpp \
     volumecircledetectiondialog.cpp \
-    importtabledialog.cpp
+    importtabledialog.cpp \
+    mergevolumesdialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -144,7 +145,8 @@ HEADERS += prozessui.h\
     trendbasedattributevolumesdialog.h \
     nnvolumeclassificationdialog.h \
     volumecircledetectiondialog.h \
-    importtabledialog.h
+    importtabledialog.h \
+    mergevolumesdialog.h
 
 unix {
     target.path = /usr/lib
@@ -211,7 +213,8 @@ FORMS += \
     trendbasedattributevolumesdialog.ui \
     nnvolumeclassificationdialog.ui \
     volumecircledetectiondialog.ui \
-    importtabledialog.ui
+    importtabledialog.ui \
+    mergevolumesdialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

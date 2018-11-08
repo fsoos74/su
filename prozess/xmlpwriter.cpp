@@ -1,7 +1,7 @@
 #include "xmlpwriter.h"
 
-XMLPWriter::XMLPWriter( const MLP& mlp,const QStringList& inames)
-    :mlp(mlp), inames(inames)
+XMLPWriter::XMLPWriter( const MLP& mlp,const QStringList& inames, int ilaper, int xlaper)
+    :mlp(mlp), inames(inames), ilAperture(ilaper), xlAperture(xlaper)
 {
     xml.setAutoFormatting(true);
 }
@@ -47,7 +47,7 @@ bool XMLPWriter::writeFile(QIODevice *device){
 
     xml.writeStartElement("input-scaling");
     xml.writeAttribute("count", QString::number(mlp.inputs()));
-    for( int j=0; j<mlp.inputs(); j++){
+    for( size_t j=0; j<mlp.inputs(); j++){
         xml.writeStartElement("range");
         xml.writeAttribute("j", QString::number(j));
         auto mm=mlp.scaling(j);
@@ -67,6 +67,10 @@ bool XMLPWriter::writeFile(QIODevice *device){
     }
     xml.writeEndElement();          // input-names
 
+    xml.writeStartElement("aperture");
+    xml.writeAttribute("iline", QString::number(ilAperture));
+    xml.writeAttribute("xline", QString::number(xlAperture));
+    xml.writeEndElement();  // aperture
 
     xml.writeEndElement();      // xmlp
 

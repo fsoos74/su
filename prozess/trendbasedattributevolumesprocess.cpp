@@ -106,7 +106,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
         auto res= computeTrend();     // will put result in m_trendIntercept and m_trendAngle
         if( res!=ResultCode::Ok) return res;
     }
-//std::cout<<"trend: intercept="<<m_trendIntercept<<" angle="<<m_trendAngle*57.296<<"°"<<std::endl<<std::flush;
+std::cout<<"trend: intercept="<<m_trendIntercept<<" angle="<<m_trendAngle*57.29577951308232<<"°"<<std::endl<<std::flush;
     m_sinPhi=std::sin(m_trendAngle);
     m_cosPhi=std::cos(m_trendAngle);
     m_tanPhi=std::tan(m_trendAngle);

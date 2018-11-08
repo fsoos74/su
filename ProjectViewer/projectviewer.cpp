@@ -118,6 +118,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <createvolumeprocess.h>
 #include <cropvolumedialog.h>
 #include <cropvolumeprocess.h>
+#include <mergevolumesdialog.h>
+#include <mergevolumesprocess.h>
 #include <punchoutvolumedialog.h>
 #include <punchoutvolumeprocess.h>
 #include <volumemathdialog.h>
@@ -1292,6 +1294,19 @@ void ProjectViewer::on_action_Crop_Volume_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess<CropVolumeProcess>( params );
+}
+
+void ProjectViewer::on_actionMerge_Volumes_triggered()
+{
+    Q_ASSERT( m_project );
+
+    MergeVolumesDialog dlg;
+    dlg.setWindowTitle(tr("Merge Volumes"));
+    dlg.setInputVolumes(m_project->volumeList());
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<MergeVolumesProcess>( params );
 }
 
 void ProjectViewer::on_actionPunch_Out_Volume_triggered()
@@ -5118,6 +5133,7 @@ void ProjectViewer::updateMenu(){
 
     ui->actionCreate_New_Volume->setEnabled(isProject);
     ui->action_Crop_Volume->setEnabled(isProject);
+    ui->actionMerge_Volumes->setEnabled(isProject);
     ui->actionVolume_Math->setEnabled(isProject);
     ui->actionFlatten_Volume->setEnabled(isProject);
     ui->actionUnflatten_Volume->setEnabled(isProject);
@@ -5200,6 +5216,7 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
     runProcess<InterceptGradientVolumeProcess_2>( params );
 }
+
 
 
 

@@ -62,9 +62,10 @@ ProjectProcess::ResultCode CreateVolumeProcess::processInline(
         QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
 
     auto output=outputs[0];
+    auto input=inputs[0];
     for( int j=bounds().j1(); j<bounds().j2(); j++){
         for(int k=0; k<bounds().nt(); k++){
-            (*output)(iline,j,k)=output->NULL_VALUE;
+            (*output)(iline,j,k)=(*input)(iline,j,k);
         }
     }
 

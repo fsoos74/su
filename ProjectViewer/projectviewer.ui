@@ -348,6 +348,7 @@
     </property>
     <addaction name="actionCreate_New_Volume"/>
     <addaction name="action_Crop_Volume"/>
+    <addaction name="actionMerge_Volumes"/>
     <addaction name="actionPunch_Out_Volume"/>
     <addaction name="actionVolume_Math"/>
     <addaction name="actionFlatten_Volume"/>
@@ -1076,7 +1077,12 @@
   </action>
   <action name="actionImportTable">
    <property name="text">
-    <string>Table</string>
+    <string>Tabl&amp;e</string>
+   </property>
+  </action>
+  <action name="actionMerge_Volumes">
+   <property name="text">
+    <string>Merge Volumes</string>
    </property>
   </action>
  </widget>

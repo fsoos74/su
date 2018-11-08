@@ -69,6 +69,8 @@ void NNVolumeTrainer::getParamsFromControls(){
     for( auto idx : ids){
         m_inputNames<<ui->lwInput->item(idx.row())->text();
     }
+    m_ilAperture=ui->sbILAperture->value();
+    m_xlAperture=ui->sbXLAperture->value();
     m_hiddenNeurons=static_cast<unsigned>(ui->sbNeurons->value());
     m_trainingEpochs=ui->leTrainingEpochs->text().toUInt();
     m_learningRate=ui->leLearningRate->text().toDouble();
@@ -110,7 +112,7 @@ void NNVolumeTrainer::on_pbSave_clicked()
                              .arg(file.errorString()));
     }
 
-    XMLPWriter xnl(m_nn, m_inputNames);
+    XMLPWriter xnl(m_nn, m_inputNames, m_ilAperture, m_xlAperture);
     if( !xnl.writeFile(&file)){
         return error("Writing NN failed!");
      }
@@ -138,6 +140,8 @@ void NNVolumeTrainer::setRunning(bool on){
     ui->cbMatching->setEnabled(!m_running);
     ui->cbNonMatching->setEnabled(!m_running);
     ui->lwInput->setEnabled(!m_running);
+    ui->sbILAperture->setEnabled(!m_running);
+    ui->sbXLAperture->setEnabled(!m_running);
     ui->sbNeurons->setEnabled(!m_running);
     ui->pbRun->setEnabled(!m_running);
     ui->pbStop->setEnabled(m_running);
@@ -159,7 +163,7 @@ void NNVolumeTrainer::invalidateNN(){
 }
 
 void NNVolumeTrainer::buildNN(){
-    m_nn = SimpleMLP(m_inputNames.size(),m_hiddenNeurons,m_hiddenNeurons,1);
+    m_nn = SimpleMLP(m_inputNames.size()*m_ilAperture*m_xlAperture,m_hiddenNeurons,m_hiddenNeurons,1);
 }
 
 void NNVolumeTrainer::prepareTraining(){
@@ -209,7 +213,7 @@ void NNVolumeTrainer::prepareTraining(){
 
     // collect all data (training/testing)
     int nInputPoints = m_matching->size() + m_nonMatching->size();
-    auto allX=Matrix<double>(nInputPoints, m_inputVolumeReaders.size());
+    auto allX=Matrix<double>(nInputPoints, m_inputVolumeReaders.size()*m_ilAperture*m_xlAperture);
     auto allY=Matrix<double>(nInputPoints,1);
 
     // use stupid approach for now to get started, improve later!!!
@@ -217,12 +221,12 @@ void NNVolumeTrainer::prepareTraining(){
     int row=0;       // row in allX/allY matrix
 
     // iterate over inlines
-    for( int i = bounds.i1(); i<=bounds.i2(); i++){
+    for( int i = bounds.i1()+m_ilAperture/2; i<=bounds.i2()-m_ilAperture/2; i++){
 
         // load inline for all input volumes
         QVector<std::shared_ptr<Volume>> ilvols;
         for( int l = 0; l<static_cast<int>(m_inputVolumeReaders.size()); l++){
-            auto ilvol = m_inputVolumeReaders[l]->readIl(i,i);
+            auto ilvol = m_inputVolumeReaders[l]->readIl(i-m_ilAperture/2,i+m_ilAperture/2);
             if(!ilvol){
                 return error( tr("Reading around iline=%1 from volume \"%2\" failed!").arg(QString::number(i), m_inputNames[l]));
             }
@@ -230,7 +234,7 @@ void NNVolumeTrainer::prepareTraining(){
         }
 
         // iterate over crosslines
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
+        for( int j=bounds.j1()+m_xlAperture/2; j<=bounds.j2()-m_xlAperture/2; j++){
 
             // this cdp has no poicked points
             if( !m_matching->contains(i,j) && !m_nonMatching->contains(i,j)) continue;
@@ -239,10 +243,16 @@ void NNVolumeTrainer::prepareTraining(){
             auto table=m_matching->values(i,j);
             for( auto t : table){
 
+                auto col=0;
                 // iterate over volumes
                 for( int vi=0; vi<ilvols.size(); vi++){
-                    auto col=vi;
-                    allX(row,col)=ilvols[vi]->value(i,j,t);
+                    //iterate over aperture
+                    for( int ii=-m_ilAperture/2; ii<=m_ilAperture/2; ii++){
+                        for( int jj=-m_xlAperture/2; jj<=m_xlAperture/2; jj++){
+                            allX(row,col)=ilvols[vi]->value(i+ii,j+jj,t);
+                            col++;
+                        }
+                    }
                 }
                 allY( row, 0)=1.;            // matching == 1
                 row++;                       // next row
@@ -253,10 +263,16 @@ void NNVolumeTrainer::prepareTraining(){
             table=m_nonMatching->values(i,j);
             for( auto t : table){
 
+                auto col=0;
                 // iterate over volumes
                 for( int vi=0; vi<ilvols.size(); vi++){
-                    auto col=vi;
-                    allX(row,col)=ilvols[vi]->value(i,j,t);
+                    //iterate over aperture
+                    for( int ii=-m_ilAperture/2; ii<=m_ilAperture/2; ii++){
+                        for( int jj=-m_xlAperture/2; jj<=m_xlAperture/2; jj++){
+                            allX(row,col)=ilvols[vi]->value(i+ii,j+jj,t);
+                            col++;
+                        }
+                    }
                 }
                 allY( row, 0)=0.;            // non matching == 0
                 row++;                       // next row
@@ -287,7 +303,8 @@ void NNVolumeTrainer::setProgress(size_t epoch, double error){
 void NNVolumeTrainer::runTraining(){
 
   setValidNN(false);
-  m_nn.fit(m_X,m_Y,m_learningRate,m_trainingEpochs,std::bind(&NNVolumeTrainer::setProgress, this, std::placeholders::_1, std::placeholders::_2) );
+  m_nn.fit(m_X,m_Y,m_learningRate,m_trainingEpochs,0.001,
+           std::bind(&NNVolumeTrainer::setProgress, this, std::placeholders::_1, std::placeholders::_2) );
        //    &NNVolumeTrainer::setProgress) ;
   setValidNN(true);
 

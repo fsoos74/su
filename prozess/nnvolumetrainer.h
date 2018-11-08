@@ -63,6 +63,8 @@ private:
     bool m_validNN=false;
     QVector<double> m_errors;
     bool m_running=false;
+    int m_ilAperture=1;     // number of inlines
+    int m_xlAperture=1;     // number of xlines
 };
 
 #endif // NNVOLUMETRAINER_H

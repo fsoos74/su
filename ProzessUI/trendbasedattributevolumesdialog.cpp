@@ -65,8 +65,8 @@ QMap<QString,QString> TrendBasedAttributeVolumesDialog::params(){
     p.insert("bottom-horizon", (selectLayer) ? ui->cbBottom->currentText() : "");
     bool computeTrend=ui->cbComputeTrend->isChecked();
     p.insert("compute-trend", QString::number(computeTrend ) );
-    p.insert("trend-angle", (computeTrend) ? ui->leTrendAngle->text() : "" );
-    p.insert("trend-intercept", (computeTrend) ? ui->leTrendIntercept->text() : "" );
+    p.insert("trend-angle", (computeTrend) ? "" : ui->leTrendAngle->text() );
+    p.insert("trend-intercept", (computeTrend) ? "" : ui->leTrendIntercept->text() );
     p.insert(QString("output"), ui->leOutput->text() );
 
     return p;

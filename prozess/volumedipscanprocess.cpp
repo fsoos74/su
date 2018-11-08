@@ -17,7 +17,7 @@ ProjectProcess::ResultCode VolumeDipScanProcess::init( const QMap<QString, QStri
     setParams(parameters);
 
     QString iname;
-
+std::cout<<"1"<<std::endl<<std::flush;
     try{
         iname=getParam(parameters, "input");
         m_ilineDipName=getParam(parameters, "iline-dip");
@@ -33,7 +33,7 @@ ProjectProcess::ResultCode VolumeDipScanProcess::init( const QMap<QString, QStri
         setErrorString(ex.what());
         return ResultCode::Error;
     }
-
+std::cout<<"2"<<std::endl<<std::flush;
     emit currentTask("Loading Volume");
     emit started(1);
     qApp->processEvents();
@@ -44,25 +44,25 @@ ProjectProcess::ResultCode VolumeDipScanProcess::init( const QMap<QString, QStri
     }
     emit progress(1);
     qApp->processEvents();
-
+std::cout<<"3"<<std::endl<<std::flush;
     m_ilineDipVolume=std::make_shared<Volume>(m_inputVolume->bounds(), m_inputVolume->domain(), VolumeType::Other, 0);
     if( !m_ilineDipVolume){
         setErrorString("Allocating iline dip volume failed!");
         return ResultCode::Error;
     }
-
+std::cout<<"4"<<std::endl<<std::flush;
     m_xlineDipVolume=std::make_shared<Volume>(m_inputVolume->bounds(), m_inputVolume->domain(), VolumeType::Other, 0 );
     if( !m_xlineDipVolume){
         setErrorString("Allocating xline dip volume failed!");
         return ResultCode::Error;
     }
-
+std::cout<<"5"<<std::endl<<std::flush;
     m_semblanceVolume=std::make_shared<Volume>(m_inputVolume->bounds(), m_inputVolume->domain(), VolumeType::Other, 0 );
     if( !m_semblanceVolume){
         setErrorString("Allocating semblance volume failed!");
         return ResultCode::Error;
     }
-
+std::cout<<"6"<<std::endl<<std::flush;
     return ResultCode::Ok;
 }
 

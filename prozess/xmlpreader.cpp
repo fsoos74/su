@@ -2,10 +2,12 @@
 #include "matrix.h"
 #include<vector>
 
-XMLPReader::XMLPReader(MLP& mlp, QStringList& inames)
-    :mlp(mlp), inames(inames)
+XMLPReader::XMLPReader(MLP& mlp, QStringList& inames, int& ilAperture, int& xlAperture)
+    :mlp(mlp), inames(inames), ilAperture(ilAperture), xlAperture(xlAperture)
 {
-
+    // default if this is not set in file
+    ilAperture=1;
+    xlAperture=1;
 }
 
 
@@ -50,6 +52,9 @@ void XMLPReader::readXMLP(){
         }
         else if( xml.name()=="input-names"){
             readINames();
+        }
+        else if( xml.name()=="aperture"){
+            readAperture();
         }
         else{
             xml.skipCurrentElement();
@@ -181,3 +186,8 @@ void XMLPReader::readInputScaling(){
     std::cout<<"/XMLPReader::readIRanges"<<std::endl<<std::flush;
 }
 
+void XMLPReader::readAperture(){
+    ilAperture = xml.attributes().value("iline").toInt();
+    xlAperture = xml.attributes().value("xline").toInt();
+    xml.skipCurrentElement();
+}

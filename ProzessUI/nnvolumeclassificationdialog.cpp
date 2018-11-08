@@ -88,13 +88,16 @@ void NNVolumeClassificationDialog::on_leInputFile_textChanged(const QString & na
 
     SimpleMLP mlp;
     QStringList inames;
-    XMLPReader reader(mlp,inames);
+    int ilaper;
+    int xlaper;
+    XMLPReader reader(mlp,inames,ilaper,xlaper);
     if (!reader.read(&f)) {
         return;
     }
 
     ui->teInfo->clear();
     QString text;
+    text+=QString("Aperture: il=%1 xl=%2\n").arg(ilaper).arg(xlaper);
     text+=QString("Required volumes: %1\n").arg(inames.size());
     text+=inames.join("\n");
     ui->teInfo->appendPlainText(text);

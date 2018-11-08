@@ -95,12 +95,12 @@ public:
     // this sets the scaling parameters and then runs the training
     // report training iteration,error via callback
     void fit(Matrix<double> X, Matrix<double> Y,  
-                double eta=0.75, size_t  maxiter=200, 
+                double eta=0.75, size_t  maxiter=200, double vareps=0.001,
                 std::function<void(size_t,double)> 
                     progress=[](size_t,double){return;}){
         adjustScaling(X);
         auto XX=prepareInput(X);    // uses adjusted scaling parameters
-        train(XX, Y, eta, maxiter, progress);
+        train(XX, Y, eta, maxiter, vareps, progress);
     }
 
     void stop(){
@@ -149,7 +149,7 @@ protected:
 
     // used internally, expects bias neuron in X, and X scaled to 0-1
     void train(Matrix<double> X, Matrix<double> Y, 
-                double eta, size_t maxiter,
+                double eta, size_t maxiter, double vareps,
                 std::function<void(size_t,double)> progress){
 
         std::vector<Matrix<double>> dW;
@@ -207,6 +207,7 @@ protected:
             if( !m_running){
                 return;
             }
+            if( meanE<vareps ) break;
         }
         m_running=false;
         m_w=minW;
@@ -216,9 +217,13 @@ protected:
         m_w.push_back(Matrix<double>(m_nh1,m_nin+1));   // +1 for bias
         m_w.push_back(Matrix<double>(m_nh2,m_nh1));
         m_w.push_back(Matrix<double>(m_nout,m_nh2));
-        for( auto& w: m_w[0]) w=double(std::rand())/RAND_MAX - 0.5;
-        for( auto& w: m_w[1]) w=double(std::rand())/RAND_MAX - 0.5;
-        for( auto& w: m_w[2]) w=double(std::rand())/RAND_MAX - 0.5;
+        for( auto i=0; i<m_w.size(); i++){
+            auto fac=1./std::sqrt(m_w[i].columns());
+            std::cout<<"fac="<<fac<<std::endl;
+            for( auto& w: m_w[i]){
+                w=fac*(2*(double(std::rand())/RAND_MAX - 0.5));
+            }
+        }
     }
 
 private:

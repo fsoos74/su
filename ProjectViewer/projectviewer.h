@@ -191,6 +191,8 @@ private slots:
 
     void on_actionImportTable_triggered();
 
+    void on_actionMerge_Volumes_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

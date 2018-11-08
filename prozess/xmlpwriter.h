@@ -11,7 +11,7 @@ class XMLPWriter
 public:
     using MLP=SimpleMLP;
 
-    XMLPWriter(const MLP&, const QStringList& inames);
+    XMLPWriter(const MLP&, const QStringList& inames, int ilaper, int xlaper);
 
     bool writeFile(QIODevice *device);
 
@@ -19,6 +19,8 @@ private:
 
     const MLP& mlp;
     const QStringList& inames;
+    int ilAperture;
+    int xlAperture;
     QXmlStreamWriter xml;
 };
 
