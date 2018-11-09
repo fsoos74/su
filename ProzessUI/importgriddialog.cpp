@@ -232,6 +232,8 @@ void ImportGridDialog::scan(){
             continue;
         }
 
+        line=line.trimmed();
+
         qreal coord1;
         qreal coord2;
         double value;
@@ -291,8 +293,8 @@ bool ImportGridDialog::splitLine( const QString& line, qreal& coord1, qreal& coo
         return false;
      }
 
-     if( m_nullValue==col[m_valueColumn] ){
-         return false;
+     for(auto s : col){
+         if( m_nullValue==s ) return false;
      }
 
      bool ok;

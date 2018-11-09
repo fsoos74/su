@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>389</width>
-    <height>396</height>
+    <width>354</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,29 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="5" column="2">
+      <widget class="QLineEdit" name="leValue">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>0.0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2">
+      <widget class="QComboBox" name="cbTopHorizon"/>
+     </item>
+     <item row="9" column="2">
+      <widget class="QComboBox" name="cbBottomHorizon"/>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Bottom Horizon:</string>
+       </property>
+      </widget>
+     </item>
      <item row="8" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
@@ -23,31 +46,21 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Output =</string>
+     <item row="4" column="2">
+      <widget class="QComboBox" name="cbInput2">
+       <property name="enabled">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="0" column="1" colspan="2">
-      <widget class="QComboBox" name="cbFunction"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Input/Edit Volume:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Input Volume 2:</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="3" column="2">
       <widget class="QComboBox" name="cbInput1">
        <property name="minimumSize">
         <size>
@@ -57,69 +70,39 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Input Volume1:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Value:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
-      <widget class="QLineEdit" name="leValue">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>0.0</string>
+        <string>Function =</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
-      <widget class="QComboBox" name="cbInput2">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
+     <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Output Volume:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
-      <widget class="QCheckBox" name="cbReplaceVolume1">
-       <property name="text">
-        <string>Overwrite Volume 1</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>Bottom Horizon:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2">
+     <item row="0" column="2">
       <widget class="QLineEdit" name="leOutput"/>
      </item>
-     <item row="8" column="2">
-      <widget class="QComboBox" name="cbTopHorizon"/>
-     </item>
-     <item row="9" column="2">
-      <widget class="QComboBox" name="cbBottomHorizon"/>
-     </item>
-     <item row="5" column="0">
-      <widget class="QCheckBox" name="cbEditMode">
-       <property name="text">
-        <string>Edit Volume 1</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
+     <item row="1" column="2">
+      <widget class="QComboBox" name="cbFunction"/>
      </item>
     </layout>
    </item>
@@ -179,22 +162,6 @@
     <hint type="destinationlabel">
      <x>286</x>
      <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>cbReplaceVolume1</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>leOutput</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>81</x>
-     <y>158</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>227</x>
-     <y>191</y>
     </hint>
    </hints>
   </connection>

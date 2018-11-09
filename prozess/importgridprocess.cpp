@@ -92,6 +92,7 @@ ProjectProcess::ResultCode ImportGridProcess::run(){
         int il;
         int xl;
         double value;
+        line=line.trimmed();
         if( processLine(line, il, xl, value)){
             //std::cout<<"il="<<il<<" xl="<<xl<<std::endl<<std::flush;
             if( il<minil) minil=il;

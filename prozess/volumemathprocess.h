@@ -27,11 +27,9 @@ protected:
 
 private:
 
-    bool m_editMode;
     std::shared_ptr<Grid2D<float>> m_topHorizon;
     std::shared_ptr<Grid2D<float>> m_bottomHorizon;
     MathProcessor m_processor;
-
 
     long long marker=123456789;
 };

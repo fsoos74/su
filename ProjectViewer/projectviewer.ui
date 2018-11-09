@@ -408,19 +408,6 @@
     <addaction name="separator"/>
     <addaction name="actionRun_Log_Script"/>
    </widget>
-   <widget class="QMenu" name="menuModeling">
-    <property name="title">
-     <string>&amp;Inversion</string>
-    </property>
-    <addaction name="actionFD_CDP_Acoustic"/>
-   </widget>
-   <widget class="QMenu" name="menuTest">
-    <property name="title">
-     <string>Test</string>
-    </property>
-    <addaction name="actionVolume_IO_Test"/>
-    <addaction name="actionIntercept_And_Gradient_Volume_old"/>
-   </widget>
    <widget class="QMenu" name="menuProcess_Table">
     <property name="title">
      <string>Process(&amp;Table)</string>
@@ -434,10 +421,8 @@
    <addaction name="menuProcess_Volume"/>
    <addaction name="menuProcess_Well"/>
    <addaction name="menuProcess_Table"/>
-   <addaction name="menuModeling"/>
    <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
-   <addaction name="menuTest"/>
   </widget>
   <action name="actionImportHorizon">
    <property name="text">
@@ -1082,7 +1067,7 @@
   </action>
   <action name="actionMerge_Volumes">
    <property name="text">
-    <string>Merge Volumes</string>
+    <string>Mer&amp;ge Volumes</string>
    </property>
   </action>
  </widget>

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>268</width>
-    <height>434</height>
+    <height>468</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,23 +16,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="9" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Sampling Interval:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Min. Time/Depth:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="leVolume"/>
-     </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
@@ -82,6 +65,9 @@
         <string>Min. Inline:</string>
        </property>
       </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="leVolume"/>
      </item>
      <item row="9" column="1">
       <widget class="QComboBox" name="cbDZ">
@@ -149,6 +135,34 @@
      </item>
      <item row="2" column="1">
       <widget class="QComboBox" name="cbType"/>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Min. Time/Depth:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Sampling Interval:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>Value:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLineEdit" name="leValue">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

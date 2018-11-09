@@ -17,6 +17,8 @@ CreateVolumeDialog::CreateVolumeDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QIntValidator* ivalidator=new QIntValidator(this);
+    QDoubleValidator* dvalidator=new QDoubleValidator(this);
+
     ui->leMinIline->setValidator(ivalidator);
     ui->leMaxIline->setValidator(ivalidator);
     ui->leMinXline->setValidator(ivalidator);
@@ -24,6 +26,7 @@ CreateVolumeDialog::CreateVolumeDialog(QWidget *parent) :
     ui->leMinZ->setValidator(ivalidator);
     ui->leMaxZ->setValidator(ivalidator);
     ui->cbDZ->setValidator(ivalidator);
+    ui->leValue->setValidator(dvalidator);
 
     connect(ui->leMinIline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMaxIline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -70,17 +73,17 @@ QMap<QString, QString> CreateVolumeDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("volume"), ui->leVolume->text());
+    p.insert( "volume", ui->leVolume->text());
     p.insert( "domain", ui->cbDomain->currentText());
     p.insert( "type", ui->cbType->currentText());
-    p.insert( QString("min-iline"), ui->leMinIline->text());
-    p.insert( QString("max-iline"), ui->leMaxIline->text());
-    p.insert( QString("min-xline"), ui->leMinXline->text());
-    p.insert( QString("max-xline"), ui->leMaxXline->text());
-    p.insert( QString("min-z"), ui->leMinZ->text());
-    p.insert( QString("max-z"), ui->leMaxZ->text());
-    p.insert( QString("dz"), ui->cbDZ->currentText());
-
+    p.insert( "min-iline", ui->leMinIline->text());
+    p.insert( "max-iline", ui->leMaxIline->text());
+    p.insert( "min-xline", ui->leMinXline->text());
+    p.insert( "max-xline", ui->leMaxXline->text());
+    p.insert( "min-z", ui->leMinZ->text());
+    p.insert( "max-z", ui->leMaxZ->text());
+    p.insert( "dz", ui->cbDZ->currentText());
+    p.insert( "value", ui->leValue->text());
     return p;
 }
 

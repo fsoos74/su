@@ -29,7 +29,6 @@ private slots:
     void updateHorizons();
     void updateInputVolumes();
     void updateOkButton();
-    void on_cbFunction_currentIndexChanged(const QString &arg1);
 
 private:
     Ui::VolumeMathDialog *ui;

@@ -4,7 +4,7 @@
 #include "utilities.h"
 #include<iostream>
 #include<QApplication>
-
+#include<omp.h>
 
 VolumeMathProcess::VolumeMathProcess( AVOProject* project, QObject* parent) :
     VolumesProcess( QString("Volume Math"), project, parent){
@@ -31,7 +31,6 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
         value=getParam(parameters, "value").toDouble();
         topName=getParam( parameters, "top-horizon");
         bottomName=getParam( parameters, "bottom-horizon");
-        m_editMode=static_cast<bool>(getParam(parameters, "edit-mode").toInt());
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
@@ -84,21 +83,18 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
     return ResultCode::Ok;
 }
 
-#include<iostream>
 ProjectProcess::ResultCode VolumeMathProcess::processInline(
         QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
-
-    std::cout<<"processInline ni="<<inputs.size()<<" no="<<outputs.size()<<" iline="<<iline<<std::endl<<std::flush;
     std::shared_ptr<Volume> input1=inputs[0];
     std::shared_ptr<Volume> input2;
     if( inputs.size()>1) input2=inputs[1];      // only used when op needs 2 input values
     std::shared_ptr<Volume> output=outputs[0];
 
-    if( m_editMode){
-        for( int j=bounds().j1(); j<=bounds().j2(); j++){
-            for( int k=0; k<bounds().nt(); k++){
-                (*output)(iline,j,k)=(*input1)(iline,j,k);
-            }
+    // copy input1 to output
+#pragma omp parallel for
+    for( int j=bounds().j1(); j<=bounds().j2(); j++){
+        for( int k=0; k<bounds().nt(); k++){
+             (*output)(iline,j,k)=(*input1)(iline,j,k);
         }
     }
 
@@ -106,6 +102,7 @@ ProjectProcess::ResultCode VolumeMathProcess::processInline(
     int k1=0;
     int k2=bounds().nt();
 
+#pragma omp parallel for
     for( int j=bounds().j1(); j<=bounds().j2(); j++){
 
         if( m_topHorizon ){

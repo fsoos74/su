@@ -3,8 +3,7 @@
 #include <avoproject.h>
 #include "utilities.h"
 #include <processparams.h>
-
-#include<iostream>
+#include <omp.h>
 
 CreateVolumeProcess::CreateVolumeProcess( AVOProject* project, QObject* parent) :
     VolumesProcess( QString("Create Volume"), project, parent){
@@ -26,7 +25,6 @@ ProjectProcess::ResultCode CreateVolumeProcess::init( const QMap<QString, QStrin
     QString name;
     Domain domain;
     VolumeType type;
-
     try{
 
         name=getParam(parameters, "volume");
@@ -41,6 +39,7 @@ ProjectProcess::ResultCode CreateVolumeProcess::init( const QMap<QString, QStrin
         domain=toDomain(domain_s);
         auto type_s=getParam( parameters, "type");
         type=toVolumeType(type_s);
+        m_value=getParam(parameters, "value").toDouble();
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
@@ -60,12 +59,11 @@ ProjectProcess::ResultCode CreateVolumeProcess::init( const QMap<QString, QStrin
 
 ProjectProcess::ResultCode CreateVolumeProcess::processInline(
         QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
-
     auto output=outputs[0];
-    auto input=inputs[0];
+#pragma omp parallel for
     for( int j=bounds().j1(); j<bounds().j2(); j++){
         for(int k=0; k<bounds().nt(); k++){
-            (*output)(iline,j,k)=(*input)(iline,j,k);
+            (*output)(iline,j,k)=m_value;
         }
     }
 

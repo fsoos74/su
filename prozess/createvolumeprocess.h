@@ -23,6 +23,7 @@ protected:
             QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline)override;
 
 private:
+    double m_value;
 
 };
 
