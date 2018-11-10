@@ -165,6 +165,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <logmathprocess.h>
 #include <logintegrationdialog.h>
 #include <logintegrationprocess.h>
+#include <copylogdialog.h>
+#include <copylogprocess.h>
 #include <nnlogdialog.h>
 #include <nnlogprocess.h>
 #include <nnlogtrainer.h>
@@ -1660,6 +1662,22 @@ void ProjectViewer::on_actionLog_Integration_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess<LogIntegrationProcess>( params );
+}
+
+
+void ProjectViewer::on_actionCopy_Log_triggered()
+{
+
+    Q_ASSERT( m_project );
+
+    CopyLogDialog dlg;
+    dlg.setWindowTitle(tr("Copy Log"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<CopyLogProcess>( params );
 }
 
 void ProjectViewer::on_actionNN_Log_old_triggered()
@@ -5175,6 +5193,7 @@ void ProjectViewer::updateMenu(){
     ui->action_Smooth_Log->setEnabled(isProject);
     ui->actionLog_Math->setEnabled(isProject);
     ui->actionLog_Integration->setEnabled(isProject);
+    ui->actionCopy_Log->setEnabled(isProject);
     ui->actionNN_Log_old->setEnabled(isProject);
     ui->actionTrain_NN_Log->setEnabled(isProject);
     ui->actionNN_Log_Interpolation->setEnabled(isProject);
@@ -5233,11 +5252,5 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
     runProcess<InterceptGradientVolumeProcess_2>( params );
 }
-
-
-
-
-
-
 
 

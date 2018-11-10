@@ -395,6 +395,7 @@
     <addaction name="action_Smooth_Log"/>
     <addaction name="actionLog_Math"/>
     <addaction name="actionLog_Integration"/>
+    <addaction name="actionCopy_Log"/>
     <addaction name="separator"/>
     <addaction name="actionNN_Log_old"/>
     <addaction name="actionTrain_NN_Log"/>
@@ -972,7 +973,7 @@
   </action>
   <action name="actionEdit_Tops">
    <property name="text">
-    <string>Edit &amp;Tops</string>
+    <string>&amp;Edit Tops</string>
    </property>
   </action>
   <action name="actionFD_CDP_Acoustic">
@@ -1072,7 +1073,12 @@
   </action>
   <action name="actionVolume_Time_Depth_Conversion">
    <property name="text">
-    <string>Volume Time/Depth Conversion</string>
+    <string>Volume Time/Dept&amp;h Conversion</string>
+   </property>
+  </action>
+  <action name="actionCopy_Log">
+   <property name="text">
+    <string>Copy Log</string>
    </property>
   </action>
  </widget>

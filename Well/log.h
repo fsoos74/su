@@ -57,9 +57,9 @@ public:
         return m_dz;
     }
 
-    //const std::vector<double>& data()const{
-    //    return m_data;
-    //}
+    const std::vector<double>& data()const{
+        return m_data;
+    }
 
     int nz()const{
         return static_cast<int>(m_data.size());

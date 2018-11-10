@@ -124,6 +124,7 @@ private slots:
     void on_action_Smooth_Log_triggered();
     void on_actionLog_Math_triggered();
     void on_actionLog_Integration_triggered();
+    void on_actionCopy_Log_triggered();
     void on_actionTrain_NN_Log_triggered();
     void on_actionNN_Log_old_triggered();
     void on_actionNN_Log_Interpolation_triggered();
@@ -191,10 +192,7 @@ private slots:
     void on_actionFD_CDP_Acoustic_triggered();
     void on_actionVolume_IO_Test_triggered();
     void on_actionIntercept_And_Gradient_Volume_old_triggered();
-
     void on_actionImportTable_triggered();
-
-
 
 protected:
 
