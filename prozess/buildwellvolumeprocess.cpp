@@ -3,7 +3,7 @@
 #include <avoproject.h>
 #include "utilities.h"
 #include <processparams.h>
-#include <wellpath.h>ö
+#include <wellpath.h>
 #include <omp.h>
 #include<iostream>
 
@@ -141,7 +141,7 @@ ProjectProcess::ResultCode BuildWellVolumeProcess::init( const QMap<QString, QSt
     int nz=1 + ( maxZ - minZ )/dz;
     Grid3DBounds bounds(minIline, maxIline, minXline, maxXline, nz, 0.001*minZ, 0.001*dz);
 
-    m_volume=std::shared_ptr<Volume >( new Volume(bounds));
+    m_volume=std::make_shared<Volume >(bounds, Domain::Depth, VolumeType::Other);
 
     if( !m_volume){
         setErrorString("Allocating volume failed!");
