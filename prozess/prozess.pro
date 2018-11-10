@@ -112,7 +112,8 @@ SOURCES += prozess.cpp \
     importtableprocess.cpp \
     xmlpwriter.cpp \
     xmlpreader.cpp \
-    mergevolumesprocess.cpp
+    mergevolumesprocess.cpp \
+    volumetdconversionprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -205,7 +206,8 @@ HEADERS += prozess.h\
     simplemlp.h \
     xmlpwriter.h \
     xmlpreader.h \
-    mergevolumesprocess.h
+    mergevolumesprocess.h \
+    volumetdconversionprocess.h
 
 unix {
     target.path = /usr/lib

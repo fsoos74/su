@@ -21,7 +21,8 @@ VolumePropertyDialog::VolumePropertyDialog(QWidget *parent) :
     ui->cbDomain->addItem(toQString(Domain::Other));
 
     ui->cbType->addItem(toQString(VolumeType::AVO));
-    ui->cbType->addItem(toQString(VolumeType::VEL));
+    ui->cbType->addItem(toQString(VolumeType::IVEL));
+    ui->cbType->addItem(toQString(VolumeType::AVEL));
     ui->cbType->addItem(toQString(VolumeType::Other));
 }
 

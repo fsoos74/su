@@ -331,10 +331,7 @@
      <string>P&amp;roject</string>
     </property>
     <addaction name="actionDisplay_Map"/>
-    <addaction name="separator"/>
     <addaction name="action_Geometry"/>
-    <addaction name="actionAxis_Orientation"/>
-    <addaction name="actionEdit_Tops"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -352,6 +349,7 @@
     <addaction name="actionPunch_Out_Volume"/>
     <addaction name="actionVolume_Math"/>
     <addaction name="actionFlatten_Volume"/>
+    <addaction name="actionVolume_Time_Depth_Conversion"/>
     <addaction name="separator"/>
     <addaction name="actionExtract_Timeslice"/>
     <addaction name="actionExtract_Dataset"/>
@@ -407,21 +405,23 @@
     <addaction name="actionBuild_Volume"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Log_Script"/>
+    <addaction name="separator"/>
+    <addaction name="actionEdit_Tops"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Table">
     <property name="title">
-     <string>Process(&amp;Table)</string>
+     <string>Process(T&amp;able)</string>
     </property>
     <addaction name="actionConvert_Picks_To_Horizon"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menuPro_ject"/>
+   <addaction name="menu_Analyze"/>
    <addaction name="menuProcess_Seismic"/>
    <addaction name="menuProcess"/>
    <addaction name="menuProcess_Volume"/>
    <addaction name="menuProcess_Well"/>
    <addaction name="menuProcess_Table"/>
-   <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
   </widget>
   <action name="actionImportHorizon">
@@ -1068,6 +1068,11 @@
   <action name="actionMerge_Volumes">
    <property name="text">
     <string>Mer&amp;ge Volumes</string>
+   </property>
+  </action>
+  <action name="actionVolume_Time_Depth_Conversion">
+   <property name="text">
+    <string>Volume Time/Depth Conversion</string>
    </property>
   </action>
  </widget>

@@ -3,7 +3,7 @@
 
 #include<QString>
 
-enum class VolumeType : qint16 { AVO, VEL, Other };
+enum class VolumeType : qint16 { AVO, IVEL, AVEL, Other };
 
 
 QList<VolumeType> volumeTypeList();

@@ -126,6 +126,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <volumemathprocess.h>
 #include <flattenvolumedialog.h>
 #include <flattenvolumeprocess.h>
+#include <volumetdconversiondialog.h>
+#include <volumetdconversionprocess.h>
 #include <extracttimesliceprocess.h>
 #include <extractdatasetdialog.h>
 #include <extractdatasetprocess.h>
@@ -1348,6 +1350,19 @@ void ProjectViewer::on_actionFlatten_Volume_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess<FlattenVolumeProcess>( params );
+}
+
+
+void ProjectViewer::on_actionVolume_Time_Depth_Conversion_triggered()
+{
+    Q_ASSERT( m_project );
+
+    VolumeTDConversionDialog dlg;
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+    runProcess<VolumeTDConversionProcess>( params );
 }
 
 
@@ -5136,6 +5151,7 @@ void ProjectViewer::updateMenu(){
     ui->actionMerge_Volumes->setEnabled(isProject);
     ui->actionVolume_Math->setEnabled(isProject);
     ui->actionFlatten_Volume->setEnabled(isProject);
+    ui->actionVolume_Time_Depth_Conversion->setEnabled(isProject);
     ui->actionUnflatten_Volume->setEnabled(isProject);
     ui->actionExtract_Timeslice->setEnabled(isProject);
     ui->actionExtract_Dataset->setEnabled(isProject);
@@ -5166,6 +5182,7 @@ void ProjectViewer::updateMenu(){
     ui->actionTops_from_Horizon->setEnabled(isProject);
     ui->actionRun_Log_Script->setEnabled(isProject);
     ui->actionBuild_Volume->setEnabled(isProject);
+    ui->actionEdit_Tops->setEnabled(isProject);
 
     ui->actionConvert_Picks_To_Horizon->setEnabled(isProject);
 

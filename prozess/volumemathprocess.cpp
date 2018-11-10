@@ -102,7 +102,7 @@ ProjectProcess::ResultCode VolumeMathProcess::processInline(
     int k1=0;
     int k2=bounds().nt();
 
-#pragma omp parallel for
+// Volume processor is no for parallel!!!
     for( int j=bounds().j1(); j<=bounds().j2(); j++){
 
         if( m_topHorizon ){
@@ -115,6 +115,7 @@ ProjectProcess::ResultCode VolumeMathProcess::processInline(
             if( z==m_bottomHorizon->NULL_VALUE) continue;      // skip cdp without bottom horizon
             k2=std::min( bounds().nt(), static_cast<int>( std::round( ( 0.001*z -bounds().ft() ) / bounds().dt() ) ) );
         }
+
         for( int k=k1; k<k2; k++){
 
             auto ivalue1=(*input1)(iline,j,k);

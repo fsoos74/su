@@ -92,7 +92,6 @@ ProjectProcess::ResultCode VolumesProcess::run(){
 
     QVector<std::shared_ptr<Volume> > inputVolumes;
     QVector<std::shared_ptr<Volume> > outputVolumes;
-
 #ifdef IO_VOLUMES
     for( int i=0; i<m_inputReaders.size(); i++){
         inputVolumes.push_back(std::shared_ptr<Volume>());
@@ -147,8 +146,8 @@ ProjectProcess::ResultCode VolumesProcess::run(){
         }
 
         // load next chunk if required
-        //if( (!inputVolumes.empty()) && ( (!inputVolumes.front()) || (il>inputVolumes.front()->bounds().i2()) ) ){
-        if( (!inputVolumes.empty()) && (il>inputVolumes.front()->bounds().i2() ) ){
+        if( (!inputVolumes.empty()) && ( (!inputVolumes.front()) || (il>inputVolumes.front()->bounds().i2()) ) ){
+        //if( (!inputVolumes.empty()) && (il>inputVolumes.front()->bounds().i2() ) ){
             for(int i=0; i<inputVolumes.size(); i++){
                 auto volume=m_inputReaders[i]->readIl(il,il2);
                 if(!volume){

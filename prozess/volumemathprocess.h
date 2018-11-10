@@ -16,9 +16,6 @@ class VolumeMathProcess : public VolumesProcess
 public:
 
     VolumeMathProcess( AVOProject* project, QObject* parent=nullptr);
-    ~VolumeMathProcess(){
-        std::cout<<"marker="<<marker<<std::endl<<std::flush;
-    }
     ResultCode init(const QMap<QString, QString>& parameters)override;
 
 protected:
@@ -30,8 +27,6 @@ private:
     std::shared_ptr<Grid2D<float>> m_topHorizon;
     std::shared_ptr<Grid2D<float>> m_bottomHorizon;
     MathProcessor m_processor;
-
-    long long marker=123456789;
 };
 
 #endif // VOLUMEMATHPROCESS_H

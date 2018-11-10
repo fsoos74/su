@@ -100,6 +100,7 @@ private slots:
     void on_action_Crop_Volume_triggered();
     void on_actionVolume_Math_triggered();
     void on_actionFlatten_Volume_triggered();
+    void on_actionVolume_Time_Depth_Conversion_triggered();
     void on_actionExtract_Timeslice_triggered();
     void on_actionExtract_Dataset_triggered();      // convert to dataset
     void on_actionVolume_Dip_triggered();
@@ -116,6 +117,8 @@ private slots:
     void on_actionNN_Volume_Classification_triggered();
     void on_actionRun_Volume_Script_triggered();
     void on_actionPunch_Out_Volume_triggered();
+    void on_actionMerge_Volumes_triggered();
+
 
     // Process well menu
     void on_action_Smooth_Log_triggered();
@@ -191,7 +194,7 @@ private slots:
 
     void on_actionImportTable_triggered();
 
-    void on_actionMerge_Volumes_triggered();
+
 
 protected:
 

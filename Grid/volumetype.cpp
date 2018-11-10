@@ -7,7 +7,8 @@ QMap<VolumeType, QString> lookup{
 
     { VolumeType::Other, "Other"},
     { VolumeType::AVO, "AVO"},
-    { VolumeType::VEL, "Velocity"}
+    { VolumeType::IVEL, "Interval Velocity"},
+    { VolumeType::AVEL, "Average Velocity"},
 
 };
 }

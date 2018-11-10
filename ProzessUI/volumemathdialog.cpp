@@ -31,7 +31,8 @@ QMap<QString,QString> VolumeMathDialog::params(){
     p.insert( QString("function"), ui->cbFunction->currentText() );
     p.insert( QString("output-volume"), ui->leOutput->text() );
     p.insert( QString("input-volume1"), ui->cbInput1->currentText() );
-    p.insert( QString("input-volume2"), (ui->cbInput2->isEnabled()) ? ui->cbInput2->currentText() : "" );
+    bool input2=ui->cbFunction->currentText().contains("Input2");
+    p.insert( QString("input-volume2"), (input2) ? ui->cbInput2->currentText() : "" );
     p.insert(QString("value"), ui->leValue->text());
     p.insert( QString("top-horizon"), ui->cbTopHorizon->currentText() );
     p.insert( QString("bottom-horizon"), ui->cbBottomHorizon->currentText() );
