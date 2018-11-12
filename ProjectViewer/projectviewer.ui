@@ -363,8 +363,6 @@
     <addaction name="separator"/>
     <addaction name="actionTrend_Based_Attribute_Volumes"/>
     <addaction name="separator"/>
-    <addaction name="actionVolume_Circle_Detection"/>
-    <addaction name="separator"/>
     <addaction name="actionNN_Volume_Trainer"/>
     <addaction name="actionNN_Volume_Classification"/>
     <addaction name="separator"/>
@@ -1078,7 +1076,7 @@
   </action>
   <action name="actionCopy_Log">
    <property name="text">
-    <string>Copy Log</string>
+    <string>Co&amp;py Log</string>
    </property>
   </action>
  </widget>

@@ -41,8 +41,7 @@ SOURCES += seismicui.cpp \
     picker.cpp \
     pickmode.cpp \
     picktype.cpp \
-    pickfillmode.cpp \
-    ../ProzessUI/volumecircledetectiondialog.cpp
+    pickfillmode.cpp
 
 HEADERS += seismicui.h\
         seismicui_global.h \
@@ -67,8 +66,7 @@ HEADERS += seismicui.h\
     picker.h \
     pickmode.h \
     picktype.h \
-    pickfillmode.h \
-    ../ProzessUI/volumecircledetectiondialog.h
+    pickfillmode.h
 
 unix {
     target.path = /usr/lib
@@ -85,8 +83,7 @@ FORMS += \
     tracedisplayoptionsdialog.ui \
     tracescalingdialog.ui \
     headerscandialog.ui \
-    sectionscaledialog.ui \
-    ../ProzessUI/volumecircledetectiondialog.ui
+    sectionscaledialog.ui
 
 
 

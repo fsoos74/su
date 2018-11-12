@@ -112,7 +112,6 @@ private slots:
     void on_actionInstantaneous_Attribute_Volumes_triggered();
     void on_actionFluid_Factor_Volume_triggered();  // not used, integrated in trend based
     void on_actionTrend_Based_Attribute_Volumes_triggered();
-    void on_actionVolume_Circle_Detection_triggered();
     void on_actionNN_Volume_Trainer_triggered();
     void on_actionNN_Volume_Classification_triggered();
     void on_actionRun_Volume_Script_triggered();

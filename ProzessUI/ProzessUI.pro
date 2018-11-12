@@ -79,7 +79,6 @@ SOURCES += prozessui.cpp \
     trendbasedattributegridsdialog.cpp \
     trendbasedattributevolumesdialog.cpp \
     nnvolumeclassificationdialog.cpp \
-    volumecircledetectiondialog.cpp \
     importtabledialog.cpp \
     mergevolumesdialog.cpp \
     volumetdconversiondialog.cpp \
@@ -146,7 +145,6 @@ HEADERS += prozessui.h\
     trendbasedattributegridsdialog.h \
     trendbasedattributevolumesdialog.h \
     nnvolumeclassificationdialog.h \
-    volumecircledetectiondialog.h \
     importtabledialog.h \
     mergevolumesdialog.h \
     volumetdconversiondialog.h \
@@ -216,7 +214,6 @@ FORMS += \
     trendbasedattributegridsdialog.ui \
     trendbasedattributevolumesdialog.ui \
     nnvolumeclassificationdialog.ui \
-    volumecircledetectiondialog.ui \
     importtabledialog.ui \
     mergevolumesdialog.ui \
     volumetdconversiondialog.ui \

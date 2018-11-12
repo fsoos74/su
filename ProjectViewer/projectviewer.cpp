@@ -147,8 +147,6 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <gridmathprocess.h>
 #include <gridrunuserscriptdialog.h>
 #include <rungridscriptprocess.h>
-#include <volumecircledetectiondialog.h>
-#include <volumecircledetectionprocess.h>
 #include <nnvolumetrainer.h>
 #include <nnvolumeclassificationdialog.h>
 #include <nnvolumeclassificationprocess.h>
@@ -1522,20 +1520,6 @@ void ProjectViewer::on_actionInstantaneous_Attribute_Volumes_triggered()
 
     runProcess<InstantaneousAttributesProcess>( params );
 }
-
-void ProjectViewer::on_actionVolume_Circle_Detection_triggered()
-{
-    Q_ASSERT( m_project );
-
-    VolumeCircleDetectionDialog dlg;
-    dlg.setInputs(m_project->volumeList());
-    dlg.setWindowTitle("Volume Circle Detection");
-    if( dlg.exec()!=QDialog::Accepted) return;
-    QMap<QString,QString> params=dlg.params();
-
-    runProcess<VolumeCircleDetectionProcess>( params );
-}
-
 
 void ProjectViewer::on_actionNN_Volume_Trainer_triggered()
 {

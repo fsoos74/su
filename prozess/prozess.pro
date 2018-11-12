@@ -107,7 +107,6 @@ SOURCES += prozess.cpp \
     volumesprocess.cpp \
     nnvolumetrainer.cpp \
     nnvolumeclassificationprocess.cpp \
-    volumecircledetectionprocess.cpp \
     volumeinterpolation.cpp \
     importtableprocess.cpp \
     xmlpwriter.cpp \
@@ -201,7 +200,6 @@ HEADERS += prozess.h\
     volumesprocess.h \
     nnvolumetrainer.h \
     nnvolumeclassificationprocess.h \
-    volumecircledetectionprocess.h \
     volumeinterpolation.h \
     importtableprocess.h \
     simplemlp.h \
