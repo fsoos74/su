@@ -1,5 +1,6 @@
 #include "areaitem.h"
 
+#include<cmath>
 #include<QColor>
 #include<QPen>
 #include<alignedtextgraphicsitem.h>
@@ -80,37 +81,40 @@ void AreaItem::updateLabels(){
     auto maxxl=m_area.bottom();
     auto nil=m_area.width();
     auto nxl=m_area.height();
+    // compute azimuth
+    auto geom=m_project->geometry();
+    auto p1=geom.coords(0);
+    auto p2=geom.coords(2);
+    auto az=180./M_PI*std::atan2(p2.x()-p1.x(), p2.y()-p1.y());  // degrees
+    std::cout<<"azimuth="<<az<<std::endl;
+
 
     // minil
-    auto il1=new AlignedTextGraphicsItem( QString("il %1").arg(minil), this);
-    il1->setHAlign(Qt::AlignHCenter);
-    il1->setVAlign(Qt::AlignBottom);
+    auto il1=new AlignedTextGraphicsItem( QString("il %1").arg(minil),
+                    Qt::AlignHCenter|Qt::AlignBottom,az+180,this);
     il1->setPos(0, nxl/2);
-    il1->setRotation(-90);
+    il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     m_labelItems.push_back(il1);
 
     // maxil
-    auto il2=new AlignedTextGraphicsItem( QString("il %1").arg(maxil), this);
-    il2->setHAlign(Qt::AlignHCenter);
-    il2->setVAlign(Qt::AlignBottom);
+    auto il2=new AlignedTextGraphicsItem( QString("il %1").arg(maxil),
+                     Qt::AlignHCenter|Qt::AlignBottom,az,this);
     il2->setPos(nil, nxl/2);
-    il2->setRotation(90);
+    il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     m_labelItems.push_back(il2);
 
     // minxl
-    auto xl1=new AlignedTextGraphicsItem( QString("xl %1").arg(minxl), this);
-    xl1->setHAlign(Qt::AlignHCenter);
-    xl1->setVAlign(Qt::AlignBottom);
+    auto xl1=new AlignedTextGraphicsItem( QString("xl %1").arg(minxl),
+                     Qt::AlignHCenter|Qt::AlignBottom,az-90,this);
     xl1->setPos(nil/2, 0);
-    xl1->setRotation(0);
+    xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     m_labelItems.push_back(xl1);
 
     // maxxl
-    auto xl2=new AlignedTextGraphicsItem( QString("xl %1").arg(maxxl), this);
-    xl2->setHAlign(Qt::AlignHCenter);
-    xl2->setVAlign(Qt::AlignBottom);
+    auto xl2=new AlignedTextGraphicsItem( QString("xl %1").arg(maxxl),
+                  Qt::AlignHCenter|Qt::AlignBottom,az+90,this);
     xl2->setPos(nil/2, nxl);
-    xl2->setRotation(180);
+    xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     m_labelItems.push_back(xl2);
 }
 

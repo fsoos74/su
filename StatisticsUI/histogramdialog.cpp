@@ -300,9 +300,8 @@ void HistogramDialog::updateScene(){
         line->setPen(lpen);
         line->moveBy(0, y );
 
-        AlignedTextGraphicsItem* label=new AlignedTextGraphicsItem(QString::number(tick), frame);
-        label->setHAlign(Qt::AlignRight);
-        label->setVAlign(Qt::AlignVCenter);
+        AlignedTextGraphicsItem* label=new AlignedTextGraphicsItem(QString::number(tick),
+                 Qt::AlignRight|Qt::AlignVCenter,0, frame);
         label->moveBy( -5, y);
         //label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     }
@@ -329,10 +328,8 @@ void HistogramDialog::updateScene(){
         bar->moveBy( x, BAR_MAX_HEIGHT);
 
         AlignedTextGraphicsItem* label=new AlignedTextGraphicsItem(
-                QString::number(m_histogram.binInterval(i).first), frame );
-        label->setRotation(90);
-        label->setHAlign(Qt::AlignLeft);
-        label->setVAlign(Qt::AlignBottom);
+                QString::number(m_histogram.binInterval(i).first),
+                Qt::AlignLeft|Qt::AlignBottom, 90, frame );
         label->moveBy( x, BAR_MAX_HEIGHT + 5 );
     }
 

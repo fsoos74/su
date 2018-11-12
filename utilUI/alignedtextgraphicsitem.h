@@ -1,53 +1,21 @@
 #ifndef ALIGNEDTEXTGRAPHICSITEM_H
 #define ALIGNEDTEXTGRAPHICSITEM_H
 
-#include<QGraphicsItem>
-#include<QFont>
+#include<QGraphicsSimpleTextItem>
 
-// issues with rotation and itemignorestransformations
 
-class AlignedTextGraphicsItem : public QGraphicsItem{
-
+class AlignedTextGraphicsItem : public QGraphicsSimpleTextItem
+{
 public:
-
-    AlignedTextGraphicsItem( QString text, QGraphicsItem* parent=0);
-
-    const QString& text()const{
-        return m_text;
-    }
-
-    const QFont& font()const{
-        return m_font;
-    }
-
-    const Qt::Alignment hAlign()const{
-        return m_halign;
-    }
-
-    const Qt::Alignment vAlign()const{
-        return m_valign;
-    }
-
-    void setText( QString& t);
-
-    void setFont(QFont font);
-
-    void setHAlign( Qt::Alignment a);
-
-    void setVAlign( Qt::Alignment a);
-
+    AlignedTextGraphicsItem(QString text="", Qt::Alignment align=Qt::AlignCenter, double rot=0,
+                            QGraphicsItem* parent=nullptr);
     QRectF boundingRect()const;
-
 protected:
-
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
 private:
-
-    QString m_text;
-    QFont m_font;
-    Qt::Alignment m_halign=Qt::AlignHCenter;
-    Qt::Alignment m_valign=Qt::AlignVCenter;
+    Qt::Alignment m_align;
+    double m_rot;
 };
 
 #endif // ALIGNEDTEXTGRAPHICSITEM_H

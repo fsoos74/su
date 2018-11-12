@@ -25,6 +25,7 @@
 #include<QProgressDialog>
 #include<QSettings>
 #include<QPointF>
+    //void invalidateBuffers();
 #include<QDateTime>
 
 #include<xgrwriter.h>

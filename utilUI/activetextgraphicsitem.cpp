@@ -3,7 +3,7 @@
 #include<QPainter>
 
 ActiveTextGraphicsItem::ActiveTextGraphicsItem( QString text, size_t id, QGraphicsItem* parent)
-        : AlignedTextGraphicsItem( text, parent), m_id(id){
+        : AlignedTextGraphicsItem( text, Qt::AlignCenter, 0, parent), m_id(id){
 
     setAcceptHoverEvents(true);
 }

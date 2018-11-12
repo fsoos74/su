@@ -176,19 +176,13 @@ void GridItem::updateLabels(){
 
         // left label
 
-        auto il1=new AlignedTextGraphicsItem(text, this);
-        il1->setHAlign(Qt::AlignRight);
-        il1->setVAlign(Qt::AlignVCenter);
+        auto il1=new AlignedTextGraphicsItem(text, Qt::AlignRight|Qt::AlignVCenter,90,this);
         il1->setPos(ix, 0);
-        il1->setRotation(90);
         m_labelItems.push_back(il1);
 
         // right label
-        auto il2=new AlignedTextGraphicsItem(text, this);
-        il2->setHAlign(Qt::AlignLeft);
-        il2->setVAlign(Qt::AlignVCenter);
+        auto il2=new AlignedTextGraphicsItem(text, Qt::AlignLeft|Qt::AlignVCenter,90,this);
         il2->setPos(ix, bounds.width());
-        il2->setRotation(90);
         m_labelItems.push_back(il2);
 
     }
@@ -205,18 +199,12 @@ void GridItem::updateLabels(){
         QString text=QString(" xl%1 ").arg(xl);
 
         // bottom label
-        auto xl1=new AlignedTextGraphicsItem(text, this);
-        xl1->setRotation(0);
+        auto xl1=new AlignedTextGraphicsItem(text, Qt::AlignRight|Qt::AlignVCenter,0,this);
         xl1->setPos( 0 , iy );
-        xl1->setHAlign(Qt::AlignRight);
-        xl1->setVAlign(Qt::AlignVCenter);
         m_labelItems.push_back(xl1);
 
         // top label
-        auto xl2=new AlignedTextGraphicsItem(text, this);
-        xl2->setHAlign(Qt::AlignLeft);
-        xl2->setVAlign(Qt::AlignVCenter);
-        xl2->setRotation(0);
+        auto xl2=new AlignedTextGraphicsItem(text, Qt::AlignLeft|Qt::AlignVCenter,0,this);
         xl2->setPos(bounds.height(), iy);
         m_labelItems.push_back(xl2);
     }
