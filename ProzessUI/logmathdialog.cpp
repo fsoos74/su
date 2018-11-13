@@ -20,8 +20,8 @@ LogMathDialog::LogMathDialog(QWidget *parent) :
     connect( ui->leOutput, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbInput1, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateWells()) );
     connect( ui->cbInput2, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateWells()) );
-
-    ui->cbFunction->addItems(MathProcessor::opList());
+    connect( ui->cbFunction, SIGNAL(currentIndexChanged(int)), this, SLOT(updateWells()) );
+    ui->cbFunction->addItems(MathProcessor::opList("Log"));
 }
 
 LogMathDialog::~LogMathDialog()
@@ -33,7 +33,7 @@ QMap<QString,QString> LogMathDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( "function", ui->cbFunction->currentText() );
+    p.insert( "function", MathProcessor::toFunctionString( ui->cbFunction->currentText(), "Log") );
 
     auto wellList=selectedWells();
     for( auto i=0; i<wellList.size(); i++){
@@ -44,7 +44,8 @@ QMap<QString,QString> LogMathDialog::params(){
     p.insert( "description", ui->leDescr->text());
 
     p.insert( "input-log1", ui->cbInput1->currentText() );
-    p.insert( "input-log2", (ui->cbInput2->isEnabled()) ? ui->cbInput2->currentText() : "" );
+    bool input2=ui->cbFunction->currentText().contains("Log2");
+    p.insert( "input-log2", (input2) ? ui->cbInput2->currentText() : "" );
 
     p.insert( "value", ui->leValue->text());
 
@@ -115,23 +116,18 @@ void LogMathDialog::updateWells(){
         log2=ui->cbInput2->currentText();
     }
 
+    bool input2=ui->cbFunction->currentText().contains("Log2");
     for( auto well : m_project->wellList() ){
 
         auto loglist=m_project->logList(well);
-        if( loglist.contains(log1) && (log2.isEmpty() || loglist.contains(log2)) ){
-            welllist.push_back(well);
+        if( loglist.contains(log1)){
+            if((!input2) || (input2 && loglist.contains(log2)) ){
+                welllist.push_back(well);
+            }
         }
     }
 
     ui->lwWells->addItems(welllist);
-}
-
-
-
-void LogMathDialog::on_cbFunction_currentIndexChanged(QString arg1)
-{
-    ui->leValue->setEnabled(arg1.contains("Value"));
-    ui->cbInput2->setEnabled(arg1.contains("Input2"));
 }
 
 

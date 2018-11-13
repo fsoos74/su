@@ -32,16 +32,28 @@ QMap<MathProcessor::OP, QString> op_name_lookup{
 
 }
 
-QString MathProcessor::toQString(OP op){
-    return op_name_lookup.value(op, op_name_lookup.value(OP::SET_V));
+QString MathProcessor::toUserString(QString str, QString inputName){
+    return str.replace("Input", inputName);
 }
 
-MathProcessor::OP MathProcessor::toOP(QString name){
-    return op_name_lookup.key(name, OP::SET_V);
+QString MathProcessor::toFunctionString(QString str, QString inputName){
+    return str.replace(inputName, "Input");
 }
 
-QStringList MathProcessor::opList(){
-    return op_name_lookup.values();
+QString MathProcessor::toQString(OP op, QString inputName){
+    return toUserString(op_name_lookup.value(op, op_name_lookup.value(OP::SET_V)), inputName);
+}
+
+MathProcessor::OP MathProcessor::toOP(QString name, QString inputName){
+    return op_name_lookup.key(toFunctionString(name, inputName), OP::SET_V);
+}
+
+QStringList MathProcessor::opList(QString inputName){
+    QStringList list;
+    for( auto str : op_name_lookup.values()){
+        list.append(toUserString(str,inputName));
+    }
+    return list;
 }
 
 MathProcessor::MathProcessor() : m_op(OP::SET_V), m_input1(0), m_input2(0), m_value(0), m_inputNullValue(NULL_VALUE)

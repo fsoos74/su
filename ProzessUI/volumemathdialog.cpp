@@ -16,7 +16,7 @@ VolumeMathDialog::VolumeMathDialog(QWidget *parent) :
 
     connect( ui->leOutput, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
 
-    ui->cbFunction->addItems(MathProcessor::opList());
+    ui->cbFunction->addItems(MathProcessor::opList("Volume"));
 }
 
 VolumeMathDialog::~VolumeMathDialog()
@@ -28,14 +28,14 @@ QMap<QString,QString> VolumeMathDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("function"), ui->cbFunction->currentText() );
-    p.insert( QString("output-volume"), ui->leOutput->text() );
-    p.insert( QString("input-volume1"), ui->cbInput1->currentText() );
-    bool input2=ui->cbFunction->currentText().contains("Input2");
-    p.insert( QString("input-volume2"), (input2) ? ui->cbInput2->currentText() : "" );
-    p.insert(QString("value"), ui->leValue->text());
-    p.insert( QString("top-horizon"), ui->cbTopHorizon->currentText() );
-    p.insert( QString("bottom-horizon"), ui->cbBottomHorizon->currentText() );
+    p.insert( "function", MathProcessor::toFunctionString(ui->cbFunction->currentText(), "Volume" ) );
+    p.insert( "output-volume", ui->leOutput->text() );
+    p.insert( "input-volume1", ui->cbInput1->currentText() );
+    bool input2=ui->cbFunction->currentText().contains("Volume2");
+    p.insert( "input-volume2", (input2) ? ui->cbInput2->currentText() : "" );
+    p.insert("value", ui->leValue->text());
+    p.insert( "top-horizon", ui->cbTopHorizon->currentText() );
+    p.insert( "bottom-horizon", ui->cbBottomHorizon->currentText() );
 
     return p;
 }

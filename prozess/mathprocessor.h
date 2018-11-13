@@ -45,9 +45,11 @@ public:
 
     double compute();
 
-    static QStringList opList();
-    static QString toQString(OP);
-    static OP toOP(QString);
+    static QStringList opList(QString inputName="Input");
+    static QString toUserString(QString,QString inputName);
+    static QString toFunctionString(QString, QString inputName);
+    static QString toQString(OP, QString inputName="Input");
+    static OP toOP(QString, QString inputName="Input");
 
 private:
 

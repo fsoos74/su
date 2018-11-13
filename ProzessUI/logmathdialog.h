@@ -26,7 +26,6 @@ public slots:
     void setProject(AVOProject*);
 
 private slots:
-    void on_cbFunction_currentIndexChanged(QString arg1);
     QStringList selectedWells();
     void updateLogs();
     void updateWells();

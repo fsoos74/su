@@ -29,7 +29,7 @@ GridMathDialog::GridMathDialog(QWidget *parent) :
     ui->cbInput1Type->addItems(gtypes);
     ui->cbInput2Type->addItems(gtypes);
 
-    ui->cbFunction->addItems(MathProcessor::opList());
+    ui->cbFunction->addItems(MathProcessor::opList("Grid"));
 }
 
 GridMathDialog::~GridMathDialog()
@@ -41,20 +41,18 @@ QMap<QString,QString> GridMathDialog::params(){
 
     QMap<QString, QString> p;
 
-    p.insert( QString("function"), ui->cbFunction->currentText() );
+    p.insert( "function", MathProcessor::toFunctionString(ui->cbFunction->currentText(), "Grid") );
 
-    p.insert( QString("output-type"), ui->cbOutputType->currentText() );
-    p.insert( QString("output-name"), ui->leOutput->text() );
+    p.insert( "output-type", ui->cbOutputType->currentText() );
+    p.insert( "output-name", ui->leOutput->text() );
 
-    p.insert( QString("input-grid1-type"), ui->cbInput1Type->currentText() );
-    p.insert( QString("input-grid1"), ui->cbInput1->currentText() );
+    p.insert( "input-grid1-type", ui->cbInput1Type->currentText() );
+    p.insert( "input-grid1", ui->cbInput1->currentText() );
 
-    p.insert( QString("input-grid2-type"), ui->cbInput2Type->currentText() );
-    p.insert( QString("input-grid2"), (ui->cbInput2Type->isEnabled()) ? ui->cbInput2->currentText() : "" );
-
-    //if( ui->leValue->isEnabled()){
-        p.insert(QString("value"), ui->leValue->text());
-    //}
+    bool input2=ui->cbFunction->currentText().contains("Grid2");
+    p.insert( "input-grid2-type", ui->cbInput2Type->currentText() );
+    p.insert( "input-grid2", (input2) ? ui->cbInput2->currentText() : "" );
+    p.insert(QString("value"), ui->leValue->text());
 
     return p;
 }
@@ -85,13 +83,6 @@ void GridMathDialog::updateInputGrids(){
     if(!items2.isEmpty()) ui->cbInput2->addItems(items2);
 
     updateOkButton();
-}
-
-void GridMathDialog::on_cbFunction_currentIndexChanged(QString arg1)
-{
-    ui->leValue->setEnabled(arg1.contains("Value"));
-    ui->cbInput2->setEnabled(arg1.contains("Input2"));
-    ui->cbInput2Type->setEnabled(arg1.contains("Input2"));
 }
 
 
