@@ -327,7 +327,7 @@ void SeismicDataSelector::readGather(){
 
 
 void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
-//std::cout<<"SeismicDataSelector::provideRandomLine"<<std::endl;
+std::cout<<"SeismicDataSelector::provideRandomLine"<<std::endl;
 //std::cout<<"#points="<<polyline.size()<<std::endl;
     if( !m_reader ) return;
 
@@ -408,9 +408,15 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
     allPoints.append(polyline.last()); // dont forget endpoint of last segment
 
     // fill gather
+    QVector<std::pair<QString,QString>> values;
+    for( QPoint point : allPoints){
+        values.append(std::make_pair(QString::number(point.y()), QString::number(point.x())));
+    }
+    m_gather=m_reader->readGather("iline","xline",values);
+    /*
     std::shared_ptr<seismic::Gather> gather( new seismic::Gather);
     for( QPoint point : allPoints){
-//std::cout<<"adding trace il="<<point.x()<<" xl="<<point.y()<<std::endl;
+std::cout<<"adding trace il="<<point.x()<<" xl="<<point.y()<<std::endl;
         //std::shared_ptr<seismic::Trace> trace=m_reader->readFirstTrace("iline", QString::number(point.x()),
         //                                                               "xline", QString::number(point.y()));
         std::shared_ptr<seismic::Trace> trace=m_reader->readFirstTrace("iline", QString::number(point.y()),         // changed this inline is y???
@@ -425,6 +431,7 @@ void SeismicDataSelector::provideRandomLine(QVector<QPoint> polyline){
 
     m_gather=gather;
 //std::cout<<"gather size="<<m_gather->size()<<std::endl;
+*/
     emit gatherChanged(m_gather);
 }
 

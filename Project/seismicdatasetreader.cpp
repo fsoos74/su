@@ -487,8 +487,8 @@ std::shared_ptr<seismic::Trace> SeismicDatasetReader::readFirstTrace( const QStr
                                                      const QString& key2, const QString& value2){
 
     QSqlQuery query("firsttrace2", m_db);
-    query.prepare(QString("select * from map where %1==%2 and %3==%4 ").arg(key1, value1, key2, value2 ) );
-    if( !query.exec()){
+    QString str=QString("select * from map where %1==%2 and %3==%4 ").arg(key1, value1, key2, value2 );
+    if( !query.exec(str)){
         throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));
     }
 
@@ -553,6 +553,65 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
     }
 
     // determine size, size() does not work for sqlite
+    query.last();
+    int n=query.at();
+    if(n>maxTraces) n=maxTraces;
+    query.first();
+    std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
+
+    emit started(n);
+    qApp->processEvents();
+
+   // auto progress=new QProgressDialog("Reading traces...","",0,query.size());
+   // progress->show();
+   // qApp->processEvents();
+
+    while( query.next() && gather->size()<maxTraces){
+
+        bool ok=false;
+        int traceNo=query.value("trace").toInt(&ok);
+        if( !ok){
+            throw Exception(QString("Accessing trace number failed!"));
+        }
+
+        m_reader->seek_trace(traceNo);
+
+        auto trc=m_reader->read_trace();
+
+        addDData(trc);
+
+        gather->push_back(trc);
+
+        emit progress(gather->size());
+        //progress->setValue(gather->size());
+        //std::cout<<gather->size()<<" of "<<n<<std::endl<<std::flush;
+        qApp->processEvents();
+    }
+
+    emit finished();
+    //progress->close();
+    qApp->processEvents();
+
+    return gather;
+}
+
+std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString& key1, const QString& key2,
+                                                 QVector<std::pair<QString,QString>> values,
+                                                                   size_t maxTraces){
+    QString str=QString("select * from map where (%1,%2) in (values").arg(key1).arg(key2);
+    for( int i=0; i<values.size(); i++){
+        auto v12=values[i];
+        auto s=QString("(%1,%2)").arg(v12.first).arg(v12.second);
+        str+=s;
+        if(i+1<values.size()) str+=",";
+    }
+    str+=");";
+
+    QSqlQuery query("gather multiple keys", m_db);
+    if( !query.exec(str)){
+        throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));
+    }
+
     query.last();
     int n=query.at();
     if(n>maxTraces) n=maxTraces;
