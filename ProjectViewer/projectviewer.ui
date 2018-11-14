@@ -28,7 +28,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="datasetsTab">
        <attribute name="title">
@@ -347,9 +347,6 @@
     </property>
     <addaction name="actionImportLogs"/>
     <addaction name="action_Logs_Bulk_Mode"/>
-    <addaction name="actionWellpath"/>
-    <addaction name="actionWellpaths_Bulk_Mode"/>
-    <addaction name="actionWell_Markers"/>
     <addaction name="actionExportLog"/>
     <addaction name="separator"/>
     <addaction name="action_Smooth_Log"/>
@@ -362,12 +359,16 @@
     <addaction name="actionNN_Log_Interpolation"/>
     <addaction name="separator"/>
     <addaction name="actionVShale_Computation"/>
-    <addaction name="actionTops_from_Horizon"/>
     <addaction name="actionBuild_Volume"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Log_Script"/>
     <addaction name="separator"/>
+    <addaction name="actionWellpath"/>
+    <addaction name="actionWellpaths_Bulk_Mode"/>
+    <addaction name="separator"/>
+    <addaction name="actionWell_Markers"/>
     <addaction name="actionEdit_Tops"/>
+    <addaction name="actionTops_from_Horizon"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Table">
     <property name="title">
@@ -380,7 +381,7 @@
    </widget>
    <widget class="QMenu" name="menuPro_ject">
     <property name="title">
-     <string>P&amp;roject</string>
+     <string>Pro&amp;ject</string>
     </property>
     <widget class="QMenu" name="menu_Recent_Projects">
      <property name="title">
@@ -424,7 +425,7 @@
   </action>
   <action name="actionQuit">
    <property name="text">
-    <string>E&amp;xit</string>
+    <string>Exit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
@@ -464,7 +465,7 @@
   </action>
   <action name="actionSaveProjectAs">
    <property name="text">
-    <string>Save &amp;As</string>
+    <string>Sa&amp;ve As</string>
    </property>
    <property name="iconText">
     <string>Save the project with a new name</string>
@@ -484,6 +485,9 @@
    <property name="iconText">
     <string>Open a project</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionCreateTimeslice">
    <property name="text">
@@ -495,12 +499,12 @@
   </action>
   <action name="actionHorizon_Semblance">
    <property name="text">
-    <string>Horizon &amp;Semblance</string>
+    <string>Ho&amp;rizon Semblance</string>
    </property>
   </action>
   <action name="actionCompute_Intercept_Gradient">
    <property name="text">
-    <string>I&amp;ntercept and Gradient Grids</string>
+    <string>Intercept and &amp;Gradient Grids</string>
    </property>
   </action>
   <action name="actionHorizon_Amplitudes">
@@ -514,7 +518,7 @@
      <normaloff>:/icons/images/crossplot-grids-32x32.png</normaloff>:/icons/images/crossplot-grids-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Crossplot &amp;Grids</string>
+    <string>&amp;Crossplot Grids</string>
    </property>
   </action>
   <action name="actionAmplitude_vs_Offset_Plot">
@@ -534,17 +538,17 @@
   </action>
   <action name="actionCompute_Intercept_and_Gradient_Volumes">
    <property name="text">
-    <string>Intercept and &amp;Gradient Volumes</string>
+    <string>I&amp;ntercept and Gradient Volumes</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Grid">
    <property name="text">
-    <string>&amp;Fluid Factor Grid</string>
+    <string>Fluid Factor Grid</string>
    </property>
   </action>
   <action name="actionFluid_Factor_Volume">
    <property name="text">
-    <string>&amp;Fluid Factor Volume</string>
+    <string>Fluid Factor Volume</string>
    </property>
   </action>
   <action name="actionImportAttributeGrid">
@@ -575,12 +579,12 @@
   </action>
   <action name="actionExportVolume">
    <property name="text">
-    <string>E&amp;xport</string>
+    <string>&amp;Export</string>
    </property>
   </action>
   <action name="actionImportVolume">
    <property name="text">
-    <string>Import</string>
+    <string>&amp;Import</string>
    </property>
    <property name="toolTip">
     <string>Import a volume</string>
@@ -588,12 +592,15 @@
   </action>
   <action name="action_Geometry">
    <property name="text">
-    <string>Edit &amp;Geometry</string>
+    <string>&amp;Edit Geometry</string>
    </property>
   </action>
   <action name="action_About">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
    </property>
   </action>
   <action name="actionCrossplot_Volumes">
@@ -602,7 +609,7 @@
      <normaloff>:/icons/images/crossplot-volumes-32x32.png</normaloff>:/icons/images/crossplot-volumes-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Crossplot &amp;Volumes</string>
+    <string>C&amp;rossplot Volumes</string>
    </property>
   </action>
   <action name="actionRun_Grid_User_Script">
@@ -622,12 +629,12 @@
   </action>
   <action name="actionExportProject">
    <property name="text">
-    <string>&amp;Project</string>
+    <string>Project</string>
    </property>
   </action>
   <action name="actionAxis_Orientation">
    <property name="text">
-    <string>Axis &amp;Orientation</string>
+    <string>Axis Orientation</string>
    </property>
   </action>
   <action name="actionVolume_Amplitudes">
@@ -637,7 +644,7 @@
   </action>
   <action name="actionVolume_Semblance">
    <property name="text">
-    <string>Volume &amp;Semblance</string>
+    <string>Vol&amp;ume Semblance</string>
    </property>
   </action>
   <action name="actionCloseProject">
@@ -647,12 +654,12 @@
   </action>
   <action name="actionSecondary_Attribute_Grids">
    <property name="text">
-    <string>Secondar&amp;y Attribute Grids</string>
+    <string>Secon&amp;dary AVO Attribute Grids</string>
    </property>
   </action>
   <action name="actionSecondary_Attribute_Volumes">
    <property name="text">
-    <string>Secondar&amp;y Attribute Volumes</string>
+    <string>Secondary AVO Attribute Volumes</string>
    </property>
   </action>
   <action name="actionFf">
@@ -662,7 +669,7 @@
   </action>
   <action name="actionTrend_Based_Attribute_Grids">
    <property name="text">
-    <string>Trend &amp;Based Attribute Grids</string>
+    <string>&amp;Trend Based AVO Attribute Grids</string>
    </property>
   </action>
   <action name="actionTrend_Based_Attribute_Volumes">
@@ -672,7 +679,7 @@
   </action>
   <action name="actionDisplay_Map">
    <property name="text">
-    <string>Display &amp;Map</string>
+    <string>&amp;Display Map</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -680,7 +687,7 @@
   </action>
   <action name="action_3D_Viewer">
    <property name="text">
-    <string>&amp;3D Viewer</string>
+    <string>3D Viewer</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+3</string>
@@ -698,7 +705,7 @@
   </action>
   <action name="actionSmooth_Grid">
    <property name="text">
-    <string>Smooth &amp;Grid</string>
+    <string>&amp;Smooth Grid</string>
    </property>
   </action>
   <action name="actionCrop_Grid">
@@ -711,7 +718,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Volume Curvature</string>
+    <string>Volume Curvature</string>
    </property>
   </action>
   <action name="actionHorizon_Frequencies">
@@ -721,17 +728,17 @@
   </action>
   <action name="actionColor_Composite_Grids">
    <property name="text">
-    <string>&amp;Color Composite Grids</string>
+    <string>Color Composite &amp;Grids</string>
    </property>
   </action>
   <action name="actionVolume_Frequencies">
    <property name="text">
-    <string>Volume &amp;Frequencies</string>
+    <string>Vo&amp;lume Frequencies</string>
    </property>
   </action>
   <action name="actionFrequency_Spectrum_Plot">
    <property name="text">
-    <string>Frequency &amp;Spectrum Plot</string>
+    <string>&amp;Frequency Spectrum Plot</string>
    </property>
   </action>
   <action name="actionHorizon_Curvature">
@@ -741,22 +748,22 @@
   </action>
   <action name="actionGrid_Math">
    <property name="text">
-    <string>Grid &amp;Math</string>
+    <string>&amp;Grid Math</string>
    </property>
   </action>
   <action name="actionInstantaneous_Attribute_Volumes">
    <property name="text">
-    <string>&amp;Instantaneous Attribute Volumes</string>
+    <string>Instantaneous Attri&amp;bute Volumes</string>
    </property>
   </action>
   <action name="actionExtract_Timeslice">
    <property name="text">
-    <string>&amp;Extract Timeslice</string>
+    <string>E&amp;xtract Timeslice</string>
    </property>
   </action>
   <action name="actionExtract_Dataset">
    <property name="text">
-    <string>Convert to &amp;Dataset</string>
+    <string>Convert to Dataset</string>
    </property>
   </action>
   <action name="action_Offset_Stack">
@@ -771,7 +778,7 @@
   </action>
   <action name="actionReplace_Bad_Traces">
    <property name="text">
-    <string>&amp;Replace Bad Traces</string>
+    <string>Replace Bad Traces</string>
    </property>
   </action>
   <action name="actionOpen_2DViewer">
@@ -780,7 +787,7 @@
      <normaloff>:/icons/images/2dviewer-32x32.png</normaloff>:/icons/images/2dviewer-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Open &amp;2D Viewer</string>
+    <string>&amp;Open 2D Viewer</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+2</string>
@@ -788,27 +795,27 @@
   </action>
   <action name="actionVolume_Variance">
    <property name="text">
-    <string>V&amp;olume Variance</string>
+    <string>Volume Variance</string>
    </property>
   </action>
   <action name="actionFlatten_Volume">
    <property name="text">
-    <string>F&amp;latten Volume</string>
+    <string>&amp;Flatten Volume</string>
    </property>
   </action>
   <action name="actionUnflatten_Volume">
    <property name="text">
-    <string>&amp;Unflatten Volume</string>
+    <string>Unflatten Volume</string>
    </property>
   </action>
   <action name="actionVolume_Statistics">
    <property name="text">
-    <string>V&amp;olume Statistics</string>
+    <string>Volume Statistics</string>
    </property>
   </action>
   <action name="actionImportLogs">
    <property name="text">
-    <string>Import Lo&amp;gs</string>
+    <string>&amp;Import Logs</string>
    </property>
    <property name="toolTip">
     <string>Import logs from a single well</string>
@@ -820,7 +827,7 @@
      <normaloff>:/icons/images/crossplot-logs-32x32.png</normaloff>:/icons/images/crossplot-logs-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Crossplot &amp;Logs</string>
+    <string>Crossplot Logs</string>
    </property>
   </action>
   <action name="actionOpen_3D_Viewer">
@@ -837,17 +844,17 @@
   </action>
   <action name="actionBuild_Volume">
    <property name="text">
-    <string>Build &amp;Volume</string>
+    <string>&amp;Build Volume (From Logs)</string>
    </property>
   </action>
   <action name="actionVolume_Math">
    <property name="text">
-    <string>Volume &amp;Math</string>
+    <string>&amp;Volume Math</string>
    </property>
   </action>
   <action name="action_Logs_Bulk_Mode">
    <property name="text">
-    <string>Import Logs (&amp;Bulk Mode)</string>
+    <string>Import Logs (Bulk &amp;Mode)</string>
    </property>
    <property name="toolTip">
     <string>Import logs from multiple wells</string>
@@ -855,7 +862,7 @@
   </action>
   <action name="actionWellpaths_Bulk_Mode">
    <property name="text">
-    <string>Import Wellpaths (B&amp;ulk Mode)</string>
+    <string>Im&amp;port Wellpaths (Bulk Mode)</string>
    </property>
    <property name="toolTip">
     <string>Import the eell paths of multiple wells</string>
@@ -871,7 +878,7 @@
   </action>
   <action name="actionTest">
    <property name="text">
-    <string>&amp;test</string>
+    <string>test</string>
    </property>
   </action>
   <action name="actionOpen_Log_Viewer">
@@ -880,7 +887,7 @@
      <normaloff>:/icons/images/logviewer-32x32.png</normaloff>:/icons/images/logviewer-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open Log Viewer</string>
+    <string>Open Log &amp;Viewer</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
@@ -888,17 +895,17 @@
   </action>
   <action name="actionCreate_New_Volume">
    <property name="text">
-    <string>New</string>
+    <string>&amp;New</string>
    </property>
   </action>
   <action name="actionCreate_New_Grid">
    <property name="text">
-    <string>New</string>
+    <string>&amp;New</string>
    </property>
   </action>
   <action name="actionLog_Math">
    <property name="text">
-    <string>Log &amp;Math</string>
+    <string>&amp;Log Math</string>
    </property>
   </action>
   <action name="actionRun_Log_Script">
@@ -913,7 +920,7 @@
   </action>
   <action name="actionLog_Integration">
    <property name="text">
-    <string>Log &amp;Integration</string>
+    <string>L&amp;og Integration</string>
    </property>
   </action>
   <action name="actionVolume_Dip">
@@ -949,47 +956,47 @@
      <normaloff>:/icons/images/logscatter-32x32.png</normaloff>:/icons/images/logscatter-32x32.png</iconset>
    </property>
    <property name="text">
-    <string>Log(s) vs &amp;Z Scatter Plot</string>
+    <string>&amp;Log(s) vs Z Scatter Plot</string>
    </property>
   </action>
   <action name="actionEdit_Tops">
    <property name="text">
-    <string>&amp;Edit Tops</string>
+    <string>E&amp;dit Tops</string>
    </property>
   </action>
   <action name="actionFD_CDP_Acoustic">
    <property name="text">
-    <string>&amp;FD CDP 2D (Acoustic)</string>
+    <string>FD CDP 2D (Acoustic)</string>
    </property>
   </action>
   <action name="actionNN_Log_Interpolation">
    <property name="text">
-    <string>&amp;NN Log Interpolation</string>
+    <string>NN Log Interpolation</string>
    </property>
   </action>
   <action name="actionTrain_NN_Log">
    <property name="text">
-    <string>NN &amp;Log Trainer *</string>
+    <string>NN Lo&amp;g Trainer *</string>
    </property>
   </action>
   <action name="actionNN_Log_old">
    <property name="text">
-    <string>NN Log (&amp;old)</string>
+    <string>&amp;NN Log (old)</string>
    </property>
   </action>
   <action name="actionVShale_Computation">
    <property name="text">
-    <string>VShale &amp;Computation</string>
+    <string>&amp;VShale Computation</string>
    </property>
   </action>
   <action name="actiontest">
    <property name="text">
-    <string>&amp;Test</string>
+    <string>Test</string>
    </property>
   </action>
   <action name="actionExportLog">
    <property name="text">
-    <string>E&amp;xport Log</string>
+    <string>&amp;Export Log</string>
    </property>
   </action>
   <action name="actionPunch_Out_Volume">
@@ -1014,22 +1021,22 @@
   </action>
   <action name="actionStack_To_Gather">
    <property name="text">
-    <string>Stac&amp;k To Gather</string>
+    <string>&amp;Stack To Gather</string>
    </property>
   </action>
   <action name="actionVolume_IO_Test">
    <property name="text">
-    <string>&amp;Volume IO Test</string>
+    <string>Volume IO Test</string>
    </property>
   </action>
   <action name="actionIntercept_And_Gradient_Volume_old">
    <property name="text">
-    <string>&amp;Intercept And Gradient Volume (old)</string>
+    <string>Intercept And Gradient Volume (old)</string>
    </property>
   </action>
   <action name="actionNN_Volume_Trainer">
    <property name="text">
-    <string>NN Vol&amp;ume Trainer*</string>
+    <string>NN Volume Trainer*</string>
    </property>
   </action>
   <action name="actionNN_Volume_Classification">
@@ -1049,17 +1056,17 @@
   </action>
   <action name="actionMerge_Volumes">
    <property name="text">
-    <string>Mer&amp;ge Volumes</string>
+    <string>&amp;Merge Volumes</string>
    </property>
   </action>
   <action name="actionVolume_Time_Depth_Conversion">
    <property name="text">
-    <string>Volume Time/Dept&amp;h Conversion</string>
+    <string>V&amp;olume Time/Depth Conversion</string>
    </property>
   </action>
   <action name="actionCopy_Log">
    <property name="text">
-    <string>Co&amp;py Log</string>
+    <string>&amp;Copy Log</string>
    </property>
   </action>
   <action name="actionRecent_Projects">

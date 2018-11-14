@@ -110,6 +110,7 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
     std::shared_ptr<Volume> gangle;
     std::shared_ptr<Volume> gazimuth;
 
+    try{
     if( m_output_attributes.contains(MIN_CURVATURE_STR)) gmin=std::make_shared<Volume>(bounds);
     if( m_output_attributes.contains(MAX_CURVATURE_STR)) gmax=std::make_shared<Volume>(bounds);
     if( m_output_attributes.contains(MEAN_CURVATURE_STR)) gmean=std::make_shared<Volume>(bounds);
@@ -118,6 +119,19 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
     if( m_output_attributes.contains(MAX_NEG_CURVATURE_STR)) gneg=std::make_shared<Volume>(bounds);
     if( m_output_attributes.contains(DIP_ANGLE_STR)) gangle=std::make_shared<Volume>(bounds);
     if( m_output_attributes.contains(DIP_AZIMUTH_STR)) gazimuth=std::make_shared<Volume>(bounds);
+    }
+    catch(...){
+        gmean.reset();
+        ggauss.reset();
+        gmin.reset();
+        gmax.reset();
+        gpos.reset();
+        gneg.reset();
+        gangle.reset();
+        gazimuth.reset();
+        setErrorString("Error allocating attribute volumes!");
+        return ResultCode::Error;
+    }
 
     int onePercent=(bounds.i2()-bounds.i1()+1)/100 + 1; // adding one to avoids possible division by zero
 
