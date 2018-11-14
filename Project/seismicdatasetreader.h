@@ -4,6 +4,7 @@
 
 #include "seismicdatasetinfo.h"
 #include<QtSql/QtSql>
+#include<QVector>
 #include <memory>
 #include <stdexcept>
 #include <segyreader.h>
@@ -53,8 +54,8 @@ public:
                                                  const QString& key2, const QString& min2, const QString& max2,
                                                  size_t maxTraces=999999999);
     std::shared_ptr<seismic::Gather> readGather( const QString& key1, const QString& key2,
-                                                 QVector<std::pair<QString,QString>> values,
-                                                 size_t maxTraces=999999999);
+                                                 QVector<std::pair<QString,QString>> values);
+
     int minInline();
     int maxInline();
     int minCrossline();

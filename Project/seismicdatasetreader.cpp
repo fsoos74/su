@@ -595,9 +595,53 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
     return gather;
 }
 
+/*
+// only poststack for now, this works!
 std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString& key1, const QString& key2,
-                                                 QVector<std::pair<QString,QString>> values,
-                                                                   size_t maxTraces){
+                                                 QVector<std::pair<QString,QString>> values){
+
+    emit started(values.size());
+    qApp->processEvents();
+
+    std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
+    QSqlQuery query("gather multiple keys", m_db);
+    for( auto v12 : values){
+
+        QString str=QString("select * from map where %1=%2 and %3=%4;").
+                arg(key1, v12.first, key2, v12.second);
+        //std::cout<<str.toStdString()<<std::endl;
+        if( !query.exec(str)){
+            throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));
+        }
+
+        if( !query.next()) continue;
+        bool ok=false;
+        auto traceNo=query.value("trace").toInt(&ok);
+        if( !ok){
+            throw Exception(QString("Accessing trace number failed!"));
+        }
+
+        m_reader->seek_trace(traceNo);
+        auto trc=m_reader->read_trace();
+        //std::cout<<"> il="<<trc.header()["iline"]<<" xl="<<trc.header()["xline"]<<std::endl;
+        addDData(trc);
+
+        gather->push_back(trc);
+
+        emit progress(gather->size());
+        qApp->processEvents();
+    }
+
+    emit finished();
+    qApp->processEvents();
+
+    return gather;
+}
+*/
+
+// for poststack data and integer keys only
+std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString& key1, const QString& key2,
+                                                 QVector<std::pair<QString,QString>> values){
     QString str=QString("select * from map where (%1,%2) in (values").arg(key1).arg(key2);
     for( int i=0; i<values.size(); i++){
         auto v12=values[i];
@@ -607,6 +651,8 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
     }
     str+=");";
 
+    // it is much faster to use a single query
+    // the results have to be sorted to retain the original order
     QSqlQuery query("gather multiple keys", m_db);
     if( !query.exec(str)){
         throw Exception(QString("Querying index file failed: %1").arg(m_db.lastError().text()));
@@ -614,41 +660,45 @@ std::shared_ptr<seismic::Gather> SeismicDatasetReader::readGather( const QString
 
     query.last();
     int n=query.at();
-    if(n>maxTraces) n=maxTraces;
     query.first();
-    std::shared_ptr<seismic::Gather> gather(new seismic::Gather());
 
-    emit started(n);
+    emit started(values.size());
     qApp->processEvents();
 
-   // auto progress=new QProgressDialog("Reading traces...","",0,query.size());
-   // progress->show();
-   // qApp->processEvents();
-
-    while( query.next() && gather->size()<maxTraces){
+    QVector<seismic::Trace> buf;
+    QMap<QString,int> lookup;
+    while( query.next() ){
 
         bool ok=false;
         int traceNo=query.value("trace").toInt(&ok);
         if( !ok){
             throw Exception(QString("Accessing trace number failed!"));
         }
-
         m_reader->seek_trace(traceNo);
-
         auto trc=m_reader->read_trace();
-
         addDData(trc);
 
-        gather->push_back(trc);
+        auto v1=trc.header()[key1.toStdString()].intValue();
+        auto v2=trc.header()[key2.toStdString()].intValue();
+        auto key=QString("%1_%2").arg(QString::number(v1),QString::number(v2));
+        std::cout<<">>>"<<key.toStdString()<<" -> "<<buf.size()<<std::endl;
+        lookup.insert( key, buf.size());
+        buf.push_back(trc);
 
-        emit progress(gather->size());
-        //progress->setValue(gather->size());
-        //std::cout<<gather->size()<<" of "<<n<<std::endl<<std::flush;
+        emit progress(buf.size());
         qApp->processEvents();
     }
 
+    // finally build gather in requested order
+    auto gather=std::make_shared<seismic::Gather>();
+    for(auto v12 : values){
+        auto key=QString("%1_%2").arg(v12.first, v12.second);
+        int idx=lookup.value(key,-1);
+        if(idx>=0) gather->push_back(buf[idx]);
+        std::cout<<"<<<"<<key.toStdString()<<" <- "<<idx<<std::endl;
+    }
+
     emit finished();
-    //progress->close();
     qApp->processEvents();
 
     return gather;

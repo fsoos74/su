@@ -350,7 +350,7 @@ std::cout<<"SeismicDataSelector::provideRandomLine"<<std::endl;
         QPoint p2=polyline[i];
         int dx=p2.x() - p1.x();
         int dy=p2.y() - p1.y();
-
+        std::cout<<"dx="<<dx<<" dy="<<dy<<std::endl;
         if( dx==0 ){
             if(dy>0){
                 for( int y=p1.y(); y<p2.y(); y++){
@@ -410,6 +410,7 @@ std::cout<<"SeismicDataSelector::provideRandomLine"<<std::endl;
     // fill gather
     QVector<std::pair<QString,QString>> values;
     for( QPoint point : allPoints){
+        std::cout<<"il="<<point.x()<<" xl="<<point.y()<<std::endl;
         values.append(std::make_pair(QString::number(point.y()), QString::number(point.x())));
     }
     m_gather=m_reader->readGather("iline","xline",values);
