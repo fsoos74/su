@@ -32,7 +32,7 @@
       </property>
       <widget class="QWidget" name="datasetsTab">
        <attribute name="title">
-        <string>Datasets</string>
+        <string>Seismic</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
@@ -227,75 +227,30 @@
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="menuProcess">
     <property name="title">
-     <string>&amp;File</string>
+     <string>&amp;Grid</string>
     </property>
-    <widget class="QMenu" name="menuImport">
-     <property name="toolTip">
-      <string/>
-     </property>
+    <widget class="QMenu" name="menuImport_2">
      <property name="title">
       <string>&amp;Import</string>
      </property>
-     <addaction name="actionImportSeismic"/>
-     <addaction name="separator"/>
      <addaction name="actionImportHorizon"/>
      <addaction name="actionImportAttributeGrid"/>
      <addaction name="actionImportOtherGrid"/>
-     <addaction name="separator"/>
-     <addaction name="actionImportVolume"/>
-     <addaction name="separator"/>
-     <addaction name="actionImportLogs"/>
-     <addaction name="action_Logs_Bulk_Mode"/>
-     <addaction name="actionWellpath"/>
-     <addaction name="actionWellpaths_Bulk_Mode"/>
-     <addaction name="actionWell_Markers"/>
-     <addaction name="separator"/>
-     <addaction name="actionImportTable"/>
     </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="toolTip">
-      <string/>
-     </property>
+    <widget class="QMenu" name="menuExport_2">
      <property name="title">
       <string>&amp;Export</string>
      </property>
      <addaction name="actionExportHorizon"/>
      <addaction name="actionExportAttributeGrid"/>
      <addaction name="actionExportOtherGrid"/>
-     <addaction name="separator"/>
-     <addaction name="actionExportVolume"/>
-     <addaction name="separator"/>
-     <addaction name="actionExportSeismic"/>
-     <addaction name="separator"/>
-     <addaction name="actionExportLog"/>
-     <addaction name="separator"/>
-     <addaction name="action_ExportTable"/>
     </widget>
-    <widget class="QMenu" name="menu_Recent_Projects">
-     <property name="title">
-      <string>&amp;Recent Projects</string>
-     </property>
-    </widget>
-    <addaction name="actionNewProject"/>
-    <addaction name="actionOpenProject"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveProjectAs"/>
-    <addaction name="separator"/>
-    <addaction name="menuImport"/>
-    <addaction name="menuExport"/>
-    <addaction name="actionImport_Attached_Datasets"/>
-    <addaction name="separator"/>
-    <addaction name="menu_Recent_Projects"/>
-    <addaction name="actionCloseProject"/>
-    <addaction name="actionQuit"/>
-   </widget>
-   <widget class="QMenu" name="menuProcess">
-    <property name="title">
-     <string>Process(&amp;Grid)</string>
-    </property>
     <addaction name="actionCreate_New_Grid"/>
+    <addaction name="menuImport_2"/>
+    <addaction name="menuExport_2"/>
+    <addaction name="separator"/>
     <addaction name="actionConvert_Grid"/>
     <addaction name="actionCrop_Grid"/>
     <addaction name="actionSmooth_Grid"/>
@@ -326,13 +281,6 @@
     <addaction name="actionOpen_3D_Viewer"/>
     <addaction name="actionOpen_Log_Viewer"/>
    </widget>
-   <widget class="QMenu" name="menuPro_ject">
-    <property name="title">
-     <string>P&amp;roject</string>
-    </property>
-    <addaction name="actionDisplay_Map"/>
-    <addaction name="action_Geometry"/>
-   </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
      <string>&amp;Help</string>
@@ -341,9 +289,12 @@
    </widget>
    <widget class="QMenu" name="menuProcess_Volume">
     <property name="title">
-     <string>Process(&amp;Volume)</string>
+     <string>&amp;Volume</string>
     </property>
     <addaction name="actionCreate_New_Volume"/>
+    <addaction name="actionImportVolume"/>
+    <addaction name="actionExportVolume"/>
+    <addaction name="separator"/>
     <addaction name="action_Crop_Volume"/>
     <addaction name="actionMerge_Volumes"/>
     <addaction name="actionPunch_Out_Volume"/>
@@ -371,8 +322,12 @@
    </widget>
    <widget class="QMenu" name="menuProcess_Seismic">
     <property name="title">
-     <string>Process(Seis&amp;mic)</string>
+     <string>Seis&amp;mic</string>
     </property>
+    <addaction name="actionImportSeismic"/>
+    <addaction name="actionExportSeismic"/>
+    <addaction name="actionImport_Attached_Datasets"/>
+    <addaction name="separator"/>
     <addaction name="actionCrop_Dataset"/>
     <addaction name="actionCreateTimeslice"/>
     <addaction name="actionHorizon_Amplitudes"/>
@@ -388,8 +343,15 @@
    </widget>
    <widget class="QMenu" name="menuProcess_Well">
     <property name="title">
-     <string>Pro&amp;cess(Well)</string>
+     <string>We&amp;ll</string>
     </property>
+    <addaction name="actionImportLogs"/>
+    <addaction name="action_Logs_Bulk_Mode"/>
+    <addaction name="actionWellpath"/>
+    <addaction name="actionWellpaths_Bulk_Mode"/>
+    <addaction name="actionWell_Markers"/>
+    <addaction name="actionExportLog"/>
+    <addaction name="separator"/>
     <addaction name="action_Smooth_Log"/>
     <addaction name="actionLog_Math"/>
     <addaction name="actionLog_Integration"/>
@@ -409,18 +371,39 @@
    </widget>
    <widget class="QMenu" name="menuProcess_Table">
     <property name="title">
-     <string>Process(T&amp;able)</string>
+     <string>T&amp;able</string>
     </property>
+    <addaction name="actionImportTable"/>
+    <addaction name="action_ExportTable"/>
+    <addaction name="separator"/>
     <addaction name="actionConvert_Picks_To_Horizon"/>
    </widget>
-   <addaction name="menu_File"/>
+   <widget class="QMenu" name="menuPro_ject">
+    <property name="title">
+     <string>P&amp;roject</string>
+    </property>
+    <widget class="QMenu" name="menu_Recent_Projects">
+     <property name="title">
+      <string>Open &amp;Recent </string>
+     </property>
+    </widget>
+    <addaction name="actionNewProject"/>
+    <addaction name="actionOpenProject"/>
+    <addaction name="menu_Recent_Projects"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSaveProjectAs"/>
+    <addaction name="actionCloseProject"/>
+    <addaction name="separator"/>
+    <addaction name="action_Geometry"/>
+    <addaction name="actionDisplay_Map"/>
+   </widget>
    <addaction name="menuPro_ject"/>
-   <addaction name="menu_Analyze"/>
    <addaction name="menuProcess_Seismic"/>
    <addaction name="menuProcess"/>
    <addaction name="menuProcess_Volume"/>
    <addaction name="menuProcess_Well"/>
    <addaction name="menuProcess_Table"/>
+   <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
   </widget>
   <action name="actionImportHorizon">
@@ -433,7 +416,7 @@
   </action>
   <action name="actionImportSeismic">
    <property name="text">
-    <string>&amp;Seismic</string>
+    <string>&amp;Import</string>
    </property>
    <property name="iconText">
     <string>Import Seismic</string>
@@ -517,7 +500,7 @@
   </action>
   <action name="actionCompute_Intercept_Gradient">
    <property name="text">
-    <string>&amp;Intercept and Gradient Grids</string>
+    <string>I&amp;ntercept and Gradient Grids</string>
    </property>
   </action>
   <action name="actionHorizon_Amplitudes">
@@ -592,12 +575,12 @@
   </action>
   <action name="actionExportVolume">
    <property name="text">
-    <string>&amp;Volume</string>
+    <string>E&amp;xport</string>
    </property>
   </action>
   <action name="actionImportVolume">
    <property name="text">
-    <string>&amp;Volume</string>
+    <string>Import</string>
    </property>
    <property name="toolTip">
     <string>Import a volume</string>
@@ -634,7 +617,7 @@
   </action>
   <action name="actionExportSeismic">
    <property name="text">
-    <string>&amp;Seismic</string>
+    <string>&amp;Export</string>
    </property>
   </action>
   <action name="actionExportProject">
@@ -825,7 +808,7 @@
   </action>
   <action name="actionImportLogs">
    <property name="text">
-    <string>&amp;Logs</string>
+    <string>Import Lo&amp;gs</string>
    </property>
    <property name="toolTip">
     <string>Import logs from a single well</string>
@@ -864,7 +847,7 @@
   </action>
   <action name="action_Logs_Bulk_Mode">
    <property name="text">
-    <string>Logs (&amp;Bulk Mode)</string>
+    <string>Import Logs (&amp;Bulk Mode)</string>
    </property>
    <property name="toolTip">
     <string>Import logs from multiple wells</string>
@@ -872,7 +855,7 @@
   </action>
   <action name="actionWellpaths_Bulk_Mode">
    <property name="text">
-    <string>Wellpaths (Bulk &amp;Mode)</string>
+    <string>Import Wellpaths (B&amp;ulk Mode)</string>
    </property>
    <property name="toolTip">
     <string>Import the eell paths of multiple wells</string>
@@ -880,7 +863,7 @@
   </action>
   <action name="actionWellpath">
    <property name="text">
-    <string>&amp;Wellpath</string>
+    <string>Import &amp;Wellpath</string>
    </property>
    <property name="toolTip">
     <string>Import the well path of a single well</string>
@@ -905,12 +888,12 @@
   </action>
   <action name="actionCreate_New_Volume">
    <property name="text">
-    <string>Create &amp;New Volume </string>
+    <string>New</string>
    </property>
   </action>
   <action name="actionCreate_New_Grid">
    <property name="text">
-    <string>Create &amp;New Grid</string>
+    <string>New</string>
    </property>
   </action>
   <action name="actionLog_Math">
@@ -940,7 +923,7 @@
   </action>
   <action name="actionWell_Markers">
    <property name="text">
-    <string>&amp;Tops</string>
+    <string>Import Tops</string>
    </property>
    <property name="toolTip">
     <string>Import formation tops/markerss</string>
@@ -1006,7 +989,7 @@
   </action>
   <action name="actionExportLog">
    <property name="text">
-    <string>&amp;Log</string>
+    <string>E&amp;xport Log</string>
    </property>
   </action>
   <action name="actionPunch_Out_Volume">
@@ -1026,7 +1009,7 @@
   </action>
   <action name="action_ExportTable">
    <property name="text">
-    <string>&amp;Table</string>
+    <string>&amp;Export</string>
    </property>
   </action>
   <action name="actionStack_To_Gather">
@@ -1061,7 +1044,7 @@
   </action>
   <action name="actionImportTable">
    <property name="text">
-    <string>Tabl&amp;e</string>
+    <string>&amp;Import</string>
    </property>
   </action>
   <action name="actionMerge_Volumes">
@@ -1077,6 +1060,16 @@
   <action name="actionCopy_Log">
    <property name="text">
     <string>Co&amp;py Log</string>
+   </property>
+  </action>
+  <action name="actionRecent_Projects">
+   <property name="text">
+    <string>Recent Projects</string>
+   </property>
+  </action>
+  <action name="actionRecent">
+   <property name="text">
+    <string>Recent</string>
    </property>
   </action>
  </widget>
