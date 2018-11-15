@@ -6,6 +6,8 @@
 #include <curvature_attributes.h> // names
 #include<iostream>
 #include<cmath>
+#include<omp.h>
+
 
 CurvatureVolumeProcess::CurvatureVolumeProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Curvature Volume"), project, parent){
@@ -14,6 +16,7 @@ CurvatureVolumeProcess::CurvatureVolumeProcess( AVOProject* project, QObject* pa
 
 ProjectProcess::ResultCode CurvatureVolumeProcess::init( const QMap<QString, QString>& parameters ){
 
+    //return ResultCode::Ok;
     setParams(parameters);
 
     if( !parameters.contains(QString("basename"))){
@@ -96,6 +99,7 @@ int optimum_shift( const Volume& vol, int i1, int j1, int i2, int j2,
 
 ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
 
+    //return ResultCode::Ok;
     const int& max_abs_shift=m_maximumShift;
     const int& wnd_len=m_windowLength;
 
@@ -139,15 +143,13 @@ ProjectProcess::ResultCode CurvatureVolumeProcess::run(){
     emit started(100);
     qApp->processEvents();
 
-    // why skip first iline/xline? 2d requires first/last inline since it is handled as 2 inline!!!
-    // for( int i=bounds.i1()+1; i<=bounds.i2()-1; i++){
-        //for( int j=bounds.j1()+1; j<=bounds.j2()-1; j++){
-    for( int i=bounds.i1(); i<=bounds.i2(); i++){
-        for( int j=bounds.j1(); j<=bounds.j2(); j++){
+    for( int i=bounds.i1()+1; i<bounds.i2()-1; i++){
+
+        for( int j=bounds.j1()+1; j<bounds.j2()-1; j++){
 
             #pragma omp parallel for
             for( int k=wnd_len/2+1; k<bounds.nt()-wnd_len/2-1; k++){
-
+                //std::cout<<"k="<<k<<std::endl<<std::flush;
                 int s1 = (i>bounds.i1()) ?
                             optimum_shift( *m_volume, i-1, j-1, i, j, k-wnd_len/2, wnd_len, max_abs_shift ) : 0;
                 int s2 =(i>bounds.i1()) ?
