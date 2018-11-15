@@ -145,7 +145,7 @@ void GridItem::updateFrame(){
 
     auto bounds=m_grid->bounds();
 
-    QPen framePen( Qt::black,2);
+    QPen framePen( Qt::black,1);
     framePen.setCosmetic(true);
     auto f = new QGraphicsRectItem( 0, 0, bounds.height(), bounds.width(), this);
     f->setPen(framePen);

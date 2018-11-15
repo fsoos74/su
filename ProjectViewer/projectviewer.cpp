@@ -37,7 +37,7 @@
 #include<gridviewer.h>
 #include<databaseviewer.h>
 #include<segyinputdialog.h>
-#include<segyreader.h>
+#iyMnclude<segyreader.h>
 #include<segyinfo.h>
 #include<trace.h>
 #include<header.h>

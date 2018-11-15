@@ -61,7 +61,7 @@ void AreaItem::updateFrame(){
 
     QRect r( 0, 0, m_area.width(), m_area.height());
     setRect(r);
-    QPen framePen( Qt::black,2);
+    QPen framePen( Qt::black,1);
     framePen.setCosmetic(true);
     setPen(framePen);
 }
