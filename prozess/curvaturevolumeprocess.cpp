@@ -76,12 +76,12 @@ int optimum_shift( const Volume& vol, int i1, int j1, int i2, int j2,
     auto trc1 = &vol(i1, j1, 0);
     auto trc2 = &vol(i2, j2, 0);
 
-    int min_shift = std::max( -wnd_start, -max_abs_shift );
-    int max_shift = std::min( max_abs_shift, vol.bounds().nt() - wnd_start - wnd_len -1 );
-    auto best_shift=min_shift;
-    auto best_cor = corr( &trc1[wnd_start], &trc1[wnd_start+wnd_len],
-                &trc2[wnd_start+best_shift] );
-    for( auto shift = min_shift + 1; shift<=max_shift; shift++){
+    if( wnd_start - max_abs_shift < 0 ) return 0;
+    if( wnd_start + wnd_len + max_abs_shift >=vol.bounds().nt()) return 0;
+
+    auto best_shift=0;
+    auto best_cor = std::numeric_limits<double>::lowest();
+    for( auto shift = -max_abs_shift; shift<=max_abs_shift; shift++){
         auto cor = corr( &trc1[wnd_start], &trc1[wnd_start+wnd_len],
                 &trc2[wnd_start+shift] );
         if( cor>best_cor){
