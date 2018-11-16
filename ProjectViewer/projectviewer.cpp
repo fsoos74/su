@@ -37,7 +37,7 @@
 #include<gridviewer.h>
 #include<databaseviewer.h>
 #include<segyinputdialog.h>
-#iyMnclude<segyreader.h>
+#include<segyreader.h>
 #include<segyinfo.h>
 #include<trace.h>
 #include<header.h>
@@ -1408,23 +1408,6 @@ void ProjectViewer::on_actionExtract_Dataset_triggered()
     runProcess<ExtractDatasetProcess>( params );
 }
 
-
-/*
-void ProjectViewer::on_actionVolume_Dip_triggered()
-{
-    Q_ASSERT(m_project);
-
-    VolumeDipDialog dlg;
-    dlg.setProject(m_project);
-    dlg.setWindowTitle("Compute Volume Dips");
-
-    if( dlg.exec()!=QDialog::Accepted) return;
-
-    auto params=dlg.params();
-
-    runProcess( new VolumeDipProcess( m_project, this ), params );
-}
-*/
 
 void ProjectViewer::on_actionVolume_Dip_triggered()
 {

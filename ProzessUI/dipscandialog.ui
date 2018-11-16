@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>443</width>
+    <width>429</width>
     <height>403</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
      <item row="7" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Maximum Dip (milliseconds/line):</string>
+        <string>Maximum Dip (msec/line):</string>
        </property>
       </widget>
      </item>
@@ -43,7 +43,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Inline Dip:</string>
+        <string>Inline Dip (msec/inline):</string>
        </property>
       </widget>
      </item>
@@ -53,7 +53,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Crossline Dip:</string>
+        <string>Crossline Dip (msec/crossline):</string>
        </property>
       </widget>
      </item>
@@ -91,13 +91,6 @@
       <widget class="QSpinBox" name="sbWindowLines">
        <property name="minimum">
         <number>3</number>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>Minimum Dip (milliseconds/line):</string>
        </property>
       </widget>
      </item>
@@ -144,6 +137,13 @@
      </item>
      <item row="3" column="1">
       <widget class="QLineEdit" name="leSemblance"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Minimum Dip (msec/line):</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
