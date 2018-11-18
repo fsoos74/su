@@ -64,6 +64,13 @@ public:
         return m_scalel;
     }
 
+    bool isOverrideNEXT()const{
+        return m_overrideNEXT;
+    }
+
+    int next()const{
+        return m_next;
+    }
 
     void setSwap( bool );
     void setBinaryHeaderDef(const std::vector<SEGYHeaderWordDef>&);
@@ -76,6 +83,8 @@ public:
     void setOverrideSampleFormat(bool);
     void setFixedScalco( bool);
     void setFixedScalel(bool);
+    void setOverrideNEXT(bool);
+    void setNEXT(int);
 
 private:
 
@@ -95,6 +104,8 @@ private:
                                                                       71,
                                                                       R"( Scalar for coordinates (+ = multiplier, - = divisor)
                                                                       )");
+    bool								m_overrideNEXT=false;
+    int									m_next=0;
 
     bool                                m_overrideSampleFormat=false;
     SEGYSampleFormat                    m_sampleFormat;

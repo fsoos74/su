@@ -51,5 +51,12 @@ void SEGYInfo::setFixedScalel(bool on){
     m_fixedScalel=on;
 }
 
+void SEGYInfo::setOverrideNEXT(bool on){
+    m_overrideNEXT=on;
+}
+
+void SEGYInfo::setNEXT(int i){
+    m_next=i;
+}
 
 }

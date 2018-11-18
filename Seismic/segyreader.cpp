@@ -175,6 +175,11 @@ void SEGYReader::convert_binary_header(){
 
     m_dt=0.000001 * m_binary_header["dt"].uintValue();
     m_nt=m_binary_header["ns"].uintValue();
+    m_fixed_sampling=m_binary_header["fixlen"].intValue()!=0;
+    int next=m_binary_header["next"].intValue();
+    if(!m_info.isOverrideNEXT()){
+        m_info.setNEXT(next);
+    }
 }
 
 double scalerToFactor( std::int16_t scaler){
@@ -243,11 +248,10 @@ void SEGYReader::read_leading_headers(){
     convert_binary_header();
 
     // read optional text headers as specified in binary header
-    int next=m_binary_header["next"].intValue();
-    if( next<0 ) throw SEGYFormatError("variable number of extended textual headers is not implemented yet!");
-    for( int i=0; i<next; i++){
+    if( m_info.next()<0 ) throw SEGYFormatError("variable number of extended textual headers is not implemented yet!");
+    for( int i=0; i<m_info.next(); i++){
         if( fread(&text_hdr[0], text_hdr.size(), 1, m_ifile)!=1){
-            throw(SEGYFormatError("Reading mandatory ebcdic header failed!"));
+            throw(SEGYFormatError("Reading extended ebcdic header failed!"));
         }
         m_postReadFunc(&text_hdr[0], text_hdr.size());
         m_text_headers.push_back(text_hdr);

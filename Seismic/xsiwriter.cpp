@@ -33,14 +33,14 @@ bool XSIWriter::writeFile(QIODevice *device){
     }
     xml.writeAttribute("format", format);
 
+    QString next=(m_info.isOverrideNEXT())?QString::number(m_info.next()) : "header";
+    xml.writeAttribute("next", next);
+
     QString scalco=(m_info.isFixedScalco())?QString::number(m_info.scalco()) : "header";
     xml.writeAttribute("scalco", scalco);
 
     QString scalel=(m_info.isFixedScalel())?QString::number(m_info.scalel()) : "header";
     xml.writeAttribute("scalel", scalel);
-
-
-
 
     xml.writeStartElement("binary-header-def");
     for( auto h : m_info.binaryHeaderDef()){

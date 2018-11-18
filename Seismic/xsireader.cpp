@@ -53,6 +53,16 @@ void XSIReader::readXSI(){
         m_info.setSampleFormat(toSampleFormat(xml.attributes().value("format").toString()));
     }
 
+    // for backward compatability allow missing next
+    bool overrideNext=false;
+    int next=0;
+    if(xml.attributes().hasAttribute("next")&&xml.attributes().value("next")!="header"){
+        next=xml.attributes().value("next").toInt();
+        overrideNext=true;
+    }
+    m_info.setOverrideNEXT(overrideNext);
+    m_info.setNEXT(next);
+
     if( xml.attributes().value("scalco")=="header"){
         m_info.setFixedScalco(false);
     }

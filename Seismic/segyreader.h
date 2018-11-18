@@ -134,6 +134,8 @@ private:
     size_t                              m_bytes_per_sample;
     bool                                m_is_next_trace_header;        // is next read a trace header
     bool                                m_fixed_sampling=true;         // if true sampling will not be updated from trace headers, seek is only implemented with true yet!
+    int                                 m_next=0;						// number of extended ebcdic headers:w
+
     Trace::time_type                    m_dt=0;
     size_t                              m_nt=0;
     double                              m_ft=0;

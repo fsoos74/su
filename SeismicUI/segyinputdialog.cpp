@@ -87,11 +87,13 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     connect( ui->cbSizeXline, SIGNAL(currentIndexChanged(int)), this, SLOT(readerParamsChanged()));
     connect( ui->cbSizeOffset, SIGNAL(currentIndexChanged(int)), this, SLOT(readerParamsChanged()));
     connect( ui->cbFormat, SIGNAL(currentIndexChanged(int)), this, SLOT(readerParamsChanged()));
-    connect( ui->rbScalcoHeader, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
-    connect( ui->cbScaleOffset, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()) );
-    connect( ui->rbScalelHeader, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
-    connect( ui->rbSwapBytes, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
-
+    connect( ui->cbUseScalco, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
+    connect( ui->leScalco, SIGNAL(returnPressed()), this, SLOT(readerParamsChanged()));
+    connect( ui->cbScaleOffsets, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()) );
+    connect( ui->cbUseScalel, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
+    connect( ui->leScalel, SIGNAL(returnPressed()), this, SLOT(readerParamsChanged()));
+    connect( ui->cbSwapBytes, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
+    connect( ui->cbUseNEXT, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
 
     updateButtons();
 }
@@ -185,7 +187,7 @@ void SegyInputDialog::updateControlsFromInfo(){
         else if(def.name=="offset" && m_prestack){
             lePos=ui->lePosOffset;
             cbSize=ui->cbSizeOffset;
-            ui->cbScaleOffset->setChecked( def.ctype==SEGYHeaderWordConvType::COORD );
+            ui->cbScaleOffsets->setChecked( def.ctype==SEGYHeaderWordConvType::COORD );
         }
 
 
@@ -198,7 +200,7 @@ void SegyInputDialog::updateControlsFromInfo(){
         }
     }
 
-    ui->rbSwapBytes->setChecked(m_info.isSwap());
+    ui->cbSwapBytes->setChecked(m_info.isSwap());
 
     int index=0;
     if( m_info.isOverrideSampleFormat()){
@@ -214,12 +216,15 @@ void SegyInputDialog::updateControlsFromInfo(){
     }
     ui->cbFormat->setCurrentIndex(index);
 
-    ui->rbScalcoFixed->setChecked(m_info.isFixedScalco());
+    ui->cbUseNEXT->setChecked(!m_info.isOverrideNEXT());
+    ui->sbNEXT->setValue(m_info.next());
+
+    ui->cbUseScalco->setChecked(!m_info.isFixedScalco());
     if( m_info.isFixedScalco()){
         ui->leScalco->setText(QString::number(m_info.scalco()));
     }
 
-    ui->rbScalelFixed->setChecked(m_info.isFixedScalel());
+    ui->cbUseScalel->setChecked(!m_info.isFixedScalel());
     if( m_info.isFixedScalel()){
         ui->leScalel->setText(QString::number(m_info.scalel()));
     }
@@ -261,7 +266,7 @@ void SegyInputDialog::updateInfoFromControls(){
         else if(def.name=="offset" && m_prestack){
             lePos=ui->lePosOffset;
             cbSize=ui->cbSizeOffset;
-            def.ctype=(ui->cbScaleOffset->isChecked())?
+            def.ctype=(ui->cbScaleOffsets->isChecked())?
                         SEGYHeaderWordConvType::COORD : SEGYHeaderWordConvType::FLOAT;
         }
 
@@ -285,20 +290,31 @@ void SegyInputDialog::updateInfoFromControls(){
     default: qFatal("Illegal sampleformat!");break;
     }
 
-    if( ui->rbScalcoFixed->isChecked()){
-        m_info.setScalco(ui->leScalco->text().toDouble());
-    }
-    else{
+    if( ui->cbUseScalco->isChecked()){
         m_info.setFixedScalco(false);
     }
-
-    if( ui->rbScalelFixed->isChecked()){
-        m_info.setScalel(ui->leScalel->text().toDouble());
-    }
     else{
+        m_info.setFixedScalco(true);
+        m_info.setScalco(ui->leScalco->text().toDouble());
+    }
+
+    if( ui->cbUseScalel->isChecked()){
         m_info.setFixedScalel(false);
     }
+    else{
+        m_info.setFixedScalel(true);
+        m_info.setScalel(ui->leScalel->text().toDouble());
+    }
 
+    if( ui->cbUseNEXT->isChecked()){
+        m_info.setOverrideNEXT(false);
+    }
+    else{
+        m_info.setOverrideNEXT(true);
+        m_info.setNEXT(ui->sbNEXT->value());
+    }
+
+    m_info.setSwap(ui->cbSwapBytes->isChecked());
     //m_infoDirty=true;
 }
 
@@ -439,8 +455,7 @@ void SegyInputDialog::on_pbBrowse_clicked()
     ui->leFilename->setText(fn);    // filename always synchronized with lineedit
     readInfoFile();
     openReader();                    // openReader uses filename from lineedit
-
-    updateFixScalcoFromReader();
+    if(m_reader) updateFixScalcoFromReader();
 }
 
 void SegyInputDialog::on_pbEBCDIC_clicked()
@@ -496,6 +511,7 @@ void SegyInputDialog::keyPressEvent(QKeyEvent *ev){
 
 void SegyInputDialog::readerParamsChanged(){
 
+    std::cout<<"READER PARAMS changed!"<<std::endl<<std::flush;
     m_infoDirty=true;
 
     if( ! m_updateReaderParamsEnabled ) return;
@@ -533,11 +549,11 @@ void SegyInputDialog::openReader(){
 
       catch( std::exception& err){
           QMessageBox::critical(this, "Open SEGY-file", QString("Exception occured:\n")+QString(err.what()));
-           ui->leFilename->setText("");
+           //ui->leFilename->setText("");
       }
-      catch( ... ){
-          qFatal("EXCEPTION");
-      }
+      //catch( ... ){
+      //    qFatal("EXCEPTION");
+      //}
 
       updateButtons();
 }
@@ -824,7 +840,7 @@ void SegyInputDialog::on_pbScanTraceHeaders_clicked()
 
     try{
 
-        bool swap=ui->rbSwapBytes->isChecked();
+        bool swap=ui->cbSwapBytes->isChecked();
 
         QProgressDialog* pdlg=new QProgressDialog("Scanning Trace Headers", "Cancel", 0, m_reader->trace_count(), this);
 
