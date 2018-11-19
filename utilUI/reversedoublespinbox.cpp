@@ -1,12 +1,12 @@
-#include "reversespinbox.h"
+#include "reversedoublespinbox.h"
 
-ReverseSpinBox::ReverseSpinBox(QWidget* parent) : QSpinBox(parent)
+ReverseDoubleSpinBox::ReverseDoubleSpinBox(QWidget* parent) : QDoubleSpinBox(parent)
 {
 
 }
 
 
-void ReverseSpinBox::stepBy(int steps){
+void ReverseDoubleSpinBox::stepBy(int steps){
 
     int newValue= value() - steps * singleStep();
 
@@ -16,7 +16,7 @@ void ReverseSpinBox::stepBy(int steps){
     setValue(newValue);
 }
 
-QAbstractSpinBox::StepEnabled ReverseSpinBox::stepEnabled() const{
+QAbstractSpinBox::StepEnabled ReverseDoubleSpinBox::stepEnabled() const{
 
     QFlags<StepEnabledFlag> flags;
 

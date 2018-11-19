@@ -10,8 +10,7 @@
 #include<volumeitem.h>
 #include<wellitem.h>
 #include<QDockWidget>
-#include<QDoubleSpinBox>
-
+#include<reversedoublespinbox.h>
 
 namespace Ui {
 class MapViewer2;
@@ -64,9 +63,7 @@ private slots:
     void on_actionSetup_Grids_triggered();
     void on_actionSetup_Volume_triggered();
     void on_actionSet_Well_Reference_Depth_triggered();
-
     void on_actionSelect_Horizons_triggered();
-
     void on_actionSelect_Attribute_Grids_triggered();
 
 private:
@@ -85,15 +82,13 @@ private:
     QRectF addMargins(const QRectF&);
 
     Ui::MapViewer2 *ui;
-    QDoubleSpinBox* m_sbRefDepth;
+    ReverseDoubleSpinBox* m_sbRefDepth;
     AVOProject* m_project=nullptr;
     bool m_showProjectArea=true;
     QStringList m_grids;
     QStringList m_wells;
     qreal m_wellRefDepth=0;
-
     QMap<QGraphicsItem*, QDockWidget*> m_dockWidgets;
-
     WellItem m_defaultWellItem;   // use this to store configuration of well display
 };
 

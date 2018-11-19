@@ -1,18 +1,18 @@
-#ifndef REVERSESPINBOX_H
-#define REVERSESPINBOX_H
+#ifndef REVERSEDOUBLESPINBOX_H
+#define REVERSEDOUBLESPINBOX_H
 
 #include <QObject>
-#include <QSpinBox>
+#include <QDoubleSpinBox>
 
 
-class ReverseSpinBox : public QSpinBox
+class ReverseDoubleSpinBox : public QDoubleSpinBox
 {
 public:
-    ReverseSpinBox(QWidget* parent=nullptr);
+    ReverseDoubleSpinBox(QWidget* parent=nullptr);
 
 protected:
     virtual void stepBy(int steps);
     virtual StepEnabled stepEnabled() const;
 };
 
-#endif // REVERSESPINBOX_H
+#endif // REVERSEDOUBLESPINBOX_H

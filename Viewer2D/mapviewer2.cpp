@@ -52,6 +52,8 @@ MapViewer2::MapViewer2(QWidget *parent) :
 
     ui->graphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
+    ui->graphicsView->setGridMode(RulerGraphicsView::GridMode::None);
+
     updateScene();
 }
 
@@ -570,7 +572,7 @@ void MapViewer2::setupToolBarControls(){
 
     auto widget=new QWidget(this);
     auto label=new QLabel(tr("Reference Depth:"));
-    m_sbRefDepth=new QDoubleSpinBox;
+    m_sbRefDepth=new ReverseDoubleSpinBox;
 
     auto layout=new QHBoxLayout;
     layout->addWidget(label);

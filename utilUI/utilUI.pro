@@ -53,7 +53,8 @@ SOURCES += utilui.cpp \
     ruleraxisview.cpp \
     multiinputdialog.cpp \
     selecttypeanditemdialog.cpp \
-    linedisplayoptionsdialog.cpp
+    linedisplayoptionsdialog.cpp \
+    reversedoublespinbox.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -86,7 +87,8 @@ HEADERS += utilui.h\
     ruleraxisview.h \
     multiinputdialog.h \
     selecttypeanditemdialog.h \
-    linedisplayoptionsdialog.h
+    linedisplayoptionsdialog.h \
+    reversedoublespinbox.h
 
 unix {
     target.path = /usr/lib
