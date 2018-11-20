@@ -3,6 +3,7 @@
 #include<QColor>
 #include<QPen>
 #include<alignedtextgraphicsitem.h>
+#include<cmath>
 
 GridItem::GridItem(AVOProject* project, QGraphicsItem* parentGraphicsItemItem, QObject* parentQObject )
  : QObject( parentQObject), QGraphicsPixmapItem(parentGraphicsItemItem), m_project(project)
@@ -165,13 +166,13 @@ void GridItem::updateLabels(){
     auto bounds=m_grid->bounds();
 
     // add inline labels on both sides
-    auto i1=bounds.i1()/m_inlineIncrement;
-    auto i2=bounds.i2()/m_inlineIncrement;
+    auto i1=static_cast<int>(std::ceil(double(bounds.i1())/m_inlineIncrement));
+    auto i2=static_cast<int>(std::floor(double(bounds.i2())/m_inlineIncrement));
 
     for( auto i=i1; i<=i2; i++){
 
-        auto ix=(i-i1)*m_inlineIncrement;
         auto il=i*m_inlineIncrement;
+        auto ix=il-bounds.i1();
         QString text=QString(" il%1 ").arg(il);
 
         // left label
@@ -189,13 +190,13 @@ void GridItem::updateLabels(){
 
 
     // add crossline labels on both sides
-    auto j1=bounds.j1()/m_crosslineIncrement;
-    auto j2=bounds.j2()/m_crosslineIncrement;
+    auto j1=static_cast<int>(std::ceil(double(bounds.j1())/m_crosslineIncrement));
+    auto j2=static_cast<int>(std::floor(double(bounds.j2())/m_crosslineIncrement));
 
     for( auto j=j1; j<=j2; j++){
 
-        auto iy=(j-j1)*m_crosslineIncrement;
         auto xl=j*m_crosslineIncrement;
+        auto iy=xl-bounds.j1();
         QString text=QString(" xl%1 ").arg(xl);
 
         // bottom label
@@ -224,19 +225,19 @@ void GridItem::updateMesh(){
     if( !m_grid ) return;
     auto bounds=m_grid->bounds();
 
-    auto i1=bounds.i1()/m_inlineIncrement;
-    auto i2=bounds.i2()/m_inlineIncrement;
-    auto j1=bounds.j1()/m_crosslineIncrement;
-    auto j2=bounds.j2()/m_crosslineIncrement;
+    auto i1=static_cast<int>(std::ceil(double(bounds.i1())/m_inlineIncrement));
+    auto i2=static_cast<int>(std::floor(double(bounds.i2())/m_inlineIncrement));
+    auto j1=static_cast<int>(std::ceil(double(bounds.j1())/m_crosslineIncrement));
+    auto j2=static_cast<int>(std::floor(double(bounds.j2())/m_crosslineIncrement));
 
     // add crosses
     const int S=2;
     QPen meshPen( Qt::black, 1);
     meshPen.setCosmetic(true);
     for( auto i=i1; i<=i2; i++){
-        auto x=(i-i1)*m_inlineIncrement;
+        auto x=i*m_inlineIncrement-bounds.i1();
         for( auto j=j1; j<=j2; j++){
-            auto y=(j-j1)*m_crosslineIncrement;
+            auto y=j*m_crosslineIncrement-bounds.j1();
             auto l1=new QGraphicsLineItem( x-S, y, x+S, y, this);
             l1->setPen(meshPen);
             m_meshItems.push_back(l1);
