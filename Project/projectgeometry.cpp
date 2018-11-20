@@ -193,3 +193,15 @@ bool isValid( const ProjectGeometry& geom){
 
     return geom.computeTransforms(transformXYToIlXl, transformIlXlToXY);
 }
+
+
+double ProjectGeometry::azimuth()const{
+    //define own because of msvc issues
+    #define PI 3.141592654
+    auto p1=coords(0);
+    auto p2=coords(2);
+    auto az=180./PI*std::atan2(p2.x()-p1.x(), p2.y()-p1.y());  // degrees
+    return az;
+}
+
+

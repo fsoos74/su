@@ -26,8 +26,10 @@ QRectF AlignedTextGraphicsItem::boundingRect()const{
 void AlignedTextGraphicsItem::paint(QPainter *painter,
         const QStyleOptionGraphicsItem *, QWidget *){
 
+    painter->save();
+    painter->setFont(font());
     auto br=boundingRect();
     painter->rotate(m_rot);
     painter->drawText(br.x(),br.y()+br.height(),text());
-    painter->rotate(-m_rot);
+    painter->restore();
 }

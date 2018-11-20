@@ -47,6 +47,8 @@ public:
     void computeAxxisOrientations( AxxisOrientation& inlineOrientation,
                                    AxxisDirection& inlineDirection, AxxisDirection& crosslineDirection)const;
 
+    double azimuth()const;
+
 private:
     std::array<QPointF, NPOINTS> m_xy;
     std::array<QPoint, NPOINTS>  m_ilxl;  // x==il, y==xl

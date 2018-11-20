@@ -2,6 +2,7 @@
 
 #include<QColor>
 #include<QPen>
+#include<QFont>
 #include<alignedtextgraphicsitem.h>
 #include<cmath>
 
@@ -163,7 +164,9 @@ void GridItem::updateLabels(){
 
     if( !m_labels) return;
     if( !m_grid ) return;
+    QFont font("Times",10,QFont::Black);
     auto bounds=m_grid->bounds();
+    auto az=(m_project)?m_project->geometry().azimuth() : 0.;
 
     // add inline labels on both sides
     auto i1=static_cast<int>(std::ceil(double(bounds.i1())/m_inlineIncrement));
@@ -173,19 +176,21 @@ void GridItem::updateLabels(){
 
         auto il=i*m_inlineIncrement;
         auto ix=il-bounds.i1();
-        QString text=QString(" il%1 ").arg(il);
+        QString text=QString(" il%1").arg(il);
 
         // left label
-
-        auto il1=new AlignedTextGraphicsItem(text, Qt::AlignRight|Qt::AlignVCenter,90,this);
+        auto il1=new AlignedTextGraphicsItem(text, Qt::AlignRight|Qt::AlignVCenter,az,this);
         il1->setPos(ix, 0);
+        il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        il1->setFont(font);
         m_labelItems.push_back(il1);
 
         // right label
-        auto il2=new AlignedTextGraphicsItem(text, Qt::AlignLeft|Qt::AlignVCenter,90,this);
+        auto il2=new AlignedTextGraphicsItem( text, Qt::AlignLeft|Qt::AlignVCenter,az,this);
         il2->setPos(ix, bounds.width());
+        il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        il2->setFont(font);
         m_labelItems.push_back(il2);
-
     }
 
 
@@ -197,16 +202,20 @@ void GridItem::updateLabels(){
 
         auto xl=j*m_crosslineIncrement;
         auto iy=xl-bounds.j1();
-        QString text=QString(" xl%1 ").arg(xl);
+        QString text=QString(" xl%1").arg(xl);
 
         // bottom label
-        auto xl1=new AlignedTextGraphicsItem(text, Qt::AlignRight|Qt::AlignVCenter,0,this);
-        xl1->setPos( 0 , iy );
+        auto xl1=new AlignedTextGraphicsItem(text, Qt::AlignVCenter|Qt::AlignLeft,az+90,this);
+        xl1->setPos(0,iy);
+        xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        xl1->setFont(font);
         m_labelItems.push_back(xl1);
 
         // top label
-        auto xl2=new AlignedTextGraphicsItem(text, Qt::AlignLeft|Qt::AlignVCenter,0,this);
-        xl2->setPos(bounds.height(), iy);
+        auto xl2=new AlignedTextGraphicsItem(text, Qt::AlignVCenter|Qt::AlignRight,az+90,this);
+        xl2->setPos(bounds.height(),iy);
+        xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        xl2->setFont(font);
         m_labelItems.push_back(xl2);
     }
 

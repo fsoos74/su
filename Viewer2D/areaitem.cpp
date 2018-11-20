@@ -2,11 +2,10 @@
 
 #include<cmath>
 
-#define PI 3.141592654
 #include<QColor>
 #include<QPen>
+#include<QFont>
 #include<alignedtextgraphicsitem.h>
-#include<alignedtextitem.h>
 
 AreaItem::AreaItem(AVOProject* project, QGraphicsItem* parentGraphicsItemItem, QObject* parentQObject )
  : QObject( parentQObject), QGraphicsRectItem(parentGraphicsItemItem), m_project(project)
@@ -71,6 +70,7 @@ void AreaItem::updateFrame(){
 
 void AreaItem::updateLabels(){
 
+    QFont font("Times",14,QFont::Bold);
     // delete old labels
     for( auto p : m_labelItems ){
         delete p;
@@ -83,19 +83,14 @@ void AreaItem::updateLabels(){
     auto maxxl=m_area.bottom();
     auto nil=m_area.width();
     auto nxl=m_area.height();
-    // compute azimuth
-    auto geom=m_project->geometry();
-    auto p1=geom.coords(0);
-    auto p2=geom.coords(2);
-    auto az=180./PI*std::atan2(p2.x()-p1.x(), p2.y()-p1.y());  // degrees
-    std::cout<<"azimuth="<<az<<std::endl;
-
+    auto az=(m_project)?m_project->geometry().azimuth() : 0.;
 
     // minil
     auto il1=new AlignedTextGraphicsItem( QString("il %1").arg(minil),
                     Qt::AlignHCenter|Qt::AlignBottom,az+180,this);
     il1->setPos(0, nxl/2);
     il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    il1->setFont(font);
     m_labelItems.push_back(il1);
 
     // maxil
@@ -103,6 +98,7 @@ void AreaItem::updateLabels(){
                      Qt::AlignHCenter|Qt::AlignBottom,az,this);
     il2->setPos(nil, nxl/2);
     il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    il2->setFont(font);
     m_labelItems.push_back(il2);
 
     // minxl
@@ -110,6 +106,7 @@ void AreaItem::updateLabels(){
                      Qt::AlignHCenter|Qt::AlignBottom,az-90,this);
     xl1->setPos(nil/2, 0);
     xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    xl1->setFont(font);
     m_labelItems.push_back(xl1);
 
     // maxxl
@@ -117,55 +114,6 @@ void AreaItem::updateLabels(){
                   Qt::AlignHCenter|Qt::AlignBottom,az+90,this);
     xl2->setPos(nil/2, nxl);
     xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    xl2->setFont(font);
     m_labelItems.push_back(xl2);
 }
-
-/*
-void AreaItem::updateLabels(){
-
-    // delete old labels
-    for( auto p : m_labelItems ){
-        delete p;
-    }
-    m_labelItems.clear();
-
-    auto minil=m_area.left();
-    auto maxil=m_area.right();
-    auto minxl=m_area.top();
-    auto maxxl=m_area.bottom();
-    auto nil=m_area.width();
-    auto nxl=m_area.height();
-
-    // minil
-    auto il1=new AlignedTextItem( QString("il %1").arg(minil), this);
-    il1->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
-    il1->setPos(0, nxl/2);
-    il1->setRotation(-90);
-    il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    m_labelItems.push_back(il1);
-
-    // maxil
-    auto il2=new AlignedTextItem( QString("il %1").arg(maxil), this);
-    il2->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
-    il2->setPos(nil, nxl/2);
-    il2->setRotation(90);
-    il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    m_labelItems.push_back(il2);
-
-    // minxl
-    auto xl1=new AlignedTextItem( QString("xl %1").arg(minxl), this);
-    xl1->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
-    xl1->setPos(nil/2, 0);
-    xl1->setRotation(0);
-    xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    m_labelItems.push_back(xl1);
-
-    // maxxl
-    auto xl2=new AlignedTextItem( QString("xl %1").arg(maxxl), this);
-    xl2->setAlignment(Qt::AlignHCenter|Qt::AlignBottom);
-    xl2->setPos(nil/2, nxl);
-    xl2->setRotation(180);
-    xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    m_labelItems.push_back(xl2);
-}
-*/

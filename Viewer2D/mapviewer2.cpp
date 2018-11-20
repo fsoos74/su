@@ -17,6 +17,8 @@
 #include<histogramcolorbarwidget.h>
 #include<selecttypeanditemdialog.h>
 #include<areaitem.h>
+#include<rulergraphicsview.h>
+
 
 const int ITEM_TYPE_INDEX=0;
 const int ITEM_NAME_INDEX=1;
@@ -40,9 +42,7 @@ MapViewer2::MapViewer2(QWidget *parent) :
     setupToolBarControls();
     // prevent overlapping of tick labels, need to make this automatic
     ui->graphicsView->topRuler()->setMinimumPixelIncrement(100);
-
     ui->graphicsView->setAspectRatioMode(Qt::KeepAspectRatio);
-
     ui->graphicsView->setMouseTracking(true);  // also send mouse move events when no button is pressed
     connect( ui->graphicsView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)) );
     connect( ui->graphicsView, SIGNAL(mouseDoubleClick(QPointF)), this, SLOT(onMouseDoubleClick(QPointF)) );
@@ -51,8 +51,19 @@ MapViewer2::MapViewer2(QWidget *parent) :
     connect( this, SIGNAL(showProjectAreaChanged(bool)), ui->actionShow_Project_Area, SLOT(setChecked(bool)) );
 
     ui->graphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-
-    ui->graphicsView->setGridMode(RulerGraphicsView::GridMode::None);
+    ui->graphicsView->topRuler()->setAutoTickIncrement(false);
+    ui->graphicsView->topRuler()->setTickIncrement(50000);
+    ui->graphicsView->topRuler()->setSubTickCount(4);
+    ui->graphicsView->leftRuler()->setAutoTickIncrement(false);
+    ui->graphicsView->leftRuler()->setTickIncrement(50000);
+    ui->graphicsView->leftRuler()->setSubTickCount(4);
+    QPen tickpen=QPen(Qt::lightGray,2);
+    tickpen.setCosmetic(true);
+    ui->graphicsView->setGridPen(tickpen);
+    QPen subtickpen=QPen(Qt::lightGray,1);
+    subtickpen.setCosmetic(true);
+    ui->graphicsView->setSubGridPen(subtickpen);
+    ui->graphicsView->setGridMode(RulerGraphicsView::GridMode::Background);// ::None);
 
     updateScene();
 }
@@ -123,7 +134,25 @@ void MapViewer2::setShowProjectArea(bool on){
 
     m_showProjectArea=on;
 
-    updateScene();
+    //updateScene();
+
+    auto item=findItem(ItemType::Area,"ProjectBounds");
+    if(item){
+        ui->graphicsView->scene()->removeItem(item);
+    }
+
+    if( m_showProjectArea){
+        auto bbl=m_project->geometry().bboxLines();
+        auto item=new AreaItem(m_project);
+        item->setArea(bbl);
+        item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Area) );
+        item->setData(ITEM_NAME_INDEX, "ProjectBounds");
+        item->setZValue(ItemZMap.value(ItemType::Well, 0 ));
+        item->setZValue(ItemZMap.value(ItemType::Area));
+        ui->graphicsView->scene()->addItem(item);
+    }
+
+    ui->graphicsView->scene()->update();
 }
 
 
@@ -199,9 +228,7 @@ void MapViewer2::updateScene(){
     if( !m_project ) return;
 
     QGraphicsScene* scene=new QGraphicsScene(this);
-
     ui->graphicsView->setScene(scene);
-
     auto br = addMargins(m_project->geometry().bboxCoords());
     ui->graphicsView->setSceneRect( br );
 
@@ -211,6 +238,9 @@ void MapViewer2::updateScene(){
         auto bbl=m_project->geometry().bboxLines();
         auto item=new AreaItem(m_project);
         item->setArea(bbl);
+        item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Area) );
+        item->setData(ITEM_NAME_INDEX, "ProjectBounds");
+        item->setZValue(ItemZMap.value(ItemType::Well, 0 ));
         item->setZValue(ItemZMap.value(ItemType::Area));
         scene->addItem(item);
     }
@@ -273,6 +303,8 @@ void MapViewer2::on_actionSelect_Volumes_triggered()
         w->setMinimumSize( 50, 200);
         addItemDockWidget(name, item, w);
     }
+
+    ui->graphicsView->scene()->update();
 }
 
 
@@ -344,6 +376,7 @@ void MapViewer2::selectGrids(GridType gtype, ItemType itype){
         w->setMinimumSize( 50, 200);
         addItemDockWidget(name, item, w);
     }
+    ui->graphicsView->scene()->update();
 }
 
 
@@ -398,7 +431,8 @@ void MapViewer2::on_actionAdd_Wells_triggered()
         scene->addItem(item);
     }
 
-   }
+    ui->graphicsView->scene()->update();
+}
 
 
 
@@ -481,6 +515,7 @@ void MapViewer2::on_actionSetup_Wells_triggered()
             wi->setBrush(m_defaultWellItem.brush());
         }
     }
+    ui->graphicsView->scene()->update();
 }
 
 
@@ -527,13 +562,13 @@ void MapViewer2::configGridItem(GridItem * item){
     connect(dlg, SIGNAL(showMeshChanged(bool)), item, SLOT( setShowMesh(bool)));
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
-
     if( dlg->exec()==QDialog::Accepted){
 
     }
     else{
 
     }
+    ui->graphicsView->scene()->update();
 
     delete dlg;
 }
@@ -563,7 +598,7 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     else{
 
     }
-
+    ui->graphicsView->scene()->update();
     delete dlg;
 }
 
