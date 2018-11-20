@@ -10,6 +10,8 @@
 AreaItem::AreaItem(AVOProject* project, QGraphicsItem* parentGraphicsItemItem, QObject* parentQObject )
  : QObject( parentQObject), QGraphicsRectItem(parentGraphicsItemItem), m_project(project)
 {
+    QBrush brush(Qt::white);
+    setBrush(brush);
 }
 
 void AreaItem::setProject(AVOProject* p){
@@ -62,7 +64,7 @@ void AreaItem::updateFrame(){
 
     QRect r( 0, 0, m_area.width(), m_area.height());
     setRect(r);
-    QPen framePen( Qt::black,1);
+    QPen framePen( Qt::darkBlue,2);
     framePen.setCosmetic(true);
     setPen(framePen);
 }
@@ -71,6 +73,10 @@ void AreaItem::updateFrame(){
 void AreaItem::updateLabels(){
 
     QFont font("Times",14,QFont::Bold);
+    QPen pen(Qt::darkBlue,1);
+    pen.setCosmetic(true);
+    QBrush brush(Qt::darkBlue);
+
     // delete old labels
     for( auto p : m_labelItems ){
         delete p;
@@ -85,6 +91,50 @@ void AreaItem::updateLabels(){
     auto nxl=m_area.height();
     auto az=(m_project)?m_project->geometry().azimuth() : 0.;
 
+    for( auto il : {minil,maxil}){
+
+        QString text=QString(" il%1 ").arg(il);
+        auto ix=il-minil;
+
+        // left label
+        auto il1=new AlignedTextGraphicsItem(text, Qt::AlignRight|Qt::AlignVCenter,az,this);
+        il1->setPos(ix, 0);
+        il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        il1->setFont(font);
+        il1->setPen(pen);
+        m_labelItems.push_back(il1);
+
+        // right label
+        auto il2=new AlignedTextGraphicsItem( text, Qt::AlignLeft|Qt::AlignVCenter,az,this);
+        il2->setPos(ix, nxl);
+        il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        il2->setFont(font);
+        il2->setPen(pen);
+        m_labelItems.push_back(il2);
+    }
+
+    for( auto xl : {minxl,maxxl}){
+
+        QString text=QString(" xl%1 ").arg(xl);
+        auto iy=xl-minxl;
+
+        // bottom label
+        auto xl1=new AlignedTextGraphicsItem(text, Qt::AlignVCenter|Qt::AlignLeft,az+90,this);
+        xl1->setPos(0,iy);
+        xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        xl1->setFont(font);
+        xl1->setPen(pen);
+        m_labelItems.push_back(xl1);
+
+        // top label
+        auto xl2=new AlignedTextGraphicsItem(text, Qt::AlignVCenter|Qt::AlignRight,az+90,this);
+        xl2->setPos(nil,iy);
+        xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        xl2->setFont(font);
+        xl2->setPen(pen);
+        m_labelItems.push_back(xl2);
+    }
+   /*
     // minil
     auto il1=new AlignedTextGraphicsItem( QString("il %1").arg(minil),
                     Qt::AlignHCenter|Qt::AlignBottom,az+180,this);
@@ -116,4 +166,5 @@ void AreaItem::updateLabels(){
     xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     xl2->setFont(font);
     m_labelItems.push_back(xl2);
+    */
 }

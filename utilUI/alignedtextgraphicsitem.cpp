@@ -28,6 +28,8 @@ void AlignedTextGraphicsItem::paint(QPainter *painter,
 
     painter->save();
     painter->setFont(font());
+    if( pen()!=Qt::NoPen ) painter->setPen(pen());
+    if( brush()!=Qt::NoBrush ) painter->setBrush(brush());
     auto br=boundingRect();
     painter->rotate(m_rot);
     painter->drawText(br.x(),br.y()+br.height(),text());
