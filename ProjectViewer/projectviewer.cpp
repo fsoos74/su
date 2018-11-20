@@ -97,6 +97,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <instantaneousattributesprocess.h>
 #include <semblancevolumeprocess.h>
 #include <semblancevolumedialog.h>
+#include <volumesimilaritydialog.h>
+#include <volumesimilarityprocess.h>
 #include <variancevolumeprocess.h>
 // variance volume uses semblancevolumedialog
 #include <volumestatisticsprocess.h>
@@ -1456,6 +1458,15 @@ void ProjectViewer::on_actionVolume_Semblance_triggered()
     runProcess<SemblanceVolumeProcess>(params );
 }
 
+
+void ProjectViewer::on_actionVolume_Similarity_triggered()
+{
+    VolumeSimilarityDialog dlg;
+    dlg.setProject( m_project );
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+    runProcess<VolumeSimilarityProcess>(params );
+}
 
 void ProjectViewer::on_actionVolume_Variance_triggered()
 {
@@ -5145,6 +5156,7 @@ void ProjectViewer::updateMenu(){
     ui->actionVolume_Dip->setEnabled(isProject);
     ui->actionVolume_Frequencies->setEnabled(isProject);
     ui->actionVolume_Semblance->setEnabled(isProject);
+    ui->actionVolume_Similarity->setEnabled(isProject);
     ui->actionVolume_Variance->setEnabled(isProject);
     ui->actionVolume_Statistics->setEnabled(isProject);
     ui->actionCompute_Intercept_and_Gradient_Volumes->setEnabled(isProject);
@@ -5220,5 +5232,6 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
     runProcess<InterceptGradientVolumeProcess_2>( params );
 }
+
 
 

@@ -308,6 +308,7 @@
     <addaction name="actionVolume_Dip"/>
     <addaction name="actionVolume_Frequencies"/>
     <addaction name="actionVolume_Semblance"/>
+    <addaction name="actionVolume_Similarity"/>
     <addaction name="actionVolume_Statistics"/>
     <addaction name="actionVolume_Curvature"/>
     <addaction name="actionInstantaneous_Attribute_Volumes"/>
@@ -1077,6 +1078,11 @@
   <action name="actionRecent">
    <property name="text">
     <string>Recent</string>
+   </property>
+  </action>
+  <action name="actionVolume_Similarity">
+   <property name="text">
+    <string>Volume Similarity</string>
    </property>
   </action>
  </widget>

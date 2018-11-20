@@ -106,6 +106,7 @@ private slots:
     void on_actionVolume_Dip_triggered();
     void on_actionVolume_Frequencies_triggered();
     void on_actionVolume_Semblance_triggered();
+    void on_actionVolume_Similarity_triggered();
     void on_actionVolume_Variance_triggered();      // not used, integrated in statistics
     void on_actionVolume_Statistics_triggered();
     void on_actionVolume_Curvature_triggered();
@@ -192,6 +193,7 @@ private slots:
     void on_actionVolume_IO_Test_triggered();
     void on_actionIntercept_And_Gradient_Volume_old_triggered();
     void on_actionImportTable_triggered();
+
 
 protected:
 
