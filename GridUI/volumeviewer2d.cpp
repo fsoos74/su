@@ -226,7 +226,8 @@ void VolumeViewer2D::setupSliceToolBar(){
     m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
     m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
     m_cbSlice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    m_sbSlice=new QSpinBox;
+    m_sbSlice=new ReverseSpinBox;
+    m_sbSlice->setReverse(false);
     auto layout=new QHBoxLayout;
     layout->addWidget(label);
     layout->addWidget(m_cbSlice);
@@ -577,6 +578,7 @@ void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
     m_sbSlice->setRange(min,max);
     m_sbSlice->setSingleStep(step);
     m_sbSlice->setValue(d.value);
+    m_sbSlice->setReverse(d.type==VolumeView::SliceType::Z);
 
     m_noupdate=false;
 

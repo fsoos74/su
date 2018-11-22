@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <avoproject.h>
-#include <QSpinBox>
+#include <reversespinbox.h>
 #include <QComboBox>
 #include <histogramrangeselectiondialog.h>
 #include "volumeview.h"
@@ -92,7 +92,7 @@ private:
     QVBoxLayout* m_colorbarsLayout;
     //QComboBox* m_cbPickMode;
     QComboBox* m_cbSlice;
-    QSpinBox* m_sbSlice;
+    ReverseSpinBox* m_sbSlice;
 
     //QSpinBox* sbWellViewDist;
     //QSpinBox* sbSharpenPercent;

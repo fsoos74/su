@@ -72,7 +72,7 @@ void AreaItem::updateFrame(){
 
 void AreaItem::updateLabels(){
 
-    QFont font("Times",14,QFont::Bold);
+    QFont font("Times",10,QFont::Normal,true );	// italic
     QPen pen(Qt::darkBlue,1);
     pen.setCosmetic(true);
     QBrush brush(Qt::darkBlue);
@@ -90,7 +90,7 @@ void AreaItem::updateLabels(){
     auto nil=m_area.width();
     auto nxl=m_area.height();
     auto az=(m_project)?m_project->geometry().azimuth() : 0.;
-
+    /* perpendicular
     for( auto il : {minil,maxil}){
 
         QString text=QString(" il%1 ").arg(il);
@@ -134,37 +134,62 @@ void AreaItem::updateLabels(){
         xl2->setPen(pen);
         m_labelItems.push_back(xl2);
     }
-   /*
+    */
+    // parallel
     // minil
-    auto il1=new AlignedTextGraphicsItem( QString("il %1").arg(minil),
-                    Qt::AlignHCenter|Qt::AlignBottom,az+180,this);
-    il1->setPos(0, nxl/2);
-    il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    il1->setFont(font);
-    m_labelItems.push_back(il1);
+    auto il1a=new AlignedTextGraphicsItem( QString("il %1").arg(minil),
+                    Qt::AlignRight|Qt::AlignBottom,az+180,this);
+    il1a->setPos(0, 0);
+    il1a->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    il1a->setFont(font);
+    m_labelItems.push_back(il1a);
+    auto il1b=new AlignedTextGraphicsItem( QString("il %1").arg(minil),
+                    Qt::AlignLeft|Qt::AlignBottom,az+180,this);
+    il1b->setPos(0, nxl);
+    il1b->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    il1b->setFont(font);
+    m_labelItems.push_back(il1b);
 
     // maxil
-    auto il2=new AlignedTextGraphicsItem( QString("il %1").arg(maxil),
-                     Qt::AlignHCenter|Qt::AlignBottom,az,this);
-    il2->setPos(nil, nxl/2);
-    il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    il2->setFont(font);
-    m_labelItems.push_back(il2);
+    auto il2a=new AlignedTextGraphicsItem( QString("il %1").arg(maxil),
+                     Qt::AlignLeft|Qt::AlignBottom,az,this);
+    il2a->setPos(nil, 0);
+    il2a->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    il2a->setFont(font);
+    m_labelItems.push_back(il2a);
+    auto il2b=new AlignedTextGraphicsItem( QString("il %1").arg(maxil),
+                     Qt::AlignRight|Qt::AlignBottom,az,this);
+    il2b->setPos(nil, nxl);
+    il2b->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    il2b->setFont(font);
+    m_labelItems.push_back(il2b);
 
     // minxl
-    auto xl1=new AlignedTextGraphicsItem( QString("xl %1").arg(minxl),
-                     Qt::AlignHCenter|Qt::AlignBottom,az-90,this);
-    xl1->setPos(nil/2, 0);
-    xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    xl1->setFont(font);
-    m_labelItems.push_back(xl1);
+    auto xl1a=new AlignedTextGraphicsItem( QString("xl %1").arg(minxl),
+                     Qt::AlignLeft|Qt::AlignBottom,az-90,this);
+    xl1a->setPos(0, 0);
+    xl1a->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    xl1a->setFont(font);
+    m_labelItems.push_back(xl1a);
+    auto xl1b=new AlignedTextGraphicsItem( QString("xl %1").arg(minxl),
+                     Qt::AlignRight|Qt::AlignBottom,az-90,this);
+    xl1b->setPos(nil, 0);
+    xl1b->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    xl1b->setFont(font);
+    m_labelItems.push_back(xl1b);
 
     // maxxl
-    auto xl2=new AlignedTextGraphicsItem( QString("xl %1").arg(maxxl),
-                  Qt::AlignHCenter|Qt::AlignBottom,az+90,this);
-    xl2->setPos(nil/2, nxl);
-    xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    xl2->setFont(font);
-    m_labelItems.push_back(xl2);
-    */
+    auto xl2a=new AlignedTextGraphicsItem( QString("xl %1").arg(maxxl),
+                  Qt::AlignRight|Qt::AlignBottom,az+90,this);
+    xl2a->setPos(0, nxl);
+    xl2a->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    xl2a->setFont(font);
+    m_labelItems.push_back(xl2a);
+    auto xl2b=new AlignedTextGraphicsItem( QString("xl %1").arg(maxxl),
+                  Qt::AlignLeft|Qt::AlignBottom,az+90,this);
+    xl2b->setPos(nil, nxl);
+    xl2b->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    xl2b->setFont(font);
+    m_labelItems.push_back(xl2b);
+
 }

@@ -164,7 +164,7 @@ void GridItem::updateLabels(){
 
     if( !m_labels) return;
     if( !m_grid ) return;
-    QFont font("Times",10,QFont::Black);
+    QFont font("Times",8,QFont::Normal);
     auto bounds=m_grid->bounds();
     auto az=(m_project)?m_project->geometry().azimuth() : 0.;
 
