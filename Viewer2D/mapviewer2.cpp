@@ -66,6 +66,9 @@ MapViewer2::MapViewer2(QWidget *parent) :
     ui->graphicsView->setGridMode(RulerGraphicsView::GridMode::Background);// ::None);
 
     updateScene();
+
+    ui->treeWidget->setHeaderHidden(true);
+    connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(updateItemsFromTree()));
 }
 
 MapViewer2::~MapViewer2()
@@ -108,6 +111,8 @@ void MapViewer2::setProject(AVOProject* project ){
     if( project==m_project) return;
 
     m_project=project;
+
+    fillTree();
 
     // adjust graphicsview geometry
     auto bbox=addMargins(m_project->geometry().bboxCoords());
@@ -247,227 +252,126 @@ void MapViewer2::updateScene(){
 }
 
 
-void MapViewer2::on_actionSelect_Volumes_triggered()
-{
-    Q_ASSERT(m_project);
-
-    auto scene = ui->graphicsView->scene();
-    if( !scene ) return;
-
-    QStringList avail=m_project->volumeList();
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Select Volumes"), tr("Select Volumes:"), avail, &ok, itemList(ItemType::Volume));
-    if( !ok ) return;
-
-    // first pass remove items
-    for( auto item : scene->items()){
-
-
-        if( item->data(ITEM_TYPE_INDEX).toInt()==static_cast<int>(ItemType::Volume)){
-
-            QString name =item->data(ITEM_NAME_INDEX).toString();
-            if( name.isEmpty()) continue;
-
-            if( !names.contains(name)){ // this is not selected anymore
-                scene->removeItem(item);
+void MapViewer2::updateItemsFromTree(){
+    // all items are in tree!!
+    // volumes
+    auto volumes=ui->treeWidget->items("Volumes");
+    for(auto name : volumes){
+        auto item=findItem(ItemType::Volume, name);
+        auto checked=ui->treeWidget->isChecked("Volumes",name);
+        if(checked){
+            if(!item){	// need to create new item
+                addVolumeItem(name);
             }
-            names.removeAll(name);  // this is already displayed and does not need to be added
-            removeItemDockWidget(item);
         }
-    }
-
-    // now he only have names that need to be added
-    // second pass add items
-    for( auto name : names){
-
-        auto v = m_project->loadVolume(name);
-
-        if( !v ){
-            QMessageBox::critical(this, tr("Add Volume"), QString("Loading volume \"%1\" failed!").arg(name) );
-            break;
-        }
-
-        auto item = new VolumeItem( m_project);
-        item->setVolume(v);
-        item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Volume));
-        item->setData(ITEM_NAME_INDEX, name);
-        item->setZValue(ItemZMap.value(ItemType::Volume, 0 ));
-        item->setRefDepth(m_sbRefDepth->value());
-        connect( m_sbRefDepth, SIGNAL(valueChanged(double)), item, SLOT(setRefDepth(double)) );
-        scene->addItem(item);
-
-        auto w = new HistogramColorBarWidget(this);
-        w->setColorTable(item->colorTable());
-        auto g=item->grid();
-        w->setData( g->data(), g->size(), g->NULL_VALUE);
-        w->setMinimumSize( 50, 200);
-        addItemDockWidget(name, item, w);
-    }
-
-    ui->graphicsView->scene()->update();
-}
-
-
-void MapViewer2::on_actionAdd_Grid_triggered()
-{
-    selectGrids(GridType::Other, ItemType::OtherGrid);
-}
-
-void MapViewer2::on_actionSelect_Horizons_triggered()
-{
-    selectGrids(GridType::Horizon, ItemType::HorizonGrid);
-}
-
-void MapViewer2::on_actionSelect_Attribute_Grids_triggered()
-{
-    selectGrids(GridType::Attribute, ItemType::AttributeGrid);
-}
-
-
-void MapViewer2::selectGrids(GridType gtype, ItemType itype){
-
-    Q_ASSERT(m_project);
-
-    auto scene = ui->graphicsView->scene();
-    if( !scene ) return;
-
-    QStringList avail=m_project->gridList(gtype);
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Select Grids"), tr("Select Grids:"), avail, &ok, itemList(itype));
-    if( !ok ) return;
-
-    // first pass remove items
-    for( auto item : scene->items()){
-
-        if( item->data(ITEM_TYPE_INDEX).toInt()==static_cast<int>(itype)){
-
-            QString name =item->data(ITEM_NAME_INDEX).toString();
-            if( name.isEmpty()) continue;
-
-            if( !names.contains(name)){ // this is not selected anymore
-                scene->removeItem(item);
-                removeItemDockWidget(item);
+        else{
+            if( item ){	// need to remove item
+                ui->graphicsView->scene()->removeItem(item);
             }
-            names.removeAll(name);  // this is already displayed and does not need to be added
         }
     }
 
-    // now we only have names that need to be added
-    // second pass add items
-    for( auto name : names){
-
-        auto g = m_project->loadGrid(gtype, name);
-
-        if( !g ){
-            QMessageBox::critical(this, tr("Add Grid"), QString("Loading grid \"%1\" failed!").arg(name) );
-            break;
-        }
-
-        auto item = new GridItem( m_project);
-        item->setGrid(g);
-        item->setData(ITEM_TYPE_INDEX, static_cast<int>(itype));
-        item->setData(ITEM_NAME_INDEX, name);
-        item->setZValue(ItemZMap.value(itype, 0 ));
-        scene->addItem(item);
-
-        auto w = new HistogramColorBarWidget(this);
-        w->setColorTable(item->colorTable());
-        w->setData( g->data(), g->size(), g->NULL_VALUE);
-        w->setMinimumSize( 50, 200);
-        addItemDockWidget(name, item, w);
-    }
-    ui->graphicsView->scene()->update();
-}
-
-
-void MapViewer2::on_actionAdd_Wells_triggered()
-{
-    Q_ASSERT(m_project);
-
-    auto scene = ui->graphicsView->scene();
-    if( !scene ) return;
-
-    auto avail = m_project->wellList();
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Select Wells"), tr("Select Wells:"), avail, &ok, itemList(ItemType::Well));
-    if( !ok ) return;
-
-    // first pass remove items
-    for( auto item : scene->items()){
-
-        if( item->data(ITEM_TYPE_INDEX).toInt()==static_cast<int>(ItemType::Well)){
-
-            QString name =item->data(ITEM_NAME_INDEX).toString();
-            if( name.isEmpty()) continue;
-            if( !names.contains(name)){ // this is not selected anymore
-                scene->removeItem(item);
+    // horizons
+    auto horizons=ui->treeWidget->items("Horizons");
+    for(auto name : horizons){
+        auto item=findItem(ItemType::HorizonGrid, name);
+        auto checked=ui->treeWidget->isChecked("Horizons",name);
+        if(checked){
+            if(!item){	// need to create new item
+                addHorizonItem(name);
             }
-            names.removeAll(name);  // this is already displayed and does not need to be added
+        }
+        else{
+            if( item ){	// need to remove item
+                ui->graphicsView->scene()->removeItem(item);
+            }
         }
     }
 
-    // now he only have names that need to be added
-    // second pass add items
-    for( auto name : names){
+    // wells
+    auto wells=ui->treeWidget->items("Wells");
+    for(auto name : wells){
+        auto item=findItem(ItemType::Well, name);
+        auto checked=ui->treeWidget->isChecked("Wells",name);
+        if(checked){
+            if(!item){	// need to create new item
+                addWellItem(name);
+            }
+        }
+        else{
+            if( item ){	// need to remove item
+                ui->graphicsView->scene()->removeItem(item);
+            }
+        }
+    }
+}
 
-        auto info=m_project->getWellInfo(name);
-        auto path=m_project->loadWellPath(name);
-        auto item=new WellItem;
+void MapViewer2::addVolumeItem(QString name){
+    auto v = m_project->loadVolume(name);
 
-        item->setInfo(info);
-        item->setPath(path);
-        //item->setPos(info.x(), info.y());
-        item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Well) );
-        item->setData(ITEM_NAME_INDEX, name);
-        item->setZValue(ItemZMap.value(ItemType::Well, 0 ));
-
-        item->setSize(m_defaultWellItem.size());
-        item->setFont(m_defaultWellItem.font());
-        item->setPen(m_defaultWellItem.pen());
-        item->setBrush(m_defaultWellItem.brush());
-
-        connect( this, SIGNAL(wellRefDepthChanged(qreal)), item, SLOT(setRefDepth(qreal)) );
-
-        scene->addItem(item);
+    if( !v ){
+        QMessageBox::critical(this, tr("Add Volume"), QString("Loading volume \"%1\" failed!").arg(name) );
+        return;
     }
 
-    ui->graphicsView->scene()->update();
+    auto item = new VolumeItem( m_project);
+    item->setVolume(v);
+    item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Volume));
+    item->setData(ITEM_NAME_INDEX, name);
+    item->setZValue(ItemZMap.value(ItemType::Volume, 0 ));
+    item->setRefDepth(m_sbRefDepth->value());
+    connect( m_sbRefDepth, SIGNAL(valueChanged(double)), item, SLOT(setRefDepth(double)) );
+    ui->graphicsView->scene()->addItem(item);
 }
 
+void MapViewer2::addHorizonItem(QString name){
+    auto g = m_project->loadGrid(GridType::Horizon, name);
 
+    if( !g ){
+        QMessageBox::critical(this, tr("Add Grid"), QString("Loading grid \"%1\" failed!").arg(name) );
+        return;
+    }
 
-void MapViewer2::on_actionSetup_Grids_triggered()
-{
-    /*
-    auto scene = ui->graphicsView->scene();
-    if( !scene ) return;
+    auto item = new GridItem( m_project);
+    item->setGrid(g);
+    item->setData(ITEM_TYPE_INDEX, static_cast<int>(GridType::Horizon));
+    item->setData(ITEM_NAME_INDEX, name);
+    item->setZValue(ItemZMap.value(ItemType::HorizonGrid, 0 ) );
+    ui->graphicsView->scene()->addItem(item);
 
-    auto avail = itemList(ItemType::Grid);
-    bool ok=false;
-    auto edit = QInputDialog::getItem( nullptr, tr("Configure Grid Item"), tr("Select Grid:"), avail, 0, false, &ok);
-    if( !ok || edit.isEmpty() ) return;
-
-    auto gitem=dynamic_cast<GridItem*>(findItem(ItemType::Grid, edit));
-    if( gitem) configGridItem(gitem);
-    */
+    auto w = new HistogramColorBarWidget(this);
+    w->setColorTable(item->colorTable());
+    w->setData( g->data(), g->size(), g->NULL_VALUE);
+    w->setMinimumSize( 50, 200);
+    addItemDockWidget(name, item, w);
 }
 
+void MapViewer2::addWellItem(QString name){
 
+    auto info=m_project->getWellInfo(name);
+    auto path=m_project->loadWellPath(name);
+    if(!path){
+        QMessageBox::critical(this, tr("Add Well"), QString("Loading well \"%1\" failed!").arg(name) );
+        return;
+    }
+    auto item=new WellItem;
 
-void MapViewer2::on_actionSetup_Volume_triggered()
-{
-    auto scene = ui->graphicsView->scene();
-    if( !scene ) return;
+    item->setInfo(info);
+    item->setPath(path);
+    //item->setPos(info.x(), info.y());
+    item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Well) );
+    item->setData(ITEM_NAME_INDEX, name);
+    item->setZValue(ItemZMap.value(ItemType::Well, 0 ));
 
-    auto avail = itemList(ItemType::Volume);
-    bool ok=false;
-    auto edit = QInputDialog::getItem( nullptr, tr("Configure Volume Item"), tr("Select Volume:"), avail, 0, false, &ok);
-    if( !ok || edit.isEmpty() ) return;
+    item->setSize(m_defaultWellItem.size());
+    item->setFont(m_defaultWellItem.font());
+    item->setPen(m_defaultWellItem.pen());
+    item->setBrush(m_defaultWellItem.brush());
 
-    auto item=dynamic_cast<VolumeItem*>(findItem(ItemType::Volume, edit));
-    if( item) configVolumeItem(item);
+    connect( this, SIGNAL(wellRefDepthChanged(qreal)), item, SLOT(setRefDepth(qreal)) );
+
+    ui->graphicsView->scene()->addItem(item);
 }
-
 
 void MapViewer2::on_actionSetup_Wells_triggered()
 {
@@ -498,7 +402,6 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     brush.setColor(dlg.brushColor());
     m_defaultWellItem.setBrush(brush);
 
-
     // now assign new options to all well items
 
     for( auto item : scene->items()){
@@ -515,8 +418,8 @@ void MapViewer2::on_actionSetup_Wells_triggered()
             wi->setBrush(m_defaultWellItem.brush());
         }
     }
-    ui->graphicsView->scene()->update();
 }
+
 
 
 void MapViewer2::on_actionSet_Well_Reference_Depth_triggered()
@@ -669,7 +572,22 @@ QRectF MapViewer2::addMargins(const QRectF & bbox){
 }
 
 
-
+void MapViewer2::fillTree(){
+    ui->treeWidget->clear();
+    if(!m_project) return;
+    ui->treeWidget->addItem("Horizons");
+    for(auto name : m_project->gridList(GridType::Horizon)){
+        ui->treeWidget->addItem("Horizons", name);
+    }
+    ui->treeWidget->addItem("Volumes");
+    for(auto name : m_project->volumeList()){
+        ui->treeWidget->addItem("Volumes", name);
+    }
+    ui->treeWidget->addItem("Wells",true);
+    for(auto name : m_project->wellList()){
+        ui->treeWidget->addItem("Wells", name);
+    }
+}
 
 
 

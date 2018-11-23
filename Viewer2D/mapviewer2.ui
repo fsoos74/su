@@ -14,26 +14,34 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_5">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <widget class="RulerGraphicsView" name="graphicsView">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>1</horstretch>
-          <verstretch>1</verstretch>
-         </sizepolicy>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="CheckedTreeWidget" name="treeWidget">
+       <column>
+        <property name="text">
+         <string notr="true">1</string>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>450</width>
-          <height>400</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
+       </column>
+      </widget>
+      <widget class="RulerGraphicsView" name="graphicsView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>1</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>450</width>
+         <height>400</height>
+        </size>
+       </property>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -56,16 +64,11 @@
     <property name="title">
      <string>&amp;Items</string>
     </property>
-    <addaction name="actionAdd_Wells"/>
-    <addaction name="actionSelect_Horizons"/>
-    <addaction name="actionSelect_Attribute_Grids"/>
-    <addaction name="actionAdd_Grid"/>
-    <addaction name="actionSelect_Volumes"/>
     <addaction name="actionShow_Project_Area"/>
    </widget>
    <widget class="QMenu" name="menu_Options">
     <property name="title">
-     <string>&amp;Options</string>
+     <string>Optio&amp;ns</string>
     </property>
     <addaction name="actionSet_Well_Reference_Depth"/>
     <addaction name="actionSetup_Wells"/>
@@ -156,7 +159,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Project Area</string>
+    <string>&amp;Show Project Area</string>
    </property>
   </action>
  </widget>
@@ -165,6 +168,11 @@
    <class>RulerGraphicsView</class>
    <extends>QGraphicsView</extends>
    <header location="global">rulergraphicsview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CheckedTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>checkedtreewidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

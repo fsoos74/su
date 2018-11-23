@@ -52,27 +52,24 @@ protected:
 
 
 private slots:
+    void on_actionSetup_Wells_triggered();
     void onMouseDoubleClick(QPointF);
     void onMouseOver(QPointF);
+    void updateItemsFromTree();
     void updateScene();
 
-    void on_actionAdd_Grid_triggered();
-    void on_actionAdd_Wells_triggered();
-    void on_actionSelect_Volumes_triggered();
-    void on_actionSetup_Wells_triggered();
-    void on_actionSetup_Grids_triggered();
-    void on_actionSetup_Volume_triggered();
     void on_actionSet_Well_Reference_Depth_triggered();
-    void on_actionSelect_Horizons_triggered();
-    void on_actionSelect_Attribute_Grids_triggered();
 
 private:
 
-    void selectGrids(GridType, ItemType);
     void configWellItem( WellItem* );
     void configGridItem( GridItem* );
     void configVolumeItem( VolumeItem* );
 
+    void fillTree();
+    void addVolumeItem(QString);
+    void addHorizonItem(QString);
+    void addWellItem(QString);
     void setupToolBarControls();
     void addItemDockWidget( QString title, QGraphicsItem*, QWidget* );
     void removeItemDockWidget( QGraphicsItem* );

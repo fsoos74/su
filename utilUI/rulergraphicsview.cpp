@@ -551,8 +551,8 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
     if( m_orientation==VERTICAL_RULER){
 
-       QPoint startP( 0, mappedSceneRect.top());
-       QPoint endP( 0, mappedSceneRect.bottom());
+       QPoint startP( 0, 0);//mappedSceneRect.top());
+       QPoint endP( 0, height());//mappedSceneRect.bottom());
        qreal incr=m_tickIncrement;
        int stc=m_subTickCount;
        if( m_autoTickIncrement){
@@ -584,8 +584,8 @@ QVector< GVRuler::Tick > GVRuler::computeTicks()const{
 
     else{                                                                   // Horizontal ruler
 
-        QPoint startP( mappedSceneRect.left(), 0);
-        QPoint endP( mappedSceneRect.right(), 0);
+        QPoint startP( 0, 0);//mappedSceneRect.left(), 0);
+        QPoint endP( width(),0);//mappedSceneRect.right(), 0);
         qreal incr=m_tickIncrement;
         int stc=m_subTickCount;
 
