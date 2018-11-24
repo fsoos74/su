@@ -8,7 +8,7 @@
 WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     QObject(parentObject),
     QGraphicsEllipseItem( -2, -2, 2, 2),
-    m_textItem(new QGraphicsSimpleTextItem("", this)),
+    m_textItem(new AlignedTextGraphicsItem("", Qt::AlignHCenter|Qt::AlignTop,0,this)),
     m_size(2)
 {
     QPen pen(Qt::red, 2);
@@ -17,7 +17,9 @@ WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     QBrush brush(Qt::darkGreen);
     setBrush(brush);
 
-    m_textItem->moveBy(m_size, m_size);
+    QFont font("Times",8,QFont::Normal);
+    m_textItem->setFont(font);
+    //m_textItem->moveBy(m_size, m_size);
     m_textItem->setZValue(1000);
     setFlag(QGraphicsItem::ItemIgnoresTransformations);
     //setHandlesChildEvents(true);

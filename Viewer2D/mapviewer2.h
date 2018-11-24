@@ -10,7 +10,9 @@
 #include<volumeitem.h>
 #include<wellitem.h>
 #include<QDockWidget>
-#include<reversedoublespinbox.h>
+#include<reversespinbox.h>
+#include<QComboBox>
+
 
 namespace Ui {
 class MapViewer2;
@@ -33,23 +35,35 @@ public:
         return m_showProjectArea;
     }
 
-    qreal wellRefDepth()const{
-        return m_wellRefDepth;
+    Domain domain()const{
+        return toDomain(m_cbDomain->currentText());
+    }
+
+    double sliceValue()const{
+        return m_sbSliceValue->value();
+    }
+
+    double wellReferenceDepth()const{
+        return m_wellReferenceDepth;
     }
 
 public slots:
     void setProject(AVOProject* );
     void setShowProjectArea(bool);
-    void setWellRefDepth(qreal);
+    void setDomain(Domain);
+    void setDomain(QString);
+    void setSliceValue(int);
+    void setWellReferenceDepth(double);
 
 signals:
     void showProjectAreaChanged(bool);
-    void wellRefDepthChanged(qreal);
+    void domainChanged(Domain);
+    void sliceValueChanged(int);
+    void wellReferenceDepthChanged(double);
 
 protected:
     void receivePoint( SelectionPoint, int code );
     void receivePoints( QVector<SelectionPoint>, int code);
-
 
 private slots:
     void on_actionSetup_Wells_triggered();
@@ -57,8 +71,6 @@ private slots:
     void onMouseOver(QPointF);
     void updateItemsFromTree();
     void updateScene();
-
-    void on_actionSet_Well_Reference_Depth_triggered();
 
 private:
 
@@ -79,12 +91,15 @@ private:
     QRectF addMargins(const QRectF&);
 
     Ui::MapViewer2 *ui;
-    ReverseDoubleSpinBox* m_sbRefDepth;
+    QComboBox* m_cbDomain;
+    ReverseSpinBox* m_sbSliceValue;
     AVOProject* m_project=nullptr;
     bool m_showProjectArea=true;
     QStringList m_grids;
     QStringList m_wells;
-    qreal m_wellRefDepth=0;
+    Domain m_domain=Domain::Depth;
+    int m_sliceValue=0;
+    double m_wellReferenceDepth=0;
     QMap<QGraphicsItem*, QDockWidget*> m_dockWidgets;
     WellItem m_defaultWellItem;   // use this to store configuration of well display
 };

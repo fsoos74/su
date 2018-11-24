@@ -70,7 +70,6 @@
     <property name="title">
      <string>Optio&amp;ns</string>
     </property>
-    <addaction name="actionSet_Well_Reference_Depth"/>
     <addaction name="actionSetup_Wells"/>
     <addaction name="actionSetup_Grids"/>
     <addaction name="actionSetup_Volume"/>

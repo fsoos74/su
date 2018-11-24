@@ -12,8 +12,8 @@ class VolumeItem : public GridItem
 public:
     VolumeItem(AVOProject* project=nullptr, QGraphicsItem* parentGraphicsItemItem=nullptr, QObject* parentQObject=nullptr );
 
-    double refDepth()const{
-        return m_refDepth;
+    int sliceValue()const{
+        return m_sliceValue;
     }
 
     std::shared_ptr<Volume> volume()const{
@@ -21,7 +21,7 @@ public:
     }
 
 public slots:
-    void setRefDepth(double);
+    void setSliceValue(int);
     void setVolume(std::shared_ptr<Volume>);
 
 private slots:
@@ -30,8 +30,7 @@ private slots:
 private:
 
     std::shared_ptr<Volume> m_volume;
-    double m_refDepth;
-
+    int m_sliceValue;
 };
 
 #endif // VOLUMEITEM_H

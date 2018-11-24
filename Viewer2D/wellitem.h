@@ -2,11 +2,11 @@
 #define WELLITEM_H
 
 //#include<QGraphicsItemGroup>
-#include<QGraphicsSimpleTextItem>
 #include<QGraphicsEllipseItem>
 #include<QFont>
 #include<wellinfo.h>
 #include<wellpath.h>
+#include"alignedtextgraphicsitem.h"
 #include<memory>
 #include<QObject>
 
@@ -55,7 +55,7 @@ private:
     qreal m_refDepth=0;
     LabelType m_labelType=LabelType::UWI;
 
-    QGraphicsSimpleTextItem* m_textItem;
+    AlignedTextGraphicsItem* m_textItem;
     int m_size;
 };
 

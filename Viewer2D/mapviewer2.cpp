@@ -1,6 +1,5 @@
 #include "mapviewer2.h"
 #include "ui_mapviewer2.h"
-
 #include<cmath>
 #include<QMessageBox>
 #include<QInputDialog>
@@ -69,6 +68,8 @@ MapViewer2::MapViewer2(QWidget *parent) :
 
     ui->treeWidget->setHeaderHidden(true);
     connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(updateItemsFromTree()));
+
+    connect(this,SIGNAL(domainChanged(Domain)),this,SLOT(onDomainChanged(Domain)));
 }
 
 MapViewer2::~MapViewer2()
@@ -160,14 +161,34 @@ void MapViewer2::setShowProjectArea(bool on){
     ui->graphicsView->scene()->update();
 }
 
+void MapViewer2::setDomain(QString s){
+    setDomain(toDomain(s));
+}
 
-void MapViewer2::setWellRefDepth(qreal d){
+void MapViewer2::setDomain(Domain d){
+    if(d==m_domain) return;
+    m_domain=d;
+    auto text=toQString(d);
+    auto idx=m_cbDomain->findText(text);
+    m_cbDomain->setCurrentIndex(idx);
+    emit domainChanged(d);
+    if(d==Domain::Time) setWellReferenceDepth(0);	// surface location
+    fillTree();
+}
 
-    if( d==m_wellRefDepth) return;
+void MapViewer2::setSliceValue(int x){
+    if(x==m_sliceValue) return;
+    m_sliceValue=x;
+    emit sliceValueChanged(x);
+    double d=(m_domain==Domain::Depth) ? x : 0;
+    setWellReferenceDepth(d);
+    m_sbSliceValue->setValue(x);
+}
 
-    m_wellRefDepth=d;
-
-    emit wellRefDepthChanged(d);
+void MapViewer2::setWellReferenceDepth(double d){
+    if(d==m_wellReferenceDepth) return;
+    m_wellReferenceDepth=d;
+    emit wellReferenceDepthChanged(d);
 }
 
 void MapViewer2::receivePoint( SelectionPoint, int ){
@@ -181,7 +202,6 @@ void MapViewer2::receivePoints( QVector<SelectionPoint>, int){
 }
 
 void MapViewer2::onMouseOver(QPointF scenePos){
-
    QString message=QString("x=%1,  y=%2").arg(scenePos.x()).arg(scenePos.y());
 
    QTransform ilxl_to_xy, xy_to_ilxl;
@@ -319,8 +339,8 @@ void MapViewer2::addVolumeItem(QString name){
     item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Volume));
     item->setData(ITEM_NAME_INDEX, name);
     item->setZValue(ItemZMap.value(ItemType::Volume, 0 ));
-    item->setRefDepth(m_sbRefDepth->value());
-    connect( m_sbRefDepth, SIGNAL(valueChanged(double)), item, SLOT(setRefDepth(double)) );
+    item->setSliceValue(sliceValue());
+    connect( this, SIGNAL(sliceValueChanged(int)), item, SLOT(setSliceValue(int)) );
     ui->graphicsView->scene()->addItem(item);
 }
 
@@ -368,8 +388,7 @@ void MapViewer2::addWellItem(QString name){
     item->setPen(m_defaultWellItem.pen());
     item->setBrush(m_defaultWellItem.brush());
 
-    connect( this, SIGNAL(wellRefDepthChanged(qreal)), item, SLOT(setRefDepth(qreal)) );
-
+    connect(this,SIGNAL(wellReferenceDepthChanged(double)),item,SLOT(setRefDepth(qreal)));
     ui->graphicsView->scene()->addItem(item);
 }
 
@@ -419,21 +438,6 @@ void MapViewer2::on_actionSetup_Wells_triggered()
         }
     }
 }
-
-
-
-void MapViewer2::on_actionSet_Well_Reference_Depth_triggered()
-{
-    auto scene = ui->graphicsView->scene();
-    if( !scene ) return;
-
-    bool ok=false;
-    auto d = QInputDialog::getDouble(nullptr, tr("Well Reference Depth"), tr("Select Depth:"), m_wellRefDepth, -999999, 999999, 1, &ok);
-    if( !ok ) return;
-
-    setWellRefDepth(d);
-}
-
 
 
 
@@ -509,21 +513,23 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
 void MapViewer2::setupToolBarControls(){
 
     auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Reference Depth:"));
-    m_sbRefDepth=new ReverseDoubleSpinBox;
+    m_cbDomain=new QComboBox;
+    m_cbDomain->addItem(toQString(Domain::Depth));
+    m_cbDomain->addItem(toQString(Domain::Time));
+    m_sbSliceValue=new ReverseSpinBox;
 
     auto layout=new QHBoxLayout;
-    layout->addWidget(label);
-    layout->addWidget(m_sbRefDepth);
+    layout->addWidget(m_cbDomain);
+    layout->addWidget(m_sbSliceValue);
     widget->setLayout(layout);
 
     auto toolBar=addToolBar(tr("Controls Toolbar"));
     toolBar->addWidget(widget);
 
-    m_sbRefDepth->setRange(-999999,999999);
-    m_sbRefDepth->setValue(m_wellRefDepth);
-    connect(m_sbRefDepth, SIGNAL(valueChanged(double)), this, SLOT(setWellRefDepth(qreal)) );
-    connect(this, SIGNAL(wellRefDepthChanged(qreal)), m_sbRefDepth, SLOT(setValue(double)) );
+    m_sbSliceValue->setRange(-999999,999999);
+    m_sbSliceValue->setValue(0);
+    connect(m_sbSliceValue, SIGNAL(valueChanged(int)), this, SLOT(setSliceValue(int)));
+    connect(m_cbDomain,SIGNAL(currentTextChanged(QString)),this, SLOT(setDomain(QString)));
 }
 
 void MapViewer2::addItemDockWidget( QString title, QGraphicsItem* item, QWidget* w){
@@ -573,6 +579,7 @@ QRectF MapViewer2::addMargins(const QRectF & bbox){
 
 
 void MapViewer2::fillTree(){
+    auto dom=domain();
     ui->treeWidget->clear();
     if(!m_project) return;
     ui->treeWidget->addItem("Horizons");
@@ -581,7 +588,13 @@ void MapViewer2::fillTree(){
     }
     ui->treeWidget->addItem("Volumes");
     for(auto name : m_project->volumeList()){
-        ui->treeWidget->addItem("Volumes", name);
+        Domain vdomain;
+        VolumeType vtype;
+        try{
+            m_project->getVolumeBounds(name, &vdomain, &vtype);
+            if(dom==vdomain) ui->treeWidget->addItem("Volumes", name);
+        }
+        catch(...){}
     }
     ui->treeWidget->addItem("Wells",true);
     for(auto name : m_project->wellList()){
