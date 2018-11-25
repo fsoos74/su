@@ -17,6 +17,7 @@
 #include<selecttypeanditemdialog.h>
 #include<areaitem.h>
 #include<rulergraphicsview.h>
+#include<QVBoxLayout>
 
 
 const int ITEM_TYPE_INDEX=0;
@@ -68,6 +69,8 @@ MapViewer2::MapViewer2(QWidget *parent) :
 
     ui->treeWidget->setHeaderHidden(true);
     connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(updateItemsFromTree()));
+
+    ui->legendArea->setLayout(new QVBoxLayout());
 
     connect(this,SIGNAL(domainChanged(Domain)),this,SLOT(onDomainChanged(Domain)));
 }
@@ -286,6 +289,7 @@ void MapViewer2::updateItemsFromTree(){
         }
         else{
             if( item ){	// need to remove item
+                removeItemLegendWidget(item);
                 ui->graphicsView->scene()->removeItem(item);
             }
         }
@@ -303,6 +307,7 @@ void MapViewer2::updateItemsFromTree(){
         }
         else{
             if( item ){	// need to remove item
+                removeItemLegendWidget(item);
                 ui->graphicsView->scene()->removeItem(item);
             }
         }
@@ -342,6 +347,13 @@ void MapViewer2::addVolumeItem(QString name){
     item->setSliceValue(sliceValue());
     connect( this, SIGNAL(sliceValueChanged(int)), item, SLOT(setSliceValue(int)) );
     ui->graphicsView->scene()->addItem(item);
+
+    auto w = new HistogramColorBarWidget(this);
+    w->setColorTable(item->colorTable());
+    auto g=item->grid();
+    w->setData( g->data(), g->size(), g->NULL_VALUE);
+    w->setMinimumSize( 50, 200);
+    addItemLegendWidget(item,w);
 }
 
 void MapViewer2::addHorizonItem(QString name){
@@ -354,16 +366,16 @@ void MapViewer2::addHorizonItem(QString name){
 
     auto item = new GridItem( m_project);
     item->setGrid(g);
-    item->setData(ITEM_TYPE_INDEX, static_cast<int>(GridType::Horizon));
+    item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::HorizonGrid));
     item->setData(ITEM_NAME_INDEX, name);
     item->setZValue(ItemZMap.value(ItemType::HorizonGrid, 0 ) );
     ui->graphicsView->scene()->addItem(item);
 
-    auto w = new HistogramColorBarWidget(this);
+    auto w = new HistogramColorBarWidget;
     w->setColorTable(item->colorTable());
     w->setData( g->data(), g->size(), g->NULL_VALUE);
     w->setMinimumSize( 50, 200);
-    addItemDockWidget(name, item, w);
+    addItemLegendWidget(item,w);
 }
 
 void MapViewer2::addWellItem(QString name){
@@ -532,26 +544,20 @@ void MapViewer2::setupToolBarControls(){
     connect(m_cbDomain,SIGNAL(currentTextChanged(QString)),this, SLOT(setDomain(QString)));
 }
 
-void MapViewer2::addItemDockWidget( QString title, QGraphicsItem* item, QWidget* w){
-
-    auto dw = new QDockWidget(title, this);
-    dw->setAllowedAreas(Qt::LeftDockWidgetArea);
-    dw->setContentsMargins(10, 5, 10, 5);
-    dw->setWidget(w);
-    dw->setFeatures(QDockWidget::DockWidgetVerticalTitleBar | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);   // and nothing else
-    addDockWidget(Qt::LeftDockWidgetArea, dw);
-    m_dockWidgets.insert(item, dw);
+void MapViewer2::addItemLegendWidget( QGraphicsItem* item, QWidget* w){
+    ui->legendArea->layout()->addWidget(w);
+    m_legendWidgets.insert(item, w);
 }
 
-void MapViewer2::removeItemDockWidget( QGraphicsItem* item){
-
-    std::cout<<"MapViewer2::removeItemDockWidget "<<item<<std::endl<<std::flush;
-    if( ! m_dockWidgets.contains(item) ) return;
-    auto dw = m_dockWidgets.value(item);
-    removeDockWidget(dw);
-    delete dw;
-    m_dockWidgets.remove(item);
-    std::cout<<"FINISH"<<std::endl<<std::flush;
+void MapViewer2::removeItemLegendWidget( QGraphicsItem* item){
+    std::cout<<"RILW 1"<<std::endl<<std::flush;
+    if( ! m_legendWidgets.contains(item) ) return;
+    auto w = m_legendWidgets.value(item);
+    ui->legendArea->layout()->removeWidget(w);
+    delete w;
+    m_legendWidgets.remove(item);
+    ui->legendArea->layout()->update();
+    std::cout<<"RILW 2"<<std::endl<<std::flush;
 }
 
 QGraphicsItem* MapViewer2::findItem(ItemType type, QString name)

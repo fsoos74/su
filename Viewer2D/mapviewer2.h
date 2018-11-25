@@ -9,7 +9,6 @@
 #include<griditem.h>
 #include<volumeitem.h>
 #include<wellitem.h>
-#include<QDockWidget>
 #include<reversespinbox.h>
 #include<QComboBox>
 
@@ -83,8 +82,8 @@ private:
     void addHorizonItem(QString);
     void addWellItem(QString);
     void setupToolBarControls();
-    void addItemDockWidget( QString title, QGraphicsItem*, QWidget* );
-    void removeItemDockWidget( QGraphicsItem* );
+    void addItemLegendWidget(QGraphicsItem*, QWidget* );
+    void removeItemLegendWidget( QGraphicsItem* );
 
     QGraphicsItem* findItem(ItemType,QString);
     void setupMouseModes();
@@ -100,7 +99,7 @@ private:
     Domain m_domain=Domain::Depth;
     int m_sliceValue=0;
     double m_wellReferenceDepth=0;
-    QMap<QGraphicsItem*, QDockWidget*> m_dockWidgets;
+    QMap<QGraphicsItem*, QWidget*> m_legendWidgets;
     WellItem m_defaultWellItem;   // use this to store configuration of well display
 };
 

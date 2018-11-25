@@ -41,6 +41,7 @@
         </size>
        </property>
       </widget>
+      <widget class="QWidget" name="legendArea" native="true"/>
      </widget>
     </item>
    </layout>
