@@ -11,7 +11,7 @@
 #include<wellitem.h>
 #include<reversespinbox.h>
 #include<QComboBox>
-
+#include<QMdiSubWindow>
 
 namespace Ui {
 class MapViewer2;
@@ -68,6 +68,7 @@ private slots:
     void on_actionSetup_Wells_triggered();
     void onMouseDoubleClick(QPointF);
     void onMouseOver(QPointF);
+    bool eventFilter(QObject *watched, QEvent *event);
     void updateItemsFromTree();
     void updateScene();
 
@@ -82,7 +83,7 @@ private:
     void addHorizonItem(QString);
     void addWellItem(QString);
     void setupToolBarControls();
-    void addItemLegendWidget(QGraphicsItem*, QWidget* );
+    void addItemLegendWidget(QGraphicsItem*, QWidget*, QString );
     void removeItemLegendWidget( QGraphicsItem* );
 
     QGraphicsItem* findItem(ItemType,QString);
@@ -99,7 +100,7 @@ private:
     Domain m_domain=Domain::Depth;
     int m_sliceValue=0;
     double m_wellReferenceDepth=0;
-    QMap<QGraphicsItem*, QWidget*> m_legendWidgets;
+    QMap<QGraphicsItem*, QMdiSubWindow*> m_legendWidgets;
     WellItem m_defaultWellItem;   // use this to store configuration of well display
 };
 

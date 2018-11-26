@@ -43,7 +43,6 @@ private:
     size_t m_data_count=0;;
     float m_null_value=0;
     ColorTable* m_colorTable=nullptr;
-
     Histogram m_histogram;
 
 };

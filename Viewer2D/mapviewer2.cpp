@@ -18,6 +18,7 @@
 #include<areaitem.h>
 #include<rulergraphicsview.h>
 #include<QVBoxLayout>
+#include<QMouseEvent>
 
 
 const int ITEM_TYPE_INDEX=0;
@@ -54,9 +55,13 @@ MapViewer2::MapViewer2(QWidget *parent) :
     ui->graphicsView->topRuler()->setAutoTickIncrement(false);
     ui->graphicsView->topRuler()->setTickIncrement(50000);
     ui->graphicsView->topRuler()->setSubTickCount(4);
+    ui->graphicsView->topRuler()->setTickMarkSize(0);
+    ui->graphicsView->topRuler()->setSubTickMarkSize(0);
     ui->graphicsView->leftRuler()->setAutoTickIncrement(false);
     ui->graphicsView->leftRuler()->setTickIncrement(50000);
     ui->graphicsView->leftRuler()->setSubTickCount(4);
+    ui->graphicsView->leftRuler()->setTickMarkSize(0);
+    ui->graphicsView->leftRuler()->setSubTickMarkSize(0);
     QPen tickpen=QPen(Qt::lightGray,2);
     tickpen.setCosmetic(true);
     ui->graphicsView->setGridPen(tickpen);
@@ -70,7 +75,6 @@ MapViewer2::MapViewer2(QWidget *parent) :
     ui->treeWidget->setHeaderHidden(true);
     connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(updateItemsFromTree()));
 
-    ui->legendArea->setLayout(new QVBoxLayout());
 
     connect(this,SIGNAL(domainChanged(Domain)),this,SLOT(onDomainChanged(Domain)));
 }
@@ -221,8 +225,6 @@ void MapViewer2::onMouseOver(QPointF scenePos){
 
 void MapViewer2::onMouseDoubleClick(QPointF p){
 
-    std::cout<<"MapViewer2::onMouseDoubleClick"<<std::endl<<std::flush;
-
     auto scene = ui->graphicsView->scene();
     if( !scene ) return;
 
@@ -249,6 +251,20 @@ void MapViewer2::onMouseDoubleClick(QPointF p){
         configWellItem(dynamic_cast<WellItem*>(item));
         break;
     }
+}
+
+bool MapViewer2::eventFilter(QObject *watched, QEvent *event){
+    if(event->type()==QEvent::MouseButtonDblClick){
+        auto mdisw=dynamic_cast<QMdiSubWindow*>(watched);
+        if(!mdisw) return false;
+        if(!m_legendWidgets.values().contains(mdisw)) return false;
+        QGraphicsItem* item=m_legendWidgets.key(mdisw);
+        auto gitem=dynamic_cast<GridItem*>(item);
+        if(!gitem) return false;
+        configGridItem(gitem);
+        return true;
+    }
+    return false;
 }
 
 void MapViewer2::updateScene(){
@@ -352,8 +368,8 @@ void MapViewer2::addVolumeItem(QString name){
     w->setColorTable(item->colorTable());
     auto g=item->grid();
     w->setData( g->data(), g->size(), g->NULL_VALUE);
-    w->setMinimumSize( 50, 200);
-    addItemLegendWidget(item,w);
+    w->setMinimumSize( 200, 100);
+    addItemLegendWidget(item,w,name);
 }
 
 void MapViewer2::addHorizonItem(QString name){
@@ -375,7 +391,7 @@ void MapViewer2::addHorizonItem(QString name){
     w->setColorTable(item->colorTable());
     w->setData( g->data(), g->size(), g->NULL_VALUE);
     w->setMinimumSize( 50, 200);
-    addItemLegendWidget(item,w);
+    addItemLegendWidget(item,w,name);
 }
 
 void MapViewer2::addWellItem(QString name){
@@ -544,20 +560,27 @@ void MapViewer2::setupToolBarControls(){
     connect(m_cbDomain,SIGNAL(currentTextChanged(QString)),this, SLOT(setDomain(QString)));
 }
 
-void MapViewer2::addItemLegendWidget( QGraphicsItem* item, QWidget* w){
-    ui->legendArea->layout()->addWidget(w);
-    m_legendWidgets.insert(item, w);
+void MapViewer2::addItemLegendWidget( QGraphicsItem* item, QWidget* w, QString title){
+    w->setAttribute(Qt::WA_DeleteOnClose);
+    Qt::WindowFlags flags;
+    flags|=Qt::WindowTitleHint;
+    flags|=Qt::WindowMaximizeButtonHint;
+    flags|=Qt::WindowMinimizeButtonHint;
+    auto sw=ui->legendArea->addSubWindow(w,flags);
+    sw->setWindowTitle(title);
+    sw->setMinimumWidth(200);
+    sw->installEventFilter(this);
+    w->show();
+    m_legendWidgets.insert(item, sw);
+    ui->legendArea->tileSubWindows();
 }
 
 void MapViewer2::removeItemLegendWidget( QGraphicsItem* item){
-    std::cout<<"RILW 1"<<std::endl<<std::flush;
     if( ! m_legendWidgets.contains(item) ) return;
     auto w = m_legendWidgets.value(item);
-    ui->legendArea->layout()->removeWidget(w);
-    delete w;
+    ui->legendArea->removeSubWindow(w);
     m_legendWidgets.remove(item);
-    ui->legendArea->layout()->update();
-    std::cout<<"RILW 2"<<std::endl<<std::flush;
+    ui->legendArea->tileSubWindows();
 }
 
 QGraphicsItem* MapViewer2::findItem(ItemType type, QString name)
