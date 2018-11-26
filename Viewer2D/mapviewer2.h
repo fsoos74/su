@@ -12,6 +12,7 @@
 #include<reversespinbox.h>
 #include<QComboBox>
 #include<QMdiSubWindow>
+#include<rulergraphicsview.h>
 
 namespace Ui {
 class MapViewer2;
@@ -59,6 +60,7 @@ signals:
     void domainChanged(Domain);
     void sliceValueChanged(int);
     void wellReferenceDepthChanged(double);
+    void onRGVDoubleClick(QPoint);
 
 protected:
     void receivePoint( SelectionPoint, int code );
@@ -77,6 +79,7 @@ private:
     void configWellItem( WellItem* );
     void configGridItem( GridItem* );
     void configVolumeItem( VolumeItem* );
+    void configAxis( GVRuler*);
 
     void fillTree();
     void addVolumeItem(QString);

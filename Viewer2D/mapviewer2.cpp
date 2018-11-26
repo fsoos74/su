@@ -19,7 +19,7 @@
 #include<rulergraphicsview.h>
 #include<QVBoxLayout>
 #include<QMouseEvent>
-
+#include"axisticksconfigdialog.h"
 
 const int ITEM_TYPE_INDEX=0;
 const int ITEM_NAME_INDEX=1;
@@ -62,6 +62,8 @@ MapViewer2::MapViewer2(QWidget *parent) :
     ui->graphicsView->leftRuler()->setSubTickCount(4);
     ui->graphicsView->leftRuler()->setTickMarkSize(0);
     ui->graphicsView->leftRuler()->setSubTickMarkSize(0);
+    ui->graphicsView->topRuler()->installEventFilter(this);
+    ui->graphicsView->leftRuler()->installEventFilter(this);
     QPen tickpen=QPen(Qt::lightGray,2);
     tickpen.setCosmetic(true);
     ui->graphicsView->setGridPen(tickpen);
@@ -74,9 +76,9 @@ MapViewer2::MapViewer2(QWidget *parent) :
 
     ui->treeWidget->setHeaderHidden(true);
     connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(updateItemsFromTree()));
-
-
     connect(this,SIGNAL(domainChanged(Domain)),this,SLOT(onDomainChanged(Domain)));
+
+    m_defaultWellItem.setZValue(ItemZMap[ItemType::Well]);
 }
 
 MapViewer2::~MapViewer2()
@@ -254,19 +256,27 @@ void MapViewer2::onMouseDoubleClick(QPointF p){
 }
 
 bool MapViewer2::eventFilter(QObject *watched, QEvent *event){
+
     if(event->type()==QEvent::MouseButtonDblClick){
+        std::cout<<"MV2: DBLOCLCK"<<std::endl<<std::flush;
         auto mdisw=dynamic_cast<QMdiSubWindow*>(watched);
-        if(!mdisw) return false;
-        if(!m_legendWidgets.values().contains(mdisw)) return false;
-        QGraphicsItem* item=m_legendWidgets.key(mdisw);
-        auto vitem=dynamic_cast<VolumeItem*>(item);
-        if(vitem){
-            configVolumeItem(vitem);
-            return true;
+        if(mdisw){
+            if(!m_legendWidgets.values().contains(mdisw)) return false;
+            QGraphicsItem* item=m_legendWidgets.key(mdisw);
+            auto vitem=dynamic_cast<VolumeItem*>(item);
+            if(vitem){
+                configVolumeItem(vitem);
+                return true;
+            }
+            auto gitem=dynamic_cast<GridItem*>(item);
+            if(gitem){
+                configGridItem(gitem);
+                return true;
+            }
         }
-        auto gitem=dynamic_cast<GridItem*>(item);
-        if(gitem){
-            configGridItem(gitem);
+        auto gvruler=dynamic_cast<GVRuler*>(watched);
+        if(gvruler){
+            configAxis(gvruler);
             return true;
         }
         return false;
@@ -364,6 +374,8 @@ void MapViewer2::addVolumeItem(QString name){
 
     auto item = new VolumeItem( m_project);
     item->setVolume(v);
+    item->setShowLabels(false);
+    item->setShowMesh(false);
     item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Volume));
     item->setData(ITEM_NAME_INDEX, name);
     item->setZValue(ItemZMap.value(ItemType::Volume, 0 ));
@@ -376,6 +388,7 @@ void MapViewer2::addVolumeItem(QString name){
     w->setColorTable(item->colorTable());
     auto g=item->grid();
     w->setData( g->data(), g->size(), g->NULL_VALUE);
+    connect(this, SIGNAL(sliceValueChanged(int)), w, SLOT(updateHistogram()));
     w->setFixedSize( 200, 200);
     addItemLegendWidget(item,w,name);
 }
@@ -390,6 +403,8 @@ void MapViewer2::addHorizonItem(QString name){
 
     auto item = new GridItem( m_project);
     item->setGrid(g);
+    item->setShowLabels(false);
+    item->setShowMesh(false);
     item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::HorizonGrid));
     item->setData(ITEM_NAME_INDEX, name);
     item->setZValue(ItemZMap.value(ItemType::HorizonGrid, 0 ) );
@@ -441,6 +456,7 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     dlg.setItemSize(m_defaultWellItem.size());
     dlg.setPenColor(m_defaultWellItem.pen().color());
     dlg.setBrushColor(m_defaultWellItem.brush().color());
+    dlg.setZValue(m_defaultWellItem.zValue());
 
     if( dlg.exec()!=QDialog::Accepted) return;
 
@@ -458,6 +474,8 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     brush.setColor(dlg.brushColor());
     m_defaultWellItem.setBrush(brush);
 
+    m_defaultWellItem.setZValue(dlg.zValue());
+
     // now assign new options to all well items
 
     for( auto item : scene->items()){
@@ -472,6 +490,7 @@ void MapViewer2::on_actionSetup_Wells_triggered()
             wi->setFont(m_defaultWellItem.font());
             wi->setPen(m_defaultWellItem.pen());
             wi->setBrush(m_defaultWellItem.brush());
+            wi->setZValue(m_defaultWellItem.zValue());
         }
     }
 }
@@ -502,10 +521,12 @@ void MapViewer2::configGridItem(GridItem * item){
     dlg->setShowMesh(item->showMesh());
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
+    dlg->setZValue(item->zValue());
     connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLabels(bool)));
     connect(dlg, SIGNAL(showMeshChanged(bool)), item, SLOT( setShowMesh(bool)));
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
+    connect(dlg,SIGNAL(zValueChanged(int)), item, SLOT(setZValueWrapper(int)));
     if( dlg->exec()==QDialog::Accepted){
 
     }
@@ -531,11 +552,13 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     dlg->setShowMesh(item->showMesh());
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
+    dlg->setZValue(item->zValue());
     auto bounds=item->volume()->bounds();
     connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLabels(bool)));
     connect(dlg, SIGNAL(showMeshChanged(bool)), item, SLOT( setShowMesh(bool)));
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
+    connect(dlg,SIGNAL(zValueChanged(int)), item, SLOT(setZValueWrapper(int)));
     if( dlg->exec()==QDialog::Accepted){
 
     }
@@ -546,6 +569,19 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     delete dlg;
 }
 
+
+void MapViewer2::configAxis(GVRuler * gvruler){
+    AxisTicksConfigDialog dlg;
+    dlg.setWindowTitle("Configure Axis");
+    dlg.setInterval(gvruler->tickIncrement());
+    dlg.setSubTicks(gvruler->subTickCount());
+    if(dlg.exec()==QDialog::Accepted){
+        gvruler->setTickIncrement(dlg.interval());
+        gvruler->setSubTickCount(dlg.subTicks());
+        ui->graphicsView->invalidateScene();
+        ui->graphicsView->scene()->update();
+    }
+}
 
 void MapViewer2::setupToolBarControls(){
 

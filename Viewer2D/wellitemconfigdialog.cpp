@@ -72,6 +72,10 @@ int WellItemConfigDialog::itemSize(){
     return ui->sbSize->value();
 }
 
+int WellItemConfigDialog::zValue(){
+    return ui->sbZValue->value();
+}
+
 void WellItemConfigDialog::setPenColor(QColor c){
     ui->cbPen->setColor(c);
 }
@@ -90,6 +94,10 @@ void WellItemConfigDialog::setLabelSize(int i){
 
 void WellItemConfigDialog::setItemSize(int i){
     ui->sbSize->setValue(i);
+}
+
+void WellItemConfigDialog::setZValue(int i){
+    ui->sbZValue->setValue(i);
 }
 
 void WellItemConfigDialog::on_cbPen_clicked()

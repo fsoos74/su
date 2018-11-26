@@ -89,6 +89,11 @@ void GridItem::setCrosslineIncrement(int i){
     updateLabels();
 }
 
+void GridItem::setZValueWrapper(int i){
+    if(i==zValue()) return;
+    setZValue(i);
+}
+
 void GridItem::updatePixmap(){
 
     if( !m_grid ){

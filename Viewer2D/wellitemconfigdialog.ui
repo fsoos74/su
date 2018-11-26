@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>184</width>
-    <height>269</height>
+    <width>185</width>
+    <height>301</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,14 +16,24 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_4">
+     <item row="4" column="1">
+      <widget class="ColorButton" name="cbPen">
        <property name="text">
-        <string>Label:</string>
+        <string/>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Fill Color:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="sbLabelSize"/>
+     </item>
+     <item row="1" column="1">
       <widget class="QComboBox" name="cbLabelType">
        <item>
         <property name="text">
@@ -37,55 +47,55 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Label Size:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="sbLabelSize"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label">
+     <item row="5" column="1">
+      <widget class="ColorButton" name="cbBrush">
        <property name="text">
-        <string>Symbol Size:</string>
+        <string/>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="3" column="1">
       <widget class="QSpinBox" name="sbSize">
        <property name="minimum">
         <number>3</number>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Outline Color:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="ColorButton" name="cbPen">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
        <property name="text">
-        <string/>
+        <string>Label:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Fill Color:</string>
+        <string>Symbol Size:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="ColorButton" name="cbBrush">
+     <item row="0" column="1">
+      <widget class="QSpinBox" name="sbZValue"/>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_6">
        <property name="text">
-        <string/>
+        <string>Z-Value:</string>
        </property>
       </widget>
      </item>

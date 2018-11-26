@@ -112,22 +112,14 @@
     </property>
     <addaction name="actionE_xit"/>
    </widget>
-   <widget class="QMenu" name="menu_Items">
-    <property name="title">
-     <string>&amp;Items</string>
-    </property>
-    <addaction name="actionShow_Project_Area"/>
-   </widget>
    <widget class="QMenu" name="menu_Options">
     <property name="title">
      <string>Optio&amp;ns</string>
     </property>
     <addaction name="actionSetup_Wells"/>
-    <addaction name="actionSetup_Grids"/>
-    <addaction name="actionSetup_Volume"/>
+    <addaction name="actionShow_Project_Area"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu_Items"/>
    <addaction name="menu_Options"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>

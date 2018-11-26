@@ -22,6 +22,7 @@ GridItemConfigDialog::GridItemConfigDialog(QWidget *parent) :
     connect( ui->cbLabels, SIGNAL(toggled(bool)), this, SIGNAL(showLabelsChanged(bool)) );
     connect( ui->sbInlineIncrement, SIGNAL(valueChanged(int)), this, SIGNAL(inlineIncrementChanged(int)) );
     connect( ui->sbCrosslineIncrement, SIGNAL(valueChanged(int)), this, SIGNAL(crosslineIncrementChanged(int)) );
+    connect( ui->sbZValue, SIGNAL(valueChanged(int)), this, SIGNAL(zValueChanged(int)) );
 }
 
 GridItemConfigDialog::~GridItemConfigDialog()
@@ -53,7 +54,9 @@ int GridItemConfigDialog::crosslineIncrement(){
     return ui->sbCrosslineIncrement->value();
 }
 
-
+int GridItemConfigDialog::zValue(){
+    return ui->sbZValue->value();
+}
 
 void GridItemConfigDialog::setColorTable(ColorTable* ct){
     m_colorTable=ct;
@@ -77,6 +80,10 @@ void GridItemConfigDialog::setInlineIncrement(int i){
 
 void GridItemConfigDialog::setCrosslineIncrement(int i){
     ui->sbCrosslineIncrement->setValue(i);
+}
+
+void GridItemConfigDialog::setZValue(int i){
+    ui->sbZValue->setValue(i);
 }
 
 void GridItemConfigDialog::on_pbScaling_clicked()

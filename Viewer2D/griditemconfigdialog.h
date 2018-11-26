@@ -27,12 +27,14 @@ public:
     bool showLabels();
     int inlineIncrement();
     int crosslineIncrement();
+    int zValue();
 
 signals:
     void showMeshChanged(bool);
     void showLabelsChanged(bool);
     void inlineIncrementChanged(int);
     void crosslineIncrementChanged(int);
+    void zValueChanged(int);
 
 public slots:
 
@@ -42,7 +44,7 @@ public slots:
     void setShowLabels(bool);
     void setInlineIncrement(int);
     void setCrosslineIncrement(int);
-
+    void setZValue(int);
 
 
 private slots:

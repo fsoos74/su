@@ -30,6 +30,10 @@ void VolumeItem::setVolume(std::shared_ptr<Volume> v){
     updateGrid();
 }
 
+void VolumeItem::setZValueWrapper(int i){
+    if(i==zValue()) return;
+    setZValue(i);
+}
 
 void VolumeItem::updateGrid(){
 

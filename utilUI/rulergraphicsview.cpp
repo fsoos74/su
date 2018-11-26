@@ -278,22 +278,23 @@ bool RulerGraphicsView::eventFilter(QObject *obj, QEvent *ev){
     QWidget* widget=dynamic_cast<QWidget*>(obj);
     QMouseEvent* mouseEvent=dynamic_cast<QMouseEvent*>(ev);
 
-    if( !widget || !mouseEvent ) return QObject::eventFilter(obj,ev);
+    if( !widget || !mouseEvent ) return false;
 
-    if( !(widget==viewport() || widget==m_leftRuler || widget==m_topRuler)) return QObject::eventFilter(obj,ev);
+    if( !(widget==viewport() || widget==m_leftRuler || widget==m_topRuler)) return false;
 
 
-    // forward double clicks
-    if( mouseEvent->type()==QEvent::MouseButtonDblClick && widget==viewport() ){
-        auto p=mapToScene(mouseEvent->pos());
-        emit mouseDoubleClick(p);
-        ev->accept();
-        return true;
+    // forward double clicks on view, ignore on rulers for others
+    if( mouseEvent->type()==QEvent::MouseButtonDblClick){
+        if(widget==viewport() ){
+            auto p=mapToScene(mouseEvent->pos());
+            emit mouseDoubleClick(p);
+            return true;
+        }
+        return false;
     }
 
-
     if ( (mouseEvent->modifiers() != Qt::ControlModifier) && (m_mouseMode!=MouseMode::Zoom) &&
-         !m_mouseSelection ) return QObject::eventFilter(obj,ev);
+         !m_mouseSelection ) return false;
 
     // zoom
 
@@ -350,8 +351,8 @@ bool RulerGraphicsView::eventFilter(QObject *obj, QEvent *ev){
         m_leftRuler->update();
         m_topRuler->update();
     }
-
-    return QObject::eventFilter(obj,ev);    // XXX changed this 13.9.17
+    return true;
+    //return QObject::eventFilter(obj,ev);    // XXX changed this 13.9.17
     //ev->accept();// return QObject::eventFilter(obj,ev);
     //return true;
 }

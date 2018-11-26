@@ -22,8 +22,12 @@ public:
     QColor penColor();
     QColor brushColor();
     int itemSize();
+    int zValue();
 
     //static bool configItem( WellItem* item );
+
+signals:
+    void zValueChanged(int);
 
 public slots:
 
@@ -32,10 +36,10 @@ public slots:
     void setPenColor(QColor);
     void setBrushColor(QColor);
     void setItemSize(int);
+    void setZValue(int);
 
 private slots:
     void on_cbPen_clicked();
-
     void on_cbBrush_clicked();
 
 private:

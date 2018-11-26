@@ -55,6 +55,7 @@ public slots:
     void setShowLabels(bool);
     void setInlineIncrement(int);
     void setCrosslineIncrement(int);
+    void setZValueWrapper(int);
 
 protected slots:
 

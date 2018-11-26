@@ -23,6 +23,7 @@ public:
 public slots:
     void setSliceValue(int);
     void setVolume(std::shared_ptr<Volume>);
+    void setZValueWrapper(int);
 
 private slots:
     void updateGrid();
