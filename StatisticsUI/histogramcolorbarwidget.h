@@ -24,10 +24,20 @@ public:
         return m_colorTable;
     }
 
+    Qt::Orientation orientation()const{
+        return m_orientation;
+    }
+
+    int scalePrecision()const{
+        return m_scalePrecision;
+    }
+
 public slots:
 
     void setColorTable( ColorTable*);
     void setData( float* begin, size_t count, float null_value );
+    void setOrientation(Qt::Orientation);
+    void setScalePrecision(int);
 
 protected:
 
@@ -44,7 +54,8 @@ private:
     float m_null_value=0;
     ColorTable* m_colorTable=nullptr;
     Histogram m_histogram;
-
+    Qt::Orientation m_orientation=Qt::Vertical;
+    int m_scalePrecision=4;
 };
 
 #endif // HISTOGRAMCOLORBARWIDGET_H

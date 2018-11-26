@@ -259,10 +259,17 @@ bool MapViewer2::eventFilter(QObject *watched, QEvent *event){
         if(!mdisw) return false;
         if(!m_legendWidgets.values().contains(mdisw)) return false;
         QGraphicsItem* item=m_legendWidgets.key(mdisw);
+        auto vitem=dynamic_cast<VolumeItem*>(item);
+        if(vitem){
+            configVolumeItem(vitem);
+            return true;
+        }
         auto gitem=dynamic_cast<GridItem*>(item);
-        if(!gitem) return false;
-        configGridItem(gitem);
-        return true;
+        if(gitem){
+            configGridItem(gitem);
+            return true;
+        }
+        return false;
     }
     return false;
 }
@@ -365,10 +372,11 @@ void MapViewer2::addVolumeItem(QString name){
     ui->graphicsView->scene()->addItem(item);
 
     auto w = new HistogramColorBarWidget(this);
+    w->setOrientation(Qt::Horizontal);
     w->setColorTable(item->colorTable());
     auto g=item->grid();
     w->setData( g->data(), g->size(), g->NULL_VALUE);
-    w->setMinimumSize( 200, 100);
+    w->setFixedSize( 200, 200);
     addItemLegendWidget(item,w,name);
 }
 
@@ -388,9 +396,10 @@ void MapViewer2::addHorizonItem(QString name){
     ui->graphicsView->scene()->addItem(item);
 
     auto w = new HistogramColorBarWidget;
+    w->setOrientation(Qt::Horizontal);
     w->setColorTable(item->colorTable());
     w->setData( g->data(), g->size(), g->NULL_VALUE);
-    w->setMinimumSize( 50, 200);
+    w->setFixedSize( 200, 200);
     addItemLegendWidget(item,w,name);
 }
 
@@ -568,11 +577,11 @@ void MapViewer2::addItemLegendWidget( QGraphicsItem* item, QWidget* w, QString t
     flags|=Qt::WindowMinimizeButtonHint;
     auto sw=ui->legendArea->addSubWindow(w,flags);
     sw->setWindowTitle(title);
-    sw->setMinimumWidth(200);
+    sw->setFixedSize(200,200);
     sw->installEventFilter(this);
     w->show();
     m_legendWidgets.insert(item, sw);
-    ui->legendArea->tileSubWindows();
+//ui->legendArea->tileSubWindows();
 }
 
 void MapViewer2::removeItemLegendWidget( QGraphicsItem* item){
@@ -580,7 +589,7 @@ void MapViewer2::removeItemLegendWidget( QGraphicsItem* item){
     auto w = m_legendWidgets.value(item);
     ui->legendArea->removeSubWindow(w);
     m_legendWidgets.remove(item);
-    ui->legendArea->tileSubWindows();
+//    ui->legendArea->tileSubWindows();
 }
 
 QGraphicsItem* MapViewer2::findItem(ItemType type, QString name)

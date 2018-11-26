@@ -31,6 +31,18 @@ void HistogramColorBarWidget::setColorTable( ColorTable* ct){
     connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(update()) );
 }
 
+void HistogramColorBarWidget::setOrientation(Qt::Orientation o){
+    if(o==m_orientation) return;
+    m_orientation=o;
+    update();
+}
+
+void HistogramColorBarWidget::setScalePrecision(int p){
+    if(p==m_scalePrecision) return;
+    m_scalePrecision=p;
+    update();
+}
+
 void HistogramColorBarWidget::paintEvent(QPaintEvent*){
 
     QPainter painter(this);
@@ -43,29 +55,46 @@ void HistogramColorBarWidget::paintEvent(QPaintEvent*){
     if( it == m_histogram.cend() || *it==0) return;
     auto maxCount=*it;
 
-    // draw bars
-    painter.save();
-    painter.translate( width(), 0 );
-    painter.scale( -qreal(width())/maxCount, qreal(height())/m_histogram.binCount());
-    for( size_t i = 0; i<m_histogram.binCount(); i++){
-        auto interval=m_histogram.binInterval(i);
-        auto midValue=(interval.first+interval.second)/2;
-        QColor color = (m_colorTable) ? m_colorTable->map( midValue ) : Qt::red;
-        painter.setPen( color );
-        painter.drawLine( 0, i, m_histogram.binValue(i), i );
+    if(m_orientation==Qt::Vertical){
+        // draw bars
+        painter.save();
+        painter.translate( width(), 0 );
+        painter.scale( -qreal(width())/maxCount, qreal(height())/m_histogram.binCount());
+        for( size_t i = 0; i<m_histogram.binCount(); i++){
+            auto interval=m_histogram.binInterval(i);
+            auto midValue=(interval.first+interval.second)/2;
+            QColor color = (m_colorTable) ? m_colorTable->map( midValue ) : Qt::red;
+            painter.setPen( color );
+            painter.drawLine( 0, i, m_histogram.binValue(i), i );
+        }
+        painter.restore();
+
+        //draw range
+        painter.drawText(0,0,width(),height(),Qt::AlignTop|Qt::AlignLeft, QString::number(m_colorTable->range().first,'g',m_scalePrecision));
+        painter.drawText(0,0,width(),height(),Qt::AlignBottom|Qt::AlignLeft, QString::number(m_colorTable->range().second,'g',m_scalePrecision));
     }
-    painter.restore();
-/*
-    // draw label
-    painter.save();
-    painter.rotate(-90);
-    painter.translate(-height(),0);
-    painter.drawText(0,0,height(),width(),Qt::AlignTop|Qt::AlignHCenter, m_label);
-    painter.restore();
-*/
-    //draw range
-    painter.drawText(0,0,width(),height(),Qt::AlignTop|Qt::AlignHCenter, QString::number(m_colorTable->range().first,'g',3));
-    painter.drawText(0,0,width(),height(),Qt::AlignBottom|Qt::AlignHCenter, QString::number(m_colorTable->range().second,'g',3));
+    else{  // horizontal
+        // draw bars
+        painter.save();
+        painter.translate(0,height());
+        painter.scale( qreal(width())/m_histogram.binCount(), -qreal(height())/maxCount);
+        for( size_t i = 0; i<m_histogram.binCount(); i++){
+            auto interval=m_histogram.binInterval(i);
+            auto midValue=(interval.first+interval.second)/2;
+            QColor color = (m_colorTable) ? m_colorTable->map( midValue ) : Qt::red;
+            painter.setPen( color );
+            painter.drawLine( i, 0, i, m_histogram.binValue(i));
+        }
+        painter.restore();
+
+        //draw range
+        painter.save();
+        painter.rotate(-90);
+        painter.translate(-height(),0);
+        painter.drawText(0,0,width(),height(),Qt::AlignTop|Qt::AlignRight, QString::number(m_colorTable->range().first,'g',m_scalePrecision));
+        painter.drawText(0,0,width(),height(),Qt::AlignBottom|Qt::AlignRight, QString::number(m_colorTable->range().second,'g',m_scalePrecision));
+        painter.restore();
+    }
 
 }
 
