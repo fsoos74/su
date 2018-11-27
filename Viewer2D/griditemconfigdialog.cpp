@@ -20,6 +20,8 @@ GridItemConfigDialog::GridItemConfigDialog(QWidget *parent) :
 
     connect( ui->cbMesh, SIGNAL(toggled(bool)), this, SIGNAL(showMeshChanged(bool)) );
     connect( ui->cbLabels, SIGNAL(toggled(bool)), this, SIGNAL(showLabelsChanged(bool)) );
+    connect( ui->cbLabel, SIGNAL(toggled(bool)), this, SIGNAL(showLabelChanged(bool)) );
+    connect(ui->leLabel, SIGNAL(textChanged(QString)), this, SIGNAL(labelTextChanged(QString)));
     connect( ui->sbInlineIncrement, SIGNAL(valueChanged(int)), this, SIGNAL(inlineIncrementChanged(int)) );
     connect( ui->sbCrosslineIncrement, SIGNAL(valueChanged(int)), this, SIGNAL(crosslineIncrementChanged(int)) );
     connect( ui->sbZValue, SIGNAL(valueChanged(int)), this, SIGNAL(zValueChanged(int)) );
@@ -44,6 +46,14 @@ bool GridItemConfigDialog::showMesh(){
 
 bool GridItemConfigDialog::showLabels(){
     return ui->cbLabels->isChecked();
+}
+
+bool GridItemConfigDialog::showLabel(){
+    return ui->cbLabel->isChecked();
+}
+
+QString GridItemConfigDialog::labelText(){
+    return ui->leLabel->text();
 }
 
 int GridItemConfigDialog::inlineIncrement(){
@@ -72,6 +82,14 @@ void GridItemConfigDialog::setShowMesh(bool on){
 
 void GridItemConfigDialog::setShowLabels(bool on){
     ui->cbLabels->setChecked(on);
+}
+
+void GridItemConfigDialog::setShowLabel(bool on){
+    ui->cbLabel->setChecked(on);
+}
+
+void GridItemConfigDialog::setLabelText(QString t){
+    ui->leLabel->setText(t);
 }
 
 void GridItemConfigDialog::setInlineIncrement(int i){

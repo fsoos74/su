@@ -374,7 +374,8 @@ void MapViewer2::addVolumeItem(QString name){
 
     auto item = new VolumeItem( m_project);
     item->setVolume(v);
-    item->setShowLabels(false);
+    item->setLabel(name);
+    item->setShowLineLabels(false);
     item->setShowMesh(false);
     item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::Volume));
     item->setData(ITEM_NAME_INDEX, name);
@@ -388,8 +389,8 @@ void MapViewer2::addVolumeItem(QString name){
     w->setColorTable(item->colorTable());
     auto g=item->grid();
     w->setData( g->data(), g->size(), g->NULL_VALUE);
-    connect(this, SIGNAL(sliceValueChanged(int)), w, SLOT(updateHistogram()));
-    w->setFixedSize( 200, 200);
+    connect(item,SIGNAL(dataChanged(float*,size_t,float)),w,SLOT(setData(float*,size_t,float)));
+    //connect(this, SIGNAL(sliceValueChanged(int)), w, SLOT(updateHistogram()));
     addItemLegendWidget(item,w,name);
 }
 
@@ -402,8 +403,9 @@ void MapViewer2::addHorizonItem(QString name){
     }
 
     auto item = new GridItem( m_project);
+    item->setLabel(name);
     item->setGrid(g);
-    item->setShowLabels(false);
+    item->setShowLineLabels(false);
     item->setShowMesh(false);
     item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::HorizonGrid));
     item->setData(ITEM_NAME_INDEX, name);
@@ -415,6 +417,7 @@ void MapViewer2::addHorizonItem(QString name){
     w->setColorTable(item->colorTable());
     w->setData( g->data(), g->size(), g->NULL_VALUE);
     w->setFixedSize( 200, 200);
+    connect(item,SIGNAL(dataChanged(float*,size_t,float)),w,SLOT(setData(float*,size_t,float)));
     addItemLegendWidget(item,w,name);
 }
 
@@ -517,12 +520,16 @@ void MapViewer2::configGridItem(GridItem * item){
     dlg->setWindowTitle(tr("Configure Grid Item"));
     dlg->setColorTable(item->colorTable());      // all updates of scling and colors done through colortable
     dlg->setHistogram(histogram);
-    dlg->setShowLabels(item->showLabels());
+    dlg->setShowLabels(item->showLineLabels());
+    dlg->setShowLabel(item->showLabel());
+    dlg->setLabelText(item->label());
     dlg->setShowMesh(item->showMesh());
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
     dlg->setZValue(item->zValue());
-    connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLabels(bool)));
+    connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLineLabels(bool)));
+    connect(dlg, SIGNAL(showLabelChanged(bool)), item, SLOT( setShowLabel(bool)));
+    connect(dlg,SIGNAL(labelTextChanged(QString)), item, SLOT(setLabel(QString)));
     connect(dlg, SIGNAL(showMeshChanged(bool)), item, SLOT( setShowMesh(bool)));
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
@@ -548,13 +555,17 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     dlg->setWindowTitle(tr("Configure Volume Item"));
     dlg->setColorTable(item->colorTable());      // all updates of scling and colors done through colortable
     dlg->setHistogram(histogram);
-    dlg->setShowLabels(item->showLabels());
+    dlg->setShowLabels(item->showLineLabels());
+    dlg->setShowLabel(item->showLabel());
+    dlg->setLabelText(item->label());
     dlg->setShowMesh(item->showMesh());
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
     dlg->setZValue(item->zValue());
     auto bounds=item->volume()->bounds();
-    connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLabels(bool)));
+    connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLineLabels(bool)));
+    connect(dlg, SIGNAL(showLabelChanged(bool)), item, SLOT( setShowLabel(bool)));
+    connect(dlg,SIGNAL(labelTextChanged(QString)), item, SLOT(setLabel(QString)));
     connect(dlg, SIGNAL(showMeshChanged(bool)), item, SLOT( setShowMesh(bool)));
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );

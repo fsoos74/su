@@ -5,6 +5,7 @@
 #include<QFont>
 #include<alignedtextgraphicsitem.h>
 #include<cmath>
+#include<histogram.h>
 
 GridItem::GridItem(AVOProject* project, QGraphicsItem* parentGraphicsItemItem, QObject* parentQObject )
  : QObject( parentQObject), QGraphicsPixmapItem(parentGraphicsItemItem), m_project(project)
@@ -33,14 +34,26 @@ void GridItem::setGrid(std::shared_ptr<Grid2D<float> > g){
 
     m_grid=g;
 
-    if( m_colorTable ) m_colorTable->setRange(valueRange(*m_grid));
+    emit dataChanged(m_grid->data(), m_grid->size(), m_grid->NULL_VALUE);
 
-    //updatePixmap(); triggere3d from color table
+    if(m_colorTable && !m_colorTable->isLocked()){
+        /*
+        // this is for 3 sigma, works well for volumes but not good for horizons, so leave it
+        Histogram h=createHistogram(m_grid->cbegin(),m_grid->cend(),m_grid->NULL_VALUE,1);	// only for stats
+        auto rmin=h.mean()-3*h.sigma();
+        auto rmax=h.mean()+3*h.sigma();
+        m_colorTable->setRange(rmin,rmax);
+        */
+        m_colorTable->setRange(valueRange(*m_grid));	// min/max scaling
+    }
+    else{
+        updatePixmap(); //triggere3d from color table on change
+    }
 
-    //updatePixmap();
     updateGeometry();
     updateFrame();
-    updateLabels();
+    updateLabel();
+    updateLineLabels();
     updateMesh();
 }
 
@@ -63,30 +76,42 @@ void GridItem::setColorTable( ColorTable* ct){
     }
 }
 
+void GridItem::setLabel(QString l){
+    if(l==m_label) return;
+    m_label=l;
+    updateLabel();
+}
+
 void GridItem::setShowMesh(bool on){
     if( on==m_mesh) return;
     m_mesh=on;
     updateMesh();
 }
 
-void GridItem::setShowLabels(bool on){
-    if( on==m_labels) return;
-    m_labels=on;
-    updateLabels();
+void GridItem::setShowLineLabels(bool on){
+    if( on==m_showLineLabels) return;
+    m_showLineLabels=on;
+    updateLineLabels();
+}
+
+void GridItem::setShowLabel(bool on){
+    if( on==m_showLabel) return;
+    m_showLabel=on;
+    updateLabel();
 }
 
 void GridItem::setInlineIncrement(int i){
     if( i==m_inlineIncrement) return;
     m_inlineIncrement=i;
     updateMesh();
-    updateLabels();
+    updateLineLabels();
 }
 
 void GridItem::setCrosslineIncrement(int i){
     if( i==m_crosslineIncrement) return;
     m_crosslineIncrement=i;
     updateMesh();
-    updateLabels();
+    updateLineLabels();
 }
 
 void GridItem::setZValueWrapper(int i){
@@ -159,15 +184,33 @@ void GridItem::updateFrame(){
     m_frameItem=f;
 }
 
-void GridItem::updateLabels(){
+void GridItem::updateLabel(){
+    // delete old label
+    if(m_labelItem){
+        delete m_labelItem;
+        m_labelItem=nullptr;
+    }
+    if(!m_showLabel) return;
+    if( !m_grid ) return;
+    auto bounds=m_grid->bounds();
+    auto az=(m_project)?m_project->geometry().azimuth() : 0.;
+    auto l=new AlignedTextGraphicsItem(m_label, Qt::AlignBottom|Qt::AlignHCenter,az,this);
+    l->setPos(0,bounds.width()/2);
+    l->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    QFont font("Times",8,QFont::Normal);
+    l->setFont(font);
+    m_labelItem=l;
+}
+
+void GridItem::updateLineLabels(){
 
     // delete old labels
-    for( auto p : m_labelItems ){
+    for( auto p : m_lineLabelItems ){
         delete p;
     }
-    m_labelItems.clear();
+    m_lineLabelItems.clear();
 
-    if( !m_labels) return;
+    if( !m_showLineLabels) return;
     if( !m_grid ) return;
     QFont font("Times",8,QFont::Normal);
     auto bounds=m_grid->bounds();
@@ -188,14 +231,14 @@ void GridItem::updateLabels(){
         il1->setPos(ix, 0);
         il1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
         il1->setFont(font);
-        m_labelItems.push_back(il1);
+        m_lineLabelItems.push_back(il1);
 
         // right label
         auto il2=new AlignedTextGraphicsItem( text, Qt::AlignLeft|Qt::AlignVCenter,az,this);
         il2->setPos(ix, bounds.width());
         il2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
         il2->setFont(font);
-        m_labelItems.push_back(il2);
+        m_lineLabelItems.push_back(il2);
     }
 
 
@@ -214,14 +257,14 @@ void GridItem::updateLabels(){
         xl1->setPos(0,iy);
         xl1->setFlag(QGraphicsItem::ItemIgnoresTransformations);
         xl1->setFont(font);
-        m_labelItems.push_back(xl1);
+        m_lineLabelItems.push_back(xl1);
 
         // top label
         auto xl2=new AlignedTextGraphicsItem(text, Qt::AlignVCenter|Qt::AlignRight,az+90,this);
         xl2->setPos(bounds.height(),iy);
         xl2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
         xl2->setFont(font);
-        m_labelItems.push_back(xl2);
+        m_lineLabelItems.push_back(xl2);
     }
 
 }

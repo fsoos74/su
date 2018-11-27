@@ -25,6 +25,8 @@ public:
     Histogram histogram();
     bool showMesh();
     bool showLabels();
+    bool showLabel();
+    QString labelText();
     int inlineIncrement();
     int crosslineIncrement();
     int zValue();
@@ -32,6 +34,8 @@ public:
 signals:
     void showMeshChanged(bool);
     void showLabelsChanged(bool);
+    void showLabelChanged(bool);
+    void labelTextChanged(QString);
     void inlineIncrementChanged(int);
     void crosslineIncrementChanged(int);
     void zValueChanged(int);
@@ -42,6 +46,8 @@ public slots:
     void setHistogram(Histogram);
     void setShowMesh(bool);
     void setShowLabels(bool);
+    void setShowLabel(bool);
+    void setLabelText(QString);
     void setInlineIncrement(int);
     void setCrosslineIncrement(int);
     void setZValue(int);

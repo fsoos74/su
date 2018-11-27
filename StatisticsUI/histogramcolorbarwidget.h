@@ -36,6 +36,7 @@ public slots:
 
     void setColorTable( ColorTable*);
     void setData( float* begin, size_t count, float null_value );
+    void setHistogram(Histogram);
     void setOrientation(Qt::Orientation);
     void setScalePrecision(int);
 

@@ -96,7 +96,7 @@ void CheckedTreeWidget::setChecked(QString top, QString name, bool checked){
 }
 
 // check/uncheck all child according to parent
-void CheckedTreeWidget::onItemClicked(QTreeWidgetItem* item, int){
+void CheckedTreeWidget::onItemClicked(QTreeWidgetItem* item, int col){
     if(!item) return;
     if(!item->flags()&Qt::ItemIsUserCheckable) return;
     auto checked=item->checkState(0);

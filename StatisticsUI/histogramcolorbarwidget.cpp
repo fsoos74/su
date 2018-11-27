@@ -16,18 +16,18 @@ void HistogramColorBarWidget::setData( float* data_beg, size_t data_count, float
     updateHistogram();
 }
 
+void HistogramColorBarWidget::setHistogram(Histogram h){
+    m_histogram=h;
+    update();
+}
+
 void HistogramColorBarWidget::setColorTable( ColorTable* ct){
 
     if( ct==m_colorTable ) return;
-
     if( m_colorTable ) disconnect(m_colorTable, 0, 0, 0);
-
     m_colorTable=ct;
-
     connect( m_colorTable, SIGNAL(colorsChanged()), this, SLOT(update()) );
-
     connect( m_colorTable, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(updateHistogram()) );
-
     connect( m_colorTable, SIGNAL(powerChanged(double)), this, SLOT(update()) );
 }
 
@@ -91,15 +91,16 @@ void HistogramColorBarWidget::paintEvent(QPaintEvent*){
         painter.save();
         painter.rotate(-90);
         painter.translate(-height(),0);
-        painter.drawText(0,0,width(),height(),Qt::AlignTop|Qt::AlignRight, QString::number(m_colorTable->range().first,'g',m_scalePrecision));
-        painter.drawText(0,0,width(),height(),Qt::AlignBottom|Qt::AlignRight, QString::number(m_colorTable->range().second,'g',m_scalePrecision));
+        painter.drawText(0,0,height(),width(),Qt::AlignTop|Qt::AlignRight, QString::number(m_colorTable->range().first,'g',m_scalePrecision));
+        painter.drawText(0,0,height(),width(),Qt::AlignBottom|Qt::AlignRight, QString::number(m_colorTable->range().second,'g',m_scalePrecision));
         painter.restore();
     }
 
 }
 
 void HistogramColorBarWidget::updateHistogram(){
-    m_histogram=createHistogram( m_data_beg, m_data_beg + m_data_count, m_null_value,
+    if(!m_data_beg || m_data_count<1 ) return;
+    auto h=createHistogram( m_data_beg, m_data_beg + m_data_count, m_null_value,
                                  (float)m_colorTable->range().first, (float)m_colorTable->range().second, 100 );
-    update();
+    setHistogram(h);
 }
