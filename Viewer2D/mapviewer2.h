@@ -72,6 +72,7 @@ private slots:
     void onMouseOver(QPointF);
     bool eventFilter(QObject *watched, QEvent *event);
     void updateItemsFromTree();
+    void updateTreeFromItems();
     void updateScene();
 
 private:

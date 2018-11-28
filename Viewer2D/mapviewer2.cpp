@@ -176,12 +176,27 @@ void MapViewer2::setDomain(QString s){
 
 void MapViewer2::setDomain(Domain d){
     if(d==m_domain) return;
+
+    auto items=ui->graphicsView->scene()->items();
+    for( auto item : items){
+        auto type=static_cast<ItemType>(item->data(ITEM_TYPE_INDEX).toInt());
+        if(type==ItemType::HorizonGrid || type==ItemType::Volume || type==ItemType::Well){
+            ui->graphicsView->scene()->removeItem(item);
+        }
+        auto lw=m_legendWidgets.value(item);
+        if(lw){
+            delete lw;
+            m_legendWidgets.remove(item);
+        }
+    }
+    ui->graphicsView->scene()->update();  // remove leftovers
+
     m_domain=d;
     auto text=toQString(d);
     auto idx=m_cbDomain->findText(text);
     m_cbDomain->setCurrentIndex(idx);
     emit domainChanged(d);
-    if(d==Domain::Time) setWellReferenceDepth(0);	// surface location
+    setWellReferenceDepth((d==Domain::Depth) ? m_sliceValue : 0);	// surface location for time slices
     fillTree();
 }
 
@@ -380,6 +395,50 @@ void MapViewer2::updateItemsFromTree(){
     }
 
     //ui->treeWidget->setEnabled(true);
+    ignoreit=false;
+}
+
+void MapViewer2::updateTreeFromItems(){
+    static bool ignoreit=false;
+    if(ignoreit)return;
+    ignoreit=true;
+
+    QSet<QString> shorizons;
+    QSet<QString> svolumes;
+    QSet<QString> swells;
+    auto items=ui->graphicsView->items();
+    for( auto item : items){
+        auto type=static_cast<ItemType>(item->data(ITEM_TYPE_INDEX).toInt());
+        auto name=item->data(ITEM_NAME_INDEX).toString();
+        switch(type){
+        case ItemType::HorizonGrid: shorizons.insert(name); break;
+        case ItemType::Volume: svolumes.insert(name);break;
+        case ItemType::Well: swells.insert(name); break;
+        default: break;
+        }
+
+    }
+
+    // horizons
+    auto horizons=ui->treeWidget->items("Horizons");
+    for(auto name : horizons){
+        auto checked=shorizons.contains(name);
+        ui->treeWidget->setChecked("Horizons",name,checked);
+    }
+
+    // volumes
+    auto volumes=ui->treeWidget->items("Volumes");
+    for(auto name : volumes){
+        auto checked=svolumes.contains(name);
+        ui->treeWidget->setChecked("Volumes",name,checked);
+    }
+
+    // horizons
+    auto wells=ui->treeWidget->items("Wells");
+    for(auto name : wells){
+        auto checked=swells.contains(name);
+        ui->treeWidget->setChecked("Wells",name,checked);
+    }
     ignoreit=false;
 }
 
