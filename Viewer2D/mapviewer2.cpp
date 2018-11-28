@@ -309,6 +309,15 @@ void MapViewer2::updateScene(){
 
 
 void MapViewer2::updateItemsFromTree(){
+
+    static bool ignoreit=false;
+    if(ignoreit) return;
+    ignoreit=true;
+    // works but does not look good: ui->treeWidget->setEnabled(false);	// prevent new events being triggered while this is running
+
+    bool redraw=false;	// need this to trigger full redraw when items were removed.
+                        // this ensures leftovers (outside of items bbox) are removed
+
     // all items are in tree!!
     // volumes
     auto volumes=ui->treeWidget->items("Volumes");
@@ -324,6 +333,7 @@ void MapViewer2::updateItemsFromTree(){
             if( item ){	// need to remove item
                 removeItemLegendWidget(item);
                 ui->graphicsView->scene()->removeItem(item);
+                redraw=true;
             }
         }
     }
@@ -342,6 +352,7 @@ void MapViewer2::updateItemsFromTree(){
             if( item ){	// need to remove item
                 removeItemLegendWidget(item);
                 ui->graphicsView->scene()->removeItem(item);
+                redraw=true;
             }
         }
     }
@@ -359,9 +370,17 @@ void MapViewer2::updateItemsFromTree(){
         else{
             if( item ){	// need to remove item
                 ui->graphicsView->scene()->removeItem(item);
+                redraw=true;
             }
         }
     }
+
+    if( redraw ){
+        ui->graphicsView->scene()->update();   // remove remains of deleted items
+    }
+
+    //ui->treeWidget->setEnabled(true);
+    ignoreit=false;
 }
 
 void MapViewer2::addVolumeItem(QString name){
@@ -527,6 +546,7 @@ void MapViewer2::configGridItem(GridItem * item){
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
     dlg->setZValue(item->zValue());
+    dlg->setOpacity(item->opacity());
     connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLineLabels(bool)));
     connect(dlg, SIGNAL(showLabelChanged(bool)), item, SLOT( setShowLabel(bool)));
     connect(dlg,SIGNAL(labelTextChanged(QString)), item, SLOT(setLabel(QString)));
@@ -534,6 +554,7 @@ void MapViewer2::configGridItem(GridItem * item){
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
     connect(dlg,SIGNAL(zValueChanged(int)), item, SLOT(setZValueWrapper(int)));
+    connect(dlg,SIGNAL(opacityChanged(double)),item,SLOT(setOpacityWrapper(double)));
     if( dlg->exec()==QDialog::Accepted){
 
     }
@@ -562,6 +583,7 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     dlg->setInlineIncrement(item->inlineIncrement());
     dlg->setCrosslineIncrement(item->crosslineIncrement());
     dlg->setZValue(item->zValue());
+    dlg->setOpacity(item->opacity());
     auto bounds=item->volume()->bounds();
     connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLineLabels(bool)));
     connect(dlg, SIGNAL(showLabelChanged(bool)), item, SLOT( setShowLabel(bool)));
@@ -570,6 +592,7 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     connect(dlg, SIGNAL(inlineIncrementChanged(int)), item, SLOT(setInlineIncrement(int)) );
     connect(dlg, SIGNAL(crosslineIncrementChanged(int)), item, SLOT(setCrosslineIncrement(int)) );
     connect(dlg,SIGNAL(zValueChanged(int)), item, SLOT(setZValueWrapper(int)));
+    connect(dlg,SIGNAL(opacityChanged(double)),item,SLOT(setOpacityWrapper(double)));
     if( dlg->exec()==QDialog::Accepted){
 
     }

@@ -119,6 +119,11 @@ void GridItem::setZValueWrapper(int i){
     setZValue(i);
 }
 
+void GridItem::setOpacityWrapper(double x){
+    if(x==opacity()) return;
+    setOpacity(x);
+}
+
 void GridItem::updatePixmap(){
 
     if( !m_grid ){

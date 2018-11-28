@@ -30,6 +30,7 @@ public:
     int inlineIncrement();
     int crosslineIncrement();
     int zValue();
+    double opacity();
 
 signals:
     void showMeshChanged(bool);
@@ -39,9 +40,9 @@ signals:
     void inlineIncrementChanged(int);
     void crosslineIncrementChanged(int);
     void zValueChanged(int);
+    void opacityChanged(double);
 
 public slots:
-
     void setColorTable(ColorTable*);
     void setHistogram(Histogram);
     void setShowMesh(bool);
@@ -51,11 +52,12 @@ public slots:
     void setInlineIncrement(int);
     void setCrosslineIncrement(int);
     void setZValue(int);
-
+    void setOpacity(double);
 
 private slots:
     void on_pbColortable_clicked();
     void on_pbScaling_clicked();
+    void on_sbOpacity_valueChanged(int arg1);
 
 private:
     Ui::GridItemConfigDialog *ui;

@@ -88,12 +88,16 @@ void HistogramColorBarWidget::paintEvent(QPaintEvent*){
         painter.restore();
 
         //draw range
+        /*
         painter.save();
         painter.rotate(-90);
         painter.translate(-height(),0);
         painter.drawText(0,0,height(),width(),Qt::AlignTop|Qt::AlignRight, QString::number(m_colorTable->range().first,'g',m_scalePrecision));
         painter.drawText(0,0,height(),width(),Qt::AlignBottom|Qt::AlignRight, QString::number(m_colorTable->range().second,'g',m_scalePrecision));
         painter.restore();
+        */
+        painter.drawText(0,0,width(),height(),Qt::AlignTop|Qt::AlignLeft, QString::number(m_colorTable->range().first,'g',m_scalePrecision));
+        painter.drawText(0,0,width(),height(),Qt::AlignTop|Qt::AlignRight, QString::number(m_colorTable->range().second,'g',m_scalePrecision));
     }
 
 }

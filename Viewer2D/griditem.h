@@ -64,6 +64,7 @@ public slots:
     void setInlineIncrement(int);
     void setCrosslineIncrement(int);
     void setZValueWrapper(int);
+    void setOpacityWrapper(double);
 
 signals:
     void dataChanged(float*,size_t,float);

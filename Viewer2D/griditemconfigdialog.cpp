@@ -68,6 +68,10 @@ int GridItemConfigDialog::zValue(){
     return ui->sbZValue->value();
 }
 
+double GridItemConfigDialog::opacity(){
+    return 0.01*ui->sbOpacity->value();		// convert percentage to fraction
+}
+
 void GridItemConfigDialog::setColorTable(ColorTable* ct){
     m_colorTable=ct;
 }
@@ -104,6 +108,11 @@ void GridItemConfigDialog::setZValue(int i){
     ui->sbZValue->setValue(i);
 }
 
+void GridItemConfigDialog::setOpacity(double x){
+    auto perc=static_cast<int>(std::round(100*x));	// convert fraction to percentage
+    ui->sbOpacity->setValue(perc);
+}
+
 void GridItemConfigDialog::on_pbScaling_clicked()
 {
     if( !m_colorTable) return;
@@ -132,4 +141,7 @@ void GridItemConfigDialog::on_pbColortable_clicked()
     }
 }
 
-
+void GridItemConfigDialog::on_sbOpacity_valueChanged(int perc)
+{
+    emit opacityChanged(0.01*perc);		// convert to fraction
+}
