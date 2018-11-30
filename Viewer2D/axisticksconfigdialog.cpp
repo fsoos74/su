@@ -12,12 +12,21 @@ AxisTicksConfigDialog::AxisTicksConfigDialog(QWidget *parent) :
     ui->leInterval->setValidator(validator);
 }
 
+AxisTicksConfigDialog::~AxisTicksConfigDialog()
+{
+    delete ui;
+}
+
 double AxisTicksConfigDialog::interval(){
     return ui->leInterval->text().toDouble();
 }
 
 int AxisTicksConfigDialog::subTicks(){
     return ui->sbSub->value();
+}
+
+bool AxisTicksConfigDialog::isAutomatic(){
+    return ui->cbAuto->isChecked();
 }
 
 void AxisTicksConfigDialog::setInterval(double x){
@@ -28,7 +37,6 @@ void AxisTicksConfigDialog::setSubTicks(int i){
     ui->sbSub->setValue(i);
 }
 
-AxisTicksConfigDialog::~AxisTicksConfigDialog()
-{
-    delete ui;
+void AxisTicksConfigDialog::setAutomatic(bool on){
+    ui->cbAuto->setChecked(on);
 }

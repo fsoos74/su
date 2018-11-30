@@ -16,10 +16,12 @@ public:
     ~AxisTicksConfigDialog();
     double interval();
     int subTicks();
+    bool isAutomatic();
 
 public slots:
     void setInterval(double);
     void setSubTicks(int);
+    void setAutomatic(bool);
 
 private:
     Ui::AxisTicksConfigDialog *ui;

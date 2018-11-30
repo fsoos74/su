@@ -666,9 +666,11 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
 void MapViewer2::configAxis(GVRuler * gvruler){
     AxisTicksConfigDialog dlg;
     dlg.setWindowTitle("Configure Axis");
+    dlg.setAutomatic(gvruler->isAutoTickIncrement());
     dlg.setInterval(gvruler->tickIncrement());
     dlg.setSubTicks(gvruler->subTickCount());
     if(dlg.exec()==QDialog::Accepted){
+        gvruler->setAutoTickIncrement(dlg.isAutomatic());
         gvruler->setTickIncrement(dlg.interval());
         gvruler->setSubTickCount(dlg.subTicks());
         ui->graphicsView->invalidateScene();
