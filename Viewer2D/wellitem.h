@@ -10,7 +10,7 @@
 #include<memory>
 #include<QObject>
 
-class WellItem : public QObject,public QGraphicsEllipseItem //QGraphicsItemGroup
+class WellItem : public QObject,public QGraphicsItemGroup
 {
     Q_OBJECT
 public:
@@ -33,7 +33,7 @@ public:
 
     QFont font()const;
     int size() const;
-    QString text() const;
+    QString label() const;
 
 public slots:
 
@@ -47,16 +47,19 @@ public slots:
     void setText(QString);
 
 private:
-
-    QString labelText();
+    void updateLabel();
+    void updatePathItem();
 
     WellInfo m_info;
     std::shared_ptr<WellPath> m_path;
     qreal m_refDepth=0;
     LabelType m_labelType=LabelType::UWI;
 
-    AlignedTextGraphicsItem* m_textItem;
     int m_size;
+    QColor m_color;
+    QGraphicsEllipseItem* m_symbol=nullptr;
+    AlignedTextGraphicsItem* m_label=nullptr;
+    QGraphicsPathItem* m_pathItem=nullptr;
 };
 
 #endif // WELLITEM_H

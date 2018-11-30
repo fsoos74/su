@@ -4,25 +4,34 @@
 #include<QBrush>
 #include<QFont>
 #include<QVector2D>
+#include<cmath>
 
 WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     QObject(parentObject),
-    QGraphicsEllipseItem( -2, -2, 2, 2),
-    m_textItem(new AlignedTextGraphicsItem("", Qt::AlignHCenter|Qt::AlignTop,0,this)),
+    QGraphicsItemGroup(parent),
     m_size(2)
 {
+    m_symbol=new QGraphicsEllipseItem(-m_size,-m_size,2*m_size,2*m_size,this);
+    m_symbol->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     QPen pen(Qt::black, 1);
     pen.setCosmetic(true);
-    setPen(pen);
+    m_symbol->setPen(pen);
     QBrush brush(Qt::darkGreen);
-    setBrush(brush);
+    m_symbol->setBrush(brush);
 
+    m_label=new AlignedTextGraphicsItem("", Qt::AlignHCenter|Qt::AlignTop,0,this);
     QFont font("Times",8,QFont::Normal);
-    m_textItem->setFont(font);
-    //m_textItem->moveBy(m_size, m_size);
-    m_textItem->setZValue(1000);
-    setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    //setHandlesChildEvents(true);
+    m_label->setFont(font);
+    m_label->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    m_label->moveBy(0,m_size);
+    //m_textItem->setZValue(1000);
+
+    m_pathItem=new QGraphicsPathItem(this);
+    QPen ppen(Qt::darkGreen,1);
+    ppen.setCosmetic(true);
+    m_pathItem->setPen(ppen);
+    updateLabel();
+    updatePathItem();
 }
 
 
@@ -31,33 +40,23 @@ int WellItem::size()const{
 }
 
 QFont WellItem::font()const{
-    return m_textItem->font();
+    return m_label->font();
 }
 
-QString WellItem::text()const{
-    return m_textItem->text();
+QString WellItem::label()const{
+    return m_label->text();
 }
-
-/*
-QPen WellItem::pen()const{
-    return m_ellipseItem->pen();
-}
-
-QBrush WellItem::brush()const{
-    return m_ellipseItem->brush();
-}
-
-*/
 
 void WellItem::setInfo(const WellInfo & info){
     m_info=info;
     setPos(QPointF(info.x(), info.y()));
-    setText(labelText());
+    updateLabel();
 }
 
 void WellItem::setPath(std::shared_ptr<WellPath> path){
     if( path==m_path) return;
     m_path=path;
+    updatePathItem();
     update();
 }
 
@@ -73,12 +72,13 @@ void WellItem::setRefDepth(qreal depth){
     else{
         setPos(QPointF(m_info.x(), m_info.y()));
     }
+    updatePathItem();
 }
 
 void WellItem::setLabelType(LabelType t){
     if( t==m_labelType) return;
     m_labelType=t;
-    setText(labelText());
+    updateLabel();
 }
 
 void WellItem::setSize(int s){
@@ -88,29 +88,43 @@ void WellItem::setSize(int s){
     prepareGeometryChange();
 
     QRectF rItem( -s/2, -s/2, 2*s, 2*s);
-    //m_ellipseItem->setRect(rItem);
-    setRect(rItem);
-    m_textItem->setPos(m_size,m_size);
+    m_symbol->setRect(rItem);
+    //setRect(rItem);
+    m_label->setPos(m_size,m_size);
 }
 
 void WellItem::setText(QString text){
-    m_textItem->setText(text);
+    m_label->setText(text);
 }
 
 void WellItem::setFont(QFont f){
-    m_textItem->setFont(f);
+    m_label->setFont(f);
 }
 
-/*
-void WellItem::setPen(const QPen &pen){
-    m_ellipseItem->setPen(pen);
+void WellItem::updateLabel(){
+    QString text = (m_labelType==LabelType::UWI)?m_info.uwi() : m_info.name();
+    m_label->setText(text);
 }
 
-void WellItem::setBrush(const QBrush & brush){
-    m_ellipseItem->setBrush(brush);
-}
-*/
+// this is not quite working
+void WellItem::updatePathItem(){
 
-QString WellItem::labelText(){
-    return (m_labelType==LabelType::UWI)?m_info.uwi() : m_info.name();
+    QPainterPath path;
+    if(!m_path){
+        m_pathItem->setPath(path);
+        return;
+    }
+    QPolygonF poly;
+    auto x0=x();//m_path->at(0).x();
+    auto y0=y();//m_path->at(0).y();
+    for( int i=0; i<m_path->size(); i++ ){
+        auto p3d=m_path->at(i);
+        if( -p3d.z()<=m_refDepth ){		// z axis upwards, depth increases downwards
+            poly.append(QPointF(p3d.x()-x0, p3d.y()-y0 ) );
+        }
+    }
+    path.addPolygon(poly);
+    m_pathItem->setPath(path);
+    m_pathItem->update();
+
 }

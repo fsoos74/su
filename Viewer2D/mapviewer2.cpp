@@ -518,8 +518,8 @@ void MapViewer2::addWellItem(QString name){
 
     item->setSize(m_defaultWellItem.size());
     item->setFont(m_defaultWellItem.font());
-    item->setPen(m_defaultWellItem.pen());
-    item->setBrush(m_defaultWellItem.brush());
+    //item->setPen(m_defaultWellItem.pen());
+    //item->setBrush(m_defaultWellItem.brush());
 
     connect(this,SIGNAL(wellReferenceDepthChanged(double)),item,SLOT(setRefDepth(qreal)));
     ui->graphicsView->scene()->addItem(item);
@@ -535,8 +535,8 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     dlg.setLabelType(static_cast<int>(m_defaultWellItem.labelType()));
     dlg.setLabelSize(m_defaultWellItem.font().pointSize());//  pixelSize());
     dlg.setItemSize(m_defaultWellItem.size());
-    dlg.setPenColor(m_defaultWellItem.pen().color());
-    dlg.setBrushColor(m_defaultWellItem.brush().color());
+    //dlg.setPenColor(m_defaultWellItem.pen().color());
+    //dlg.setBrushColor(m_defaultWellItem.brush().color());
     dlg.setZValue(m_defaultWellItem.zValue());
 
     if( dlg.exec()!=QDialog::Accepted) return;
@@ -547,6 +547,7 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     m_defaultWellItem.setFont(f);
     m_defaultWellItem.setSize( dlg.itemSize() );
 
+    /*
     QPen pen=m_defaultWellItem.pen();
     pen.setColor(dlg.penColor());
     m_defaultWellItem.setPen(pen);
@@ -554,7 +555,7 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     QBrush brush = m_defaultWellItem.brush();
     brush.setColor(dlg.brushColor());
     m_defaultWellItem.setBrush(brush);
-
+*/
     m_defaultWellItem.setZValue(dlg.zValue());
 
     // now assign new options to all well items
@@ -569,8 +570,8 @@ void MapViewer2::on_actionSetup_Wells_triggered()
             wi->setLabelType(m_defaultWellItem.labelType());
             wi->setSize(m_defaultWellItem.size());
             wi->setFont(m_defaultWellItem.font());
-            wi->setPen(m_defaultWellItem.pen());
-            wi->setBrush(m_defaultWellItem.brush());
+            //wi->setPen(m_defaultWellItem.pen());
+            //wi->setBrush(m_defaultWellItem.brush());
             wi->setZValue(m_defaultWellItem.zValue());
         }
     }
@@ -583,7 +584,8 @@ void MapViewer2::configWellItem(WellItem * item){
     if( ! item) return;
 
     bool ok=false;
-    QString text=QInputDialog::getText(nullptr, tr("Change Well Label"), tr("Enter Label Text:"), QLineEdit::Normal, item->text(), &ok);
+    QString text=QInputDialog::getText(nullptr, tr("Change Well Label"), tr("Enter Label Text:"),
+                                QLineEdit::Normal, item->label(), &ok);
     if(!text.isNull() && ok ){
         item->setText(text);
     }
