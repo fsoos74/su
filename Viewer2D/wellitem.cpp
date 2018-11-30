@@ -11,7 +11,7 @@ WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     m_textItem(new AlignedTextGraphicsItem("", Qt::AlignHCenter|Qt::AlignTop,0,this)),
     m_size(2)
 {
-    QPen pen(Qt::red, 2);
+    QPen pen(Qt::black, 1);
     pen.setCosmetic(true);
     setPen(pen);
     QBrush brush(Qt::darkGreen);

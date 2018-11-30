@@ -767,7 +767,9 @@ void MapViewer2::fillTree(){
     }
     ui->treeWidget->addItem("Wells",true);
     for(auto name : m_project->wellList()){
-        ui->treeWidget->addItem("Wells", name);
+        if(m_project->existsWellPath(name)){	// only display wells that have a path
+            ui->treeWidget->addItem("Wells", name);
+        }
     }
 }
 
