@@ -31,6 +31,14 @@ public:
         return m_labelType;
     }
 
+    QColor symbolColor()const{
+        return m_symbolColor;
+    }
+
+    QColor pathColor()const{
+        return m_pathColor;
+    }
+
     QFont font()const;
     int size() const;
     QString label() const;
@@ -41,7 +49,8 @@ public slots:
     void setPath(std::shared_ptr<WellPath>);
     void setRefDepth(qreal);
     void setLabelType(LabelType);
-
+    void setSymbolColor(QColor);
+    void setPathColor(QColor);
     void setFont(QFont);
     void setSize(int);
     void setText(QString);
@@ -54,9 +63,9 @@ private:
     std::shared_ptr<WellPath> m_path;
     qreal m_refDepth=0;
     LabelType m_labelType=LabelType::UWI;
-
-    int m_size;
-    QColor m_color;
+    int m_size=3;
+    QColor m_symbolColor=Qt::darkGreen;
+    QColor m_pathColor=Qt::darkGreen;
     QGraphicsEllipseItem* m_symbol=nullptr;
     AlignedTextGraphicsItem* m_label=nullptr;
     QGraphicsPathItem* m_pathItem=nullptr;

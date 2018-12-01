@@ -8,14 +8,11 @@
 
 WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     QObject(parentObject),
-    QGraphicsItemGroup(parent),
-    m_size(2)
+    QGraphicsItemGroup(parent)
 {
     m_symbol=new QGraphicsEllipseItem(-m_size,-m_size,2*m_size,2*m_size,this);
     m_symbol->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-    QPen pen(Qt::black, 1);
-    pen.setCosmetic(true);
-    m_symbol->setPen(pen);
+    m_symbol->setPen(Qt::NoPen);
     QBrush brush(Qt::darkGreen);
     m_symbol->setBrush(brush);
 
@@ -27,7 +24,7 @@ WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     //m_textItem->setZValue(1000);
 
     m_pathItem=new QGraphicsPathItem(this);
-    QPen ppen(Qt::darkGreen,1);
+    QPen ppen(m_pathColor,1);
     ppen.setCosmetic(true);
     m_pathItem->setPen(ppen);
     updateLabel();
@@ -93,6 +90,21 @@ void WellItem::setSize(int s){
     m_label->setPos(m_size,m_size);
 }
 
+void WellItem::setSymbolColor(QColor c){
+    m_symbolColor=c;
+    QBrush brush(m_symbolColor);
+    m_symbol->setBrush(brush);
+    update();
+}
+
+void WellItem::setPathColor(QColor c){
+    m_pathColor=c;
+    QPen ppen(m_pathColor,1);
+    ppen.setCosmetic(true);
+    m_pathItem->setPen(ppen);
+    update();
+}
+
 void WellItem::setText(QString text){
     m_label->setText(text);
 }
@@ -106,7 +118,6 @@ void WellItem::updateLabel(){
     m_label->setText(text);
 }
 
-// this is not quite working
 void WellItem::updatePathItem(){
 
     QPainterPath path;

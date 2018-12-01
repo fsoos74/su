@@ -19,8 +19,8 @@ public:
 
     int labelType();
     int labelSize();
-    QColor penColor();
-    QColor brushColor();
+    QColor symbolColor();
+    QColor pathColor();
     int itemSize();
     int zValue();
 
@@ -33,14 +33,14 @@ public slots:
 
     void setLabelType(int);
     void setLabelSize(int);
-    void setPenColor(QColor);
-    void setBrushColor(QColor);
+    void setSymbolColor(QColor);
+    void setPathColor(QColor);
     void setItemSize(int);
     void setZValue(int);
 
 private slots:
-    void on_cbPen_clicked();
-    void on_cbBrush_clicked();
+    void on_cbSymbolColor_clicked();
+    void on_cbPathColor_clicked();
 
 private:
     Ui::WellItemConfigDialog *ui;

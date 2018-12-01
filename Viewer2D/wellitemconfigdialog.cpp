@@ -60,12 +60,12 @@ int WellItemConfigDialog::labelSize(){
 }
 
 
-QColor WellItemConfigDialog::penColor(){
-    return ui->cbPen->color();
+QColor WellItemConfigDialog::symbolColor(){
+    return ui->cbSymbolColor->color();
 }
 
-QColor WellItemConfigDialog::brushColor(){
-    return ui->cbBrush->color();
+QColor WellItemConfigDialog::pathColor(){
+    return ui->cbPathColor->color();
 }
 
 int WellItemConfigDialog::itemSize(){
@@ -76,12 +76,12 @@ int WellItemConfigDialog::zValue(){
     return ui->sbZValue->value();
 }
 
-void WellItemConfigDialog::setPenColor(QColor c){
-    ui->cbPen->setColor(c);
+void WellItemConfigDialog::setSymbolColor(QColor c){
+    ui->cbSymbolColor->setColor(c);
 }
 
-void WellItemConfigDialog::setBrushColor(QColor c){
-    ui->cbBrush->setColor(c);
+void WellItemConfigDialog::setPathColor(QColor c){
+    ui->cbPathColor->setColor(c);
 }
 
 void WellItemConfigDialog::setLabelType(int i){
@@ -100,20 +100,20 @@ void WellItemConfigDialog::setZValue(int i){
     ui->sbZValue->setValue(i);
 }
 
-void WellItemConfigDialog::on_cbPen_clicked()
+void WellItemConfigDialog::on_cbSymbolColor_clicked()
 {
-    const QColor color = QColorDialog::getColor( penColor(), this, "Select Outline Color");
+    const QColor color = QColorDialog::getColor( ui->cbSymbolColor->color(), this, "Select Symbol Color");
 
     if (color.isValid()) {
-      setPenColor(color);
+      setSymbolColor(color);
     }
 }
 
-void WellItemConfigDialog::on_cbBrush_clicked()
+void WellItemConfigDialog::on_cbPathColor_clicked()
 {
-    const QColor color = QColorDialog::getColor( brushColor(), this, "Select Fill Color");
+    const QColor color = QColorDialog::getColor( ui->cbPathColor->color(), this, "Select Path Color");
 
     if (color.isValid()) {
-      setBrushColor(color);
+      setPathColor(color);
     }
 }

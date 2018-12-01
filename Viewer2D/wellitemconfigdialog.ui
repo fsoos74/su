@@ -17,7 +17,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="4" column="1">
-      <widget class="ColorButton" name="cbPen">
+      <widget class="ColorButton" name="cbSymbolColor">
        <property name="text">
         <string/>
        </property>
@@ -26,7 +26,7 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Fill Color:</string>
+        <string>Path Color:</string>
        </property>
       </widget>
      </item>
@@ -55,7 +55,7 @@
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="ColorButton" name="cbBrush">
+      <widget class="ColorButton" name="cbPathColor">
        <property name="text">
         <string/>
        </property>
@@ -71,7 +71,7 @@
      <item row="4" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Outline Color:</string>
+        <string>Symbol Color:</string>
        </property>
       </widget>
      </item>
