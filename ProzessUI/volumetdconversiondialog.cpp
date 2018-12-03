@@ -74,7 +74,7 @@ void VolumeTDConversionDialog::updateInputVolumes(){
         if(domain==idomain){
             ui->cbInput->addItem(volume);
         }
-        if(domain==Domain::Depth && type==VolumeType::IVEL){
+        if(domain==Domain::Depth && type==VolumeType::AVEL){
             ui->cbVelocity->addItem(volume);
         }
     }

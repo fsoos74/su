@@ -114,19 +114,8 @@ QVector<float> regularize( QVector<std::pair<float,float>> irregular,
 ProjectProcess::ResultCode VolumeTDConversionProcess::processInline(
         QVector<std::shared_ptr<Volume> > outputs, QVector<std::shared_ptr<Volume> > inputs, int iline){
     std::shared_ptr<Volume> input=inputs[0];
-    std::shared_ptr<Volume> ivel=inputs[1];
+    std::shared_ptr<Volume> vad=inputs[1];
     std::shared_ptr<Volume> output=outputs[0];
-
-    //compute average velocity in depth
-    auto vad=std::make_shared<Volume>(bounds(), Domain::Depth, VolumeType::AVEL, 0);
-#pragma omp parallel for
-    for( int j=bounds().j1(); j<=bounds().j2(); j++){
-        double sum=0;
-        for( int k=0; k<bounds().nt(); k++){
-             sum+=(*ivel)(iline,j,k);
-             (*vad)(iline,j,k)=sum/(k+1);
-        }
-    }
 
     if( m_direction==TDDirection::TIME_TO_DEPTH){
 
