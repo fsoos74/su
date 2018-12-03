@@ -15,7 +15,6 @@
 #include <volumeviewer2d.h>
 #include <volumepropertydialog.h>
 #include <logpropertiesdialog.h>
-
 #include<QFileDialog>
 #include<QDir>
 #include<QMessageBox>
@@ -27,7 +26,6 @@
 #include<QPointF>
     //void invalidateBuffers();
 #include<QDateTime>
-
 #include<xgrwriter.h>
 #include<grid.h>
 #include<log.h>
@@ -60,7 +58,6 @@ using namespace std::placeholders; // for _1, _2 etc.
 
 #include<projectgeometrydialog.h>
 #include<orientationdialog.h>
-
 #include<importgridprocess.h>
 #include<importgriddialog.h>
 #include<exportgridprocess.h>
@@ -129,6 +126,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <volumemathprocess.h>
 #include <flattenvolumedialog.h>
 #include <flattenvolumeprocess.h>
+#include <velocityconversiondialog.h>
+#include <velocityconversionprocess.h>
 #include <volumetdconversiondialog.h>
 #include <volumetdconversionprocess.h>
 #include <extracttimesliceprocess.h>
@@ -1355,6 +1354,18 @@ void ProjectViewer::on_actionFlatten_Volume_triggered()
     runProcess<FlattenVolumeProcess>( params );
 }
 
+
+void ProjectViewer::on_actionVelocity_Conversion_triggered()
+{
+    Q_ASSERT( m_project );
+
+    VelocityConversionDialog dlg;
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+    runProcess<VelocityConversionProcess>( params );
+}
 
 void ProjectViewer::on_actionVolume_Time_Depth_Conversion_triggered()
 {
@@ -5148,6 +5159,7 @@ void ProjectViewer::updateMenu(){
     ui->actionMerge_Volumes->setEnabled(isProject);
     ui->actionVolume_Math->setEnabled(isProject);
     ui->actionFlatten_Volume->setEnabled(isProject);
+    ui->actionVelocity_Conversion->setEnabled(isProject);
     ui->actionVolume_Time_Depth_Conversion->setEnabled(isProject);
     ui->actionUnflatten_Volume->setEnabled(isProject);
     ui->actionExtract_Timeslice->setEnabled(isProject);

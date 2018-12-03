@@ -83,7 +83,8 @@ SOURCES += prozessui.cpp \
     mergevolumesdialog.cpp \
     volumetdconversiondialog.cpp \
     copylogdialog.cpp \
-    volumesimilaritydialog.cpp
+    volumesimilaritydialog.cpp \
+    velocityconversiondialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -150,7 +151,8 @@ HEADERS += prozessui.h\
     mergevolumesdialog.h \
     volumetdconversiondialog.h \
     copylogdialog.h \
-    volumesimilaritydialog.h
+    volumesimilaritydialog.h \
+    velocityconversiondialog.h
 
 unix {
     target.path = /usr/lib
@@ -220,7 +222,8 @@ FORMS += \
     mergevolumesdialog.ui \
     volumetdconversiondialog.ui \
     copylogdialog.ui \
-    volumesimilaritydialog.ui
+    volumesimilaritydialog.ui \
+    velocityconversiondialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

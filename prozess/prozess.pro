@@ -114,7 +114,8 @@ SOURCES += prozess.cpp \
     mergevolumesprocess.cpp \
     volumetdconversionprocess.cpp \
     copylogprocess.cpp \
-    volumesimilarityprocess.cpp
+    volumesimilarityprocess.cpp \
+    velocityconversionprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -209,7 +210,8 @@ HEADERS += prozess.h\
     mergevolumesprocess.h \
     volumetdconversionprocess.h \
     copylogprocess.h \
-    volumesimilarityprocess.h
+    volumesimilarityprocess.h \
+    velocityconversionprocess.h
 
 unix {
     target.path = /usr/lib

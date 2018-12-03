@@ -300,6 +300,7 @@
     <addaction name="actionPunch_Out_Volume"/>
     <addaction name="actionVolume_Math"/>
     <addaction name="actionFlatten_Volume"/>
+    <addaction name="actionVelocity_Conversion"/>
     <addaction name="actionVolume_Time_Depth_Conversion"/>
     <addaction name="separator"/>
     <addaction name="actionExtract_Timeslice"/>
@@ -1082,7 +1083,12 @@
   </action>
   <action name="actionVolume_Similarity">
    <property name="text">
-    <string>Volume Similarity</string>
+    <string>Volume Similarit&amp;y</string>
+   </property>
+  </action>
+  <action name="actionVelocity_Conversion">
+   <property name="text">
+    <string>Velocity Conversion</string>
    </property>
   </action>
  </widget>

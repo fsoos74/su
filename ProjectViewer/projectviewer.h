@@ -100,6 +100,7 @@ private slots:
     void on_action_Crop_Volume_triggered();
     void on_actionVolume_Math_triggered();
     void on_actionFlatten_Volume_triggered();
+    void on_actionVelocity_Conversion_triggered();
     void on_actionVolume_Time_Depth_Conversion_triggered();
     void on_actionExtract_Timeslice_triggered();
     void on_actionExtract_Dataset_triggered();      // convert to dataset
@@ -193,6 +194,7 @@ private slots:
     void on_actionVolume_IO_Test_triggered();
     void on_actionIntercept_And_Gradient_Volume_old_triggered();
     void on_actionImportTable_triggered();
+
 
 
 protected:
