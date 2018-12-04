@@ -5,6 +5,23 @@
 #include<QFont>
 #include<QVector2D>
 #include<cmath>
+#include<QMap>
+
+namespace{
+QMap<WellItem::LabelType,QString> lookup{
+    {WellItem::LabelType::UWI, "UWI"},
+    {WellItem::LabelType::WELL_NAME, "Name"}
+};
+
+}
+
+QString toQString(WellItem::LabelType t){
+    return lookup.value(t);
+}
+
+WellItem::LabelType toLabelType(QString str){
+    return lookup.key(str);
+}
 
 WellItem::WellItem( QGraphicsItem* parent, QObject* parentObject) :
     QObject(parentObject),

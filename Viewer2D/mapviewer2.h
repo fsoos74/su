@@ -6,6 +6,7 @@
 #include <QGraphicsPixmapItem>
 #include <avoproject.h>
 #include<memory>
+#include<areaitem.h>
 #include<griditem.h>
 #include<volumeitem.h>
 #include<wellitem.h>
@@ -76,7 +77,7 @@ private slots:
     void updateScene();
 
 private:
-
+    void configAreaItem( AreaItem* );
     void configWellItem( WellItem* );
     void configGridItem( GridItem* );
     void configVolumeItem( VolumeItem* );

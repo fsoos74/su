@@ -55,7 +55,8 @@ SOURCES += utilui.cpp \
     selecttypeanditemdialog.cpp \
     linedisplayoptionsdialog.cpp \
     reversedoublespinbox.cpp \
-    checkedtreewidget.cpp
+    checkedtreewidget.cpp \
+    optionsdialog.cpp
 
 HEADERS += utilui.h\
         utilui_global.h \
@@ -90,7 +91,8 @@ HEADERS += utilui.h\
     selecttypeanditemdialog.h \
     linedisplayoptionsdialog.h \
     reversedoublespinbox.h \
-    checkedtreewidget.h
+    checkedtreewidget.h \
+    optionsdialog.h
 
 unix {
     target.path = /usr/lib

@@ -8,10 +8,31 @@
 #include<alignedtextgraphicsitem.h>
 
 AreaItem::AreaItem(AVOProject* project, QGraphicsItem* parentGraphicsItemItem, QObject* parentQObject )
- : QObject( parentQObject), QGraphicsRectItem(parentGraphicsItemItem), m_project(project)
+ : QObject( parentQObject), QGraphicsItemGroup(parentGraphicsItemItem), m_project(project)
 {
-    QBrush brush(Qt::white);
-    setBrush(brush);
+    m_outline=new QGraphicsRectItem(this);
+    QPen pen(Qt::blue,2);
+    pen.setCosmetic(true);
+    m_outline->setPen(pen);
+    m_outline->setBrush(Qt::NoBrush);
+
+    m_fill=new QGraphicsRectItem(this);
+    QBrush brush(Qt::blue);
+    m_fill->setBrush(brush);
+    m_fill->setPen(Qt::NoPen);
+    m_fill->setOpacity(0.25);
+}
+
+QColor AreaItem::outlineColor(){
+    return m_outline->pen().color();
+}
+
+QColor AreaItem::fillColor(){
+    return m_fill->brush().color();
+}
+
+qreal AreaItem::fillOpacity(){
+    return m_fill->opacity();
 }
 
 void AreaItem::setProject(AVOProject* p){
@@ -34,17 +55,38 @@ void AreaItem::setArea(QRect r){
     updateLabels();
 }
 
+void AreaItem::setOutlineColor(QColor c){
+    auto pen=m_outline->pen();
+    pen.setColor(c);
+    m_outline->setPen(pen);
+}
+
+void AreaItem::setFillColor(QColor c){
+    auto brush=m_fill->brush();
+    brush.setColor(c);
+    m_fill->setBrush(brush);
+}
+
+void AreaItem::setFillOpacity(qreal o){
+    m_fill->setOpacity(o);
+}
+
+void AreaItem::setShowLines(bool on){
+    if(on==m_showLines) return;
+    m_showLines=on;
+    updateLabels();
+}
 
 void AreaItem::updateGeometry(){
 
     if( !m_project ) return;
 
     auto ilmin=m_area.left();
-    auto ilmax=m_area.right();
+    //auto ilmax=m_area.right();
     auto nil=m_area.width();
 
     auto xlmin=m_area.top();
-    auto xlmax=m_area.bottom();
+    //auto xlmax=m_area.bottom();
     auto nxl=m_area.height();
 
     QTransform tf;
@@ -63,10 +105,8 @@ void AreaItem::updateGeometry(){
 void AreaItem::updateFrame(){
 
     QRect r( 0, 0, m_area.width(), m_area.height());
-    setRect(r);
-    QPen framePen( Qt::darkBlue,2);
-    framePen.setCosmetic(true);
-    setPen(framePen);
+    m_outline->setRect(r);
+    m_fill->setRect(r);
 }
 
 
@@ -82,6 +122,8 @@ void AreaItem::updateLabels(){
         delete p;
     }
     m_labelItems.clear();
+
+    if(!m_showLines) return;
 
     auto minil=m_area.left();
     auto maxil=m_area.right();

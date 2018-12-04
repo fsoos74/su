@@ -4,9 +4,9 @@
 #include <QObject>
 #include <QGraphicsRectItem>
 #include <avoproject.h>
+#include <QGraphicsItemGroup>
 
-
-class AreaItem : public QObject, public QGraphicsRectItem
+class AreaItem : public QObject, public QGraphicsItemGroup
 {
 Q_OBJECT
 
@@ -22,13 +22,24 @@ public:
         return m_area;
     }
 
+    bool isShowLines()const{
+        return m_showLines;
+    }
+
+    QColor outlineColor();
+    QColor fillColor();
+    qreal fillOpacity();
+
     void setProject( AVOProject*);
-    void setArea( QRect );  // inlines==x
 
 public slots:
+    void setArea( QRect );  // inlines==x
+    void setShowLines(bool);
+    void setOutlineColor(QColor);
+    void setFillColor(QColor);
+    void setFillOpacity(qreal);
 
 protected slots:
-
     void updateLabels();
     void updateFrame();
     void updateGeometry();
@@ -37,7 +48,11 @@ private:
 
     AVOProject* m_project=nullptr;
     QRect m_area;
+    QGraphicsRectItem* m_outline;
+    QGraphicsRectItem* m_fill;
     QVector<QGraphicsItem*> m_labelItems;
+
+    bool m_showLines=true;
 };
 
 #endif // AREAITEM_H

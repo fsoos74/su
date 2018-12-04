@@ -1,7 +1,7 @@
 #ifndef WELLITEM_H
 #define WELLITEM_H
 
-//#include<QGraphicsItemGroup>
+#include<QGraphicsItemGroup>
 #include<QGraphicsEllipseItem>
 #include<QFont>
 #include<wellinfo.h>
@@ -62,13 +62,18 @@ private:
     WellInfo m_info;
     std::shared_ptr<WellPath> m_path;
     qreal m_refDepth=0;
+
     LabelType m_labelType=LabelType::UWI;
     int m_size=3;
     QColor m_symbolColor=Qt::darkGreen;
     QColor m_pathColor=Qt::darkGreen;
+
     QGraphicsEllipseItem* m_symbol=nullptr;
     AlignedTextGraphicsItem* m_label=nullptr;
     QGraphicsPathItem* m_pathItem=nullptr;
 };
+
+QString toQString(WellItem::LabelType);
+WellItem::LabelType toLabelType(QString);
 
 #endif // WELLITEM_H

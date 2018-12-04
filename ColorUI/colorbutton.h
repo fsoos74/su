@@ -3,7 +3,6 @@
 
 #include<QPushButton>
 #include<QColor>
-#include<QIcon>
 
 class ColorButton : public QPushButton
 {
@@ -18,23 +17,18 @@ public:
     }
 
 signals:
-
     void colorChanged( QColor );
 
 public slots:
-
     void setColor( const QColor&);
 
-protected:
-
-    void resizeEvent(QResizeEvent*);
+private slots:
+    void chooseColor();
 
 private:
-
-    void updateIcon();
+    void updateBackground();
 
     QColor m_color;
-    QIcon m_icon;
 };
 
 #endif // COLORBUTTON_H

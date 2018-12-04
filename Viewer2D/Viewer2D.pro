@@ -19,23 +19,19 @@ SOURCES += \
     griditem.cpp \
     mapviewer2.cpp \
     viewer2d.cpp \
-    wellitemconfigdialog.cpp \
     griditemconfigdialog.cpp \
     wellitem.cpp \
     volumeitem.cpp \
-    areaitem.cpp \
-    axisticksconfigdialog.cpp
+    areaitem.cpp
 
 HEADERS += \
     griditem.h \
     mapviewer2.h \
     viewer2d.h \
-    wellitemconfigdialog.h \
     griditemconfigdialog.h \
     wellitem.h \
     volumeitem.h \
-    areaitem.h \
-    axisticksconfigdialog.h
+    areaitem.h
 
 unix {
     target.path = /usr/lib
@@ -44,9 +40,7 @@ unix {
 
 FORMS += \
     mapviewer2.ui \
-    wellitemconfigdialog.ui \
-    griditemconfigdialog.ui \
-    axisticksconfigdialog.ui
+    griditemconfigdialog.ui
 
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../util/release/ -lutil

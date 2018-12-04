@@ -11,7 +11,6 @@
 #include<griditem.h>
 #include<griditemconfigdialog.h>
 #include<wellitem.h>
-#include<wellitemconfigdialog.h>
 #include<multiitemselectiondialog.h>
 #include<histogramcolorbarwidget.h>
 #include<selecttypeanditemdialog.h>
@@ -19,7 +18,7 @@
 #include<rulergraphicsview.h>
 #include<QVBoxLayout>
 #include<QMouseEvent>
-#include"axisticksconfigdialog.h"
+#include<optionsdialog.h>
 
 const int ITEM_TYPE_INDEX=0;
 const int ITEM_NAME_INDEX=1;
@@ -254,6 +253,9 @@ void MapViewer2::onMouseDoubleClick(QPointF p){
     ItemType t = static_cast<ItemType>(item->data(ITEM_TYPE_INDEX).toInt());
 
     switch(t){
+    case ItemType::Area:
+        configAreaItem(dynamic_cast<AreaItem*>(item));
+        break;
     case ItemType::Volume:
         configVolumeItem(dynamic_cast<VolumeItem*>(item));     // dialog handles nullptr
         break;
@@ -266,6 +268,8 @@ void MapViewer2::onMouseDoubleClick(QPointF p){
 
     case ItemType::Well:
         configWellItem(dynamic_cast<WellItem*>(item));
+        break;
+    default:
         break;
     }
 }
@@ -530,25 +534,35 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     auto scene = ui->graphicsView->scene();
     if( !scene ) return;
 
-    WellItemConfigDialog dlg;
+    OptionsDialog dlg;
     dlg.setWindowTitle(tr("Setup Well Display"));
-    dlg.setLabelType(static_cast<int>(m_defaultWellItem.labelType()));
-    dlg.setLabelSize(m_defaultWellItem.font().pointSize());//  pixelSize());
-    dlg.setItemSize(m_defaultWellItem.size());
-    dlg.setSymbolColor(m_defaultWellItem.symbolColor());
-    dlg.setPathColor(m_defaultWellItem.pathColor());
-    dlg.setZValue(m_defaultWellItem.zValue());
+    QStringList ltypes;
+    ltypes<<toQString(WellItem::LabelType::UWI);
+    ltypes<<toQString(WellItem::LabelType::WELL_NAME);
+    dlg.addItem("Label-Type",QVariant::Type::String,ltypes);
+    dlg.addItem("Label-Size",QVariant::Type::Int,0);
+    dlg.addItem("Symbol-Size",QVariant::Type::Int,0);
+    dlg.addItem("Symbol-Color",QVariant::Type::Color,0);
+    dlg.addItem("Path-Color",QVariant::Type::Color,0);
+    dlg.addItem("Z-Value",QVariant::Type::Int,0);
 
-    if( dlg.exec()!=QDialog::Accepted) return;
+    dlg.setValue("Label-Type",toQString(m_defaultWellItem.labelType()));
+    dlg.setValue("Label-Size",m_defaultWellItem.font().pointSize());
+    dlg.setValue("Symbol-Size",m_defaultWellItem.size());
+    dlg.setValue("Symbol-Color",m_defaultWellItem.symbolColor());
+    dlg.setValue("Path-Color",m_defaultWellItem.pathColor());
+    dlg.setValue("Z-Value",m_defaultWellItem.zValue());
 
-    m_defaultWellItem.setLabelType(static_cast<WellItem::LabelType>(dlg.labelType()));
+    if(!dlg.exec()) return;
+
+    m_defaultWellItem.setLabelType(toLabelType(dlg.getValue("Label-Type").toString()));
     QFont f=m_defaultWellItem.font();
-    f.setPointSize(dlg.labelSize());
+    f.setPointSize(dlg.getValue("Label-Size").toInt());
     m_defaultWellItem.setFont(f);
-    m_defaultWellItem.setSize( dlg.itemSize() );
-    m_defaultWellItem.setSymbolColor(dlg.symbolColor());
-    m_defaultWellItem.setPathColor(dlg.pathColor());
-    m_defaultWellItem.setZValue(dlg.zValue());
+    m_defaultWellItem.setSize( dlg.getValue("Symbol-Size").toInt() );
+    m_defaultWellItem.setSymbolColor(dlg.getValue("Symbol-Color").value<QColor>());
+    m_defaultWellItem.setPathColor(dlg.getValue("Path-Color").value<QColor>());
+    m_defaultWellItem.setZValue(dlg.getValue("Z-Value").toInt());
 
     // now assign new options to all well items
 
@@ -637,7 +651,7 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
     dlg->setCrosslineIncrement(item->crosslineIncrement());
     dlg->setZValue(item->zValue());
     dlg->setOpacity(item->opacity());
-    auto bounds=item->volume()->bounds();
+    //auto bounds=item->volume()->bounds();
     connect(dlg, SIGNAL(showLabelsChanged(bool)), item, SLOT( setShowLineLabels(bool)));
     connect(dlg, SIGNAL(showLabelChanged(bool)), item, SLOT( setShowLabel(bool)));
     connect(dlg,SIGNAL(labelTextChanged(QString)), item, SLOT(setLabel(QString)));
@@ -658,18 +672,43 @@ void MapViewer2::configVolumeItem(VolumeItem * item){
 
 
 void MapViewer2::configAxis(GVRuler * gvruler){
-    AxisTicksConfigDialog dlg;
+    OptionsDialog dlg;
     dlg.setWindowTitle("Configure Axis");
-    dlg.setAutomatic(gvruler->isAutoTickIncrement());
-    dlg.setInterval(gvruler->tickIncrement());
-    dlg.setSubTicks(gvruler->subTickCount());
-    if(dlg.exec()==QDialog::Accepted){
-        gvruler->setAutoTickIncrement(dlg.isAutomatic());
-        gvruler->setTickIncrement(dlg.interval());
-        gvruler->setSubTickCount(dlg.subTicks());
-        ui->graphicsView->invalidateScene();
-        ui->graphicsView->scene()->update();
-    }
+    dlg.addItem("Automatic",QVariant::Type::Bool,0);
+    dlg.addItem("Tick-Interval",QVariant::Double,0);
+    dlg.addItem("Sub-Ticks",QVariant::Int,0);
+    dlg.setValue("Automatic",gvruler->isAutoTickIncrement());
+    dlg.setValue("Tick-Interval",gvruler->tickIncrement());
+    dlg.setValue("Sub-Ticks",gvruler->subTickCount());
+
+    if(dlg.exec()!=QDialog::Accepted) return;
+    gvruler->setAutoTickIncrement(dlg.getValue("Automatic").toBool());
+    gvruler->setTickIncrement(dlg.getValue("Tick-Interval").toDouble());
+    gvruler->setSubTickCount(dlg.getValue("Sub-Ticks").toInt());
+}
+
+void MapViewer2::configAreaItem(AreaItem* item){
+    OptionsDialog dlg;
+    dlg.setWindowTitle("Configure Area");
+    dlg.addItem("Z-Value",QVariant::Type::Int,0);
+    dlg.addItem("Opacity",QVariant::Type::Int,0);
+    dlg.addItem("Outline-Color",QVariant::Type::Color,0);
+    dlg.addItem("Fill-Color",QVariant::Type::Color,0);
+    dlg.addItem("Show Lines",QVariant::Type::Bool,0);
+    dlg.setValue("Z-Value",item->zValue());
+    dlg.setValue("Opacity",static_cast<int>(100*item->fillOpacity()));
+    dlg.setValue("Outline-Color",item->outlineColor());
+    dlg.setValue("Fill-Color",item->fillColor());
+    dlg.setValue("Show Lines",item->isShowLines());
+
+    if(dlg.exec()!=QDialog::Accepted) return;
+
+    item->setShowLines(dlg.getValue("Show Lines").toBool());
+    item->setZValue(dlg.getValue("Z-Value").toInt());
+    item->setFillOpacity(0.01*dlg.getValue("Opacity").toInt());
+    item->setOutlineColor(dlg.getValue("Outline-Color").value<QColor>());
+    item->setFillColor(dlg.getValue("Fill-Color").value<QColor>());
+    ui->graphicsView->scene()->update();
 }
 
 void MapViewer2::setupToolBarControls(){
