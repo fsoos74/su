@@ -6,7 +6,7 @@
 #include <avoproject.h>
 #include "utilities.h"
 #include <processparams.h>
-
+#include <wellpath.h>
 #include<QVector>
 #include<QPointF>
 #include<QObject>
@@ -189,9 +189,22 @@ ProjectProcess::ResultCode LogScriptProcess::processWell(QString well){
             throw std::runtime_error("Adding execution environment variable failed!");
     }
 
+    auto path=project()->loadWellPath(well);
 
     for( int i=0; i<m_log->nz(); i++){
 
+        // add  MD as variable for script execution
+        double md=m_log->index2z(i);
+        PyObject* pymd=PyFloat_FromDouble(md);
+        if( pymd==NULL || -1==PyObject_SetAttrString(mainModule,"MD", pymd) ){
+            throw std::runtime_error("Adding execution environment variable failed!");
+        }
+        // add  TVD as variable for script execution
+        double tvd=(path)?path->tvdAtMD(md):md;
+        PyObject* pytvd=PyFloat_FromDouble(tvd);
+        if( pytvd==NULL || -1==PyObject_SetAttrString(mainModule,"TVD", pytvd) ){
+            throw std::runtime_error("Adding execution environment variable failed!");
+        }
 
         // build argument tuple
         PyObject* argsTuple=PyTuple_New( m_inputLogs.size());
@@ -200,6 +213,7 @@ ProjectProcess::ResultCode LogScriptProcess::processWell(QString well){
         }
 
         for( int k=0; k<m_inputLogs.size(); k++){
+
 
             double in=(*m_inputLogs[k])[i];
             // in python use infinty as NULL_VALUE
