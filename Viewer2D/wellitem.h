@@ -15,7 +15,7 @@ class WellItem : public QObject,public QGraphicsItemGroup
     Q_OBJECT
 public:
 
-    enum LabelType{ UWI=0, WELL_NAME};
+    enum LabelType{ NO_LABEL=0, UWI, WELL_NAME};
 
     WellItem( QGraphicsItem* parentGraphicsItem=nullptr, QObject* parentQObject=nullptr);
 

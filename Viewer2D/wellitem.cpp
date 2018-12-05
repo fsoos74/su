@@ -9,6 +9,7 @@
 
 namespace{
 QMap<WellItem::LabelType,QString> lookup{
+    {WellItem::LabelType::NO_LABEL, "No Label"},
     {WellItem::LabelType::UWI, "UWI"},
     {WellItem::LabelType::WELL_NAME, "Name"}
 };
@@ -131,7 +132,12 @@ void WellItem::setFont(QFont f){
 }
 
 void WellItem::updateLabel(){
-    QString text = (m_labelType==LabelType::UWI)?m_info.uwi() : m_info.name();
+    QString text;
+    switch(m_labelType){
+    case LabelType::UWI: text=m_info.uwi();break;
+    case LabelType::WELL_NAME: text=m_info.name();break;
+    default: break;
+    }
     m_label->setText(text);
 }
 

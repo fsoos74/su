@@ -51,14 +51,11 @@ MapViewer2::MapViewer2(QWidget *parent) :
     connect( this, SIGNAL(showProjectAreaChanged(bool)), ui->actionShow_Project_Area, SLOT(setChecked(bool)) );
 
     ui->graphicsView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
-    ui->graphicsView->topRuler()->setAutoTickIncrement(false);
+    ui->graphicsView->topRuler()->setAutoTickIncrement(true);
     ui->graphicsView->topRuler()->setTickIncrement(50000);
-    ui->graphicsView->topRuler()->setSubTickCount(4);
     ui->graphicsView->topRuler()->setTickMarkSize(0);
     ui->graphicsView->topRuler()->setSubTickMarkSize(0);
-    ui->graphicsView->leftRuler()->setAutoTickIncrement(false);
-    ui->graphicsView->leftRuler()->setTickIncrement(50000);
-    ui->graphicsView->leftRuler()->setSubTickCount(4);
+    ui->graphicsView->leftRuler()->setAutoTickIncrement(true);
     ui->graphicsView->leftRuler()->setTickMarkSize(0);
     ui->graphicsView->leftRuler()->setSubTickMarkSize(0);
     ui->graphicsView->topRuler()->installEventFilter(this);
@@ -537,6 +534,7 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     OptionsDialog dlg;
     dlg.setWindowTitle(tr("Setup Well Display"));
     QStringList ltypes;
+    ltypes<<toQString(WellItem::LabelType::NO_LABEL);
     ltypes<<toQString(WellItem::LabelType::UWI);
     ltypes<<toQString(WellItem::LabelType::WELL_NAME);
     dlg.addItem("Label-Type",QVariant::Type::String,ltypes);
@@ -583,7 +581,53 @@ void MapViewer2::on_actionSetup_Wells_triggered()
     }
 }
 
+void MapViewer2::on_actionConfigure_Horizon_triggered()
+{
+    auto names=itemList(ItemType::HorizonGrid);
+    QString iname;
+    if(names.size()==0) return;
+    else if(names.size()==1) iname=names[0];
+    else{
+        bool ok=false;
+        iname=QInputDialog::getItem(this,"Configure Horizon","Select Horizon",names,0,false,&ok);
+        if(!ok) return;
+    }
+    auto item=findItem(ItemType::HorizonGrid,iname);
+    auto gitem=dynamic_cast<GridItem*>(item);
+    if(gitem) configGridItem(gitem);
+}
 
+void MapViewer2::on_actionConfigure_Volume_triggered()
+{
+    auto names=itemList(ItemType::Volume);
+    QString iname;
+    if(names.size()==0) return;
+    else if(names.size()==1) iname=names[0];
+    else{
+        bool ok=false;
+        iname=QInputDialog::getItem(this,"Configure Volume","Select Volume",names,0,false,&ok);
+        if(!ok) return;
+    }
+    auto item=findItem(ItemType::Volume,iname);
+    auto vitem=dynamic_cast<VolumeItem*>(item);
+    if(vitem) configVolumeItem(vitem);
+}
+
+void MapViewer2::on_actionConfigure_Area_triggered()
+{
+    auto names=itemList(ItemType::Area);
+    QString iname;
+    if(names.size()==0) return;
+    else if(names.size()==1) iname=names[0];
+    else{
+        bool ok=false;
+        iname=QInputDialog::getItem(this,"Configure Area","Select Area",names,0,false,&ok);
+        if(!ok) return;
+    }
+    auto item=findItem(ItemType::Area,iname);
+    auto aitem=dynamic_cast<AreaItem*>(item);
+    if(aitem) configAreaItem(aitem);
+}
 
 void MapViewer2::configWellItem(WellItem * item){
 
@@ -805,6 +849,5 @@ void MapViewer2::fillTree(){
         }
     }
 }
-
 
 

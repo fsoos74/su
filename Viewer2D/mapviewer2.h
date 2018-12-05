@@ -69,6 +69,9 @@ protected:
 
 private slots:
     void on_actionSetup_Wells_triggered();
+    void on_actionConfigure_Horizon_triggered();
+    void on_actionConfigure_Volume_triggered();
+    void on_actionConfigure_Area_triggered();
     void onMouseDoubleClick(QPointF);
     void onMouseOver(QPointF);
     bool eventFilter(QObject *watched, QEvent *event);

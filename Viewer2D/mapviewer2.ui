@@ -116,6 +116,9 @@
     <property name="title">
      <string>Optio&amp;ns</string>
     </property>
+    <addaction name="actionConfigure_Area"/>
+    <addaction name="actionConfigure_Horizon"/>
+    <addaction name="actionConfigure_Volume"/>
     <addaction name="actionSetup_Wells"/>
     <addaction name="actionShow_Project_Area"/>
    </widget>
@@ -203,6 +206,21 @@
    </property>
    <property name="text">
     <string>&amp;Show Project Area</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Horizon">
+   <property name="text">
+    <string>Configure Horizon</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Volume">
+   <property name="text">
+    <string>Configure Volume</string>
+   </property>
+  </action>
+  <action name="actionConfigure_Area">
+   <property name="text">
+    <string>Configure Area</string>
    </property>
   </action>
  </widget>
