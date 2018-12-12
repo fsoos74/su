@@ -361,6 +361,7 @@
     <addaction name="actionNN_Log_Interpolation"/>
     <addaction name="separator"/>
     <addaction name="actionVShale_Computation"/>
+    <addaction name="actionRock_Properties_Computation"/>
     <addaction name="actionBuild_Volume"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Log_Script"/>
@@ -1089,6 +1090,11 @@
   <action name="actionVelocity_Conversion">
    <property name="text">
     <string>Velocity Conversion</string>
+   </property>
+  </action>
+  <action name="actionRock_Properties_Computation">
+   <property name="text">
+    <string>Rock Properties Computation</string>
    </property>
   </action>
  </widget>

@@ -84,7 +84,8 @@ SOURCES += prozessui.cpp \
     volumetdconversiondialog.cpp \
     copylogdialog.cpp \
     volumesimilaritydialog.cpp \
-    velocityconversiondialog.cpp
+    velocityconversiondialog.cpp \
+    rockpropertiesdialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -152,7 +153,8 @@ HEADERS += prozessui.h\
     volumetdconversiondialog.h \
     copylogdialog.h \
     volumesimilaritydialog.h \
-    velocityconversiondialog.h
+    velocityconversiondialog.h \
+    rockpropertiesdialog.h
 
 unix {
     target.path = /usr/lib
@@ -223,7 +225,8 @@ FORMS += \
     volumetdconversiondialog.ui \
     copylogdialog.ui \
     volumesimilaritydialog.ui \
-    velocityconversiondialog.ui
+    velocityconversiondialog.ui \
+    rockpropertiesdialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject
