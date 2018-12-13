@@ -12,7 +12,8 @@ VolumeMathDialog::VolumeMathDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QDoubleValidator* validator=new QDoubleValidator(this);
-    ui->leValue->setValidator(validator);
+    ui->leValue1->setValidator(validator);
+    ui->leValue2->setValidator(validator);
 
     connect( ui->leOutput, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
 
@@ -33,7 +34,8 @@ QMap<QString,QString> VolumeMathDialog::params(){
     p.insert( "input-volume1", ui->cbInput1->currentText() );
     bool input2=ui->cbFunction->currentText().contains("Volume2");
     p.insert( "input-volume2", (input2) ? ui->cbInput2->currentText() : "" );
-    p.insert("value", ui->leValue->text());
+    p.insert("value1", ui->leValue1->text());
+    p.insert("value2", ui->leValue2->text());
     p.insert( "top-horizon", ui->cbTopHorizon->currentText() );
     p.insert( "bottom-horizon", ui->cbBottomHorizon->currentText() );
 

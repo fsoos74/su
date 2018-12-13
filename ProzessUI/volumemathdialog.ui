@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>354</width>
-    <height>332</height>
+    <width>336</width>
+    <height>366</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="5" column="2">
-      <widget class="QLineEdit" name="leValue">
+      <widget class="QLineEdit" name="leValue1">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -26,20 +26,20 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="2">
+     <item row="9" column="2">
       <widget class="QComboBox" name="cbTopHorizon"/>
      </item>
-     <item row="9" column="2">
+     <item row="10" column="2">
       <widget class="QComboBox" name="cbBottomHorizon"/>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
         <string>Bottom Horizon:</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Top Horizon:</string>
@@ -80,7 +80,7 @@
      <item row="5" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Value:</string>
+        <string>Value 1:</string>
        </property>
       </widget>
      </item>
@@ -103,6 +103,20 @@
      </item>
      <item row="1" column="2">
       <widget class="QComboBox" name="cbFunction"/>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Value 2:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2">
+      <widget class="QLineEdit" name="leValue2">
+       <property name="text">
+        <string>0.0</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

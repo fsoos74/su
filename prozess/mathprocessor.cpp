@@ -9,24 +9,25 @@ const double MathProcessor::NULL_VALUE=std::numeric_limits<double>::max();
 namespace{
 
 QMap<MathProcessor::OP, QString> op_name_lookup{
-    {MathProcessor::OP::SET_V, "Value"},
+    {MathProcessor::OP::SET_V, "Value1"},
     {MathProcessor::OP::SET_G1, "Input1"},
     {MathProcessor::OP::SET_G2, "Input2"},
-    {MathProcessor::OP::ADD_GV, "Input1 + Value"},
-    {MathProcessor::OP::SUB_GV, "Input1 - Value"},
-    {MathProcessor::OP::MUL_GV, "Input1 * Value"},
-    {MathProcessor::OP::DIV_GV, "Input1 / Value"},
-    {MathProcessor::OP::POW_GV, "Input1 ** Value"},
-    {MathProcessor::OP::DIV_VG, "Value / Input1"},
-    {MathProcessor::OP::POW_VG, "Value ** Input1"},
+    {MathProcessor::OP::ADD_GV, "Input1 + Value1"},
+    {MathProcessor::OP::SUB_GV, "Input1 - Value1"},
+    {MathProcessor::OP::MUL_GV, "Input1 * Value1"},
+    {MathProcessor::OP::DIV_GV, "Input1 / Value1"},
+    {MathProcessor::OP::POW_GV, "Input1 ** Value1"},
+    {MathProcessor::OP::DIV_VG, "Value1 / Input1"},
+    {MathProcessor::OP::POW_VG, "Value1 ** Input1"},
     {MathProcessor::OP::ADD_GG, "Input1 + Input2"},
     {MathProcessor::OP::SUB_GG, "Input1 - Input2"},
     {MathProcessor::OP::MUL_GG, "Input1 * Input2"},
     {MathProcessor::OP::DIV_GG, "Input1 / Input2"},
-    {MathProcessor::OP::ADD_MUL_GVG, "Input1 + Value*Input2"},
+    {MathProcessor::OP::ADD_MUL_GVG, "Input1 + Value1*Input2"},
     {MathProcessor::OP::NORM_GG, "SQRT( Input1**2 + Input2**2 )"},
     {MathProcessor::OP::REL_DIFF_GG, "(Input1 - Input2) / Input2"},
-    {MathProcessor::OP::OVERLAY_G2_G1, "Overlay Input2 over Input1"}
+    {MathProcessor::OP::OVERLAY_G2_G1, "Overlay Input2 over Input1"},
+    {MathProcessor::OP::CLIP_VV, "Clip Value1 <= Input1 <= Value2"}
 
 };
 
@@ -56,7 +57,8 @@ QStringList MathProcessor::opList(QString inputName){
     return list;
 }
 
-MathProcessor::MathProcessor() : m_op(OP::SET_V), m_input1(0), m_input2(0), m_value(0), m_inputNullValue(NULL_VALUE)
+MathProcessor::MathProcessor() : m_op(OP::SET_V), m_input1(0), m_input2(0),
+                                m_value1(0), m_value2(0), m_inputNullValue(NULL_VALUE)
 {
     updateFunc();
 }
@@ -75,8 +77,12 @@ void MathProcessor::setInput2(const double & x){
     m_input2=x;
 }
 
-void MathProcessor::setValue(const double & x){
-    m_value=x;
+void MathProcessor::setValue1(const double & x){
+    m_value1=x;
+}
+
+void MathProcessor::setValue2(const double & x){
+    m_value2=x;
 }
 
 void MathProcessor::setInputNullValue(const double & x){
@@ -88,7 +94,7 @@ double MathProcessor::compute(){
 }
 
 double MathProcessor::set_v(){
-    return m_value;
+    return m_value1;
 }
 
 double MathProcessor::set_g1(){
@@ -104,37 +110,37 @@ double MathProcessor::set_g2(){
 
 double MathProcessor::add_gv(){
     if(m_input1==m_inputNullValue) return NULL_VALUE;
-    return m_input1+m_value;
+    return m_input1+m_value1;
 }
 
 double MathProcessor::sub_gv(){
     if(m_input1==m_inputNullValue) return NULL_VALUE;
-    return m_input1-m_value;
+    return m_input1-m_value1;
 }
 
 double MathProcessor::mul_gv(){
     if(m_input1==m_inputNullValue) return NULL_VALUE;
-    return m_input1*m_value;
+    return m_input1*m_value1;
 }
 
 double MathProcessor::div_gv(){
-    if(m_input1==m_inputNullValue || !m_value) return NULL_VALUE;   // ADD EPS for zero checking!!!
-    return m_input1/m_value;
+    if(m_input1==m_inputNullValue || m_value1==0) return NULL_VALUE;   // ADD EPS for zero checking!!!
+    return m_input1/m_value1;
 }
 
 double MathProcessor::pow_gv(){
     if(m_input1==m_inputNullValue) return NULL_VALUE;
-    return std::pow(m_input1,m_value);
+    return std::pow(m_input1,m_value1);
 }
 
 double MathProcessor::div_vg(){
     if(m_input1==m_inputNullValue || !m_input1) return NULL_VALUE;   // ADD EPS for zero checking!!!
-    return m_value/m_input1;
+    return m_value1/m_input1;
 }
 
 double MathProcessor::pow_vg(){
     if(m_input1==m_inputNullValue) return NULL_VALUE;
-    return std::pow(m_value, m_input1);
+    return std::pow(m_value1, m_input1);
 }
 
 double MathProcessor::add_gg(){
@@ -159,7 +165,7 @@ double MathProcessor::div_gg(){
 
 double MathProcessor::add_mul_gvg(){
     if(m_input1==m_inputNullValue || m_input2==m_inputNullValue) return NULL_VALUE;
-    return m_input1+m_value*m_input2;
+    return m_input1+m_value1*m_input2;
 }
 
 double MathProcessor::norm_gg(){
@@ -175,6 +181,13 @@ double MathProcessor::rel_diff_gg(){
 double MathProcessor::overlay_g2_g1(){
     if(m_input2==m_inputNullValue) return m_input1;
     return m_input2;
+}
+
+double MathProcessor::clip_vv(){
+    if( m_input1==m_inputNullValue) return m_input1;
+    if( m_input1<m_value1) return m_value1;
+    if( m_input1>m_value2) return m_value2;
+    return m_input1;
 }
 
 void MathProcessor::updateFunc(){
@@ -197,5 +210,6 @@ void MathProcessor::updateFunc(){
     case OP::NORM_GG: m_func= std::bind(&MathProcessor::norm_gg, this); break;
     case OP::REL_DIFF_GG: m_func= std::bind(&MathProcessor::rel_diff_gg, this); break;
     case OP::OVERLAY_G2_G1: m_func=std::bind(&MathProcessor::overlay_g2_g1, this); break;
+    case OP::CLIP_VV: m_func=std::bind(&MathProcessor::clip_vv, this); break;
     };
 }

@@ -19,7 +19,8 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
     QString oname;
     QString iname1;
     QString iname2;
-    double value=0;
+    double value1=0;
+    double value2=0;
     QString topName;
     QString bottomName;
 
@@ -28,7 +29,8 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
         oname=getParam(parameters, "output-volume");
         iname1=getParam(parameters, "input-volume1");
         iname2=getParam(parameters, "input-volume2");
-        value=getParam(parameters, "value").toDouble();
+        value1=getParam(parameters, "value1").toDouble();
+        value2=getParam(parameters, "value2").toDouble();
         topName=getParam( parameters, "top-horizon");
         bottomName=getParam( parameters, "bottom-horizon");
     }
@@ -78,7 +80,8 @@ ProjectProcess::ResultCode VolumeMathProcess::init( const QMap<QString, QString>
     qApp->processEvents();
 
     m_processor.setOP(MathProcessor::toOP(func));
-    m_processor.setValue(value);
+    m_processor.setValue1(value1);
+    m_processor.setValue2(value2);
 
     return ResultCode::Ok;
 }

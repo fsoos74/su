@@ -14,7 +14,8 @@ LogMathDialog::LogMathDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QDoubleValidator* validator=new QDoubleValidator(this);
-    ui->leValue->setValidator(validator);
+    ui->leValue1->setValidator(validator);
+    ui->leValue2->setValidator(validator);
 
     connect( ui->lwWells->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(updateOkButton()) );
     connect( ui->leOutput, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -47,7 +48,8 @@ QMap<QString,QString> LogMathDialog::params(){
     bool input2=ui->cbFunction->currentText().contains("Log2");
     p.insert( "input-log2", (input2) ? ui->cbInput2->currentText() : "" );
 
-    p.insert( "value", ui->leValue->text());
+    p.insert( "value1", ui->leValue1->text());
+    p.insert( "value2", ui->leValue2->text());
 
     return p;
 }

@@ -22,7 +22,8 @@ ProjectProcess::ResultCode GridMathProcess::init( const QMap<QString, QString>& 
     GridType itype1;
     QString iname2;
     GridType itype2;
-    double value=0;
+    double value1=0;
+    double value2=0;
 
 
     try{
@@ -40,7 +41,8 @@ ProjectProcess::ResultCode GridMathProcess::init( const QMap<QString, QString>& 
         auto it2s=getParam(parameters, "input-grid2-type");
         itype2=toGridType(it2s);
 
-        value=getParam(parameters, "value").toDouble();
+        value1=getParam(parameters, "value1").toDouble();
+        value2=getParam(parameters, "value2").toDouble();
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
@@ -78,7 +80,8 @@ ProjectProcess::ResultCode GridMathProcess::init( const QMap<QString, QString>& 
     }
 
     m_processor.setOP(MathProcessor::toOP(func));
-    m_processor.setValue(value);
+    m_processor.setValue1(value1);
+    m_processor.setValue2(value2);
     m_processor.setInputNullValue(m_inputGrid1->NULL_VALUE);
 
     return ResultCode::Ok;

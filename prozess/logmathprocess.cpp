@@ -18,7 +18,8 @@ ProjectProcess::ResultCode LogMathProcess::init( const QMap<QString, QString>& p
     setParams(parameters);
 
     QString func;
-    double value=0;
+    double value1=0;
+    double value2=0;
 
     try{
         func=getParam(parameters, "function");
@@ -30,7 +31,8 @@ ProjectProcess::ResultCode LogMathProcess::init( const QMap<QString, QString>& p
         m_inputName1=getParam(parameters, "input-log1");
         m_inputName2=getParam(parameters, "input-log2");
 
-        value=getParam(parameters, "value").toDouble();
+        value1=getParam(parameters, "value1").toDouble();
+        value2=getParam(parameters, "value2").toDouble();
 
         int i=0;
         while(1){
@@ -51,7 +53,8 @@ ProjectProcess::ResultCode LogMathProcess::init( const QMap<QString, QString>& p
 
 
     m_processor.setOP(MathProcessor::toOP(func));
-    m_processor.setValue(value);
+    m_processor.setValue1(value1);
+    m_processor.setValue2(value2);
 
     return ResultCode::Ok;
 }

@@ -14,7 +14,8 @@ GridMathDialog::GridMathDialog(QWidget *parent) :
     ui->setupUi(this);
 
     QDoubleValidator* validator=new QDoubleValidator(this);
-    ui->leValue->setValidator(validator);
+    ui->leValue1->setValidator(validator);
+    ui->leValue2->setValidator(validator);
 
     connect( ui->cbOutputType, SIGNAL(currentIndexChanged(int)), this, SLOT(updateOkButton()) );
     connect( ui->leOutput, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -52,7 +53,8 @@ QMap<QString,QString> GridMathDialog::params(){
     bool input2=ui->cbFunction->currentText().contains("Grid2");
     p.insert( "input-grid2-type", ui->cbInput2Type->currentText() );
     p.insert( "input-grid2", (input2) ? ui->cbInput2->currentText() : "" );
-    p.insert(QString("value"), ui->leValue->text());
+    p.insert( "value1", ui->leValue1->text());
+    p.insert( "value2", ui->leValue2->text());
 
     return p;
 }
