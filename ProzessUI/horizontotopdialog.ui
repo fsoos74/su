@@ -92,6 +92,11 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leTop</tabstop>
+  <tabstop>cbHorizon</tabstop>
+  <tabstop>lwWells</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

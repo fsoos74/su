@@ -196,6 +196,20 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leOutput</tabstop>
+  <tabstop>sbLayers</tabstop>
+  <tabstop>twLayers</tabstop>
+  <tabstop>leDXZ</tabstop>
+  <tabstop>leOffset1</tabstop>
+  <tabstop>leOffset2</tabstop>
+  <tabstop>sbTraces</tabstop>
+  <tabstop>cbSplitSpread</tabstop>
+  <tabstop>cbWavelet</tabstop>
+  <tabstop>leF0</tabstop>
+  <tabstop>leDelay</tabstop>
+  <tabstop>leTMax</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -116,6 +116,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leGrid</tabstop>
+  <tabstop>cbDataset</tabstop>
+  <tabstop>cbHorizon</tabstop>
+  <tabstop>cbMethod</tabstop>
+  <tabstop>sbSamples</tabstop>
+  <tabstop>cbDisplay</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

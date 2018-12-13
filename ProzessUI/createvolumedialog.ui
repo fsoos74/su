@@ -191,6 +191,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leVolume</tabstop>
+  <tabstop>cbDomain</tabstop>
+  <tabstop>cbType</tabstop>
+  <tabstop>leMinIline</tabstop>
+  <tabstop>leMaxIline</tabstop>
+  <tabstop>leMinXline</tabstop>
+  <tabstop>leMaxXline</tabstop>
+  <tabstop>leMinZ</tabstop>
+  <tabstop>leMaxZ</tabstop>
+  <tabstop>cbDZ</tabstop>
+  <tabstop>leValue</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

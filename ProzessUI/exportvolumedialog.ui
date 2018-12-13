@@ -195,12 +195,20 @@
     </widget>
    </item>
   </layout>
-  <zorder>cbRestrictVolume</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>label_8</zorder>
-  <zorder>label</zorder>
-  <zorder>leNULL</zorder>
  </widget>
+ <tabstops>
+  <tabstop>leOutputFile</tabstop>
+  <tabstop>pbBrowse</tabstop>
+  <tabstop>cbVolume</tabstop>
+  <tabstop>leNULL</tabstop>
+  <tabstop>cbRestrictVolume</tabstop>
+  <tabstop>leMinInline</tabstop>
+  <tabstop>leMaxInline</tabstop>
+  <tabstop>leMinCrossline</tabstop>
+  <tabstop>leMaxCrossline</tabstop>
+  <tabstop>leMinTime</tabstop>
+  <tabstop>leMaxTime</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

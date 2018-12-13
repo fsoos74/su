@@ -90,6 +90,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leOutput</tabstop>
+  <tabstop>cbInput</tabstop>
+  <tabstop>cbILDip</tabstop>
+  <tabstop>cbXLDip</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

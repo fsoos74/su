@@ -88,6 +88,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leInputFile</tabstop>
+  <tabstop>pbBrowse</tabstop>
+  <tabstop>teInfo</tabstop>
+  <tabstop>leOutput</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

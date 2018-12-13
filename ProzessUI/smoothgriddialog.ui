@@ -176,6 +176,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbGridType</tabstop>
+  <tabstop>leOutputName</tabstop>
+  <tabstop>cbInputName</tabstop>
+  <tabstop>cbMethod</tabstop>
+  <tabstop>sbInlines</tabstop>
+  <tabstop>sbCrosslines</tabstop>
+  <tabstop>cbRetain</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

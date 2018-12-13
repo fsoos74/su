@@ -197,6 +197,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInputDataset</tabstop>
+  <tabstop>leOutputDataset</tabstop>
+  <tabstop>sbMinIline</tabstop>
+  <tabstop>sbMaxIline</tabstop>
+  <tabstop>sbMinXline</tabstop>
+  <tabstop>sbMaxXline</tabstop>
+  <tabstop>sbMinMSec</tabstop>
+  <tabstop>sbMaxMSec</tabstop>
+  <tabstop>cbRestrictOffsets</tabstop>
+  <tabstop>leMinOffset</tabstop>
+  <tabstop>leMaxOffset</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -140,6 +140,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInput</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>cbType</tabstop>
+  <tabstop>cbSampling</tabstop>
+  <tabstop>leMax</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

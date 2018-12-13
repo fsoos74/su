@@ -171,6 +171,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>teScript</tabstop>
+  <tabstop>leLog</tabstop>
+  <tabstop>leUnit</tabstop>
+  <tabstop>leDescr</tabstop>
+  <tabstop>sbInputLogs</tabstop>
+  <tabstop>lwWells</tabstop>
+  <tabstop>pbLoad</tabstop>
+  <tabstop>pbSave</tabstop>
+  <tabstop>pbCancel</tabstop>
+  <tabstop>pbOK</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

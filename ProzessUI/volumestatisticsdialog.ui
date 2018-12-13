@@ -246,6 +246,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInputVolume</tabstop>
+  <tabstop>leVolume</tabstop>
+  <tabstop>cbType</tabstop>
+  <tabstop>sbInlines</tabstop>
+  <tabstop>sbCrosslines</tabstop>
+  <tabstop>sbSamples</tabstop>
+  <tabstop>cbTrackDips</tabstop>
+  <tabstop>cbIldip</tabstop>
+  <tabstop>cbXldip</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

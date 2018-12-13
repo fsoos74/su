@@ -191,6 +191,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leFile</tabstop>
+  <tabstop>pbBrowse</tabstop>
+  <tabstop>teContent</tabstop>
+  <tabstop>sbSkip</tabstop>
+  <tabstop>cbSeparator</tabstop>
+  <tabstop>sbUWI</tabstop>
+  <tabstop>sbName</tabstop>
+  <tabstop>sbMD</tabstop>
+  <tabstop>cbReplace</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

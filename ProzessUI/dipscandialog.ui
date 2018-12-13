@@ -172,6 +172,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInput</tabstop>
+  <tabstop>leIlineDip</tabstop>
+  <tabstop>leXlineDip</tabstop>
+  <tabstop>leSemblance</tabstop>
+  <tabstop>sbWindowLines</tabstop>
+  <tabstop>sbWindowSamples</tabstop>
+  <tabstop>leMinDip</tabstop>
+  <tabstop>leMaxDip</tabstop>
+  <tabstop>sbNumDips</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

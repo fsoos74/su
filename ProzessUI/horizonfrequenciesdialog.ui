@@ -142,6 +142,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leGrid</tabstop>
+  <tabstop>cbDataset</tabstop>
+  <tabstop>cbHorizon</tabstop>
+  <tabstop>leMinimumFrequency</tabstop>
+  <tabstop>leMaximumFrequency</tabstop>
+  <tabstop>cbWindowSamples</tabstop>
+  <tabstop>cbDisplay</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

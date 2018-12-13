@@ -326,6 +326,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbDataset</tabstop>
+  <tabstop>cbSuperGather</tabstop>
+  <tabstop>sbInlines</tabstop>
+  <tabstop>sbCrosslines</tabstop>
+  <tabstop>cbRestrictOffset</tabstop>
+  <tabstop>leMinOffset</tabstop>
+  <tabstop>leMaxOffset</tabstop>
+  <tabstop>cbRestrictAzimuth</tabstop>
+  <tabstop>leMinAzimuth</tabstop>
+  <tabstop>leMaxAzimuth</tabstop>
+  <tabstop>cbTimeWindow</tabstop>
+  <tabstop>leWindowStart</tabstop>
+  <tabstop>leWindowEnd</tabstop>
+  <tabstop>leIntercept</tabstop>
+  <tabstop>leGradient</tabstop>
+  <tabstop>leQuality</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

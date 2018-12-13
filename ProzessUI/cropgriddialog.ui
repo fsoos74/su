@@ -138,6 +138,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbGridType</tabstop>
+  <tabstop>cbInputGrid</tabstop>
+  <tabstop>leOutputGrid</tabstop>
+  <tabstop>sbMinIline</tabstop>
+  <tabstop>sbMaxIline</tabstop>
+  <tabstop>sbMinXline</tabstop>
+  <tabstop>sbMaxXline</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

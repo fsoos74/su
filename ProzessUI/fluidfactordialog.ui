@@ -114,6 +114,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leGrid</tabstop>
+  <tabstop>cbIntercept</tabstop>
+  <tabstop>cbGradient</tabstop>
+  <tabstop>cbComputeAngle</tabstop>
+  <tabstop>leAngle</tabstop>
+  <tabstop>cbDisplay</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

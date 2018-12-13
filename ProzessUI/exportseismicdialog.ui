@@ -225,6 +225,21 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbDataset</tabstop>
+  <tabstop>leOutputFile</tabstop>
+  <tabstop>pbBrowse</tabstop>
+  <tabstop>cbObscure</tabstop>
+  <tabstop>leShiftIl</tabstop>
+  <tabstop>leShiftXl</tabstop>
+  <tabstop>leShiftX</tabstop>
+  <tabstop>leShiftY</tabstop>
+  <tabstop>cbRestrictArea</tabstop>
+  <tabstop>leMinInline</tabstop>
+  <tabstop>leMaxInline</tabstop>
+  <tabstop>leMinCrossline</tabstop>
+  <tabstop>leMaxCrossline</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -106,6 +106,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbVolume1</tabstop>
+  <tabstop>cbVolume2</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>cbOverlap</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

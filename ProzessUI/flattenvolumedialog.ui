@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>230</height>
+    <height>258</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -128,6 +128,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInputName</tabstop>
+  <tabstop>leOutputName</tabstop>
+  <tabstop>cbMode</tabstop>
+  <tabstop>cbHorizon</tabstop>
+  <tabstop>leStart</tabstop>
+  <tabstop>leLength</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

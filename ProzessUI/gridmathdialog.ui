@@ -128,6 +128,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbFunction</tabstop>
+  <tabstop>cbOutputType</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>cbInput1Type</tabstop>
+  <tabstop>cbInput1</tabstop>
+  <tabstop>cbInput2Type</tabstop>
+  <tabstop>cbInput2</tabstop>
+  <tabstop>leValue1</tabstop>
+  <tabstop>leValue2</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

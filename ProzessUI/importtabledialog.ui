@@ -286,6 +286,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leName</tabstop>
+  <tabstop>leFile</tabstop>
+  <tabstop>pbBrowse</tabstop>
+  <tabstop>teContent</tabstop>
+  <tabstop>cbFormat</tabstop>
+  <tabstop>pbScan</tabstop>
+  <tabstop>sbSkip</tabstop>
+  <tabstop>sbCoord1</tabstop>
+  <tabstop>leMinValue</tabstop>
+  <tabstop>leMinCoord1</tabstop>
+  <tabstop>leMaxCoord2</tabstop>
+  <tabstop>sbValue</tabstop>
+  <tabstop>leMinCoord2</tabstop>
+  <tabstop>leMaxValue</tabstop>
+  <tabstop>sbCoord2</tabstop>
+  <tabstop>leMaxCoord1</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

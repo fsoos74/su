@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>223</width>
-    <height>298</height>
+    <height>308</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -136,6 +136,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbType</tabstop>
+  <tabstop>cbIntercept</tabstop>
+  <tabstop>cbGradient</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>cbFluidFactor</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

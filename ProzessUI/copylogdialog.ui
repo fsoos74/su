@@ -100,6 +100,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbSourceWell</tabstop>
+  <tabstop>cbSourceLog</tabstop>
+  <tabstop>cbDestinationWell</tabstop>
+  <tabstop>leDestinationLog</tabstop>
+  <tabstop>leDescr</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

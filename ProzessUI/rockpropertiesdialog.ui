@@ -123,6 +123,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbWell</tabstop>
+  <tabstop>cbDT</tabstop>
+  <tabstop>cbDTS</tabstop>
+  <tabstop>cbDEN</tabstop>
+  <tabstop>leYoungsModulus</tabstop>
+  <tabstop>leBulkModulus</tabstop>
+  <tabstop>leShearModulus</tabstop>
+  <tabstop>lePoissonRatio</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

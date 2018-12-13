@@ -103,6 +103,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbType</tabstop>
+  <tabstop>leName</tabstop>
+  <tabstop>leMinIline</tabstop>
+  <tabstop>leMaxIline</tabstop>
+  <tabstop>leMinXline</tabstop>
+  <tabstop>leMaxXline</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

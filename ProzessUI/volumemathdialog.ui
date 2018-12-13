@@ -145,6 +145,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leOutput</tabstop>
+  <tabstop>cbFunction</tabstop>
+  <tabstop>cbInput1</tabstop>
+  <tabstop>cbInput2</tabstop>
+  <tabstop>leValue1</tabstop>
+  <tabstop>leValue2</tabstop>
+  <tabstop>cbTopHorizon</tabstop>
+  <tabstop>cbBottomHorizon</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -164,6 +164,20 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInput</tabstop>
+  <tabstop>leBaseName</tabstop>
+  <tabstop>cbKMean</tabstop>
+  <tabstop>cbKGauss</tabstop>
+  <tabstop>cbKMin</tabstop>
+  <tabstop>cbKMax</tabstop>
+  <tabstop>cbKMaxNeg</tabstop>
+  <tabstop>cbKMaxPos</tabstop>
+  <tabstop>cbDip</tabstop>
+  <tabstop>cStrike</tabstop>
+  <tabstop>cbDipAngle</tabstop>
+  <tabstop>cbDipAzimuth</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

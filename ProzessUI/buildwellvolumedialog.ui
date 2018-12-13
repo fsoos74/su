@@ -248,6 +248,22 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leVolume</tabstop>
+  <tabstop>leMinIline</tabstop>
+  <tabstop>leMaxIline</tabstop>
+  <tabstop>leMinXline</tabstop>
+  <tabstop>leMaxXline</tabstop>
+  <tabstop>leMinZ</tabstop>
+  <tabstop>leMaxZ</tabstop>
+  <tabstop>cbDZ</tabstop>
+  <tabstop>cbTopHorizon</tabstop>
+  <tabstop>cbBottomHorizon</tabstop>
+  <tabstop>cbLog</tabstop>
+  <tabstop>lwWells</tabstop>
+  <tabstop>cbRestrictToArea</tabstop>
+  <tabstop>sbFilter</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

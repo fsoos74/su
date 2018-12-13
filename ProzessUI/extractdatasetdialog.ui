@@ -136,6 +136,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInputVolume</tabstop>
+  <tabstop>leOutputDataset</tabstop>
+  <tabstop>sbMinIline</tabstop>
+  <tabstop>sbMaxIline</tabstop>
+  <tabstop>sbMinXline</tabstop>
+  <tabstop>sbMaxXline</tabstop>
+  <tabstop>sbMinMsec</tabstop>
+  <tabstop>sbMaxMsec</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

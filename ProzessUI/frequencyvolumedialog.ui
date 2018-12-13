@@ -138,6 +138,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInputVolume</tabstop>
+  <tabstop>leVolumeName</tabstop>
+  <tabstop>leMinimumFrequency</tabstop>
+  <tabstop>leMaximumFrequency</tabstop>
+  <tabstop>cbWindowSamples</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

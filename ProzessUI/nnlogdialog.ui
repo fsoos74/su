@@ -209,6 +209,22 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbWell</tabstop>
+  <tabstop>lwInput</tabstop>
+  <tabstop>cbPredicted</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>sbNeurons</tabstop>
+  <tabstop>leTrainingRatio</tabstop>
+  <tabstop>leTrainingEpochs</tabstop>
+  <tabstop>leLearningRate</tabstop>
+  <tabstop>cbParam</tabstop>
+  <tabstop>leParamFile</tabstop>
+  <tabstop>pbParamBrowse</tabstop>
+  <tabstop>cbHist</tabstop>
+  <tabstop>leHist</tabstop>
+  <tabstop>pbHistBrowse</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

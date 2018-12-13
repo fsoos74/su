@@ -200,6 +200,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbInputVolume</tabstop>
+  <tabstop>sbInlines</tabstop>
+  <tabstop>sbCrosslines</tabstop>
+  <tabstop>sbSamples</tabstop>
+  <tabstop>leVolume</tabstop>
+  <tabstop>cbTrack</tabstop>
+  <tabstop>cbIlDip</tabstop>
+  <tabstop>cbXlDip</tabstop>
+ </tabstops>
  <resources>
   <include location="../ProjectViewer/icons.qrc"/>
  </resources>

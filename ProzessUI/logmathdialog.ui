@@ -156,6 +156,17 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leOutput</tabstop>
+  <tabstop>leUnit</tabstop>
+  <tabstop>leDescr</tabstop>
+  <tabstop>cbFunction</tabstop>
+  <tabstop>cbInput1</tabstop>
+  <tabstop>cbInput2</tabstop>
+  <tabstop>leValue1</tabstop>
+  <tabstop>leValue2</tabstop>
+  <tabstop>lwWells</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

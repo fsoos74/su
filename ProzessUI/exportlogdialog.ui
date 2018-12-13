@@ -155,6 +155,16 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbWell</tabstop>
+  <tabstop>lwLogs</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>pbBrowse</tabstop>
+  <tabstop>leNull</tabstop>
+  <tabstop>cbRestrictDepths</tabstop>
+  <tabstop>leMinDepth</tabstop>
+  <tabstop>leMaxDepth</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

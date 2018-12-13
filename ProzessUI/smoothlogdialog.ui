@@ -131,6 +131,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cbMethod</tabstop>
+  <tabstop>sbAperture</tabstop>
+  <tabstop>leOutput</tabstop>
+  <tabstop>leUnit</tabstop>
+  <tabstop>leDescr</tabstop>
+  <tabstop>cbInput</tabstop>
+  <tabstop>lwWells</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

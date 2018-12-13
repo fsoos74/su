@@ -214,6 +214,23 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lwWells</tabstop>
+  <tabstop>cbGR</tabstop>
+  <tabstop>cbBlockingMode</tabstop>
+  <tabstop>cbGRMin</tabstop>
+  <tabstop>cbGRMax</tabstop>
+  <tabstop>lwTops</tabstop>
+  <tabstop>leIGR</tabstop>
+  <tabstop>cbTertiaryRocks</tabstop>
+  <tabstop>leTertiaryRocks</tabstop>
+  <tabstop>cbOlderRocks</tabstop>
+  <tabstop>leOlderRocks</tabstop>
+  <tabstop>cbSteiber</tabstop>
+  <tabstop>leSteiber</tabstop>
+  <tabstop>cbClavier</tabstop>
+  <tabstop>leClavier</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
