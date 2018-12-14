@@ -57,6 +57,14 @@ bool XMLPWriter::writeFile(QIODevice *device){
     }
     xml.writeEndElement();          // input-scaling
 
+    xml.writeStartElement("output-scaling");
+    xml.writeStartElement("range");
+    auto mm=mlp.outputScaling();
+    xml.writeAttribute("min", QString::number(mm.first));
+    xml.writeAttribute("max", QString::number(mm.second));
+    xml.writeEndElement();
+    xml.writeEndElement();          // output-scaling
+
     xml.writeStartElement("input-names");
     xml.writeAttribute("count", QString::number(inames.size()));
     for( int j=0; j<inames.size(); j++){

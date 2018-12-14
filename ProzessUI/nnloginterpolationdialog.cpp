@@ -1,11 +1,11 @@
-﻿#include "nnloginterpolationdialog.h"
+#include "nnloginterpolationdialog.h"
 #include "ui_nnloginterpolationdialog.h"
 
 #include<QPushButton>
 #include<QFileDialog>
 
-#include<xnlreader.h>
-
+//#include<xnlreader.h>
+#include<xmlpreader.h>
 
 NNLogInterpolationDialog::NNLogInterpolationDialog(QWidget *parent) :
     ProcessParametersDialog(parent),
@@ -122,11 +122,11 @@ void NNLogInterpolationDialog::on_leInputFile_textChanged(const QString & name)
         return;
     }
 
-    NN nn;
+    SimpleMLP mlp;
     QStringList inames;
-    std::vector<std::pair<double,double>> Xmm;
-    std::pair<double,double> Ymm;
-    XNLReader reader(nn,inames, Xmm, Ymm);
+    int ilaper;
+    int xlaper;
+    XMLPReader reader(mlp,inames,ilaper,xlaper);
     if (!reader.read(&f)) {
         return;
     }

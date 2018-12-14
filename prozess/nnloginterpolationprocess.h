@@ -6,7 +6,7 @@
 #include<log.h>
 #include<memory>
 
-#include<nn.h>
+#include<simplemlp.h>
 
 
 class NNLogInterpolationProcess : public ProjectProcess
@@ -28,10 +28,8 @@ private:
     QString m_inputFile;
     QStringList m_wells;
     QString m_outputName;
-    NN m_nn;
+    SimpleMLP m_mlp;
     QStringList m_inames;
-    std::vector<std::pair<double,double>> m_Xmm;
-    std::pair<double,double> m_Ymm;
 };
 
 #endif // NNLOGINTERPOLATIONPROCESS_H

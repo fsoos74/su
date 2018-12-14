@@ -43,12 +43,14 @@ void XMLPReader::readXMLP(){
 
     while(xml.readNextStartElement()){
 
-        std::cout<<"readXMLP name="<<xml.name().toString().toStdString()<<std::endl<<std::flush;
         if(xml.name()=="weights"){
             readWeights();
         }
         else if(xml.name()=="input-scaling"){
             readInputScaling();
+        }
+        else if(xml.name()=="output-scaling"){
+            readOutputScaling();
         }
         else if( xml.name()=="input-names"){
             readINames();
@@ -69,7 +71,6 @@ void XMLPReader::readWeights(){
     std::vector<Matrix<double>> W;
 
     while(xml.readNextStartElement()){
-        std::cout<<"readWeights name="<<xml.name().toString().toStdString()<<std::endl<<std::flush;
         if( xml.name()=="layer"){
             size_t number=xml.attributes().value("number").toUInt();
             size_t n=xml.attributes().value("n").toUInt();
@@ -99,7 +100,6 @@ void XMLPReader::readWeights(){
     for( size_t i=0; i<W.size(); i++){
         mlp.setWeights(i,W[i]);
     }
-    std::cout<<"FINISHED READING WEIGHTS"<<std::endl<<std::flush;
 }
 
 Matrix<double> XMLPReader::readLayer(size_t n, size_t m){
@@ -126,8 +126,6 @@ Matrix<double> XMLPReader::readLayer(size_t n, size_t m){
 
 void XMLPReader::readINames(){
 
-    std::cout<<"XMLPReader::readINames"<<std::endl<<std::flush;
-
     unsigned ninputs=xml.attributes().value("count").toUInt();
 
     QVector<QString> tmp(ninputs);
@@ -151,14 +149,10 @@ void XMLPReader::readINames(){
     }
 
     inames=QStringList::fromVector(tmp);
-
-    std::cout<<"/XMLPReader::readINames"<<std::endl<<std::flush;
 }
 
 
 void XMLPReader::readInputScaling(){
-
-    std::cout<<"XMLPReader::readIRanges"<<std::endl<<std::flush;
 
     unsigned ninputs=xml.attributes().value("count").toUInt();
 
@@ -183,8 +177,26 @@ void XMLPReader::readInputScaling(){
         xml.skipCurrentElement();
     }
 
-    std::cout<<"/XMLPReader::readIRanges"<<std::endl<<std::flush;
 }
+
+void XMLPReader::readOutputScaling(){
+
+    while( xml.readNextStartElement() ){
+        if(xml.name()=="range"){
+            auto min = xml.attributes().value("min").toDouble();
+            auto max = xml.attributes().value("max").toDouble();
+            mlp.setOutputScaling(std::make_pair(min,max));
+        }
+        else{
+            std::cout<<"Skipping \""<<xml.name().toString().toStdString()<<"\""<<std::endl<<std::flush;
+            //xml.skipCurrentElement();
+            qWarning("Skipping unexpected element!");
+        }
+        xml.skipCurrentElement();
+    }
+
+}
+
 
 void XMLPReader::readAperture(){
     ilAperture = xml.attributes().value("iline").toInt();

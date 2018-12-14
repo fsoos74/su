@@ -7,9 +7,9 @@
 
 #include <QFile>
 
-#include "xnlreader.h"
+#include "xmlpreader.h"
 #include "matrix.h"
-#include "nn.h"
+#include "simplemlp.h"
 
 /*
 template<class Iter>
@@ -63,38 +63,14 @@ ProjectProcess::ResultCode NNLogInterpolationProcess::run(){
         return ResultCode::Error;
     }
 
-    XNLReader reader(m_nn, m_inames, m_Xmm, m_Ymm);
+    int ilaper, xlaper;
+    XMLPReader reader(m_mlp, m_inames, ilaper, xlaper);
     if (!reader.read(&file)) {
         setErrorString( tr("Parse error in file %1:\n\n%2")
                              .arg(m_inputFile)
                              .arg(reader.errorString()));
         return ResultCode::Error;
     }
-
-    /*
-    std::cout<<"NN:"<<std::endl;
-    for( int i=0; i<nn.layer_count(); i++){
-        std::cout<<"layer "<<i<<std::endl;
-        std::cout<<"weights:"<<std::endl<<nn.weights(i)<<std::endl;
-        std::cout<<"biases:"<<std::endl<<nn.biases(i)<<std::endl;
-        std::cout<<std::flush;
-    }
-
-    std::cout<<"Input-Names:"<<std::endl;
-    for( auto name : inames){
-        std::cout<<name.toStdString()<<std::endl<<std::flush;
-    }
-
-    std::cout<<"Input Ranges:"<<std::endl;
-    for( auto r : Xmm){
-        std::cout<<r.first<<" - "<<r.second<<std::endl;
-    }
-
-    std::cout<<"Output Range: "<<Ymm.first<<" - "<<Ymm.second<<std::endl;
-    */
-
-    m_nn.setSigma(leaky_relu);
-    m_nn.setSigmaPrime(leaky_relu_prime);
 
     emit started(m_wells.size());
     qApp->processEvents();
@@ -139,9 +115,6 @@ ProjectProcess::ResultCode NNLogInterpolationProcess::processWell(QString well){
        return ResultCode::Error;
    }
 
-   for( size_t j=0; j<inputLogs.size(); j++){
-       norm( inputLogs[j]->begin(), inputLogs[j]->end(), m_Xmm[j], inputLogs[j]->NULL_VALUE);
-   }
    Matrix<double> x(1, inputLogs.size());
    Matrix<double> y( 1, 1);
    for( size_t i=0; i<outputLog->nz(); i++){
@@ -156,14 +129,12 @@ ProjectProcess::ResultCode NNLogInterpolationProcess::processWell(QString well){
            x(0,j)=v;
        }
 
-       y = m_nn.feed_forward(x);
-       //std::cout<<x<<" -> "<<y<<std::endl;
+       y = m_mlp.predict(x);
+       std::cout<<x<<" -> "<<y<<std::endl;
        (*outputLog)[i]=y(0,0);
        //emit progress(it);
        //qApp->processEvents();
    }
-
-   unnorm( outputLog->begin(), outputLog->end(), m_Ymm, outputLog->NULL_VALUE);
 
    //emit currentTask("Saving output...");
    //emit started(1);

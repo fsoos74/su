@@ -20,16 +20,12 @@ public:
 private:
 
     void readXMLP();
-
     void readWeights();
-
     Matrix<double> readLayer(size_t n, size_t m);
-
     void readINames( );
-
     void readAperture();
-
     void readInputScaling( );
+    void readOutputScaling( );
 
     QXmlStreamReader xml;
     MLP& mlp;

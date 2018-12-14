@@ -1,4 +1,4 @@
-﻿#include "nnlogtrainer.h"
+#include "nnlogtrainer.h"
 #include "ui_nnlogtrainer.h"
 
 #include<QPushButton>
@@ -7,50 +7,22 @@
 #include<QFileDialog>
 #include<QMessageBox>
 #include<QInputDialog>
-
+#include<QGraphicsScene>
+#include<QGraphicsPathItem>
+#include<QPainterPath>
 #include<QFile>
-#include "nn.h"
-#include "nnfunc.h"
-#include "xnlwriter.h"
-#include<log.h>
-#include<smoothprocessor.h>
-
-
-void filterLog(Log& log, int aperture){
-
-    auto tmp=log;
-    SmoothProcessor processor;
-    processor.setInputNullValue(log.NULL_VALUE);
-    processor.setOP(SmoothProcessor::OP::MEDIAN);
-    int hw=aperture/2;
-
-    for( int i=0; i<log.nz(); i++){
-
-        processor.clearInput();
-
-        int jmin=std::max( 0, i-hw);
-        int jmax=std::min( log.nz()-1, i+hw);
-        for( int j=jmin; j<=jmax; j++){
-            auto value=tmp[j];
-            auto dist=std::abs(i-j);
-            processor.addInput(value, dist);
-        }
-
-        auto res=processor.compute();
-
-        if( res!=processor.NULL_VALUE) log[i]=res;
-
-    }
-}
-
-
-
+#include "simplemlp.h"
+#include "xmlpwriter.h"
+#include "log.h"
+#include<iostream>
 
 NNLogTrainer::NNLogTrainer(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::NNLogTrainer)
 {
     ui->setupUi(this);
+
+    ui->gvError->scale(1,-1);
 
     auto ivalid=new QIntValidator(this);
     ivalid->setBottom(1);
@@ -59,13 +31,11 @@ NNLogTrainer::NNLogTrainer(QWidget *parent) :
     auto dvalid=new QDoubleValidator(this);
     dvalid->setBottom(0.000001);
     dvalid->setTop(1.);
-    ui->leTrainingRatio->setValidator(dvalid);
-    ui->leLearningRate->setValidator(dvalid);
+     ui->leLearningRate->setValidator(dvalid);
 
-    connect( ui->cbWell, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateInputAndPredicted(QString)) );
-    connect(ui->cbWell, SIGNAL(currentTextChanged(QString)), this, SLOT(invalidateNN()));
-    connect(ui->lwInput->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(invalidateNN()));
+    connect(ui->lwInputs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(invalidateNN()));
     connect(ui->sbNeurons, SIGNAL(valueChanged(int)), this, SLOT(invalidateNN()));
+    connect(ui->cbWell, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateLogs(QString)) );
 }
 
 NNLogTrainer::~NNLogTrainer()
@@ -74,46 +44,31 @@ NNLogTrainer::~NNLogTrainer()
 }
 
 
-
 void NNLogTrainer::setProject(AVOProject* project){
 
     if( project==m_project) return;
 
     m_project = project;
 
-    auto wells=m_project->wellList();
     ui->cbWell->clear();
-    ui->cbWell->addItems(wells);
-}
+    ui->cbWell->addItems(m_project->wellList());
 
-
-void NNLogTrainer::updateInputAndPredicted(QString well){
-
-    if( !m_project ) return;
-
-    ui->lwInput->clear();
-    ui->lwInput->addItems(m_project->logList(well));
-
-    ui->cbPredicted->clear();
-    ui->cbPredicted->addItems(m_project->logList(well));
+    // logs will be updated via signal
 }
 
 
 void NNLogTrainer::getParamsFromControls(){
 
-    m_well = ui->cbWell->currentText();
-    m_predictedName = ui->cbPredicted->currentText();
+    m_well=ui->cbWell->currentText();
+    m_predictedName=ui->cbPredicted->currentText();
     m_inputNames.clear();
-    auto ids = ui->lwInput->selectionModel()->selectedIndexes();
+    auto ids = ui->lwInputs->selectionModel()->selectedIndexes();
     for( auto idx : ids){
-        m_inputNames<<ui->lwInput->item(idx.row())->text();
+        m_inputNames<<ui->lwInputs->item(idx.row())->text();
     }
     m_hiddenNeurons=static_cast<unsigned>(ui->sbNeurons->value());
     m_trainingEpochs=ui->leTrainingEpochs->text().toUInt();
-    m_trainingRatio=ui->leTrainingRatio->text().toDouble();
     m_learningRate=ui->leLearningRate->text().toDouble();
-    m_maxNoDecrease=static_cast<unsigned>(ui->sbIncreasingEpochs->value());
-    m_filterlen=ui->sbMedianFilter->value();
 }
 
 void NNLogTrainer::error(QString msg){
@@ -130,7 +85,7 @@ void NNLogTrainer::on_pbRun_clicked()
 
   getParamsFromControls();  
 
-  if( m_running) buildNN();
+  buildNN();
 
   if( m_running) prepareTraining();
 
@@ -142,7 +97,7 @@ void NNLogTrainer::on_pbRun_clicked()
 void NNLogTrainer::on_pbSave_clicked()
 {
 
-   QString fn=QFileDialog::getSaveFileName(nullptr, "Save Neurale Network", QDir::homePath() );
+   QString fn=QFileDialog::getSaveFileName(nullptr, "Save Neural Network", QDir::homePath() );
    if( fn.isEmpty()) return;
 
     QFile file(fn);
@@ -152,18 +107,12 @@ void NNLogTrainer::on_pbSave_clicked()
                              .arg(file.errorString()));
     }
 
-    XNLWriter xnl(m_nn, m_inputNames, m_Xmm, m_Ymm);
+    XMLPWriter xnl(m_nn, m_inputNames, 0, 0);
     if( !xnl.writeFile(&file)){
         return error("Writing NN failed!");
      }
-}
 
-void NNLogTrainer::on_pbTest_clicked()
-{
-    prepareTest();
-    runTest();
 }
-
 
 
 void NNLogTrainer::setRunning(bool on){
@@ -175,19 +124,20 @@ void NNLogTrainer::setRunning(bool on){
     if( m_running){
         ui->teProgress->clear();
         ui->teProgress->appendPlainText("Training Started.");
+        m_errors.clear();
+        refreshScene();
     }else{
         ui->teProgress->appendPlainText("Training Stopped.");
     }
 
     ui->leLearningRate->setEnabled(!m_running);
     ui->leTrainingEpochs->setEnabled(!m_running);
-    ui->leTrainingRatio->setEnabled(!m_running);
-    ui->cbPredicted->setEnabled(!m_running);
     ui->cbWell->setEnabled(!m_running);
-    ui->lwInput->setEnabled(!m_running);
+    ui->cbPredicted->setEnabled(!m_running);
+    ui->lwInputs->setEnabled(!m_running);
     ui->sbNeurons->setEnabled(!m_running);
-    ui->sbMedianFilter->setEnabled(!m_running);
     ui->pbRun->setEnabled(!m_running);
+    ui->pbStop->setEnabled(m_running);
     ui->pbSave->setEnabled(!m_running);
     ui->pbDone->setEnabled(!m_running);
 
@@ -199,286 +149,158 @@ void NNLogTrainer::setValidNN(bool on){
     if( on==m_validNN) return;
 
     m_validNN=on;
-
-    ui->pbTest->setEnabled(m_validNN);
 }
 
 void NNLogTrainer::invalidateNN(){
     setValidNN(false);
 }
 
-void NNLogTrainer::on_pbStop_clicked()
-{
-    setRunning(false);
-}
-
 void NNLogTrainer::buildNN(){
-    //create NN
-    NN nn{ static_cast<size_t>(m_inputNames.size()), m_hiddenNeurons, 1};      // XXX
-
-    nn.setSigma(leaky_relu);
-    nn.setSigmaPrime(leaky_relu_prime);
-    nn.setEta(m_learningRate);
-
-    m_nn = nn;
-
+    m_nn = SimpleMLP(m_inputNames.size(),m_hiddenNeurons,m_hiddenNeurons,1);
 }
 
 void NNLogTrainer::prepareTraining(){
 
     auto ninputs=m_inputNames.size();
 
-    // load input
-    m_inputLogs = std::vector<std::shared_ptr<Log>>(ninputs);
+    // read input logs
+    m_inputs.clear();
 
     for( int i=0; i<ninputs; i++){
         auto name=m_inputNames[i];
         auto l = m_project->loadLog(m_well, name);
         if( !l ){
-            return error( tr("Loading log %1-%2 failed!").arg(m_well,name));
+            return error( tr("Loading log \"%1\" failed!").arg(name));
         }
-        m_inputLogs[i]=l;
+
+        if( i>0 && l->nz()!=m_inputs[0]->nz()){
+            return error( tr("Dimensions of log \"%1\" do not match first log").arg(name));
+        }
+
+        m_inputs.push_back(l);
     }
 
-    std::shared_ptr<Log> predictedLog=m_project->loadLog(m_well, m_predictedName);
-    if( !predictedLog ){
-        return error( tr("Loading log %1-%2 failed!").arg(m_well,m_predictedName));
+    m_predicted=m_project->loadLog(m_well,m_predictedName);
+    if( !m_predicted){
+        return error( tr("Loading log \"%1\" failed!").arg(m_predictedName));
     }
 
-    // filter logs if required
-    if( m_filterlen>1){
-        for(int i=0; i<ninputs; i++){
-            filterLog(*m_inputLogs[i], m_filterlen);
-        }
-        filterLog(*predictedLog, m_filterlen);
+    if( m_inputs.empty()){
+        return error("No input logs!");
     }
 
-    // prepare training input and results
 
-    // make list of non null input and result samples for training
-    std::vector<int> s_good_training;
-    for( int i=0; i<predictedLog->nz(); i++){
-        size_t good=0;
-        for( auto l : m_inputLogs){
-            if( (*l)[i]!=l->NULL_VALUE ) good++;
+    // build index of non null samples (all inputs and predicted)
+    QVector<int> nnidx;
+    for(int i=0; i<m_predicted->nz();i++){
+        int nnull=0;
+        if((*m_predicted)[i]==m_predicted->NULL_VALUE) nnull++;
+        for( auto l : m_inputs ){
+            if((*l)[i]==l->NULL_VALUE) nnull++;
         }
-        if( good<m_inputLogs.size()) continue;                                // at least one log has NULL value for this sample, skip
-        if( (*predictedLog)[i]==predictedLog->NULL_VALUE ) continue;        // predicted log has NULL value for this sample, skip
-        s_good_training.push_back(i);                                       // finally found a usuable sample, store it
+        if(nnull==0) nnidx.push_back(i);
+    }
+
+    // collect all data (training/testing)
+    int nInputPoints = nnidx.size();
+    auto allX=Matrix<double>(nInputPoints, m_inputs.size());
+    auto allY=Matrix<double>(nInputPoints,1);
+
+    for( int i=0; i<nnidx.size(); i++){
+        auto idx=nnidx[i];
+        allY(i,0)=(*m_predicted)[idx];
+        for(int j=0; j<m_inputs.size(); j++) allX(i,j)=(*m_inputs[j])[idx];
     }
 
     // build training input and result matrices
-    // randomly select training ratio good samples
-    int ntraining=static_cast<int>( std::round(m_trainingRatio * s_good_training.size()));
+    int ntraining=nInputPoints;
     if( ntraining<=0 ){
         return error("Not enought training data!!!");
     }
 
-    random_shuffle( s_good_training.begin(), s_good_training.end());
-
     // finally build training matrices
-    m_X=Matrix<double>(ntraining, m_inputLogs.size());
-    m_Y=Matrix<double>(ntraining,1);
-    Matrix<double>& X=m_X;
-    Matrix<double>& Y=m_Y;
-
-    for( int it=0; it<ntraining;it++){
-
-        auto i=s_good_training[it];
-
-        std::cout<<"it="<<it<<" i="<<i<<" [ ";
-        for( size_t j=0; j<m_inputLogs.size(); j++){
-            auto x=(*m_inputLogs[j])[i];
-            X(it,j)=x;
-            std::cout<<x<<" ";
-        }
-        std::cout<<"] -> ";
-        auto y=(*predictedLog)[i];
-        Y(it,0)=y;
-        std::cout<<y<<std::endl;
+    m_X=allX;
+    m_Y=allY;
+/*
+    // scale Y. this will be done in nn later (also save params)
+    //only one column
+    double omin=std::numeric_limits<double>::max();
+    double omax=std::numeric_limits<double>::lowest();
+    for( auto x : m_Y ){
+        if(!std::isfinite(x)) continue;
+        if( x<omin) omin=x;
+        if( x>omax) omax=x;
     }
-
-
-    // determine normalization params on training data, training data has no NULLs
-   m_Xmm=std::vector< std::pair<double,double> >(X.columns());
-   for( unsigned j = 0; j<X.columns(); j++){
-       auto itmm = std::minmax_element( X.column_begin(j), X.column_end(j));
-       m_Xmm[j]=std::make_pair( *itmm.first, *itmm.second );
-   }
-   auto itmm=std::minmax_element( Y.begin(), Y.end() );
-   m_Ymm=std::make_pair(*itmm.first, *itmm.second );
-
-   // normalize training data
-   for( unsigned j=0; j<X.columns(); j++){
-       norm( X.column_begin(j), X.column_end(j), m_Xmm[j], m_inputLogs[j]->NULL_VALUE);
-   }
-   norm( Y.begin(), Y.end(), m_Ymm, predictedLog->NULL_VALUE );
-
+    if(omax>omin && omax!=0){
+        for( auto& x : m_Y){
+            x=(x-omin)/omax;
+        }
+    }
+*/
+    for(int i=0; i<m_X.rows(); i++){
+        std::cout<<i<<" : ";
+        for(int j=0; j<m_X.columns(); j++){
+            std::cout<<m_X(i,j)<<"/";
+        }
+        std::cout<<" -> "<<m_Y(i,0)<<std::endl;
+    }
 }
+
+void NNLogTrainer::setProgress(size_t epoch, double error){
+    ui->teProgress->appendPlainText(tr("epoch=%1 error=%2").arg(QString::number(epoch), QString::number(error)));
+    qApp->processEvents();
+
+    m_errors.push_back(error);
+    refreshScene();
+}
+
 
 void NNLogTrainer::runTraining(){
 
-    setValidNN(false);
-
-    const Matrix<double>& X=m_X;
-    const Matrix<double>& Y=m_Y;
-
-  // split training data into input and test data
-  std::vector<size_t> indices;
-  indices.reserve(X.rows());
-  for( size_t i=0; i<X.rows(); i++){
-      indices.push_back(i);
-  }
-  std::random_shuffle(indices.begin(), indices.end());
-
-  size_t ntrain=std::min(X.rows(),static_cast<size_t>( m_trainingRatio*X.rows()) );
-  size_t ntest=X.rows()-ntrain;
-
-  // extract training data
-  Matrix<double> Xtrain(ntrain, X.columns());
-  Matrix<double> Ytrain(ntrain, Y.columns());
-  for( size_t i=0; i<Xtrain.rows(); i++){
-      auto irow=indices[i];
-      for( size_t j=0; j<X.columns(); j++){
-          Xtrain(i,j)=X(irow,j);
-      }
-      for( size_t j=0; j<Y.columns(); j++){
-          Ytrain(i,j)=Y(irow,j);
-      }
-  }
-
-  // extract test data
-  Matrix<double> Xtest(ntest, X.columns());
-  Matrix<double> Ytest(ntest, Y.columns());
-  for( size_t i=0; i<Xtest.rows(); i++){
-      auto irow=indices[i+ntrain];
-      for( size_t j=0; j<X.columns(); j++){
-          Xtest(i,j)=X(irow,j);
-      }
-      for( size_t j=0; j<Y.columns(); j++){
-          Ytest(i,j)=Y(irow,j);
-      }
-  }
-
-  double last_error=std::numeric_limits<double>::max();
-  double err=last_error;
-  size_t epoch=0;
-  size_t n_inc_error=0;
-
-  while( m_running && (epoch<m_trainingEpochs) ){
-
-      try{
-      m_nn.train(Xtrain,Ytrain,1);
-      }catch(std::exception& ex){
-          error(QString(ex.what()));
-      }
-
-      last_error=err;
-      err=average_error(m_nn, Xtest,Ytest);
-      epoch++;
-      std::cout<<"epoch: "<<epoch<<" err: "<<err<<std::endl<<std::flush;
-      if( err>=last_error ){
-          n_inc_error++;
-          if( n_inc_error>m_maxNoDecrease ) break;
-      }
-      else{
-          n_inc_error=0;
-      }
-
-      //progress(epoch,err);
-      ui->teProgress->appendPlainText(tr("epoch=%1 error=%2").arg(QString::number(epoch+1), QString::number(err)));
-      qApp->processEvents();
-
-  }
-
+  setValidNN(false);
+  m_nn.fit(m_X,m_Y,m_learningRate,m_trainingEpochs,0.001,
+           std::bind(&NNLogTrainer::setProgress, this, std::placeholders::_1, std::placeholders::_2) );
+       //    &NNVolumeTrainer::setProgress) ;
   setValidNN(true);
 
 }
 
+void NNLogTrainer::refreshScene(){
 
-
-void NNLogTrainer::prepareTest(){
-    QString name;
-    while(1){
-        bool ok=false;
-        name=QInputDialog::getText(nullptr, "Test Run Neural Network", "Enter Output Log Name:", QLineEdit::Normal, name, &ok);
-        if( !ok || name.isNull()) return;
-        if( m_project->logList(m_well).contains(name)){
-                QMessageBox::critical(this, "TestRun Neural Network", tr("Well \"%1\" already contains log \"%2\"").arg(m_well,name), QMessageBox::Ok);
-                continue;
-        }
-        break;
+    auto scene=new QGraphicsScene(this);
+    QPolygonF poly;
+    for(int i=0; i<m_errors.size(); i++){
+        poly.push_back(QPointF(i,m_errors[i]));
     }
+    QPainterPath path;
+    path.addPolygon(poly);
+    auto item=new QGraphicsPathItem(path);
+    scene->addItem(item);
+    QPen pen(Qt::red, 2);
+    pen.setCosmetic(true);
+    item->setPen(pen);
+    ui->gvError->setScene(scene);
 
-    m_outputLogName=name;
-
-    const Log& ref=*m_inputLogs.front();
-    m_outputLog=std::make_shared<Log>( m_outputLogName.toStdString(), "","",//m_unit.toStdString(), m_descr.toStdString(),
-                                       ref.z0(), ref.dz(), ref.nz() );
-
-    if( !m_outputLog){
-        return error("Allocating log failed!");
-    }
-}
-
-
-// assumes that training was run before, validNN
-void NNLogTrainer::runTest(){
-
-    // normalizing of inputs was done furing training
-    Matrix<double> x(1, m_inputLogs.size());  // prozess sample by sample
-    Matrix<double> y( 1, 1);
-
-    for( size_t i=0; i<static_cast<size_t>(m_outputLog->nz()); i++){
-
-        bool ok=true;
-        for( size_t j=0; j<m_inputLogs.size(); j++){
-            auto v=(*(m_inputLogs[j]))[i];
-            if( v==m_inputLogs[j]->NULL_VALUE ){
-                ok=false;
-                break;
-            }
-            x(0,j)=v;
-            norm(x.column_begin(j), x.column_end(j), m_Xmm[j], m_inputLogs[j]->NULL_VALUE);
-        }
-
-        y = m_nn.feed_forward(x);
-
-        if(ok) (*m_outputLog)[i]=y(0,0);
-    }
-
-    unnorm( m_outputLog->begin(), m_outputLog->end(), m_Ymm, m_outputLog->NULL_VALUE);
-
-    if( !m_project->addLog(m_well, m_outputLogName, *m_outputLog)){
-        return error("Adding Log to project failed!");
+    auto it=std::max_element(m_errors.begin(), m_errors.end());
+    if( it!=m_errors.end()){
+        auto maxError=*it;
+        QRectF r(0,0,std::max(ui->gvError->width(),m_errors.size()), maxError);
+        scene->setSceneRect(r);
+        ui->gvError->fitInView(r, Qt::IgnoreAspectRatio);
     }
 }
 
-/*
-Log medianFilter( const Log& log, int len ){
-
-    Log res( "median filtered", log.unit(), "median filtered", log.z0(), log.dz(), log.nz() );
-
-    for( int i=0; i<log.nz(); i++ ){
-
-        int start = std::max( 0, i-len/2);
-        int stop = std::min(log.nz()-1, i + len/2 );
-        std::vector<double> buf;
-        buf.reserve(len);
-        for( int i=start; i<=stop; i++){
-            if( log[i]==log.NULL_VALUE) continue;
-            buf.push_back(log[i]);
-        }
-
-        if( buf.size()>0 ){
-            std::nth_element( &buf[0], &buf[buf.size()/2], &buf[buf.size()-1] );
-            res[i]=buf[buf.size()/2];
-        }
-        else{
-            res[i]=res.NULL_VALUE;
-        }
-    }
-
-    return res;
+void NNLogTrainer::updateLogs(QString well){
+    ui->cbPredicted->clear();
+    ui->lwInputs->clear();
+    if(!m_project) return;
+    auto llist=m_project->logList(well);
+    ui->cbPredicted->addItems(llist);
+    ui->lwInputs->addItems(llist);
 }
-*/
+
+void NNLogTrainer::on_pbStop_clicked()
+{
+    m_nn.stop();
+    setRunning(false);
+}

@@ -2,10 +2,11 @@
 #define NNLOGTRAINER_H
 
 #include <avoproject.h>
+#include <table.h>
+#include <QDialog>
 
-#include<QDialog>
+#include"simplemlp.h"
 
-#include"nn.h"
 
 namespace Ui {
 class NNLogTrainer;
@@ -23,22 +24,22 @@ public slots:
     void setProject(AVOProject*);
 
 private slots:
-    void updateInputAndPredicted(QString well);
     void setRunning(bool);
+    void setProgress(size_t,double);
     void setValidNN(bool);
     void invalidateNN();
     void on_pbRun_clicked();
     void on_pbSave_clicked();
+    void refreshScene();
+
     void on_pbStop_clicked();
-    void on_pbTest_clicked();
+    void updateLogs(QString well);
 
 private:
 
     void buildNN();
     void prepareTraining();
     void runTraining();
-    void prepareTest();
-    void runTest();
     void getParamsFromControls();
     void error(QString msg);
 
@@ -47,26 +48,20 @@ private:
     AVOProject* m_project=nullptr;
 
     QString m_well;
-    QStringList m_inputNames;
-    std::vector<std::shared_ptr<Log>> m_inputLogs;
     QString m_predictedName;
+    QStringList m_inputNames;
     unsigned m_hiddenNeurons;
-    unsigned m_hiddenLayers;
     unsigned m_trainingEpochs;
-    double m_trainingRatio;
     double m_learningRate;
-    unsigned m_maxNoDecrease=3;
-    unsigned m_filterlen=0;
+    std::shared_ptr<Log> m_predicted;
+    std::vector<std::shared_ptr<Log>> m_inputs;
 
     Matrix<double> m_X;
     Matrix<double> m_Y;
-    std::vector< std::pair<double,double> > m_Xmm;
-    std::pair<double,double> m_Ymm;
-    NN m_nn;
-    bool m_running=false;
+    SimpleMLP m_nn;
     bool m_validNN=false;
-    QString m_outputLogName;
-    std::shared_ptr<Log> m_outputLog;
+    QVector<double> m_errors;
+    bool m_running=false;
 };
 
 #endif // NNLOGTRAINER_H

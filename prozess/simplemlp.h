@@ -63,6 +63,10 @@ public:
         return m_mm.at(input);
     }
 
+    std::pair<double,double> outputScaling()const{
+        return m_omm;
+    }
+
     Matrix<double> weights(size_t layer)const{
         return m_w.at(layer);
     }
@@ -73,6 +77,10 @@ public:
 
     void setScaling( size_t input, const std::pair<double,double>& mm){
         m_mm[input]=mm;
+    }
+
+    void setOutputScaling(std::pair<double,double> s){
+        m_omm=s;
     }
 
     // set activation function and derivative
@@ -88,7 +96,7 @@ public:
     Matrix<double> predict(Matrix<double> X)const{
         auto XX=prepareInput(X);
         auto y=calOut(XX);
-        return y;
+        return unscaleOutput( y );
     }
 
     // adjust mlp to best fit the given (training) data.
@@ -100,7 +108,9 @@ public:
                     progress=[](size_t,double){return;}){
         adjustScaling(X);
         auto XX=prepareInput(X);    // uses adjusted scaling parameters
-        train(XX, Y, eta, maxiter, vareps, progress);
+        adjustOutputScaling(Y);
+        auto YY=prepareOutput(Y);
+        train(XX, YY, eta, maxiter, vareps, progress);
     }
 
     void stop(){
@@ -125,6 +135,21 @@ protected:
         }
     }
 
+    // Y has 1 column
+    void adjustOutputScaling(Matrix<double> Y){
+        // use loop instead of std::algorithm to exclude nan/inf values
+        // default scaling 0/1 is used to avoid special cases later
+        double min=0.;
+        double max=1.;
+        for( size_t i=0; i<Y.rows(); i++){
+            auto x=Y(i,0);
+            if( !std::isfinite(x)) continue;
+            if( x<min ) min=x;
+            if( x>max ) max=x;
+        }
+        m_omm=std::make_pair(min,max);
+    }
+
     // scale to 0-1, add bias neuron
     Matrix<double> prepareInput(Matrix<double> X)const{
         //scale input 
@@ -135,6 +160,24 @@ protected:
         }
         auto XX=addColumn(X,1.);                        // add bias 
         return XX;
+    }
+
+    // scale to 0-1
+    Matrix<double> prepareOutput(Matrix<double> Y)const{
+        //scale input
+        for( size_t i=0; i<Y.rows(); i++){
+            Y(i,0)=(Y(i,0)-m_omm.first)/(m_omm.second-m_omm.first);
+        }
+        return Y;
+    }
+
+    // scale from 0-1 to original range
+    Matrix<double> unscaleOutput(Matrix<double> Y)const{
+        //scale input
+        for( size_t i=0; i<Y.rows(); i++){
+            Y(i,0)=Y(i,0)*(m_omm.second-m_omm.first)+m_omm.first;
+        }
+        return Y;
     }
 
     // used internally, expects bias neuron in X
@@ -219,7 +262,7 @@ protected:
         m_w.push_back(Matrix<double>(m_nout,m_nh2));
         for( auto i=0; i<m_w.size(); i++){
             auto fac=1./std::sqrt(m_w[i].columns());
-            std::cout<<"fac="<<fac<<std::endl;
+            //std::cout<<"fac="<<fac<<std::endl;
             for( auto& w: m_w[i]){
                 w=fac*(2*(double(std::rand())/RAND_MAX - 0.5));
             }
@@ -232,6 +275,7 @@ private:
     size_t m_nh2;
     size_t m_nout;
     std::vector<std::pair<double,double>> m_mm; // min max value per input value
+    std::pair<double,double> m_omm;				// min max for output value
     std::vector<Matrix<double>> m_w;            // weight matrices for layers
     std::function<double(double)> m_sigma=[](double x){return 1./(1.+std::exp(-x));};  // activation function
     std::function<double(double)> m_dx_sigma=[](double x){return x*(1.-x);}; // derivative of activation function for input which already has activation function applied!!!
