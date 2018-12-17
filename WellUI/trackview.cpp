@@ -58,6 +58,12 @@ void TrackView::setColor(int i, QColor color){
     }
 }
 
+void TrackView::setPenSize(int s){
+    if(s==m_penSize) return;
+    m_penSize=s;
+    refreshScene();
+}
+
 void TrackView::setWellPath(std::shared_ptr<WellPath> p){
 
     if( p==m_wellPath) return;
@@ -227,7 +233,9 @@ void TrackView::refreshScene(){
         for( int i=0; i<m_logs.size(); i++){
             auto path=buildPath(*(m_logs[i]));
             QGraphicsPathItem* gitem=new QGraphicsPathItem(path);
-            gitem->setPen( QPen( m_logColors[i], 0));
+            auto pen=QPen(m_logColors[i], m_penSize);
+            pen.setCosmetic(true);
+            gitem->setPen( pen);
             scene->addItem( gitem );
         }
 

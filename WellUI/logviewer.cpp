@@ -107,6 +107,7 @@ LogViewer::LogViewer(QWidget *parent) :
     connect( ui->action_Send, SIGNAL(toggled(bool)), this, SLOT(setBroadcastEnabled(bool)) );
 
     setupMouseModes();
+    setupTrackToolbar();
     setupZModeToolbar();
     setupFilterToolbar();
     setupFlattenToolbar();
@@ -116,6 +117,10 @@ LogViewer::LogViewer(QWidget *parent) :
 LogViewer::~LogViewer()
 {
     delete ui;
+}
+
+int LogViewer::penSize(){
+    return m_cbPenSize->currentText().toInt();
 }
 
 void LogViewer::setupMouseModes(){
@@ -130,12 +135,26 @@ void LogViewer::setupMouseModes(){
     m_mousemodeSelector=mm;
 }
 
+void LogViewer::setupTrackToolbar(){
+
+    QToolBar* toolBar=new QToolBar("Track", this);
+    QStringList sizes{"1","2","3"};
+    m_cbPenSize=new QComboBox(this);
+    m_cbPenSize->setToolTip("Curve Pen Size");
+    m_cbPenSize->addItems(sizes);
+    connect(m_cbPenSize,SIGNAL(currentIndexChanged(QString)),this,SLOT(setPenSize(QString)));
+    toolBar->addWidget(m_cbPenSize);
+
+    addToolBar(toolBar);
+}
+
 void LogViewer::setupZModeToolbar(){
 
     QToolBar* toolBar=new QToolBar( "Z-Mode", this);
 
-    toolBar->addWidget(new QLabel("Z-Axis:", this));
+    //toolBar->addWidget(new QLabel("Z-Axis:", this));
     m_cbZMode=new QComboBox(this);
+    m_cbZMode->setToolTip("Z-Axis Style");
     m_cbZMode->addItems(zmodeNames());
     m_cbZMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     toolBar->addWidget(m_cbZMode);
@@ -166,8 +185,9 @@ void LogViewer::setupFilterToolbar(){
 
     QToolBar* toolBar=new QToolBar("Filter", this);
 
-    toolBar->addWidget(new QLabel("Filter:", this) );
+    //toolBar->addWidget(new QLabel("Filter:", this) );
     m_sbFilterLen=new QSpinBox(this);
+    m_sbFilterLen->setToolTip("Median Filter Window Size");
     m_sbFilterLen->setRange(0,1000);
     m_sbFilterLen->setValue(0);
     m_sbFilterLen->setSingleStep(10);
@@ -323,6 +343,7 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
     tv->addLog(l);
     tv->setWellPath(p);
     tv->setZMode(m_zmode);
+    tv->setPenSize(penSize());
     connect( this, SIGNAL(zmodeChanged(ZMode)), tv, SLOT(setZMode(ZMode)) );
 
     // mouse modes
@@ -433,6 +454,16 @@ void LogViewer::updateTrackLabels(){
     for( int i=0; i<m_trackLabels.size(); i++){
         m_trackLabels[i]->setText(trackLabelText(m_wellInfos[i], *m_trackViews[i]->log()));
     }
+}
+
+void LogViewer::setPenSize(int s){
+    for( auto v : m_trackViews){
+        if(v) v->setPenSize(s);
+    }
+}
+
+void LogViewer::setPenSize(QString s){
+    setPenSize(s.toInt());
 }
 
 void LogViewer::setZMode( ZMode m){

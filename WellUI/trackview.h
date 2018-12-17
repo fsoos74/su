@@ -56,6 +56,9 @@ public:
         return m_wellPath;
     }
 
+    int penSize()const{
+        return m_penSize;
+    }
 
     ZMode zmode()const{
         return m_zmode;
@@ -90,6 +93,7 @@ public slots:
     void setColor(int, QColor);
     void setWellPath( std::shared_ptr<WellPath>);
     void setHighlighted(QVector<qreal>);
+    void setPenSize(int);
     void setZMode( ZMode);
     void setZShift(qreal);  // this will be added to z-values, used to flatten on horizon
     void setFilterLen(int);
@@ -118,6 +122,7 @@ private:
     ZMode m_zmode=ZMode::MD;
     std::function<double(double)> m_zfunc=[](double z){return z;};  // z values from log are passed to this function before being used, could use this to convert md to tvd
     std::function<double(double)> m_izfunc=[](double z){return z;}; // inverse function of above
+    int m_penSize=1;
     qreal m_zshift=0;
     int m_filterLen=0;
 };

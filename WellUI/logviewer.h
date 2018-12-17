@@ -39,6 +39,8 @@ public:
     explicit LogViewer(QWidget *parent = 0);
     ~LogViewer();
 
+    int penSize();
+
     ZMode zmode()const{
         return m_zmode;
     }
@@ -52,6 +54,8 @@ public slots:
     void addLog(QString uwi, QString name);
     void removeLog(int);
     void removeLog(QString);
+    void setPenSize(QString);
+    void setPenSize(int);
     void setZMode(ZMode);
     void setZMode(QString);
     void setFlattenMode(FlattenMode);
@@ -109,6 +113,7 @@ private:
     void updateZAxis();
     void addLog( WellInfo, std::shared_ptr<WellPath>, std::shared_ptr<Log>, std::shared_ptr<WellMarkers> );
     void layoutLogs();
+    void setupTrackToolbar();
     void setupZModeToolbar();
     void setupFlattenToolbar();
     void setupFilterToolbar();
@@ -119,6 +124,7 @@ private:
     DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
     QWidget* m_tracksAreaWidget;
     QComboBox* m_cbZMode;
+    QComboBox* m_cbPenSize;
     QComboBox* m_cbFlattenMode;
     QComboBox* m_cbFlattenSource;
     QSpinBox* m_sbFilterLen;
