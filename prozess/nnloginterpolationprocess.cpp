@@ -129,25 +129,12 @@ ProjectProcess::ResultCode NNLogInterpolationProcess::processWell(QString well){
            x(0,j)=v;
        }
 
-       y = m_mlp.predict(x);
-       std::cout<<x<<" -> "<<y<<std::endl;
-       (*outputLog)[i]=y(0,0);
-       //emit progress(it);
-       //qApp->processEvents();
+       if(ok){
+            y = m_mlp.predict(x);
+            (*outputLog)[i]=y(0,0);
+       }
    }
 
-   //emit currentTask("Saving output...");
-   //emit started(1);
-   //emit progress(0);
-   //qApp->processEvents();
-
-   // scale output log to original range
-   /*if( outputRange.first!=outputRange.second){
-       auto& r=outputRange;
-       std::for_each( outputLog->begin(), outputLog->end(), [r](double& x){ x= r.first + x*(r.second-r.first);});
-       //std::for_each( outputLog->begin(), outputLog->end(), [r](double& x){ x= (x+1)*(r.second-r.first)/2;}); // -1..1
-   }
-*/
    if( !project()->addLog(well, m_outputName, *outputLog)){
        setErrorString("Adding result log to project failed!");
        return ResultCode::Error;
