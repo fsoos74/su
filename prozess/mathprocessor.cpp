@@ -24,6 +24,7 @@ QMap<MathProcessor::OP, QString> op_name_lookup{
     {MathProcessor::OP::MUL_GG, "Input1 * Input2"},
     {MathProcessor::OP::DIV_GG, "Input1 / Input2"},
     {MathProcessor::OP::ADD_MUL_GVG, "Input1 + Value1*Input2"},
+    {MathProcessor::OP::ADD_MUL_VVG, "Value1 + Value2*Input1"},
     {MathProcessor::OP::NORM_GG, "SQRT( Input1**2 + Input2**2 )"},
     {MathProcessor::OP::REL_DIFF_GG, "(Input1 - Input2) / Input2"},
     {MathProcessor::OP::OVERLAY_G2_G1, "Overlay Input2 over Input1"},
@@ -168,6 +169,11 @@ double MathProcessor::add_mul_gvg(){
     return m_input1+m_value1*m_input2;
 }
 
+double MathProcessor::add_mul_vvg(){
+    if(m_input1==m_inputNullValue ) return NULL_VALUE;
+    return m_value1+m_value2*m_input1;
+}
+
 double MathProcessor::norm_gg(){
     if(m_input1==m_inputNullValue || m_input2==m_inputNullValue) return NULL_VALUE;
     return std::sqrt( m_input1*m_input1 + m_input2*m_input2);
@@ -207,6 +213,7 @@ void MathProcessor::updateFunc(){
     case OP::MUL_GG: m_func= std::bind(&MathProcessor::mul_gg, this); break;
     case OP::DIV_GG: m_func= std::bind(&MathProcessor::div_gg, this); break;
     case OP::ADD_MUL_GVG: m_func= std::bind(&MathProcessor::add_mul_gvg, this); break;
+    case OP::ADD_MUL_VVG: m_func= std::bind(&MathProcessor::add_mul_vvg, this); break;
     case OP::NORM_GG: m_func= std::bind(&MathProcessor::norm_gg, this); break;
     case OP::REL_DIFF_GG: m_func= std::bind(&MathProcessor::rel_diff_gg, this); break;
     case OP::OVERLAY_G2_G1: m_func=std::bind(&MathProcessor::overlay_g2_g1, this); break;
