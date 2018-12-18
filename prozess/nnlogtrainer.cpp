@@ -31,7 +31,11 @@ NNLogTrainer::NNLogTrainer(QWidget *parent) :
     auto dvalid=new QDoubleValidator(this);
     dvalid->setBottom(0.000001);
     dvalid->setTop(1.);
-     ui->leLearningRate->setValidator(dvalid);
+    ui->leLearningRate->setValidator(dvalid);
+
+    auto dvalid2=new QDoubleValidator(this);
+    ui->leStartMD->setValidator(dvalid2);
+    ui->leStopMD->setValidator(dvalid2);
 
     connect(ui->lwInputs->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(invalidateNN()));
     connect(ui->sbNeurons, SIGNAL(valueChanged(int)), this, SLOT(invalidateNN()));
@@ -66,6 +70,8 @@ void NNLogTrainer::getParamsFromControls(){
     for( auto idx : ids){
         m_inputNames<<ui->lwInputs->item(idx.row())->text();
     }
+    m_startMD=ui->leStartMD->text().toDouble();
+    m_stopMD=ui->leStopMD->text().toDouble();
     m_hiddenNeurons=static_cast<unsigned>(ui->sbNeurons->value());
     m_trainingEpochs=ui->leTrainingEpochs->text().toUInt();
     m_learningRate=ui->leLearningRate->text().toDouble();
@@ -134,6 +140,8 @@ void NNLogTrainer::setRunning(bool on){
     ui->leTrainingEpochs->setEnabled(!m_running);
     ui->cbWell->setEnabled(!m_running);
     ui->cbPredicted->setEnabled(!m_running);
+    ui->leStartMD->setEnabled(!m_running);
+    ui->leStopMD->setEnabled(!m_running);
     ui->lwInputs->setEnabled(!m_running);
     ui->sbNeurons->setEnabled(!m_running);
     ui->pbRun->setEnabled(!m_running);
@@ -160,6 +168,7 @@ void NNLogTrainer::buildNN(){
 }
 
 void NNLogTrainer::prepareTraining(){
+
 
     auto ninputs=m_inputNames.size();
 
@@ -189,10 +198,16 @@ void NNLogTrainer::prepareTraining(){
         return error("No input logs!");
     }
 
+    auto i0=std::max(m_predicted->z2index(m_startMD),0);
+    auto i1=std::min(m_predicted->z2index(m_stopMD),m_predicted->nz()-1);
+    if(i1-i0<0){
+        return error("No data in window!");
+    }
 
     // build index of non null samples (all inputs and predicted)
     QVector<int> nnidx;
-    for(int i=0; i<m_predicted->nz();i++){
+    //for(int i=0; i<m_predicted->nz();i++){
+    for(int i=i0; i<=i1;i++){
         int nnull=0;
         if((*m_predicted)[i]==m_predicted->NULL_VALUE) nnull++;
         for( auto l : m_inputs ){

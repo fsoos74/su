@@ -50,6 +50,8 @@ private:
     QString m_well;
     QString m_predictedName;
     QStringList m_inputNames;
+    double m_startMD;
+    double m_stopMD;
     unsigned m_hiddenNeurons;
     unsigned m_trainingEpochs;
     double m_learningRate;
