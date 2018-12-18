@@ -302,7 +302,9 @@ void CrossplotViewer::on_action_Pick_Trend_triggered()
 
 void CrossplotViewer::on_actionSet_Angle_triggered()
 {
-    double phi=std::fabs(180.*std::atan( ui->crossplotView->trend().y())/M_PI);  // in degrees, must be positive
+    auto t=ui->crossplotView->trend();
+    //double phi=std::fabs(180.*std::atan( ui->crossplotView->trend().y())/M_PI);  // in degrees, must be positive
+    double phi=180.*std::atan( ui->crossplotView->trend().y())/M_PI;  // in degrees, [WHY???must be positive]
 
     EditTrendDialog dlg(this);
     dlg.setAngle(phi);
@@ -310,8 +312,11 @@ void CrossplotViewer::on_actionSet_Angle_triggered()
     dlg.setWindowTitle(tr("Edit Trend"));
 
     if( dlg.exec()==QDialog::Accepted){
-        phi=-std::tan(M_PI*dlg.angle()/180.);    // negative, angle is clockwise x-axxis to trend
-        ui->crossplotView->setTrend(QPointF(dlg.intercept(), phi));
+        //phi=-std::tan(M_PI*dlg.angle()/180.);    // negative, angle is clockwise x-axxis to trend
+        phi=std::tan(M_PI*dlg.angle()/180.);    // WHY negative?? negative, angle is clockwise x-axxis to trend
+        QPointF t(dlg.intercept(), phi);
+        ui->crossplotView->setTrend(t);
+        //ui->crossplotView->setTrend(QPointF(dlg.intercept(), phi));
     }
 }
 
