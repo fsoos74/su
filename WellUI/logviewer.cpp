@@ -1338,86 +1338,101 @@ void LogViewer::runTrackViewContextMenu(QPoint pos){
             tv->clearSelection();
         }
         else if(selectedAction->text()=="convert picks to new log"){
-            QString name="picks";
-            while(1){
-                bool ok=false;
-                name=QInputDialog::getText(this,"New Log","Enter Name:",QLineEdit::Normal, name, &ok);
-                if( name.isEmpty() || !ok) return;
-                if( !m_project->existsLog(uwi, name)) break;
-            }
-
-            auto log=std::make_shared<Log>(name.toStdString(),"","picked with logviewer",
-                                           tv->log()->z0(), tv->log()->dz(), tv->log()->nz());
-            auto points=tv->selectedPoints();
-            picksToLog(*log, points);
-            /*
-            // fill log from points, XXX PUT THIS IN FUNCTION
-            for( int i=1; i<points.size(); i++){
-                auto p0=points[i-1];
-                auto p1=points[i];
-                auto iz0=log->z2index(p0.y());
-                auto iz1=log->z2index(p1.y());
-                for( int iz=iz0; iz<iz1; iz++ ){
-                    auto z = log->index2z(iz);
-                    auto x = p0.x() + (z-p0.y())*(p1.x()-p0.x())/(p1.y()-p0.y());
-                    (*log)[iz]=x;
-                }
-            }
-            */
-            tv->addLog(log);
-            tv->clearSelection();
+            convertPicksToNewLog(tv);
         }
         else if(selectedAction->text()=="add picks to loaded log"){
-            QStringList avail;
-            for(int i=0; i<tv->count(); i++){
-                avail<<tv->log(i)->name().c_str();
-            }
-            int idx=0;
-            if(avail.size()>1){
-                bool ok=false;
-                QString name=QInputDialog::getItem(this, "add picks to log", "Select log:", avail, 0, false, &ok);
-                if( name.isEmpty() || !ok ) return;
-                idx=avail.indexOf(name);
-            }
-            auto log=tv->log(idx);
-            auto points=tv->selectedPoints();
-            picksToLog(*log, points);
-            tv->clearSelection();
-            tv->logChanged(idx);
+            addPicksToLog(tv);
         }
         else if(selectedAction->text()=="save log"){
-            QStringList avail;
-            for(int i=0; i<tv->count(); i++){
-                auto l=tv->log(i);
-                if(l) avail<<l->name().c_str();
-            }
-
-            QStringList names;
-            if(avail.size()==1){
-                names=avail;
-            }
-            else{
-               names = MultiItemSelectionDialog::getItems(this, tr("Save Logs"), tr("Select Logs:"), avail);
-            }
-
-            for( auto name : names ){
-                auto lindex=avail.indexOf(name);
-                auto log=tv->log(lindex);
-
-                bool ok=false;
-                auto oname=QInputDialog::getText(this, "Save Log", "Name:", QLineEdit::Normal, name, &ok);
-                if(oname.isEmpty() || !ok) return;
-                log->setName(oname.toStdString());
-
-                if(!m_project->saveLog(uwi, oname, *log )){
-                    QMessageBox::critical(this, "Save Log", tr("Saving Log \"%1-%2\" failed!").arg(well,name), QMessageBox::Ok);
-                    return;
-                }
-            }
-
+            saveLog(tv);
         }
     }
 
+}
+
+int LogViewer::selectLog(TrackView * tv, QString title){
+    if(!tv) return -1;
+
+    QStringList avail;
+    for(int i=0; i<tv->count(); i++){
+        avail<<tv->log(i)->name().c_str();
+    }
+    int idx=0;
+    // only ask for log if more than one
+    if(avail.size()>1){
+        bool ok=false;
+        QString name=QInputDialog::getItem(this, title, "Select log:", avail, 0, false, &ok);
+        if( name.isEmpty() || !ok ) return -1;
+        idx=avail.indexOf(name);
+    }
+    return idx;
+}
+
+void LogViewer::convertPicksToNewLog(TrackView * tv){
+    if(!tv) return;
+    auto index = m_trackViews.indexOf(tv);
+    if( index<0) return;
+    auto uwi=m_wellInfos[index].uwi();
+
+    // get non-existing name for new log
+    QString name="picks";
+    while(1){
+        bool ok=false;
+        name=QInputDialog::getText(this,"New Log","Enter Name:",QLineEdit::Normal, name, &ok);
+        if( name.isEmpty() || !ok) return;
+        if( !m_project->existsLog(uwi, name)) break;
+    }
+
+    auto log=std::make_shared<Log>(name.toStdString(),"","picked with logviewer",
+                       tv->log()->z0(), tv->log()->dz(), tv->log()->nz());
+    if(!log) return;
+    auto points=tv->selectedPoints();
+    picksToLog(*log, points);
+    tv->addLog(log);
+    tv->clearSelection();
+}
+
+void LogViewer::addPicksToLog(TrackView * tv){
+    if(!tv) return;
+
+    auto index = m_trackViews.indexOf(tv);
+    if( index<0) return;
+    auto well=m_wellInfos[index].name();
+    auto uwi=m_wellInfos[index].uwi();
+    // find which log to add picks to
+    int idx=selectLog(tv, "add picks to log");
+    if(idx<0) return;
+
+    auto log=tv->log(idx);
+    if( !log ) return;
+    auto points=tv->selectedPoints();
+    picksToLog(*log, points);
+    tv->clearSelection();
+    tv->logChanged(idx);
+}
+
+void LogViewer::saveLog(TrackView * tv){
+    if(!tv) return;
+    auto index = m_trackViews.indexOf(tv);
+    if( index<0) return;
+    auto well=m_wellInfos[index].name();
+    auto uwi=m_wellInfos[index].uwi();
+
+    // find log to save
+    auto idx=selectLog(tv, "Save Log");
+    if(idx<0) return;
+    auto log=tv->log(idx);
+    if(!log) return;
+
+    auto name=log->name();
+    bool ok=false;
+    auto oname=QInputDialog::getText(this, "Save Log", "Name:", QLineEdit::Normal, name.c_str(), &ok);
+    if(oname.isEmpty() || !ok) return;
+    log->setName(oname.toStdString());
+    if(!m_project->saveLog(uwi, oname, *log )){
+        QMessageBox::critical(this, "Save Log", tr("Saving Log \"%1-%2\" failed!").arg(well,name.c_str()), QMessageBox::Ok);
+        return;
+    }
 }
 
 void LogViewer::updateTrackPickMode(TrackView* tv){

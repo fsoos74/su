@@ -103,6 +103,11 @@ private slots:
 
 private:
 
+    int selectLog(TrackView*,QString title="Select Log");
+    void convertPicksToNewLog(TrackView*);
+    void addPicksToLog(TrackView*);
+    void saveLog(TrackView*);
+
     void setupMouseModes();
     QString trackLabelText(const WellInfo&, const Log&);
     qreal intersect(const Grid2D<float>& h, const WellPath& wp);
