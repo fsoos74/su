@@ -40,6 +40,7 @@ public:
     ~LogViewer();
 
     int penSize();
+    int trackWidth();
 
     ZMode zmode()const{
         return m_zmode;
@@ -56,6 +57,8 @@ public slots:
     void removeLog(QString);
     void setPenSize(QString);
     void setPenSize(int);
+    void setTrackWidth(QString);
+    void setTrackWidth(int);
     void setZMode(ZMode);
     void setZMode(QString);
     void setFlattenMode(FlattenMode);
@@ -130,6 +133,7 @@ private:
     QWidget* m_tracksAreaWidget;
     QComboBox* m_cbZMode;
     QComboBox* m_cbPenSize;
+    QComboBox* m_cbTrackWidth;
     QComboBox* m_cbFlattenMode;
     QComboBox* m_cbFlattenSource;
     QSpinBox* m_sbFilterLen;

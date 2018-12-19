@@ -123,6 +123,10 @@ int LogViewer::penSize(){
     return m_cbPenSize->currentText().toInt();
 }
 
+int LogViewer::trackWidth(){
+    return m_cbTrackWidth->currentText().toInt();
+}
+
 void LogViewer::setupMouseModes(){
 
     DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
@@ -138,6 +142,13 @@ void LogViewer::setupMouseModes(){
 void LogViewer::setupTrackToolbar(){
 
     QToolBar* toolBar=new QToolBar("Track", this);
+    QStringList widths{"200","300","400","500"};
+    m_cbTrackWidth=new QComboBox(this);
+    m_cbTrackWidth->setToolTip("Track Width");
+    m_cbTrackWidth->addItems(widths);
+    connect(m_cbTrackWidth,SIGNAL(currentIndexChanged(QString)),this,SLOT(setTrackWidth(QString)));
+    toolBar->addWidget(m_cbTrackWidth);
+
     QStringList sizes{"1","2","3"};
     m_cbPenSize=new QComboBox(this);
     m_cbPenSize->setToolTip("Curve Pen Size");
@@ -395,18 +406,17 @@ void LogViewer::addLog( WellInfo wi, std::shared_ptr<WellPath> p, std::shared_pt
 
    // setup geometry
 
-   tl->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-   tl->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+   tl->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+   tl->setMinimumWidth(trackWidth());
 
-   tv->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-   tv->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+   tv->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::MinimumExpanding);
+   tv->setFixedWidth(trackWidth());
    tv->setMinimumHeight(MINIMUM_TRACK_HEIGHT);
 
-   hv->setMinimumWidth(MINIMUM_TRACK_WIDTH);
+   hv->setFixedWidth(trackWidth());
    hv->setFixedHeight(HSCALE_HEIGHT);
 
-   vl->setMinimumWidth(MINIMUM_TRACK_WIDTH);
-
+   vl->setFixedWidth(trackWidth());
 
    layoutLogs();
 
@@ -464,6 +474,28 @@ void LogViewer::setPenSize(int s){
 
 void LogViewer::setPenSize(QString s){
     setPenSize(s.toInt());
+}
+
+void LogViewer::setTrackWidth(int w){
+    for(int i=0; i<m_trackViews.size(); i++){
+        auto tv=m_trackViews[i];
+        auto tl=m_trackLabels[i];
+        auto hv=m_trackScaleViews[i];
+        auto vl=m_trackValueLabels[i];
+        tv->setFixedWidth(w);
+        hv->setFixedWidth(w);
+        tl->setFixedWidth(w);
+        vl->setFixedWidth(w);
+        tv->resize(w,tv->height());
+        hv->resize(w,hv->height());
+        tl->resize(w,tl->height());
+        vl->resize(w,vl->height());
+        layoutLogs();
+    }
+}
+
+void LogViewer::setTrackWidth(QString str){
+    setTrackWidth(str.toInt());
 }
 
 void LogViewer::setZMode( ZMode m){
@@ -550,7 +582,9 @@ void LogViewer::layoutLogs(){
 
     QGridLayout* lo = new QGridLayout;
 
+    // ownership of widgets goes from old layout to new layout
     lo->addWidget( m_vscaleView, 1, 0);
+    lo->setColumnStretch(0,0);
 
     for( int i = 0; i<m_trackViews.size(); i++){
         auto c1=new QHBoxLayout;
@@ -570,10 +604,14 @@ void LogViewer::layoutLogs(){
         lo->addWidget( m_trackViews[i], 1, i+1);
         lo->addWidget( m_trackScaleViews[i], 2, i+1);
         lo->addWidget( m_trackValueLabels[i], 3, i+1);
-        //lo->setColumnStretch(i+1, 1);
+        lo->setColumnStretch(i+1, 0);
     }
 
     lo->addWidget(m_verticalScrollBar, 1, 1000);        // rightmost
+    //auto fill=new QWidget();
+    //fill->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Minimum);
+    //lo->addWidget(fill,1,1001);
+    lo->setColumnStretch(1001,1);
 
     lo->setHorizontalSpacing(4);
     lo->setVerticalSpacing(0);
@@ -584,7 +622,6 @@ void LogViewer::layoutLogs(){
     m_tracksAreaWidget->setLayout(lo);
 
     lo->update();
-
 }
 
 void LogViewer::on_action_Add_Log_triggered()
