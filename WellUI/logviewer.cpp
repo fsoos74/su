@@ -808,7 +808,14 @@ void LogViewer::onTrackPointSelected(QPointF p){
 
     tmgr->set( WellMarker( name, uwi, md) );
 
-    m_markers[idx]=m_project->loadWellMarkersByWell(uwi);
+    // update all tracks with picked uwi
+    auto uwiMarkers=m_project->loadWellMarkersByWell(uwi);
+    for(int i=0; i<m_trackViews.size(); i++){
+        if( m_wellInfos[i].uwi()==uwi){
+            m_markers[i]=uwiMarkers;
+        }
+    }
+    //m_markers[idx]=m_project->loadWellMarkersByWell(uwi);
     updateTrackTops();
     //sourceTV->refreshScene();       // maybe better have db changed signal connected
 }

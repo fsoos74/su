@@ -493,7 +493,6 @@ void AxisView::zoomOut(){
 }
 
 void AxisView::mousePressEvent(QMouseEvent * event){
-
     QPointF scenePos=mapToScene(event->pos());
     QPointF p=toAxis(scenePos);// axisPos( xAxis()->toAxis(scenePos.x()), zAxis()->toAxis(scenePos.y()));
 
@@ -660,12 +659,16 @@ void AxisView::mouseReleaseEvent(QMouseEvent * event){
 
         m_zoomActive=false;
     }
-    else if( event->button()==Qt::LeftButton &&
-             ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select ||
-               m_mouseMode==MouseMode::Pick || m_mouseMode==MouseMode::DeletePick) ){
-        emit lineSelected(selectedLine());
+    //else if( event->button()==Qt::LeftButton &&
+    //         ( event->modifiers()==Qt::ShiftModifier ||  m_mouseMode==MouseMode::Select ||
+    //           m_mouseMode==MouseMode::Pick || m_mouseMode==MouseMode::DeletePick) ){
+    else if( event->button()==Qt::LeftButton && m_selectionActive){
         m_selectionActive=false;
+        if( m_selectionMode==SELECTIONMODE::Line){
+            emit lineSelected(selectedLine());
+        }
     }
+
 }
 
 
@@ -696,19 +699,22 @@ void AxisView::mouseMoveEvent(QMouseEvent * event){
             break;
         }
     }
-    else if( m_selectionActive && m_selectionMode==SELECTIONMODE::Line){
+    else if( m_selectionActive ){
+        if(m_selectionMode==SELECTIONMODE::Line){
+            if( m_selectedPoints.size()>1) m_selectedPoints[1]=p;
+            invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
+            scene()->update();
+        }
+        //else if( m_mouseMode==MouseMode::Pick && m_selectionMode==SELECTIONMODE::SinglePoint ){
+            //m_selectedPoints=QVector<QPointF>{p};
+            //emit pointSelected(p);	// this interferes with top picking, if needed use multiply point mode
+        //}
+        else if( m_selectionActive && m_mouseMode==MouseMode::DeletePick ){
+            emit removePoint(p);
+        }
+    }
 
-        if( m_selectedPoints.size()>1) m_selectedPoints[1]=p;
-        invalidateScene(sceneRect(), QGraphicsScene::ForegroundLayer);
-        scene()->update();
-    }
-    else if( m_selectionActive && m_mouseMode==MouseMode::Pick && m_selectionMode==SELECTIONMODE::SinglePoint ){
-        m_selectedPoints=QVector<QPointF>{p};
-        emit pointSelected(p);
-    }
-    else if( m_selectionActive && m_mouseMode==MouseMode::DeletePick ){
-        emit removePoint(p);
-    }
+    event->accept();
 }
 
 
