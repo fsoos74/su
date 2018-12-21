@@ -69,7 +69,6 @@ public slots:
     void setCrosslinesSelectable(bool);
     void setMSecsSelectable(bool);
     void setAxisLabels( const QString& xAxisAnnotation, const QString& yAxisAnnotation );
-    void setFixedColor(bool);
 
 signals:
 

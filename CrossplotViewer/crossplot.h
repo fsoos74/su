@@ -14,9 +14,9 @@ namespace crossplot{
 
 
 struct DataPoint{
-    DataPoint():x(0),y(0), iline(0),xline(0), time(0), attribute(0){}
-    DataPoint( float ix, float iy, int iiline, int ixline, float(itime), float iattribute=0):
-        x(ix), y(iy), iline(iiline), xline(ixline), time(itime), attribute(iattribute){}
+    DataPoint():x(0),y(0), iline(0),xline(0), time(0), attribute(0),dataset(0){}
+    DataPoint( float ix, float iy, int iiline, int ixline, float(itime), float iattribute=0, int ids=0):
+        x(ix), y(iy), iline(iiline), xline(ixline), time(itime), attribute(iattribute), dataset(ids){}
 
     float x=0;
     float y=0;
@@ -25,6 +25,7 @@ struct DataPoint{
     int xline=0;
     float time=0;
     float attribute=0;
+    int dataset=0;
 };
 
 

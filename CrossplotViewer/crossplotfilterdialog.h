@@ -23,6 +23,8 @@ public:
     int maxZ();
     double minAttribute();
     double maxAttribute();
+    int minDataset();
+    int maxDataset();
 
     void setMinInline(int);
     void setMaxInline(int);
@@ -32,6 +34,8 @@ public:
     void setMaxZ(int);
     void setMinAttribute(double);
     void setMaxAttribute(double);
+    void setMinDataset(int);
+    void setMaxDataset(int);
 
 private:
     Ui::CrossplotFilterDialog *ui;

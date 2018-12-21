@@ -15,7 +15,8 @@ CrossplotFilterDialog::CrossplotFilterDialog(QWidget *parent) :
     ui->leMaxIL->setValidator(ivalid);
     ui->leMinXL->setValidator(ivalid);
     ui->leMaxXL->setValidator(ivalid);
-
+    ui->leMinDS->setValidator(ivalid);
+    ui->leMaxDS->setValidator(ivalid);
     auto dvalid=new QDoubleValidator(this);
     ui->leMinA->setValidator(dvalid);
     ui->leMaxA->setValidator(dvalid);
@@ -60,6 +61,14 @@ double CrossplotFilterDialog::maxAttribute(){
     return ui->leMaxA->text().toDouble();
 }
 
+int CrossplotFilterDialog::minDataset(){
+    return ui->leMinDS->text().toInt();
+}
+
+int CrossplotFilterDialog::maxDataset(){
+    return ui->leMaxDS->text().toInt();
+}
+
 
 void CrossplotFilterDialog::setMinInline(int i){
     ui->leMinIL->setText(QString::number(i));
@@ -94,5 +103,10 @@ void CrossplotFilterDialog::setMaxAttribute(double d){
     ui->leMaxA->setText(QString::number(d));
 }
 
+void CrossplotFilterDialog::setMinDataset(int i){
+    ui->leMinDS->setText(QString::number(i));
+}
 
-
+void CrossplotFilterDialog::setMaxDataset(int i){
+    ui->leMaxDS->setText(QString::number(i));
+}

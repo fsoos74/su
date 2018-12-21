@@ -1866,7 +1866,6 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
 
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
-    viewer->setFixedColor(!grida);  // if attribute is used use variable color points
     viewer->setData(data); // add data after visible!!!! /// XXX QVECTOR!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
     //viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
@@ -1951,7 +1950,6 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
 
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
-    viewer->setFixedColor(!volumea);  // if attribute is used use variable color points
     viewer->setData(data); // add data after visible!!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
     viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
@@ -3766,7 +3764,9 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
     QTransform xy_to_ilxl, ilxl_to_xy;
     m_project->geometry().computeTransforms(xy_to_ilxl, ilxl_to_xy);
 
-    for( auto well : wells){
+    for( int ds=0; ds<wells.size(); ds++){
+
+        auto well=wells[ds];
 
         auto log1=m_project->loadLog(well, log1name);
         if( !log1 ){
@@ -3804,6 +3804,9 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
         }
 
         auto wdata=crossplot::createFromLogs( log1.get(), log2.get(), log3.get(), *wp, xy_to_ilxl);
+        for( auto & dpoint : wdata ){
+            dpoint.dataset=ds;
+        }
         data.insert( std::end(data), std::begin(wdata), std::end(wdata));
 
     }
@@ -3813,7 +3816,6 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
 
     viewer->setWindowTitle( QString("%2 vs %3").arg( log1name, log2name ) );
     viewer->show();
-    viewer->setFixedColor(log3name=="NONE");
     //viewer->setInlinesSelectable(false);
     //viewer->setCrosslinesSelectable(false);
     viewer->setData(data); // add data after visible!!!

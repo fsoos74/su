@@ -16,6 +16,7 @@ class CrossplotView : public RulerAxisView
 public:
 
     enum class Symbol{ Circle, Square, Cross};
+    enum class ColorStyle{ Fixed, Attribute, Dataset};
 
     struct Filter{
 
@@ -23,13 +24,14 @@ public:
         int minXL, maxXL;
         int minZ, maxZ;
         double minA, maxA;
+        int minDS, maxDS;
 
-
-        bool isInside(int il,int xl, int z, double a){
+        bool isInside(int il,int xl, int z, double a, int ds){
             return (il>=minIL) && (il<=maxIL) &&
                     (xl>=minXL) && (xl<=maxXL) &&
                     (z>=minZ) && (z<=maxZ) &&
-                    (a>=minA) && (a<=maxA);
+                    (a>=minA) && (a<=maxA) &&
+                    (ds>=minDS) && (ds<=maxDS);
         }
     };
 
@@ -73,16 +75,16 @@ public:
         return m_displayTrendLine;
     }
 
-    bool isFixedColor()const{
-        return m_fixedColor;
-    }
-
     int pointSize()const{
         return m_pointSize;
     }
 
     QColor pointColor()const{
         return m_pointColor;
+    }
+
+    ColorStyle colorStyle()const{
+        return m_colorStyle;
     }
 
     Symbol pointSymbol()const{
@@ -106,8 +108,8 @@ public slots:
      void setFlattenTrend(bool);
      void setDisplayTrendLine(bool);
      void setPointSymbol(CrossplotView::Symbol);
+     void setColorStyle(CrossplotView::ColorStyle);
      void setPointSize( int );
-     void setFixedColor(bool);
      void setPointColor(QColor);
      void setColorMapping( const std::pair<double,double>& m);
      void setColors( const QVector<QRgb>&);
@@ -137,7 +139,7 @@ private:
     bool m_flattenTrend=false;
 
     Symbol      m_pointSymbol=Symbol::Circle;   // symbol used for points
-    bool        m_fixedColor=true;              // points drawn with point color or colortable based on attribute
+    ColorStyle  m_colorStyle=ColorStyle::Fixed; // how point colors are assigned
     QColor      m_pointColor=Qt::blue;          // datapoints are drawn with this color if fixed
     ColorTable* m_colorTable;                   // holds colors and display range
     int m_pointSize=11;
@@ -149,5 +151,7 @@ private:
 QString toQString(CrossplotView::Symbol);
 CrossplotView::Symbol toSymbol(QString);
 
+QString toQString(CrossplotView::ColorStyle);
+CrossplotView::ColorStyle toColorStyle(QString);
 
 #endif // CROSSPLOTVIEW_H

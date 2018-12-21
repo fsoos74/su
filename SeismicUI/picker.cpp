@@ -68,8 +68,6 @@ void Picker::setMode(PickMode m){
 
   m_mode=m;
 
-  std::cout<<"mode="<<toQString(m).toStdString()<<std::endl<<std::flush;
-
   updateModeFuncs();
 
   emit modeChanged(m);

@@ -14,11 +14,12 @@ CrossplotViewerDisplayOptionsDialog::CrossplotViewerDisplayOptionsDialog(QWidget
         ui->cbSymbol->addItem(toQString(s));
     }
 
+    for( auto cs : {CrossplotView::ColorStyle::Fixed, CrossplotView::ColorStyle::Attribute, CrossplotView::ColorStyle::Dataset}){
+        ui->cbColorStyle->addItem(toQString(cs));
+    }
+
     connect( ui->sbPointSize, SIGNAL(valueChanged(int)),
              this, SIGNAL(pointSizeChanged(int)) );
-
-    connect( ui->rbFixedColor, SIGNAL(toggled(bool)),
-             this, SIGNAL(fixedColorChanged(bool)) );
 
     connect( ui->cbFixColor, SIGNAL(colorChanged(QColor)),
              this, SIGNAL(pointColorChanged(QColor)) );
@@ -33,9 +34,8 @@ int CrossplotViewerDisplayOptionsDialog::pointSize(){
     return ui->sbPointSize->value();
 }
 
-bool CrossplotViewerDisplayOptionsDialog::isFixedColor(){
-
-    return ui->rbFixedColor->isChecked();
+CrossplotView::ColorStyle CrossplotViewerDisplayOptionsDialog::colorStyle(){
+    return toColorStyle(ui->cbColorStyle->currentText());
 }
 
 QColor CrossplotViewerDisplayOptionsDialog::pointColor(){
@@ -59,10 +59,6 @@ void CrossplotViewerDisplayOptionsDialog::setPointSize(int size){
     ui->sbPointSize->setValue(size);
 }
 
-void CrossplotViewerDisplayOptionsDialog::setFixedColor(bool on){
-
-    ui->rbFixedColor->setChecked(on);
-}
 
 void CrossplotViewerDisplayOptionsDialog::setPointColor(QColor color){
 
@@ -71,6 +67,10 @@ void CrossplotViewerDisplayOptionsDialog::setPointColor(QColor color){
 
 void CrossplotViewerDisplayOptionsDialog::setPointSymbol(CrossplotView::Symbol s){
     ui->cbSymbol->setCurrentText(toQString(s));
+}
+
+void CrossplotViewerDisplayOptionsDialog::setColorStyle(CrossplotView::ColorStyle cs){
+    ui->cbColorStyle->setCurrentText(toQString(cs));
 }
 
 void CrossplotViewerDisplayOptionsDialog::setTrendlineColor(QColor color){
@@ -95,7 +95,6 @@ void CrossplotViewerDisplayOptionsDialog::on_cbTrendlineColor_clicked()
                                                  "Select Trendline Color");
 
     if (color.isValid()) {
-
         setTrendlineColor(color);
     }
 }
@@ -104,4 +103,10 @@ void CrossplotViewerDisplayOptionsDialog::on_cbSymbol_currentIndexChanged(const 
 {
     auto s=toSymbol(arg1);
     emit pointSymbolChanged(s);
+}
+
+void CrossplotViewerDisplayOptionsDialog::on_cbColorStyle_currentIndexChanged(const QString &arg1)
+{
+    auto cs=toColorStyle(arg1);
+    emit colorStyleChanged(cs);
 }

@@ -10,7 +10,7 @@
 #include<iostream>
 
 namespace{
-QMap<CrossplotView::Symbol, QString> lookup{
+QMap<CrossplotView::Symbol, QString> slookup{
     {CrossplotView::Symbol::Circle, "Circle"},
     {CrossplotView::Symbol::Square, "Square"},
     {CrossplotView::Symbol::Cross, "Cross"}
@@ -18,19 +18,37 @@ QMap<CrossplotView::Symbol, QString> lookup{
 }
 
 QString toQString(CrossplotView::Symbol s){
-    return lookup.value(s);
+    return slookup.value(s);
 }
 
 CrossplotView::Symbol toSymbol(QString s){
-    return lookup.key(s, CrossplotView::Symbol::Circle);
+    return slookup.key(s, CrossplotView::Symbol::Circle);
 }
+
+namespace  {
+QMap<CrossplotView::ColorStyle, QString> clookup{
+    {CrossplotView::ColorStyle::Attribute, "Attribute"},
+    {CrossplotView::ColorStyle::Dataset, "Dataset"},
+    {CrossplotView::ColorStyle::Fixed, "Fixed"}
+};
+}
+
+QString toQString(CrossplotView::ColorStyle cs){
+    return clookup.value(cs);
+}
+
+CrossplotView::ColorStyle toColorStyle(QString s){
+    return clookup.key(s, CrossplotView::ColorStyle::Fixed);
+}
+
 
 CrossplotView::CrossplotView(QWidget* parent):RulerAxisView(parent),m_colorTable(new ColorTable(this))
 {
     m_filter=Filter{ std::numeric_limits<int>::min(), std::numeric_limits<int>::max(),
                      std::numeric_limits<int>::min(), std::numeric_limits<int>::max(),
                      std::numeric_limits<int>::min(),std::numeric_limits<int>::max(),
-                     std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max() };
+                     std::numeric_limits<double>::lowest(), std::numeric_limits<double>::max(),
+                     0,std::numeric_limits<int>::max()};
 
     m_colorTable->setColors(ColorTable::defaultColors());
 
@@ -109,6 +127,12 @@ void CrossplotView::setPointSymbol(Symbol s){
     refreshScene();
 }
 
+void CrossplotView::setColorStyle(CrossplotView::ColorStyle cs){
+    if(cs==m_colorStyle) return;
+    m_colorStyle=cs;
+    refreshScene();
+}
+
 void CrossplotView::setPointSize(int size){
 
     if( size==m_pointSize) return;
@@ -120,14 +144,6 @@ void CrossplotView::setPointSize(int size){
     refreshScene();
 }
 
-void CrossplotView::setFixedColor(bool fixed){
-
-    if( fixed==m_fixedColor) return;
-
-    m_fixedColor=fixed;
-
-    refreshScene();
-}
 
 void CrossplotView::setPointColor(QColor color){
 
@@ -161,6 +177,9 @@ void CrossplotView::setTrendlineColor(QColor color){
 
 void CrossplotView::refreshScene(){
 
+    QVector<QColor> dscolors{Qt::blue, Qt::green, Qt::cyan, Qt::magenta,
+                            Qt::darkGray, Qt::darkYellow,Qt::darkGreen, Qt::darkBlue};
+
     QGraphicsScene* scene=new QGraphicsScene(this);
 
     if( m_data.size()<1){
@@ -181,15 +200,19 @@ void CrossplotView::refreshScene(){
 
         // check if point is within the inline/crossline/time selection for display
         int msec=static_cast<int>(1000*p.time);
-        if( !m_filter.isInside(p.iline,p.xline, msec, p.attribute)) continue;
+        if( !m_filter.isInside(p.iline,p.xline, msec, p.attribute, p.dataset)) continue;
 
         QColor color;
-        if(m_fixedColor){
+        switch (m_colorStyle) {
+        case ColorStyle::Fixed:
             color=m_pointColor;
-        }
-        else{
-            QRgb rgb=m_colorTable->map(p.attribute);
-            color=rgb;
+            break;
+        case ColorStyle::Attribute:
+            color=m_colorTable->map(p.attribute);
+            break;
+        case ColorStyle::Dataset:
+            color=dscolors[p.dataset%dscolors.size()];
+            break;
         }
 
         // NULL values are filtered before the data is set, thus they are not checked for

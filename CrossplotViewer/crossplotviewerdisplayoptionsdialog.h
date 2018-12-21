@@ -18,22 +18,22 @@ public:
     ~CrossplotViewerDisplayOptionsDialog();
 
     int pointSize();
-    bool isFixedColor();
     QColor pointColor();
     CrossplotView::Symbol pointSymbol();
+    CrossplotView::ColorStyle colorStyle();
     QColor trendlineColor();
 
 public slots:
     void setPointSize(int);
-    void setFixedColor(bool);
     void setPointColor(QColor);
     void setPointSymbol(CrossplotView::Symbol);
+    void setColorStyle(CrossplotView::ColorStyle);
     void setTrendlineColor(QColor);
 
 signals:
     void pointSizeChanged(int);
     void pointSymbolChanged(CrossplotView::Symbol);
-    void fixedColorChanged(bool);
+    void colorStyleChanged(CrossplotView::ColorStyle);
     void pointColorChanged(QColor);
     void trendlineColorChanged(QColor);
 
@@ -41,6 +41,8 @@ private slots:
     void on_cbFixColor_clicked();
     void on_cbTrendlineColor_clicked();
     void on_cbSymbol_currentIndexChanged(const QString &arg1);
+
+    void on_cbColorStyle_currentIndexChanged(const QString &arg1);
 
 private:
 

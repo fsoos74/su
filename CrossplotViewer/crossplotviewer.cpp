@@ -192,10 +192,6 @@ void CrossplotViewer::setAxisLabels( const QString& xAxisAnnotation, const QStri
     ui->crossplotView->zAxis()->setName(yAxisAnnotation);
 }
 
-void CrossplotViewer::setFixedColor(bool on){
-    ui->crossplotView->setFixedColor(on);
-}
-
 
 void CrossplotViewer::onTrendLineSelected(QLineF axisline){
 
@@ -362,6 +358,8 @@ void CrossplotViewer::on_actionSelect_By_Inline_Crossline_Ranges_triggered()
     dlg.setMaxZ(std::min(dims.msec2,f.maxZ));
     dlg.setMinAttribute(std::max(static_cast<double>(arange.minimum), f.minA));
     dlg.setMaxAttribute(std::min(static_cast<double>(arange.maximum), f.maxA));
+    dlg.setMinDataset(f.minDS);
+    dlg.setMaxDataset(f.maxDS);
 
     if( dlg.exec()){
 
@@ -371,7 +369,8 @@ void CrossplotViewer::on_actionSelect_By_Inline_Crossline_Ranges_triggered()
                         dlg.minInline(), dlg.maxInline(),
                         dlg.minCrossline(), dlg.maxCrossline(),
                         dlg.minZ(), dlg.maxZ(),
-                        dlg.minAttribute(), dlg.maxAttribute()
+                        dlg.minAttribute(), dlg.maxAttribute(),
+                        dlg.minDataset(), dlg.maxDataset()
                     }
                     );
 
@@ -386,7 +385,7 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
         displayOptionsDialog=new CrossplotViewerDisplayOptionsDialog(this);
         displayOptionsDialog->setPointSize(ui->crossplotView->pointSize());
         displayOptionsDialog->setPointSymbol(ui->crossplotView->pointSymbol());
-        displayOptionsDialog->setFixedColor(ui->crossplotView->isFixedColor());
+        displayOptionsDialog->setColorStyle(ui->crossplotView->colorStyle());
         displayOptionsDialog->setPointColor(ui->crossplotView->pointColor());
         displayOptionsDialog->setTrendlineColor(ui->crossplotView->trendlineColor());
 
@@ -396,8 +395,8 @@ void CrossplotViewer::on_actionDisplay_Options_triggered()
                  ui->crossplotView, SLOT(setPointSize(int)) );
         connect( displayOptionsDialog, SIGNAL(pointSymbolChanged(CrossplotView::Symbol)),
                  ui->crossplotView, SLOT(setPointSymbol(CrossplotView::Symbol)) );
-        connect( displayOptionsDialog, SIGNAL(fixedColorChanged(bool)),
-                 ui->crossplotView, SLOT(setFixedColor(bool)) );
+        connect( displayOptionsDialog, SIGNAL(colorStyleChanged(CrossplotView::ColorStyle)),
+                 ui->crossplotView, SLOT(setColorStyle(CrossplotView::ColorStyle)));
         connect( displayOptionsDialog, SIGNAL( pointColorChanged(QColor)),
                  ui->crossplotView, SLOT( setPointColor(QColor)) );
         connect( displayOptionsDialog, SIGNAL(trendlineColorChanged(QColor)),

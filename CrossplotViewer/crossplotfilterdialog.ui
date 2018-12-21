@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>346</width>
-    <height>259</height>
+    <height>290</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,11 +16,12 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="leMinXL"/>
-     </item>
-     <item row="3" column="2">
-      <widget class="QLineEdit" name="leMaxZ"/>
+     <item row="0" column="2">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Maximum</string>
+       </property>
+      </widget>
      </item>
      <item row="4" column="1">
       <widget class="QLineEdit" name="leMinA">
@@ -29,25 +30,8 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
-      <widget class="QLineEdit" name="leMaxA">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="leMinIL"/>
-     </item>
-     <item row="1" column="2">
-      <widget class="QLineEdit" name="leMaxIL"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Crossline:</string>
-       </property>
-      </widget>
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="leMaxZ"/>
      </item>
      <item row="2" column="2">
       <widget class="QLineEdit" name="leMaxXL"/>
@@ -59,13 +43,43 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Minimum</string>
+       </property>
+      </widget>
+     </item>
      <item row="3" column="1">
       <widget class="QLineEdit" name="leMinZ"/>
      </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="label_6">
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="leMaxIL"/>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="leMinIL"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Maximum</string>
+        <string>Crossline:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLineEdit" name="leMaxA">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="leMinXL"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Attribute:</string>
        </property>
       </widget>
      </item>
@@ -76,19 +90,18 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_5">
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Minimum</string>
+        <string>Dataset:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Attribute:</string>
-       </property>
-      </widget>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="leMinDS"/>
+     </item>
+     <item row="5" column="2">
+      <widget class="QLineEdit" name="leMaxDS"/>
      </item>
     </layout>
    </item>
@@ -117,6 +130,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>leMinIL</tabstop>
+  <tabstop>leMaxIL</tabstop>
+  <tabstop>leMinXL</tabstop>
+  <tabstop>leMaxXL</tabstop>
+  <tabstop>leMinZ</tabstop>
+  <tabstop>leMaxZ</tabstop>
+  <tabstop>leMinA</tabstop>
+  <tabstop>leMaxA</tabstop>
+  <tabstop>leMinDS</tabstop>
+  <tabstop>leMaxDS</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
