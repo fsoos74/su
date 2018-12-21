@@ -55,6 +55,10 @@ public:
         return m_msecsSelectable;
     }
 
+    QString datasetName(int i){
+        return QString("Dataset #%1").arg(i);
+    }
+
     CrossplotView* view();
 
 protected:

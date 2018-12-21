@@ -168,6 +168,17 @@ void CrossplotViewer::setData( crossplot::Data data){
         }
     }
 
+    int maxds=std::numeric_limits<int>::lowest();
+    int minds=std::numeric_limits<int>::max();
+    for( auto dp : data){
+        if( dp.dataset>maxds) maxds=dp.dataset;
+        if( dp.dataset<minds) minds=dp.dataset;
+    }
+    m_legendWidget->clear();
+    for(int ds=minds; ds<=maxds; ds++){
+        m_legendWidget->addItem(datasetName(ds), ui->crossplotView->datasetColor(ds));
+    }
+
     ui->crossplotView->setData(data);
 }
 

@@ -4,7 +4,7 @@
 
 LegendWidget::LegendWidget(QWidget* parent, Qt::WindowFlags flags):QLabel(parent,flags)
 {
-
+    setAlignment(Qt::AlignLeft | Qt::AlignTop);
 }
 
 void LegendWidget::clear(){
