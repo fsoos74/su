@@ -17,7 +17,8 @@ SOURCES += \
     crossplotviewerdisplayoptionsdialog.cpp \
     crossplotvolumesinputdialog.cpp \
     edittrenddialog.cpp \
-    crossplotfilterdialog.cpp
+    crossplotfilterdialog.cpp \
+    legendwidget.cpp
 
 HEADERS += \
     crossplotviewer.h \
@@ -27,7 +28,8 @@ HEADERS += \
     crossplotviewerdisplayoptionsdialog.h \
     crossplotvolumesinputdialog.h \
     edittrenddialog.h \
-    crossplotfilterdialog.h
+    crossplotfilterdialog.h \
+    legendwidget.h
 
 unix {
     target.path = /usr/lib

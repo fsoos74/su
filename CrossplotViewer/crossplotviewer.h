@@ -13,7 +13,7 @@
 #include <avoproject.h>
 #include <QDockWidget>
 #include<colorbarwidget.h>
-//#include<displayrangedialog.h>
+#include<legendwidget.h>
 #include <histogramrangeselectiondialog.h>
 #include "crossplotviewerdisplayoptionsdialog.h"
 
@@ -128,6 +128,9 @@ private:
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     ColorBarWidget* m_attributeColorBarWidget=nullptr;
     QDockWidget* m_attributeColorBarDock=nullptr;
+    LegendWidget* m_legendWidget=nullptr;
+    QDockWidget* m_legendDock=nullptr;
+
 };
 
 #endif // CROSSPLOTVIEWER_H

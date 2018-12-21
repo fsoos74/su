@@ -83,6 +83,17 @@ public:
         return m_pointColor;
     }
 
+    QColor datasetColor(int i){
+        QVector<QColor> colors{
+            Qt::blue, Qt::green, Qt::red, Qt::gray,
+            Qt::magenta, Qt::cyan, Qt::yellow,
+            Qt::darkBlue, Qt::darkGreen, Qt::darkRed, Qt::darkGray,
+            Qt::darkCyan, Qt::darkMagenta, Qt::darkYellow
+        };
+
+        return colors[i%colors.size()];
+    }
+
     ColorStyle colorStyle()const{
         return m_colorStyle;
     }
@@ -145,6 +156,7 @@ private:
     int m_pointSize=11;
     QColor m_trendlineColor=Qt::red;
     QPointF m_trend;
+
 };
 
 

@@ -79,6 +79,7 @@ CrossplotView* CrossplotViewer::view(){
 void CrossplotViewer::populateWindowMenu(){
 
     ui->menu_Window->addAction(m_attributeColorBarDock->toggleViewAction());
+    ui->menu_Window->addAction(m_legendDock->toggleViewAction());
     ui->menu_Window->addSeparator();
     ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
     ui->menu_Window->addAction( ui->zoomToolBar->toggleViewAction());
@@ -529,8 +530,15 @@ void CrossplotViewer::createDockWidgets(){
     m_attributeColorBarDock->setWidget(m_attributeColorBarWidget);
     addDockWidget(Qt::RightDockWidgetArea, m_attributeColorBarDock);
     m_attributeColorBarWidget->setColorTable( ui->crossplotView->colorTable() );
-
     m_attributeColorBarDock->close();
+
+    m_legendDock= new QDockWidget(tr("Legend"),this);
+    m_legendDock->setAllowedAreas(Qt::RightDockWidgetArea);
+    m_legendWidget=new LegendWidget(m_legendDock);
+    m_legendDock->setContentsMargins(10, 5, 10, 5);
+    m_legendDock->setWidget(m_legendWidget);
+    addDockWidget(Qt::RightDockWidgetArea, m_legendDock);
+    m_legendDock->close();
 }
 
 void CrossplotViewer::closeEvent(QCloseEvent *)

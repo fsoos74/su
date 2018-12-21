@@ -79,6 +79,7 @@ void CrossplotView::setData(crossplot::Data data){
     refreshScene();
 }
 
+
 void CrossplotView::setFilter(Filter f){
     m_filter=f;
     refreshScene();
@@ -177,9 +178,6 @@ void CrossplotView::setTrendlineColor(QColor color){
 
 void CrossplotView::refreshScene(){
 
-    QVector<QColor> dscolors{Qt::blue, Qt::green, Qt::cyan, Qt::magenta,
-                            Qt::darkGray, Qt::darkYellow,Qt::darkGreen, Qt::darkBlue};
-
     QGraphicsScene* scene=new QGraphicsScene(this);
 
     if( m_data.size()<1){
@@ -211,7 +209,8 @@ void CrossplotView::refreshScene(){
             color=m_colorTable->map(p.attribute);
             break;
         case ColorStyle::Dataset:
-            color=dscolors[p.dataset%dscolors.size()];
+            //color=dscolors[p.dataset%dscolors.size()];
+            color=datasetColor(p.dataset);
             break;
         }
 
