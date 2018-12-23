@@ -176,6 +176,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <logscriptprocess.h>
 #include <vshaledialog.h>
 #include <vshaleprocess.h>
+#include <castagnadialog.h>
+#include <castagnaprocess.h>
 #include <rockpropertiesdialog.h>
 #include <rockpropertiesprocess.h>
 #include <tabletohorizondialog.h>
@@ -1724,6 +1726,20 @@ void ProjectViewer::on_actionVShale_Computation_triggered()
     QMap<QString,QString> params=dlg.params();
 
     runProcess<VShaleProcess>( params );
+}
+
+void ProjectViewer::on_actionCastagna_VS_Computation_triggered()
+{
+    Q_ASSERT( m_project );
+
+    CastagnaDialog dlg;
+    dlg.setWindowTitle(tr("Castagna VS Computation"));
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<CastagnaProcess>( params );
 }
 
 void ProjectViewer::on_actionRock_Properties_Computation_triggered()
@@ -5208,6 +5224,7 @@ void ProjectViewer::updateMenu(){
     ui->actionTrain_NN_Log->setEnabled(isProject);
     ui->actionNN_Log_Interpolation->setEnabled(isProject);
     ui->actionVShale_Computation->setEnabled(isProject);
+    ui->actionCastagna_VS_Computation->setEnabled(isProject);
     ui->actionRock_Properties_Computation->setEnabled(isProject);
     ui->actionTops_from_Horizon->setEnabled(isProject);
     ui->actionRun_Log_Script->setEnabled(isProject);
@@ -5263,6 +5280,7 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
     runProcess<InterceptGradientVolumeProcess_2>( params );
 }
+
 
 
 

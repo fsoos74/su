@@ -361,6 +361,7 @@
     <addaction name="actionNN_Log_Interpolation"/>
     <addaction name="separator"/>
     <addaction name="actionVShale_Computation"/>
+    <addaction name="actionCastagna_VS_Computation"/>
     <addaction name="actionRock_Properties_Computation"/>
     <addaction name="actionBuild_Volume"/>
     <addaction name="separator"/>
@@ -1094,7 +1095,12 @@
   </action>
   <action name="actionRock_Properties_Computation">
    <property name="text">
-    <string>Rock Properties Computation</string>
+    <string>Roc&amp;k Properties Computation</string>
+   </property>
+  </action>
+  <action name="actionCastagna_VS_Computation">
+   <property name="text">
+    <string>Castagna VS Computation</string>
    </property>
   </action>
  </widget>

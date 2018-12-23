@@ -130,6 +130,7 @@ private slots:
     void on_actionNN_Log_old_triggered();
     void on_actionNN_Log_Interpolation_triggered();
     void on_actionVShale_Computation_triggered();
+    void on_actionCastagna_VS_Computation_triggered();
     void on_actionRock_Properties_Computation_triggered();
     void on_actionRun_Log_Script_triggered();
     void on_actionBuild_Volume_triggered();
@@ -195,6 +196,7 @@ private slots:
     void on_actionVolume_IO_Test_triggered();
     void on_actionIntercept_And_Gradient_Volume_old_triggered();
     void on_actionImportTable_triggered();
+
 
 protected:
 
