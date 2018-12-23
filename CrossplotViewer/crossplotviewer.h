@@ -55,10 +55,6 @@ public:
         return m_msecsSelectable;
     }
 
-    QString datasetName(int i){
-        return QString("Dataset #%1").arg(i);
-    }
-
     CrossplotView* view();
 
 protected:
@@ -67,7 +63,7 @@ protected:
 
 public slots:
 
-    void setData( crossplot::Data);
+    void setCrossplot(Crossplot);
     void setDetailedPointInformation(bool);
     void setInlinesSelectable(bool);
     void setCrosslinesSelectable(bool);
@@ -107,7 +103,7 @@ private slots:
 
 private:
 
-    QVector<double> collectHistogramData( std::function<double(const crossplot::DataPoint&)> );
+    QVector<double> collectHistogramData( std::function<double(const Crossplot::DataPoint&)> );
 
     void createDockWidgets();
     void populateWindowMenu();
@@ -134,7 +130,6 @@ private:
     QDockWidget* m_attributeColorBarDock=nullptr;
     LegendWidget* m_legendWidget=nullptr;
     QDockWidget* m_legendDock=nullptr;
-
 };
 
 #endif // CROSSPLOTVIEWER_H

@@ -1,53 +1,77 @@
 #ifndef CROSSPLOT_H
 #define CROSSPLOT_H
 
-#include<vector>
 
 #include "grid2d.h"
 #include "grid3d.h"
 #include "log.h"
 #include <wellpath.h>
 
+#include<QVector>
 #include<QTransform>
 
-namespace crossplot{
 
+class Crossplot{
 
-struct DataPoint{
-    DataPoint():x(0),y(0), iline(0),xline(0), time(0), attribute(0),dataset(0){}
-    DataPoint( float ix, float iy, int iiline, int ixline, float(itime), float iattribute=0, int ids=0):
+public:
+
+    struct DataPoint{
+        DataPoint():x(0),y(0), iline(0),xline(0), time(0), attribute(0),dataset(0){}
+        DataPoint( float ix, float iy, int iiline, int ixline, float(itime), float iattribute=0, int ids=0):
         x(ix), y(iy), iline(iiline), xline(ixline), time(itime), attribute(iattribute), dataset(ids){}
 
-    float x=0;
-    float y=0;
+        float x;
+        float y;
+        int iline;
+        int xline;
+        float time;
+        float attribute;
+        int dataset;
+    };
 
-    int iline=0;
-    int xline=0;
-    float time=0;
-    float attribute=0;
-    int dataset=0;
-};
+    using Data=QVector<DataPoint>;
 
+    inline int size()const{
+        return m_data.size();
+    }
 
-typedef std::vector<DataPoint> Data;
+    inline int datasetCount()const{
+        return m_datasetNames.size();
+    }
 
-Data createFromGrids( Grid2D<float>* grid_x, Grid2D<float>* grid_y,
+    inline QString datasetName(int i)const{
+        return m_datasetNames.at(i);
+    }
+
+    const Data& data()const{
+        return m_data;
+    }
+
+    void addDataset(const Data&, QString name="" );
+    void add(const Crossplot& other);
+
+    static Data createFromGrids( Grid2D<float>* grid_x, Grid2D<float>* grid_y,
                       Grid2D<float>* horizon=nullptr, Grid2D<float>* grid_attr=nullptr );
 
-Data createFromVolumes( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
+    static Data createFromVolumes( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
                         Grid3D<float>* volume_attr=nullptr );
 
-// used only n random selected points (inline,xline,sample number)
-Data createFromVolumesReduced( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
-                               size_t n, Grid3D<float>* volume_attr=nullptr );
+    // used only n random selected points (inline,xline,sample number)
+    static Data createFromVolumesReduced( Grid3D<float>* volume_x, Grid3D<float>* volume_y,
+                       size_t n, Grid3D<float>* volume_attr=nullptr );
 
-Data createFromLogs( Log* log1, Log* log2, int iline=1, int xline=1 );  // uses md
+    static Data createFromLogs( Log* log1, Log* log2, int iline=1, int xline=1 );  // uses md
 
-Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline=1, int xline=1 );   // uses md
+    static Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline=1, int xline=1 );   // uses md
 
-Data createFromLogs( Log* log1, Log* log2, Log* loga, const WellPath& wp, QTransform xy_to_ilxl);      // points have varying il, xl, and z according to wellpath
+    // points have varying il, xl, and z according to wellpath
+    static Data createFromLogs( Log* log1, Log* log2, Log* loga, const WellPath& wp, QTransform xy_to_ilxl);
 
-}
+private:
+    QVector<QString> m_datasetNames;
+    Data m_data;
+};
+
 
 
 #endif // CROSSPLOT_H

@@ -118,7 +118,7 @@ void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
         DatapointItem* datapointItem=dynamic_cast<DatapointItem*>(item);
         if( datapointItem){
             int idx=datapointItem->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
-            const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
+            const Crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
             int iline=d.iline;
             int xline=d.xline;
 
@@ -153,11 +153,11 @@ void CrossplotViewer::receivePoints( QVector<SelectionPoint> points, int code){
 }
 
 
-void CrossplotViewer::setData( crossplot::Data data){
+void CrossplotViewer::setCrossplot( Crossplot crossplot){
 
     const int ASK_SELECT_LINES_LIMIT=200000;
 
-    if( data.size() > ASK_SELECT_LINES_LIMIT ){
+    if( crossplot.size() > ASK_SELECT_LINES_LIMIT ){
         int ret=QMessageBox::question(this, "Crossplot Attributes",
             QString("Number of datapoints is %1. This will significantly slow down operation.\n"
                     "Select inline/crossline ranges to reduce the number of plotted points?").arg(ui->crossplotView->data().size()),
@@ -168,18 +168,12 @@ void CrossplotViewer::setData( crossplot::Data data){
         }
     }
 
-    int maxds=std::numeric_limits<int>::lowest();
-    int minds=std::numeric_limits<int>::max();
-    for( auto dp : data){
-        if( dp.dataset>maxds) maxds=dp.dataset;
-        if( dp.dataset<minds) minds=dp.dataset;
-    }
     m_legendWidget->clear();
-    for(int ds=minds; ds<=maxds; ds++){
-        m_legendWidget->addItem(datasetName(ds), ui->crossplotView->datasetColor(ds));
+    for(int ds=0; ds<crossplot.datasetCount(); ds++){
+        m_legendWidget->addItem(crossplot.datasetName(ds), ui->crossplotView->datasetColor(ds));
     }
 
-    ui->crossplotView->setData(data);
+    ui->crossplotView->setData(crossplot.data());
 }
 
 void CrossplotViewer::setDetailedPointInformation(bool on){
@@ -258,7 +252,7 @@ void CrossplotViewer::on_actionCompute_Trend_From_Loaded_Data_triggered()
 {
     QVector<QPointF > points;
 
-    for( crossplot::DataPoint point : ui->crossplotView->data()){
+    for( Crossplot::DataPoint point : ui->crossplotView->data()){
 
         points.append(QPointF( point.x, point.y));
     }
@@ -275,7 +269,7 @@ void CrossplotViewer::on_actionCompute_Trend_From_Displayed_Data_triggered()
 
     for( QGraphicsItem* item : ui->crossplotView->scene()->items() ){
         int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
-        const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
+        const Crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
 
         points.push_back(QPointF(d.x,d.y));
     }
@@ -292,7 +286,7 @@ void CrossplotViewer::on_actionCompute_Trend_From_Selected_Data_triggered()
 
     for( QGraphicsItem* item : ui->crossplotView->scene()->selectedItems() ){
         int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
-        const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
+        const Crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
 
         points.push_back(QPointF(d.x, d.y));
     }
@@ -336,7 +330,7 @@ void CrossplotViewer::sceneSelectionChanged(){
     for( QGraphicsItem* item : ui->crossplotView->scene()->selectedItems() ){
 
         int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
-        const crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
+        const Crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
         int iline=d.iline;
         int xline=d.xline;
         float time=d.time;
@@ -466,12 +460,12 @@ void CrossplotViewer::on_actionAttribute_Range_triggered()
 
 
 
-QVector<double> CrossplotViewer::collectHistogramData( std::function<double(const crossplot::DataPoint&)> f ){
+QVector<double> CrossplotViewer::collectHistogramData( std::function<double(const Crossplot::DataPoint&)> f ){
 
     QVector<double> data;
 
     if( ui->crossplotView->scene()->selectedItems().empty()){
-        for( crossplot::DataPoint point : ui->crossplotView->data()){
+        for( Crossplot::DataPoint point : ui->crossplotView->data()){
             // should be no NULL values here, they must be filterd out before
             data.push_back( f(point));
          }
@@ -479,7 +473,7 @@ QVector<double> CrossplotViewer::collectHistogramData( std::function<double(cons
     else{
         for( QGraphicsItem* item : ui->crossplotView->scene()->selectedItems() ){
             int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
-            const crossplot::DataPoint& point=ui->crossplotView->data().at(idx);
+            const Crossplot::DataPoint& point=ui->crossplotView->data().at(idx);
             data.push_back(f(point));
         }
     }
@@ -489,7 +483,7 @@ QVector<double> CrossplotViewer::collectHistogramData( std::function<double(cons
 
 void CrossplotViewer::on_action_HistogramXAxis_triggered()
 {
-    QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.x;} );
+    QVector<double> data=collectHistogramData( [](const Crossplot::DataPoint& p){ return p.x;} );
     if(data.empty()) return;
 
     HistogramDialog* viewer=new HistogramDialog;
@@ -504,7 +498,7 @@ void CrossplotViewer::on_action_HistogramXAxis_triggered()
 void CrossplotViewer::on_action_HistogramYAxis_triggered()
 {
 
-    QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.y;} );
+    QVector<double> data=collectHistogramData( [](const Crossplot::DataPoint& p){ return p.y;} );
     if(data.empty()) return;
 
     HistogramDialog* viewer=new HistogramDialog;
@@ -518,7 +512,7 @@ void CrossplotViewer::on_action_HistogramYAxis_triggered()
 
 void CrossplotViewer::on_action_HistogramAttribute_triggered()
 {
-    QVector<double> data=collectHistogramData( [](const crossplot::DataPoint& p){ return p.attribute;} );
+    QVector<double> data=collectHistogramData( [](const Crossplot::DataPoint& p){ return p.attribute;} );
     if(data.empty()) return;
 
     HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted

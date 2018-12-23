@@ -57,7 +57,7 @@ CrossplotView::CrossplotView(QWidget* parent):RulerAxisView(parent),m_colorTable
 }
 
 
-void CrossplotView::setData(crossplot::Data data){
+void CrossplotView::setData(Crossplot::Data data){
 
     m_data=data;
 
@@ -407,7 +407,7 @@ void CrossplotView::scanBounds(){
     float mint=std::numeric_limits<float>::max();
     float maxt=std::numeric_limits<float>::lowest();
 
-    for( crossplot::DataPoint point:m_data){
+    for( Crossplot::DataPoint point:m_data){
         if(point.iline<minil) minil=point.iline;
         if(point.iline>maxil) maxil=point.iline;
         if(point.xline<minxl) minxl=point.xline;

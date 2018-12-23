@@ -39,10 +39,6 @@ public:
 
     CrossplotView(QWidget* parent=nullptr);
 
-    crossplot::Data data()const{
-        return m_data;
-    }
-
     VolumeDimensions dimensions()const{
         return m_dims;
     }
@@ -110,9 +106,13 @@ public:
         return m_trendlineColor;
     }
 
+    const Crossplot::Data& data()const{
+        return m_data;
+    }
+
 public slots:
 
-    void setData(crossplot::Data);
+    void setData(Crossplot::Data);
     void setFilter(Filter);
 
      void setTrend( QPointF ); // p(intercept, gradient)
@@ -139,7 +139,7 @@ private:
     void scanBounds();
     void scanData();
 
-    crossplot::Data m_data;
+    Crossplot::Data m_data;
     VolumeDimensions m_dims;
     Filter m_filter;
     Range<float> m_xRange;

@@ -1859,14 +1859,16 @@ void ProjectViewer::on_actionCrossplot_Grids_triggered()
      }
 
 
-    crossplot::Data data=crossplot::createFromGrids(grid1.get(), grid2.get(), horizon.get(), grida.get());
+    Crossplot::Data data=Crossplot::createFromGrids(grid1.get(), grid2.get(), horizon.get(), grida.get());
+    Crossplot crossplot;
+    crossplot.addDataset(data);
 
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);
 
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
-    viewer->setData(data); // add data after visible!!!! /// XXX QVECTOR!!!
+    viewer->setCrossplot(crossplot); // add data after visible!!!! /// XXX QVECTOR!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
     //viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
 
@@ -1917,7 +1919,7 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
     //float t1=volume1->bounds().ft();
     //float t2=volume2->bounds().lt();
 
-    crossplot::Data data;
+    Crossplot::Data data;
 
     const int MAX_POINTS=100000;    // maximum number of points to plot
     int numInputPoints=bounds.width()*bounds.height()*nt;
@@ -1937,20 +1939,23 @@ void ProjectViewer::on_actionCrossplot_Volumes_triggered()
     }
 
     if(plotAllPoints){
-        data=crossplot::createFromVolumes(volume1.get(), volume2.get(),
+        data=Crossplot::createFromVolumes(volume1.get(), volume2.get(),
                                           volumea.get() );
     }
     else{
-        data=crossplot::createFromVolumesReduced(volume1.get(), volume2.get(),
+        data=Crossplot::createFromVolumesReduced(volume1.get(), volume2.get(),
                                                  MAX_POINTS, volumea.get());
     }
+
+    Crossplot crossplot;
+    crossplot.addDataset(data);
 
     CrossplotViewer* viewer=new CrossplotViewer();
     viewer->setAttribute( Qt::WA_DeleteOnClose);
 
     viewer->setWindowTitle( QString("%1 vs %2").arg(dlg.xName(), dlg.yName() ) );
     viewer->show();
-    viewer->setData(data); // add data after visible!!!!
+    viewer->setCrossplot(crossplot); // add data after visible!!!!
     viewer->setAxisLabels(dlg.xName(), dlg.yName());
     viewer->setDetailedPointInformation( ( data.size() < MAX_POINTS ) );    // turn detailed info off if there are too many points
     viewer->setDispatcher(m_dispatcher);
@@ -3759,7 +3764,7 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
     QString log1unit;
     QString log2unit;
     QString log3unit;
-    crossplot::Data data;
+    Crossplot crossplot;
 
     QTransform xy_to_ilxl, ilxl_to_xy;
     m_project->geometry().computeTransforms(xy_to_ilxl, ilxl_to_xy);
@@ -3803,12 +3808,8 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
             }
         }
 
-        auto wdata=crossplot::createFromLogs( log1.get(), log2.get(), log3.get(), *wp, xy_to_ilxl);
-        for( auto & dpoint : wdata ){
-            dpoint.dataset=ds;
-        }
-        data.insert( std::end(data), std::begin(wdata), std::end(wdata));
-
+        auto wdata=Crossplot::createFromLogs( log1.get(), log2.get(), log3.get(), *wp, xy_to_ilxl);
+        crossplot.addDataset(wdata,well);
     }
 
     CrossplotViewer* viewer=new CrossplotViewer();
@@ -3818,7 +3819,7 @@ void ProjectViewer::crossplotLogs( const QStringList& wells ){
     viewer->show();
     //viewer->setInlinesSelectable(false);
     //viewer->setCrosslinesSelectable(false);
-    viewer->setData(data); // add data after visible!!!
+    viewer->setCrossplot(crossplot); // add data after visible!!!
     auto view=viewer->view();
     view->xAxis()->setName(log1name);
     view->xAxis()->setUnit(log1unit);

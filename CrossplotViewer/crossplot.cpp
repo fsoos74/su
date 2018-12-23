@@ -5,11 +5,31 @@
 #include<numeric>
 #include<iostream>
 
-namespace crossplot{
+
+void Crossplot::addDataset(const Data & data, QString name){
+    int ds=m_datasetNames.size();
+    if(name.isEmpty()) name=QString("dataset #%1").arg(ds);
+    m_datasetNames.push_back(name);
+    for( auto datapoint : data){
+        datapoint.dataset=ds;
+        m_data.push_back(datapoint);
+    }
+}
+
+void Crossplot::add(const Crossplot &other){
+    auto deltads=datasetCount();
+    for(int i=0; i<other.datasetCount(); i++){
+        m_datasetNames.push_back(other.datasetName(i));
+    }
+    for( auto datapoint : other.data()){
+        datapoint.dataset+=deltads;
+        m_data.push_back(datapoint);
+    }
+}
 
 
-
-Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>* horizon, Grid2D<float>* grida ){
+Crossplot::Data Crossplot::createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2,
+                                            Grid2D<float>* horizon, Grid2D<float>* grida ){
 
     Data data;
 
@@ -52,7 +72,7 @@ Data createFromGrids( Grid2D<float>* grid1, Grid2D<float>* grid2, Grid2D<float>*
 }
 
 
-Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2,
+Crossplot::Data Crossplot::createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2,
                         Grid3D<float>* volumea){
 
     Data data;
@@ -83,7 +103,7 @@ Data createFromVolumes( Grid3D<float>* volume1, Grid3D<float>* volume2,
     return data;
 }
 
-Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
+Crossplot::Data Crossplot::createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
                                size_t usedPoints, Grid3D<float>* volumea ){
 
     Data data;
@@ -128,7 +148,7 @@ Data createFromVolumesReduced( Grid3D<float>* volume1, Grid3D<float>* volume2,
 }
 
 
-Data createFromLogs( Log* log1, Log* log2, int iline, int xline ){
+Crossplot::Data Crossplot::createFromLogs( Log* log1, Log* log2, int iline, int xline ){
 
     Data data;
 
@@ -150,7 +170,7 @@ Data createFromLogs( Log* log1, Log* log2, int iline, int xline ){
 }
 
 
-Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline, int xline ){
+Crossplot::Data Crossplot::createFromLogs( Log* log1, Log* log2, Log* loga, int iline, int xline ){
 
     Data data;
 
@@ -175,7 +195,7 @@ Data createFromLogs( Log* log1, Log* log2, Log* loga, int iline, int xline ){
 }
 
 
-Data createFromLogs( Log* log1, Log* log2, Log* loga, const WellPath& wp, QTransform xy_to_ilxl){
+Crossplot::Data Crossplot::createFromLogs( Log* log1, Log* log2, Log* loga, const WellPath& wp, QTransform xy_to_ilxl){
 
     Data data;
 
@@ -205,6 +225,3 @@ Data createFromLogs( Log* log1, Log* log2, Log* loga, const WellPath& wp, QTrans
     return data;
 }
 
-
-
-}
