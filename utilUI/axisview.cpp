@@ -396,6 +396,7 @@ void AxisView::showZCursor(qreal z){    // z is value
 
 
 //adjust to aspect ratio by shrinking (new testing)
+// NEEDS TO HANDLE LOG, CLIP AT 0!!!, NO NEGATIVE VALUES ALLOWED!!!
 QRectF AxisView::adjustViewRect(const QRectF& r){
     if( !m_keepAspectRatio) return r;
     qreal x0=r.x();
@@ -762,6 +763,11 @@ void AxisView::leaveEvent(QEvent *){
     m_zAxis->setCursorPosition(Axis::NO_CURSOR);
 }
 
+std::ostream& operator<<(std::ostream& os, const QRectF& r){
+    os<<"RECT: x="<<r.x()<<" y="<<r.y()<<" w="<<r.width()<<" h="<<r.height();
+    return os;
+}
+
 void AxisView::resizeEvent(QResizeEvent *){
 
     m_xAxis->setViewPixelLength(viewport()->width());
@@ -769,12 +775,16 @@ void AxisView::resizeEvent(QResizeEvent *){
 
     if( scene() ){
         QRectF r=viewRectFromAxes();
+        std::cout<<"VR from axes: "<<r<<std::endl;
         r=adjustViewRect(r);
+        std::cout<<"adjusted: "<<r<<std::endl;
         fitInView(r, Qt::IgnoreAspectRatio  );
         auto x0=r.x();
         auto x1=x0+r.width();
         auto z0=r.y();
         auto z1=z0+r.height();
+        std::cout<<"x0="<<x0<<" x1="<<x1<<std::endl;
+        std::cout<<"z0="<<z0<<" z1="<<z1<<std::endl;
         m_xAxis->setViewRange(x0,x1);
         m_zAxis->setViewRange(z0,z1);
     }

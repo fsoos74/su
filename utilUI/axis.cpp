@@ -17,7 +17,7 @@ qreal Axis::toScene(const qreal& x)const{
     switch(m_type){
     case Type::Linear: return x;
         break;
-    case Type::Logarithmic: return std::log10(x);
+    case Type::Logarithmic: return (x>1.e-10) ? std::log10(x):-10;	// XXX
         break;
     }
     return x;

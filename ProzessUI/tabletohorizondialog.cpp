@@ -13,6 +13,7 @@ TableToHorizonDialog::TableToHorizonDialog(QWidget *parent) :
 
 
     connect( ui->leHorizon, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
+    connect(ui->cbTable, SIGNAL(currentIndexChanged(QString)),ui->leHorizon,SLOT(setText(QString)));
 
     updateOkButton();
 }

@@ -20,7 +20,8 @@ public:
         QVector3D color;
     };
 
-    typedef GLushort Index;
+    //typedef GLushort Index;
+    typedef GLuint Index;
 
     VIC();
     ~VIC();

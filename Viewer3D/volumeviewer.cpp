@@ -846,7 +846,7 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
 }
 
 */
-//* original
+/* original
 // project volume on horizon
 void VolumeViewer::horizonToView(const HorizonDef& hdef){
 
@@ -948,7 +948,82 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
 
     ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLE_STRIP) );
 }
-//*/
+*/
+
+// this works
+// use gl_triangles instead of triangle_strip
+// indices must be unsigned int not short because of possigble large number
+void VolumeViewer::horizonToView(const HorizonDef& hdef){
+
+    if(!hdef.horizon) return;
+    auto hrz = hdef.horizon.get();
+    Grid2DBounds hbounds=hrz->bounds();
+    auto range=valueRange(*hrz);
+
+    QVector3D nullColor{0,0,0};
+    QVector<VIC::Vertex> vertices;
+    Volume* volume=nullptr;
+    ColorTable* colorTable=nullptr;
+    if(m_volumes.contains(hdef.volume)){
+        volume=m_volumes.value(hdef.volume).get();
+        colorTable=m_colorTables.value(hdef.volume, nullptr);
+        if(!colorTable) volume=nullptr;
+    }
+
+    for( int i=hbounds.i1(); i<=hbounds.i2(); i++){
+
+        for( int j=hbounds.j1(); j<=hbounds.j2(); j++){
+
+            float tms=(*hrz)(i, j);  // horizon is in millis
+            QPointF xy=ilxl_to_xy.map(QPoint(i, j));
+
+            if(tms!=hrz->NULL_VALUE){
+                qreal t = 0.001*(hdef.delay+tms);        // convert time to seconds
+                QColor c;
+                if(volume){
+                    float value = volume->value(i, j, t);
+                    c=colorTable->map(value);
+                }
+                else{
+                    c=Qt::gray;//hdef.color;
+                    // scale color according to relative depth, deeper->darker
+                    float x=1.-0.5*(tms-range.first)/(range.second-range.first);
+                    c=QColor(x*c.red(), x*c.green(), x*c.blue());
+                }
+                float red=c.redF();
+                float green=c.greenF();
+                float blue=c.blueF();
+                QVector3D color = QVector3D{ red, green , blue };
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
+            }
+            else{
+                vertices.append( VIC::Vertex{ QVector3D( xy.x(), 0, xy.y() ), nullColor } );
+            }
+        }
+    }
+
+    QVector<VIC::Index> indices;
+    for( int i=hbounds.i1(); i<hbounds.i2(); i++){
+
+        for( int j=hbounds.j1(); j<hbounds.j2(); j++){
+
+            int index=(i-hbounds.i1())*hbounds.width()+j-hbounds.j1();
+            if((*hrz)(i,j)!=hrz->NULL_VALUE && (*hrz)(i,j+1)!=hrz->NULL_VALUE && (*hrz)(i+1,j)!=hrz->NULL_VALUE){
+                indices.append(index);
+                indices.append(index+1);
+                indices.append(index+hbounds.width());
+            }
+            if((*hrz)(i,j+1)!=hrz->NULL_VALUE && (*hrz)(i+1,j)!=hrz->NULL_VALUE && (*hrz)(i+1,j+1)!=hrz->NULL_VALUE){
+                indices.append(index+1);
+                indices.append(index+hbounds.width());
+                indices.append(index+hbounds.width()+1);
+            }
+        }
+    }
+
+    ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_TRIANGLES) );
+}
+
 
 void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qreal SIZE){
 

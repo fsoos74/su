@@ -102,7 +102,8 @@ void RenderEngine::draw(QOpenGLShaderProgram *program, VIC* vic)
     program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VIC::Vertex));       // was 3 instead 4
 
 
-    glDrawElements( vic->mode(), vic->indexCount(), GL_UNSIGNED_SHORT, 0);
+    //glDrawElements( vic->mode(), vic->indexCount(), GL_UNSIGNED_SHORT, 0);
+    glDrawElements( vic->mode(), vic->indexCount(), GL_UNSIGNED_INT, 0);
 
     vic->indexBuffer().release();
     vic->arrayBuffer().release();

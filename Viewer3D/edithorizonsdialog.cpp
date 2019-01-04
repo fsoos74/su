@@ -186,7 +186,7 @@ void EditHorizonsDialog::on_pbAdd_clicked()
             return;
         }
 
-        HorizonDef def{ grid, QString(""), 0 };
+        HorizonDef def{ grid, "", 0, Qt::gray };
 
         m_horizonModel->addItem(gridName, def);
 

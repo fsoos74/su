@@ -7,18 +7,19 @@
 #include<QColor>
 
 
-// all members have default constructors
 struct HorizonDef{
     std::shared_ptr<Grid2D<float>> horizon;
-    QString volume;
+    QString volume;								// used for color mapping if set
     int delay;                                  // milliseconds
+    QColor color;					    // used when no volumes specified
 };
 
 inline bool operator==(const HorizonDef& h1, const HorizonDef& h2){
 
     return (h1.horizon == h2.horizon ) &&
             (h1.volume == h2.volume) &&
-            (h1.delay == h2.delay);
+            (h1.delay == h2.delay) &&
+            (h1.color == h2.color);
 }
 
 
