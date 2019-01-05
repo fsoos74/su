@@ -15,6 +15,7 @@ CropDatasetDialog::CropDatasetDialog(QWidget *parent) :
     ui->leMaxOffset->setValidator(validator);
 
     connect( ui->cbInputDataset, SIGNAL(currentTextChanged(QString)), this, SLOT(updateOkButton()) );
+    connect( ui->cbInputDataset, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateRanges(QString)) );
     connect( ui->leOutputDataset, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->sbMinIline, SIGNAL(valueChanged(int)), this, SLOT(updateOkButton()) );
     connect( ui->sbMaxIline, SIGNAL(valueChanged(int)), this, SLOT(updateOkButton()) );
@@ -29,6 +30,9 @@ CropDatasetDialog::~CropDatasetDialog()
     delete ui;
 }
 
+void CropDatasetDialog::setProject(AVOProject * p){
+    m_project=p;
+}
 
 void CropDatasetDialog::setInputDatasets(const QStringList & l){
 
@@ -57,6 +61,8 @@ void CropDatasetDialog::setMSecRange(int min, int max){
 
     ui->sbMinMSec->setRange(min,max);
     ui->sbMaxMSec->setRange(min,max);
+    ui->sbMinMSec->setValue(min);
+    ui->sbMaxMSec->setValue(max);
     ui->sbMinMSec->setValue(min);
     ui->sbMaxMSec->setValue(max);
 }
@@ -91,6 +97,15 @@ QMap<QString,QString> CropDatasetDialog::params(){
     p.insert( QString("max-offset"), QString::number(maxOffset));
 
     return p;
+}
+
+void CropDatasetDialog::updateRanges(QString iname){
+    if(!m_project) return;
+    if(!m_project->existsSeismicDataset(iname)) return;
+    auto dsinfo=m_project->getSeismicDatasetInfo(iname);
+    int ft=1000*dsinfo.ft();	// millis
+    int lt=ft+1000*dsinfo.dt()*dsinfo.nt();	// millis
+    setMSecRange(ft,lt);
 }
 
 void CropDatasetDialog::updateOkButton(){

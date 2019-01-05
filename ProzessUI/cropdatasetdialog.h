@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QMap>
-
+#include <avoproject.h>
 #include "processparametersdialog.h"
 
 namespace Ui {
@@ -22,6 +22,7 @@ public:
 
 public slots:
 
+    void setProject(AVOProject*);
     void setInputDatasets( const QStringList&);
     void setInlineRange(int min, int max);
     void setCrosslineRange(int min, int max);
@@ -30,10 +31,12 @@ public slots:
 
 
 private slots:
+    void updateRanges(QString);
     void updateOkButton();
 
 private:
     Ui::CropDatasetDialog *ui;
+    AVOProject* m_project=nullptr;
 };
 
 #endif // CropDatasetDialog_H

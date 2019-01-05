@@ -45,7 +45,7 @@ ProjectProcess::ResultCode CropDatasetProcess::init( const QMap<QString, QString
 ProjectProcess::ResultCode CropDatasetProcess::run(){
 
     int odtms = 1000 * m_reader->info().dt();
-    int ons = (m_maxMSec - m_minMSec) / odtms + 1;
+    int ons = (m_maxMSec - m_minMSec) / odtms;  // dont add 1 because cropping trace shorter than max!!!
 
     SeismicDatasetInfo dsinfo = project()->genericDatasetInfo( m_outputName,
                                                                m_reader->info().dimensions(), m_reader->info().domain(), m_reader->info().mode(),
@@ -61,7 +61,7 @@ ProjectProcess::ResultCode CropDatasetProcess::run(){
     while( m_reader->good() ){
 
         seismic::Trace trace=m_reader->readTrace();
-        const seismic::Header& header=trace.header();
+        seismic::Header header=trace.header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
         float offset=header.at("offset").floatValue();
@@ -73,6 +73,7 @@ ProjectProcess::ResultCode CropDatasetProcess::run(){
 
             auto sam=trace.samples();
             seismic::Trace::Samples osam(ons);
+            header["ns"]=seismic::HeaderValue::makeUIntValue(ons);
             auto ifirst=trace.time_to_index(0.001*m_minMSec);
             auto ilast=trace.time_to_index(0.001*m_maxMSec);
             std::copy(&sam[ifirst], &sam[ilast],&osam[0]);

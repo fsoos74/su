@@ -469,6 +469,7 @@ void GatherView::updateTimeRange(){
             }
 
         }
+
     }
 
     m_ft=ft;

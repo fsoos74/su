@@ -891,6 +891,7 @@ void ProjectViewer::on_actionCrop_Dataset_triggered()
     Q_ASSERT( m_project );
 
     CropDatasetDialog dlg;
+    dlg.setProject(m_project);
     dlg.setInputDatasets( m_project->seismicDatasetList());
     dlg.setReservedDatasets( m_project->seismicDatasetList() );
 

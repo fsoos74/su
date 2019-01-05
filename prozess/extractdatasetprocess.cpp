@@ -67,7 +67,7 @@ ProjectProcess::ResultCode ExtractDatasetProcess::run(){
 
     thdr["delrt"]=seismic::HeaderValue::makeIntValue(1000000*bounds.sampleToTime(k1));
     thdr["ns"]=seismic::HeaderValue::makeUIntValue(k2-k1+1);
-    thdr["dt"]=seismic::HeaderValue::makeUIntValue(1000*bounds.dt());
+    thdr["dt"]=seismic::HeaderValue::makeUIntValue(1000000*bounds.dt());	// !!!us
     thdr["scalco"]=seismic::HeaderValue::makeIntValue(SCALCO);
     thdr["offset"]=seismic::HeaderValue::makeFloatValue(0); // MUST BE HERE: this is used for creating index file
 
