@@ -138,13 +138,15 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionEdit_Slices"/>
+   <addaction name="actionEdit_Horizons"/>
+   <addaction name="actionSetup_Wells"/>
+   <addaction name="separator"/>
    <addaction name="action_Volume_Colortable"/>
    <addaction name="actionVolume_Range"/>
    <addaction name="actionHistogram"/>
    <addaction name="separator"/>
    <addaction name="separator"/>
-   <addaction name="action_Receive_CDPs"/>
-   <addaction name="action_Dispatch_CDPs"/>
   </widget>
   <widget class="QToolBar" name="toolBar_View">
    <property name="windowTitle">
@@ -163,6 +165,9 @@
    <addaction name="action_Top"/>
    <addaction name="action_Bottom"/>
    <addaction name="separator"/>
+   <addaction name="separator"/>
+   <addaction name="action_Receive_CDPs"/>
+   <addaction name="action_Dispatch_CDPs"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -389,6 +394,10 @@
    <property name="enabled">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/setup-slices-32x32.png</normaloff>:/icons/images/setup-slices-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Setup &amp;Slices</string>
    </property>
@@ -397,6 +406,10 @@
    </property>
   </action>
   <action name="actionEdit_Horizons">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/setup-horizons-32x32.png</normaloff>:/icons/images/setup-horizons-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Setup &amp;Horizons</string>
    </property>
@@ -485,6 +498,10 @@
    </property>
   </action>
   <action name="actionSetup_Wells">
+   <property name="icon">
+    <iconset resource="../ProjectViewer/icons.qrc">
+     <normaloff>:/icons/images/setup-wells-32x32.png</normaloff>:/icons/images/setup-wells-32x32.png</iconset>
+   </property>
    <property name="text">
     <string>Setup &amp;Wells</string>
    </property>

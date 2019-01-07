@@ -75,57 +75,30 @@ private slots:
     void refreshView();
 
     void on_action_Volume_Colortable_triggered();
-
     void on_actionVolume_Range_triggered();
-
     void on_action_Front_triggered();
-
     void on_action_Back_triggered();
-
     void on_action_Left_triggered();
-
     void on_action_Right_triggered();
-
     void on_action_Top_triggered();
-
     void on_action_Bottom_triggered();
-
     void on_actionSet_Point_Size_triggered();
-
     void on_actionHistogram_triggered();
-
     void on_actionNavigation_Dialog_triggered();
-
     void on_action_Background_Color_triggered();
-
     void on_actionEdit_Slices_triggered();
-
-
     void on_actionEdit_Horizons_triggered();
-
     void on_action_Open_Volume_triggered();
-
     void on_actionReset_Highlighted_Points_triggered();
-
     void on_actionLimit_Highlighted_Points_triggered();
-
     void on_actionSet_Point_Color_triggered();
-
     void on_actionSet_Compass_Size_triggered();
-
     void on_actionSet_Compass_Color_triggered();
-
     void on_actionSet_Outline_Color_triggered();
-
     void on_actionSet_Label_size_triggered();
-
     void on_actionSet_Label_Color_triggered();
-
-
     void on_actionSet_Dimensions_triggered();
-
     void on_action_Close_Volume_triggered();
-
     void on_actionSetup_Wells_triggered();
 
 protected:
@@ -139,7 +112,6 @@ private:
     void populateWindowMenu();
 
     void directionIndicatorPlanesToView( Grid3DBounds bounds);
-
     void outlineToView( VolumeDimensions, QColor );
     void sliceToView( const SliceDef& );
     void inlineSliceToView( const SliceDef& );
@@ -152,7 +124,6 @@ private:
     void textToView( QVector3D pos1, QVector3D pos2, QString text,  Qt::Alignment valign=Qt::AlignVCenter );
     void initialVolumeDisplay();
     void defaultPositionAndScale();
-
     QString selectVolume();
 
     Ui::VolumeViewer *ui;

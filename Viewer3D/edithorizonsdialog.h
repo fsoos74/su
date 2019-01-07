@@ -42,6 +42,8 @@ private slots:
 
     void on_cbHorizon_currentIndexChanged(const QString &arg1);
 
+    void on_cbColor_clicked();
+
 private:
 
     void horizonToControls( QString, HorizonDef );

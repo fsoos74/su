@@ -955,19 +955,22 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
 // indices must be unsigned int not short because of possigble large number
 void VolumeViewer::horizonToView(const HorizonDef& hdef){
 
-    if(!hdef.horizon) return;
-    auto hrz = hdef.horizon.get();
+    if(!hdef.horizon()) return;
+    auto hrz = hdef.horizon().get();
     Grid2DBounds hbounds=hrz->bounds();
     auto range=valueRange(*hrz);
 
+    auto style=hdef.colorStyle();
     QVector3D nullColor{0,0,0};
     QVector<VIC::Vertex> vertices;
     Volume* volume=nullptr;
     ColorTable* colorTable=nullptr;
-    if(m_volumes.contains(hdef.volume)){
-        volume=m_volumes.value(hdef.volume).get();
-        colorTable=m_colorTables.value(hdef.volume, nullptr);
-        if(!colorTable) volume=nullptr;
+    if(style==HorizonDef::ColorStyle::Volume){
+        if(m_volumes.contains(hdef.volume())){
+            volume=m_volumes.value(hdef.volume()).get();
+            colorTable=m_colorTables.value(hdef.volume(), nullptr);
+        }
+        if( !colorTable || !volume) style=HorizonDef::ColorStyle::Fixed;
     }
 
     for( int i=hbounds.i1(); i<=hbounds.i2(); i++){
@@ -978,17 +981,23 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
             QPointF xy=ilxl_to_xy.map(QPoint(i, j));
 
             if(tms!=hrz->NULL_VALUE){
-                qreal t = 0.001*(hdef.delay+tms);        // convert time to seconds
+                qreal t = 0.001*(hdef.delay()+tms);        // convert time to seconds
                 QColor c;
-                if(volume){
+                switch(style){
+                case HorizonDef::ColorStyle::Fixed:
+                    c=hdef.color();
+                    break;
+                case HorizonDef::ColorStyle::Gradient:{
+                    c=hdef.color();
+                    float x=1.-hdef.colorGradient()*(tms-range.first)/(range.second-range.first);
+                    c=QColor(x*c.red(), x*c.green(), x*c.blue());
+                    break;
+                }
+                case HorizonDef::ColorStyle::Volume:{
                     float value = volume->value(i, j, t);
                     c=colorTable->map(value);
+                    break;
                 }
-                else{
-                    c=Qt::gray;//hdef.color;
-                    // scale color according to relative depth, deeper->darker
-                    float x=1.-0.5*(tms-range.first)/(range.second-range.first);
-                    c=QColor(x*c.red(), x*c.green(), x*c.blue());
                 }
                 float red=c.redF();
                 float green=c.greenF();

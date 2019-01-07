@@ -87,6 +87,9 @@
         <file>../images/last-icon-32x32.png</file>
         <file>../images/next-icon-32x32.png</file>
         <file>../images/randomline-icon-32x32.png</file>
+        <file>../images/setup-wells-32x32.png</file>
+        <file>../images/setup-slices-32x32.png</file>
+        <file>../images/setup-horizons-32x32.png</file>
     </qresource>
     <qresource prefix="/">
         <file>../images/current-point-icon-32x32.png</file>

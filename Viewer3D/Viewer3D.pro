@@ -35,7 +35,8 @@ SOURCES += \
     edithorizonsdialog.cpp \
     slicemodel.cpp \
     horizonmodel.cpp \
-    overlaypercentagedialog.cpp
+    overlaypercentagedialog.cpp \
+    horizondef.cpp
 
 HEADERS  += \
     viewwidget.h \

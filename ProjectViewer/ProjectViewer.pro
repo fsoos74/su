@@ -344,5 +344,8 @@ DISTFILES += \
     ../images/plus_16x16.png \
     ../images/add-by-well-32x32.png \
     ../images/add-by-log-32x32.png \
-    ../images/pick-outline-32x32.png
+    ../images/pick-outline-32x32.png \
+    ../images/setup-wells-32x32.png \
+    ../images/setup-slices-32x32.png \
+    ../images/setup-horizons-32x32.png
 
