@@ -31,6 +31,7 @@ VolumeDimensions toVolumeDimensions(Grid3DBounds bounds){
 VolumeViewer::VolumeViewer(QWidget *parent) :
     BaseViewer(parent),
     ui(new Ui::VolumeViewer),
+    m_volumeModel(new VolumeModel(this)),
     m_horizonModel(new HorizonModel(this)),
     m_sliceModel(new SliceModel(this))
 {
@@ -46,6 +47,7 @@ VolumeViewer::VolumeViewer(QWidget *parent) :
     ui->openGLWidget->setTieXZScales( ui->actionTie_Scales->isChecked());
     connect( ui->actionTie_Scales, SIGNAL(toggled(bool)), ui->openGLWidget, SLOT(setTieXZScales(bool)) );
 
+    connect( m_volumeModel, SIGNAL(changed()), this, SLOT(refreshView()) );
     connect( m_horizonModel, SIGNAL(changed()), this, SLOT(refreshView()) );
     connect( m_sliceModel, SIGNAL(changed()), this, SLOT(refreshView()) );
 
@@ -143,7 +145,7 @@ void VolumeViewer::setDimensions(VolumeDimensions dim){
 
 void VolumeViewer::addVolume(QString name, std::shared_ptr<Volume > volume){
 
-    if( m_volumes.contains(name)) return;   // no dupes
+    if( m_volumeModel->contains(name)) return;   // no dupes
 
     if( name.isEmpty() || !volume ) return; // check key and volume are valid
 
@@ -170,10 +172,9 @@ void VolumeViewer::addVolume(QString name, std::shared_ptr<Volume > volume){
     volumeColorBarDock->setWidget(volumeColorBarWidget);
     volumeColorBarWidget->setColorTable(ct);
 
-    m_colorTables.insert(name, ct);
+    m_volumeModel->addItem(name, VolumeDef(volume, ct));
     m_volumeColorBarDocks.insert(name, volumeColorBarDock);
     m_volumeColorBarWidgets.insert(name, volumeColorBarWidget);
-    m_volumes.insert(name, volume);
 
     addDockWidget(Qt::RightDockWidgetArea, volumeColorBarDock);
     volumeColorBarDock->close();
@@ -182,15 +183,15 @@ void VolumeViewer::addVolume(QString name, std::shared_ptr<Volume > volume){
     ui->menu_Window->addAction( volumeColorBarDock->toggleViewAction());
 
     // FIRST VOLUME CREATE DEFAULT SLICES
-    if( m_volumes.size()==1) initialVolumeDisplay();
-
-    emit volumeListChanged(volumeList());
+    if( m_volumeModel->size()==1) initialVolumeDisplay();
 }
 
 
 void VolumeViewer::removeVolume(QString name){
 
     if( name.isEmpty() ) return;
+    if( !m_volumeModel->contains(name)) return;
+    auto vdef=m_volumeModel->item(name);
 
     // remove colorbar from window menu
     QDockWidget* dock=m_volumeColorBarDocks.value( name, nullptr );
@@ -208,17 +209,10 @@ void VolumeViewer::removeVolume(QString name){
     }
     m_displayRangeDialogs.remove(name);
 
-    ColorTable* ct=m_colorTables.value(name, nullptr);
-    if( ct ){
-        delete ct;
-    }
-    m_colorTables.remove(name);
+    m_volumeModel->removeItem(name);
+    delete vdef.colorTable();
 
-    m_volumes.remove(name);
-
-    refreshView();
-
-    emit volumeListChanged(volumeList());
+    //refreshView();
 }
 
 
@@ -624,17 +618,19 @@ QColor mix(QColor color1, QColor color2, qreal r){
 
 void VolumeViewer::inlineSliceToView( const SliceDef& def){
 
-    std::shared_ptr<Volume> pvolume=m_volumes.value(def.volume);
+    if( !m_volumeModel->contains(def.volume)) return;
+    auto vdef=m_volumeModel->item(def.volume);
+    auto pvolume=vdef.volume();
     if( !pvolume) return;
+    auto colorTable=vdef.colorTable();
+    if(!colorTable) return;
+
     Volume& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
     VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
     int iline=def.value;
     if( iline<dims.inline1 || iline>dims.inline2 ) return;
-
-    ColorTable* colorTable=m_colorTables.value(def.volume, nullptr);
-    if(!colorTable) return;
 
     int sample1=bounds.timeToSample(0.001*dims.msec1);
     int sample2=bounds.timeToSample(0.001*dims.msec2);
@@ -669,17 +665,19 @@ void VolumeViewer::inlineSliceToView( const SliceDef& def){
 
 void VolumeViewer::crosslineSliceToView(  const SliceDef& def){
 
-    std::shared_ptr<Volume> pvolume=m_volumes.value(def.volume);
+    if( !m_volumeModel->contains(def.volume)) return;
+    auto vdef=m_volumeModel->item(def.volume);
+    auto pvolume=vdef.volume();
     if( !pvolume) return;
-    Volume& volume=*pvolume;
+    auto colorTable=vdef.colorTable();
+    if(!colorTable) return;
+
+    auto volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
     VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
 
     int xline=def.value;
     if( xline<dims.crossline1 || xline>dims.crossline2) return;
-
-    ColorTable* colorTable=m_colorTables.value(def.volume, nullptr);
-    if(!colorTable) return;
 
     int sample1=bounds.timeToSample(0.001*dims.msec1);
     int sample2=bounds.timeToSample(0.001*dims.msec2);
@@ -717,8 +715,13 @@ void VolumeViewer::crosslineSliceToView(  const SliceDef& def){
 
 void VolumeViewer::timeSliceToView( const SliceDef& def ){
 
-    std::shared_ptr<Volume> pvolume=m_volumes.value(def.volume);
+    if( !m_volumeModel->contains(def.volume)) return;
+    auto vdef=m_volumeModel->item(def.volume);
+    auto pvolume=vdef.volume();
     if( !pvolume) return;
+    auto colorTable=vdef.colorTable();
+    if(!colorTable) return;
+
     Volume& volume=*pvolume;
     Grid3DBounds bounds=volume.bounds();
     VolumeDimensions dims=toVolumeDimensions(bounds) & m_dimensions;
@@ -726,9 +729,6 @@ void VolumeViewer::timeSliceToView( const SliceDef& def ){
     int msec=def.value;
     qreal time=0.001*msec;
     if( msec<dims.msec1 || msec>dims.msec2  ) return;
-
-    ColorTable* colorTable=m_colorTables.value(def.volume, nullptr);
-    if(!colorTable) return;
 
     QImage img(dims.inlineCount(), dims.crosslineCount(), QImage::Format_RGBA8888); //QImage::Format_RGB32 );
     for( int il=dims.inline1; il<=dims.inline2; il++){
@@ -967,9 +967,10 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
     Volume* volume=nullptr;
     ColorTable* colorTable=nullptr;
     if(style==HorizonDef::ColorStyle::Volume){
-        if(m_volumes.contains(hdef.volume())){
-            volume=m_volumes.value(hdef.volume()).get();
-            colorTable=m_colorTables.value(hdef.volume(), nullptr);
+        if(m_volumeModel->contains(hdef.volume())){
+            auto vdef=m_volumeModel->item(hdef.volume());
+            volume=vdef.volume().get();
+            colorTable=vdef.colorTable();
         }
         if( !colorTable || !volume) style=HorizonDef::ColorStyle::Fixed;
     }
@@ -1230,9 +1231,9 @@ void VolumeViewer::initialVolumeDisplay(){
 
     m_sliceModel->clear();
 
-    if( m_volumes.empty()) return;
-    QString name=m_volumes.keys().first();
-    Grid3DBounds bounds=m_volumes.value(name)->bounds();
+    if( m_volumeModel->size()<1) return;
+    QString name=m_volumeModel->names().first();
+    Grid3DBounds bounds=m_volumeModel->item(name).volume()->bounds();
 
     if( !m_dimensions.isValid()){
         setDimensions( VolumeDimensions(bounds.i1(), bounds.i2(), bounds.j1(), bounds.j2(),
@@ -1260,14 +1261,15 @@ void VolumeViewer::initialVolumeDisplay(){
 
 QString VolumeViewer::selectVolume(){
 
-    if( m_volumes.empty()) return QString();
+    if( m_volumeModel->size()<1) return QString();
 
-    if( m_volumes.size()==1){
-        return m_volumes.keys().first();
+    if( m_volumeModel->size()==1){
+        return m_volumeModel->names().first();
     }
     else{
         bool ok=false;
-        QString volume=QInputDialog::getItem(this, tr("Select Volume"), tr("Volume"), m_volumes.keys(), 0, false, &ok);
+        QString volume=QInputDialog::getItem(this, tr("Select Volume"),
+                                             tr("Volume:"), m_volumeModel->names(), 0, false, &ok);
         if( volume.isNull() || !ok ) return QString();
         else return volume;
     }
@@ -1277,16 +1279,16 @@ QString VolumeViewer::selectVolume(){
 
 void VolumeViewer::on_action_Volume_Colortable_triggered()
 {
-    QString volume=selectVolume();
-    if( volume.isEmpty() ) return;
-
-    ColorTable* colorTable=m_colorTables.value(volume, nullptr);
+    QString name=selectVolume();
+    if( name.isEmpty() ) return;
+    auto vdef=m_volumeModel->item(name);
+    ColorTable* colorTable=vdef.colorTable();
     if(!colorTable) return;
 
     QVector<QRgb> oldColors=colorTable->colors();
 
     ColorTableDialog colorTableDialog( oldColors );
-    colorTableDialog.setWindowTitle(QString("Colortable %1").arg(volume));
+    colorTableDialog.setWindowTitle(QString("Colortable %1").arg(name));
 
     if( colorTableDialog.exec()==QDialog::Accepted ){
         colorTable->setColors( colorTableDialog.colors());
@@ -1298,17 +1300,15 @@ void VolumeViewer::on_action_Volume_Colortable_triggered()
 
 void VolumeViewer::on_actionVolume_Range_triggered()
 {
-    QString volume=selectVolume();
-    if( volume.isEmpty() ) return;
-
-    std::shared_ptr<Volume> pvolume=m_volumes.value(volume, nullptr);
+    QString name=selectVolume();
+    if( name.isEmpty() ) return;
+    auto vdef=m_volumeModel->item(name);
+    ColorTable* colorTable=vdef.colorTable();
+    if(!colorTable) return;
+    auto pvolume=vdef.volume();
     if(!pvolume) return;
 
-    ColorTable* colorTable=m_colorTables.value(volume, nullptr);
-    if(!colorTable) return;
-
-    HistogramRangeSelectionDialog* displayRangeDialog=m_displayRangeDialogs.value(volume, nullptr);
-
+    auto displayRangeDialog=m_displayRangeDialogs.value(name, nullptr);
     if(!displayRangeDialog){
 
         displayRangeDialog=new HistogramRangeSelectionDialog(this);
@@ -1316,10 +1316,8 @@ void VolumeViewer::on_actionVolume_Range_triggered()
                                                           pvolume->NULL_VALUE, 100 ));
         displayRangeDialog->setRange( pvolume->valueRange());
         displayRangeDialog->setColorTable( colorTable );   // all updating through colortable
-
-        displayRangeDialog->setWindowTitle(QString("Range %1").arg(volume) );
-
-        m_displayRangeDialogs.insert(volume, displayRangeDialog );
+        displayRangeDialog->setWindowTitle(QString("Range %1").arg(name) );
+        m_displayRangeDialogs.insert(name, displayRangeDialog );
     }
 
 
@@ -1434,15 +1432,15 @@ void VolumeViewer::on_action_Navigation_Dialog_triggered()
 void VolumeViewer::on_actionHistogram_triggered()
 {
 
-    QString volume=selectVolume();
-    if( volume.isEmpty() ) return;
+    QString name=selectVolume();
+    if( name.isEmpty() ) return;
 
-    std::shared_ptr<Volume> pvolume=m_volumes.value(volume, nullptr);
+    if(!m_volumeModel->contains(name))return;
+    auto vdef=m_volumeModel->item(name);
+    auto pvolume=vdef.volume();
     if(!pvolume) return;
-
-    ColorTable* colorTable=m_colorTables.value(volume, nullptr);
+    ColorTable* colorTable=vdef.colorTable();
     if(!colorTable) return;
-
 
     QVector<double> data;
     for( auto it=pvolume->values().cbegin(); it!=pvolume->values().cend(); ++it){
@@ -1453,7 +1451,7 @@ void VolumeViewer::on_actionHistogram_triggered()
     HistogramDialog* viewer=new HistogramDialog(this);      // need to make this a parent in order to allow qt to delete this when this is deleted
                                                             // this is important because otherwise the colortable will be deleted before this! CRASH!!!
     viewer->setData( data );
-    viewer->setWindowTitle(QString("Histogram of %1").arg(volume ) );
+    viewer->setWindowTitle(QString("Histogram of %1").arg(name) );
     viewer->setColorTable(colorTable);        // the colortable must have same parent as viewer, maybe used shared_ptr!!!
     viewer->show();
 }
@@ -1498,14 +1496,14 @@ void VolumeViewer::on_action_Background_Color_triggered()
 
 void VolumeViewer::on_actionEdit_Slices_triggered()
 {
-    if( m_volumes.empty()) return;
+    if( m_volumeModel->size()<1) return;
 
     if( !editSlicesDialog ){
 
         editSlicesDialog = new EditSlicesDialog( this );
 
         editSlicesDialog->setDimensions(m_dimensions);
-        editSlicesDialog->setVolumes(m_volumes.keys());
+        editSlicesDialog->setVolumes(m_volumeModel->names());
         editSlicesDialog->setWindowTitle(tr("Edit Slices"));
 
         editSlicesDialog->setSliceModel(m_sliceModel);
@@ -1523,7 +1521,7 @@ void VolumeViewer::on_actionEdit_Horizons_triggered()
     if( !editHorizonsDialog ){
 
         editHorizonsDialog=new EditHorizonsDialog( this );
-        editHorizonsDialog->setVolumes(m_volumes.keys());
+        editHorizonsDialog->setVolumes(m_volumeModel->names());
         editHorizonsDialog->setHorizonModel(m_horizonModel);    // dialog and manager have this as parent
         editHorizonsDialog->setProject( m_project );
         editHorizonsDialog->setWindowTitle(tr("Edit Horizons"));
@@ -1532,6 +1530,30 @@ void VolumeViewer::on_actionEdit_Horizons_triggered()
     }
 
     editHorizonsDialog->show();
+}
+
+void VolumeViewer::on_actionSetup_Volumes_triggered()
+{
+    auto avail=m_project->volumeList();
+    auto current=m_volumeModel->names();
+    bool ok=false;
+    auto selected =MultiItemSelectionDialog::getItems(this, tr("Setup Volumes"), tr("Select Volumes:"),
+                    avail, &ok, current);
+    if(!ok) return;
+
+    // first step unload discarded volumes
+    for( auto name : current){
+        if( ! selected.contains(name)) removeVolume(name);
+    }
+
+    // load new volumes
+    for( auto name : selected){
+        if( m_volumeModel->contains(name)) continue;		// already loaded
+        auto volume=m_project->loadVolume(name, true);
+        if(volume){
+            addVolume(name, volume);
+        }
+    }
 }
 
 void VolumeViewer::on_actionSetup_Wells_triggered()
@@ -1679,5 +1701,6 @@ void VolumeViewer::on_action_Close_Volume_triggered()
 
     removeVolume(volume);
 }
+
 
 

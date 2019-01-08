@@ -13,7 +13,6 @@
 #include<wellpath.h>
 #include<colortable.h>
 #include<selectionpoint.h>
-#include <slicedef.h>
 #include <navigation3dcontrols.h>
 #include <colorbarwidget.h>
 #include <volumenavigationdialog.h>
@@ -21,7 +20,11 @@
 #include<histogramrangeselectiondialog.h>
 #include <editslicesdialog.h>
 #include <edithorizonsdialog.h>
+#include <volumedef.h>
+#include <volumemodel.h>
+#include <horizondef.h>
 #include <horizonmodel.h>
+#include <slicedef.h>
 #include <slicemodel.h>
 #include <volumedimensions.h>
 
@@ -38,37 +41,24 @@ public:
     explicit VolumeViewer(QWidget *parent = 0);
     ~VolumeViewer();
 
-    QStringList volumeList(){
-        return m_volumes.keys();
-    }
-
 public slots:
 
     void setProject( AVOProject* );
-
     void clear();
-
     void setDimensions(VolumeDimensions);
-
     void addVolume( QString, std::shared_ptr<Volume >);
     void removeVolume( QString );
-
     void setHighlightedPoints(QVector<SelectionPoint> rpoints);
     void setHighlightedPointColor(QColor);
     void setHighlightedPointSize(qreal);
-
     void setCompassColor( QColor );
     void setCompassSize( qreal );
-
     void setLabelColor( QColor );
     void setLabelSize( qreal );
-
     void setOutlineColor( QColor );
 
 signals:
-
     void dimensionsChanged( VolumeDimensions );
-    void volumeListChanged( QStringList );
 
 private slots:
 
@@ -100,6 +90,7 @@ private slots:
     void on_actionSet_Dimensions_triggered();
     void on_action_Close_Volume_triggered();
     void on_actionSetup_Wells_triggered();
+    void on_actionSetup_Volumes_triggered();
 
 protected:
 
@@ -145,12 +136,10 @@ private:
     QTransform ilxl_to_xy, xy_to_ilxl;
 
     VolumeDimensions m_dimensions;
-
-    QMap<QString, std::shared_ptr<Volume > > m_volumes;
-    QMap<QString, ColorTable* > m_colorTables;
-    QMap<QString, std::shared_ptr<WellPath> > m_wellPaths;
+    VolumeModel* m_volumeModel;
     HorizonModel* m_horizonModel;
     SliceModel* m_sliceModel;
+    QMap<QString, std::shared_ptr<WellPath> > m_wellPaths;
 
     QVector<SelectionPoint> m_highlightedPoints;
     int m_maxHighlightedPoints=1000;

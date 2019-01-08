@@ -36,16 +36,6 @@
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-    <addaction name="action_Open_Volume"/>
-    <addaction name="separator"/>
-    <addaction name="action_Close_Volume"/>
-    <addaction name="separator"/>
-    <addaction name="actionE_xit"/>
-   </widget>
    <widget class="QMenu" name="menu_Options">
     <property name="title">
      <string>Optio&amp;ns</string>
@@ -79,6 +69,7 @@
     <property name="title">
      <string>&amp;Data</string>
     </property>
+    <addaction name="actionSetup_Volumes"/>
     <addaction name="actionEdit_Slices"/>
     <addaction name="actionEdit_Horizons"/>
     <addaction name="actionSetup_Wells"/>
@@ -114,9 +105,8 @@
     </property>
     <addaction name="actionNavigation_Dialog"/>
    </widget>
-   <addaction name="menu_File"/>
-   <addaction name="menu_Options"/>
    <addaction name="menu_Data"/>
+   <addaction name="menu_Options"/>
    <addaction name="menu_View"/>
    <addaction name="menu_Window"/>
    <addaction name="menu_Broadcast"/>
@@ -507,6 +497,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionSetup_Volumes">
+   <property name="text">
+    <string>Setup Volumes</string>
    </property>
   </action>
  </widget>

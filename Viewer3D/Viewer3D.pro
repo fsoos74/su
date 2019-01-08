@@ -36,7 +36,9 @@ SOURCES += \
     slicemodel.cpp \
     horizonmodel.cpp \
     overlaypercentagedialog.cpp \
-    horizondef.cpp
+    horizondef.cpp \
+    volumedef.cpp \
+    volumemodel.cpp
 
 HEADERS  += \
     viewwidget.h \
@@ -59,7 +61,9 @@ HEADERS  += \
     slicemodel.h \
     horizondef.h \
     horizonmodel.h \
-    overlaypercentagedialog.h
+    overlaypercentagedialog.h \
+    volumedef.h \
+    volumemodel.h
 
 FORMS    += \
     volumeviewer.ui \
