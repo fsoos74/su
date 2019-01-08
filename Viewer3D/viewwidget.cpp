@@ -316,24 +316,10 @@ void ViewWidget::keyPressEvent(QKeyEvent *e){
 void ViewWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-
-    //glClearColor(0.8, 0.8, 0.8, 1);
-
-    //initShaders();
-
     glEnable(GL_DEPTH_TEST);
-
-
-
-    //glEnable(GL_MULTISAMPLE);
-    //glHint(GL_MULTISAMPLE_FILTER_HINT_NV, GL_NICEST);
-
-    // using discard in shader instead of blending to allow depth test
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glEnable(GL_BLEND);
-
-    //glEnable(GL_CULL_FACE);       // leave this commented, want to see both faces
-
+    glDisable(GL_CULL_FACE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
     m_engine = new RenderEngine;
     m_scene= new RenderScene;
 }

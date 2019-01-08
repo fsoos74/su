@@ -10,8 +10,8 @@ QMap<HorizonDef::ColorStyle,QString> lookup{
 }
 
 HorizonDef::HorizonDef(std::shared_ptr<Grid2D<float>> horizon,
-        ColorStyle cs, QColor color, qreal gradient, QString volume, int delay):
-    m_horizon(horizon), m_colorStyle(cs), m_color(color), m_colorGradient(gradient),
+        ColorStyle cs, QColor color, qreal(alpha), qreal gradient, QString volume, int delay):
+    m_horizon(horizon), m_colorStyle(cs), m_color(color), m_alpha(alpha), m_colorGradient(gradient),
     m_volume(volume), m_delay(delay){
 }
 
@@ -33,6 +33,10 @@ void HorizonDef::setColorStyle(ColorStyle cs){
 
 void HorizonDef::setColor(QColor c){
     m_color=c;
+}
+
+void HorizonDef::setAlpha(qreal a){
+    m_alpha=a;
 }
 
 void HorizonDef::setColorGradient(qreal g){

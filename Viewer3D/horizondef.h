@@ -12,7 +12,8 @@ public:
     enum class ColorStyle{ Fixed, Gradient, Volume};
 
     HorizonDef()=default;
-    HorizonDef(std::shared_ptr<Grid2D<float>> horizon, ColorStyle cs, QColor color, qreal colorGradient,
+    HorizonDef(std::shared_ptr<Grid2D<float>> horizon,
+               ColorStyle cs, QColor color, qreal alpha, qreal colorGradient,
                QString volume, int delay);
 
     std::shared_ptr<Grid2D<float>> horizon()const{
@@ -25,6 +26,10 @@ public:
 
     QColor color()const{
         return m_color;
+    }
+
+    qreal alpha()const{
+        return m_alpha;
     }
 
     qreal colorGradient()const{
@@ -42,6 +47,7 @@ public:
     void setHorizon(std::shared_ptr<Grid2D<float>>);
     void setColorStyle(ColorStyle);
     void setColor(QColor);
+    void setAlpha(qreal);
     void setColorGradient(qreal);
     void setVolume(QString);
     void setDelay(int);
@@ -52,6 +58,7 @@ public:
     std::shared_ptr<Grid2D<float>> m_horizon;
     ColorStyle m_colorStyle=ColorStyle::Fixed;
     QColor m_color=Qt::gray;
+    qreal m_alpha;
     qreal m_colorGradient=0.;
     QString m_volume;
     int m_delay=0;
@@ -65,6 +72,7 @@ inline bool operator==(const HorizonDef& h1, const HorizonDef& h2){
             (h1.volume() == h2.volume()) &&
             (h1.delay() == h2.delay()) &&
             (h1.color() == h2.color()) &&
+            (h1.alpha() == h2.alpha()) &&
             (h1.colorGradient() == h2.colorGradient());
 }
 

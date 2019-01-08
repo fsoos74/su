@@ -20,6 +20,7 @@ EditHorizonsDialog::EditHorizonsDialog(QWidget *parent) :
     connect( ui->cbVolume, SIGNAL(currentIndexChanged(int)), this, SLOT(horizonControlsChanged()) );
     connect( ui->cbColorStyle, SIGNAL(currentIndexChanged(QString)), this, SLOT(horizonControlsChanged()));
     connect( ui->cbColor, SIGNAL(colorChanged(QColor)), this, SLOT(horizonControlsChanged()) );
+    connect( ui->sbOpacity, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
     connect( ui->sbGradient, SIGNAL(valueChanged(int)), this, SLOT(horizonControlsChanged()) );
 }
 
@@ -133,6 +134,7 @@ void EditHorizonsDialog::horizonToControls( QString name, HorizonDef horizon ){
     m_currentHorizonControl = horizon.horizon();  // keep
     ui->cbColorStyle->setCurrentText(HorizonDef::toQString(horizon.colorStyle()));
     ui->cbColor->setColor(horizon.color());
+    ui->sbOpacity->setValue((int)(100*horizon.alpha()));
     ui->sbGradient->setValue((int)(100*horizon.colorGradient()));
     ui->cbVolume->setCurrentText(horizon.volume());
     ui->sbDelay->setValue(horizon.delay());
@@ -148,6 +150,7 @@ HorizonDef EditHorizonsDialog::horizonFromControls( QString name){
     def.setHorizon(m_currentHorizonControl);
     def.setColorStyle(HorizonDef::toColorStyle(ui->cbColorStyle->currentText()));
     def.setColor(ui->cbColor->color());
+    def.setAlpha(0.01*ui->sbOpacity->value());
     def.setColorGradient(0.01*ui->sbGradient->value());
     def.setVolume(ui->cbVolume->currentText());
     def.setDelay(ui->sbDelay->value());
@@ -199,7 +202,7 @@ void EditHorizonsDialog::on_pbAdd_clicked()
             return;
         }
 
-        HorizonDef def{ grid, HorizonDef::ColorStyle::Fixed, Qt::gray, 0.5, "", 0 };
+        HorizonDef def{ grid, HorizonDef::ColorStyle::Fixed, Qt::gray, 1., 0.5, "", 0 };
 
         m_horizonModel->addItem(gridName, def);
 

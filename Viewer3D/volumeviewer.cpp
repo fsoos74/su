@@ -486,7 +486,8 @@ void VolumeViewer::receivePoints( QVector<SelectionPoint> points, int code){
 
 void VolumeViewer::outlineToView(VolumeDimensions dims, QColor color){
 
-    QVector3D vcolor{ static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF() ) };
+    QVector4D vcolor{ static_cast<float>(color.redF()), static_cast<float>(color.greenF()),
+                static_cast<float>(color.blueF() ), 1.f };
 
 
 
@@ -557,7 +558,7 @@ void VolumeViewer::directionIndicatorPlanesToView( Grid3DBounds bounds){
 
     // front (zmin) rectangle
     {
-        QVector3D color{ 0., 1., 0. };
+        QVector4D color{ 0., 1., 0., 1. };
         QVector<VIC::Vertex> vertices={
             {QVector3D( xmin, ymin, zmin ), color },
             {QVector3D( xmax, ymin, zmin ), color },
@@ -572,7 +573,7 @@ void VolumeViewer::directionIndicatorPlanesToView( Grid3DBounds bounds){
 
     // left (xmin) rectangle
     {
-        QVector3D color{ 0., 0., 1. };
+        QVector4D color{ 0., 0., 1., 1. };
         QVector<VIC::Vertex> vertices={
             {QVector3D( xmin, ymin, zmin ), color },
             {QVector3D( xmin, ymin, zmax ), color },
@@ -961,7 +962,7 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
     auto range=valueRange(*hrz);
 
     auto style=hdef.colorStyle();
-    QVector3D nullColor{0,0,0};
+    QVector4D nullColor{0,0,0,0};
     QVector<VIC::Vertex> vertices;
     Volume* volume=nullptr;
     ColorTable* colorTable=nullptr;
@@ -1002,7 +1003,8 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
                 float red=c.redF();
                 float green=c.greenF();
                 float blue=c.blueF();
-                QVector3D color = QVector3D{ red, green , blue };
+                float alpha=c.alphaF()*hdef.alpha();	// XXX test
+                QVector4D color = QVector4D{ red, green , blue, alpha };
                 vertices.append( VIC::Vertex{ QVector3D( xy.x(), t, xy.y() ), color } );
             }
             else{
@@ -1037,7 +1039,8 @@ void VolumeViewer::horizonToView(const HorizonDef& hdef){
 void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qreal SIZE){
 
 
-    QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
+    QVector4D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()),
+                static_cast<float>(color.blueF()), 1. };
     QVector<VIC::Vertex> vertices;
     QVector<VIC::Index> indices;
 
@@ -1101,19 +1104,18 @@ void VolumeViewer::pointsToView(QVector<SelectionPoint> points, QColor color, qr
 
 void VolumeViewer::wellPathToView( const WellPath& wp, QColor color, qreal SIZE){
 
-    QVector3D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()), static_cast<float>(color.blueF()) };
+    QVector4D drawColor{static_cast<float>(color.redF()), static_cast<float>(color.greenF()),
+                static_cast<float>(color.blueF()), 1. };
     QVector<VIC::Vertex> vertices;
     QVector<VIC::Index> indices;
 
     for( int i=0; i<wp.size(); i++){
 
-        //std::cout<<wp[i].x()<<" "<<wp[i].y()<<" "<<wp[i].z()<<std::endl;
         vertices.append(VIC::Vertex{ QVector3D(wp[i].x(), -0.001*wp[i].z(), wp[i].y() ), drawColor});
         indices.append(i);
 
         ui->openGLWidget->scene()->addItem( VIC::makeVIC(vertices, indices, GL_LINE_STRIP) );
     }
-    std::cout<<flush;
 }
 
 

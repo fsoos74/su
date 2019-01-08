@@ -5,6 +5,7 @@
 //#include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QVector3D>
+#include <QVector4D>
 #include <QVector>
 
 #include<renderitem.h>
@@ -17,7 +18,7 @@ public:
     struct Vertex
     {
         QVector3D position;
-        QVector3D color;
+        QVector4D color;
     };
 
     //typedef GLushort Index;
