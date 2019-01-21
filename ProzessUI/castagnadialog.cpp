@@ -16,7 +16,7 @@ CastagnaDialog::CastagnaDialog(QWidget *parent) :
     ui->leA1->setValidator(validator);
     ui->leA2->setValidator(validator);
 
-    connect( ui->lwWells->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(updateInputLogs()) );
+    connect( ui->cbVP, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateInputWells(QString)) );
     connect( ui->leVS, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbCoefficients, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateCoefficients()));
     connect( ui->cbUnit, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateCoefficients()));
@@ -51,29 +51,34 @@ void CastagnaDialog::setProject(AVOProject* project){
 
     m_project = project;
 
+    QSet<QString> logs;
+    for( auto well : m_project->wellList()){
+        for(auto log : m_project->logList(well)){
+            logs.insert(log);
+        }
+    }
+    QStringList list(logs.toList());
+    std::sort(list.begin(),list.end());
+    ui->cbVP->addItems(list);
     auto wells=m_project->wellList();
     ui->lwWells->clear();
     ui->lwWells->addItems(wells);
 }
 
 
-void CastagnaDialog::updateInputLogs(){
+void CastagnaDialog::updateInputWells(QString log){
 
-    ui->cbVP->clear();
+    ui->lwWells->clear();
     if( !m_project) return;
 
-    auto wells=selectedWells();
-    if( wells.isEmpty()) return;
-
-    QSet<QString> logs=m_project->logList(wells.front()).toSet();
-    for( auto well : wells){
-        logs.intersect(m_project->logList(well).toSet());
+    QStringList wells;
+    for( auto well : m_project->wellList()){
+        if( m_project->existsLog(well,log)){
+            wells.append(well);
+        }
     }
-
-    auto l = logs.toList();
-    std::sort(l.begin(), l.end());
-
-    ui->cbVP->addItems(l);
+    std::sort(wells.begin(),wells.end());
+    ui->lwWells->addItems(wells);
 }
 
 void CastagnaDialog::updateOkButton(){

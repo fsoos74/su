@@ -24,7 +24,7 @@ public slots:
 
 private slots:
 
-    void updateInputLogs();
+    void updateInputWells(QString);
     void updateOkButton();
     void updateCoefficients();
 

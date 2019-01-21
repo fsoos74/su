@@ -31,68 +31,16 @@
    </property>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Gamma Ray Max Log:</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="1">
       <widget class="QComboBox" name="cbGRMin"/>
      </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Blocking Mode:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QLineEdit" name="leTertiaryRocks">
+     <item row="9" column="1">
+      <widget class="QLineEdit" name="leOlderRocks">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>VSHT</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="0">
-      <widget class="QCheckBox" name="cbTertiaryRocks">
-       <property name="text">
-        <string>VSH Tertiary Rocks (Larionov):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Input Gamma Ray Log:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="cbGR"/>
-     </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Gamma Ray Index:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLineEdit" name="leIGR">
-       <property name="text">
-        <string>IGR</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Wells:</string>
+        <string>VSHO</string>
        </property>
       </widget>
      </item>
@@ -103,13 +51,47 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
-      <widget class="QLineEdit" name="leOlderRocks">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Gamma Ray Max Log:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QListWidget" name="lwTops">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="autoScrollMargin">
+        <number>2</number>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QCheckBox" name="cbTertiaryRocks">
+       <property name="text">
+        <string>VSH Tertiary Rocks (Larionov):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLineEdit" name="leSteiber">
        <property name="enabled">
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>VSHO</string>
+        <string>VSHS</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Blocking Interfaces (Tops):</string>
        </property>
       </widget>
      </item>
@@ -127,15 +109,18 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
-      <widget class="QLineEdit" name="leSteiber">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>VSHS</string>
+        <string>Gamma Ray Index:</string>
        </property>
       </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cbGR"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QComboBox" name="cbBlockingMode"/>
      </item>
      <item row="11" column="1">
       <widget class="QLineEdit" name="leClavier">
@@ -147,8 +132,19 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QComboBox" name="cbBlockingMode"/>
+     <item row="6" column="1">
+      <widget class="QLineEdit" name="leIGR">
+       <property name="text">
+        <string>IGR</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Blocking Mode:</string>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_6">
@@ -157,35 +153,39 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>Blocking Interfaces (Tops):</string>
-       </property>
-      </widget>
+     <item row="4" column="1">
+      <widget class="QComboBox" name="cbGRMax"/>
      </item>
-     <item row="5" column="1">
-      <widget class="QListWidget" name="lwTops">
+     <item row="8" column="1">
+      <widget class="QLineEdit" name="leTertiaryRocks">
        <property name="enabled">
         <bool>false</bool>
        </property>
-       <property name="autoScrollMargin">
-        <number>2</number>
-       </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::ExtendedSelection</enum>
+       <property name="text">
+        <string>VSHT</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Input Gamma Ray Log:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Wells:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="1">
       <widget class="QListWidget" name="lwWells">
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
       </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QComboBox" name="cbGRMax"/>
      </item>
     </layout>
    </item>
@@ -215,7 +215,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>lwWells</tabstop>
   <tabstop>cbGR</tabstop>
   <tabstop>cbBlockingMode</tabstop>
   <tabstop>cbGRMin</tabstop>

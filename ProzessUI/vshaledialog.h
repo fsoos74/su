@@ -24,7 +24,7 @@ public slots:
 
 private slots:
 
-    void updateInputLogs();
+    void updateInputWells();
     void updateTops();
     void updateOkButton();
     void on_cbBlockingMode_currentIndexChanged(const QString &arg1);

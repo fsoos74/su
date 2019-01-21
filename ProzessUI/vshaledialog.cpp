@@ -15,7 +15,6 @@ VShaleDialog::VShaleDialog(QWidget *parent) :
     ui->cbBlockingMode->addItem(toQString(VShaleProcess::BlockingMode::Curves));
     ui->cbBlockingMode->addItem(toQString(VShaleProcess::BlockingMode::LayersTops));
 
-    connect( ui->lwWells->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(updateInputLogs()) );
     connect( ui->lwWells->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(updateTops()) );
     connect( ui->leIGR, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbTertiaryRocks, SIGNAL(toggled(bool)), this, SLOT(updateOkButton()));
@@ -26,9 +25,11 @@ VShaleDialog::VShaleDialog(QWidget *parent) :
     connect( ui->leSteiber, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->cbClavier, SIGNAL(toggled(bool)), this, SLOT(updateOkButton()));
     connect( ui->leClavier, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->cbGRMin, SIGNAL(currentTextChanged(QString)), this, SLOT(updateOkButton()) );
-    connect( ui->cbGRMax, SIGNAL(currentTextChanged(QString)), this, SLOT(updateOkButton()) );
     connect( ui->lwTops->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(updateOkButton()) );
+    connect( ui->cbGR, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateInputWells()) );
+    connect( ui->cbGRMin, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateInputWells()) );
+    connect( ui->cbGRMax, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateInputWells()) );
+    connect( ui->cbBlockingMode, SIGNAL(currentIndexChanged(QString)), this, SLOT(updateInputWells()));
 
     updateOkButton();
 }
@@ -66,33 +67,46 @@ void VShaleDialog::setProject(AVOProject* project){
 
     m_project = project;
 
+    QSet<QString> logs;
+    for( auto well : m_project->wellList()){
+        for(auto log : m_project->logList(well)){
+            logs.insert(log);
+        }
+    }
+    QStringList list(logs.toList());
+    std::sort(list.begin(),list.end());
     auto wells=m_project->wellList();
-    ui->lwWells->clear();
-    ui->lwWells->addItems(wells);
+    ui->cbGR->clear();
+    ui->cbGR->addItems(list);
+    ui->cbGRMin->clear();
+    ui->cbGRMin->addItems(list);
+    ui->cbGRMax->clear();
+    ui->cbGRMax->addItems(list);
 }
 
 
-void VShaleDialog::updateInputLogs(){
+void VShaleDialog::updateInputWells(){
 
-    ui->cbGR->clear();
-    ui->cbGRMin->clear();
-    ui->cbGRMax->clear();
-    if( !m_project) return;
-
-    auto wells=selectedWells();
-    if( wells.isEmpty()) return;
-
-    QSet<QString> logs=m_project->logList(wells.front()).toSet();
-    for( auto well : wells){
-        logs.intersect(m_project->logList(well).toSet());
+    ui->lwWells->clear();
+    bool useGRMinMax=(ui->cbBlockingMode->currentText()==toQString(VShaleProcess::BlockingMode::Curves));
+    QString GR=ui->cbGR->currentText();
+    QString GRMin=ui->cbGRMin->currentText();
+    QString GRMax=ui->cbGRMax->currentText();
+    QStringList wells;
+    for(auto well : m_project->wellList()){
+        if(useGRMinMax){
+            if( m_project->existsLog(well,GR) && m_project->existsLog(well,GRMin)&&m_project->existsLog(well,GRMax)){
+                wells.append(well);
+            }
+        }
+        else{
+            if( m_project->existsLog(well,GR)){
+                wells.append(well);
+            }
+        }
     }
-
-    auto l = logs.toList();
-    std::sort(l.begin(), l.end());
-
-    ui->cbGR->addItems(l);
-    ui->cbGRMin->addItems(l);
-    ui->cbGRMax->addItems(l);
+    std::sort(wells.begin(), wells.end());
+    ui->lwWells->addItems(wells);
 }
 
 void VShaleDialog::updateTops(){
