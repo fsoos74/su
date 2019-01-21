@@ -85,8 +85,7 @@ void processLog( Log& outputLog, const Log& inputLog, int aperture, SmoothProces
 
 
 void VShaleProcess::blockLogMin( Log& outputLog, const Log& inputLog, int i0, int i1){
-
-   auto min=std::numeric_limits<double>::max();
+    auto min=std::numeric_limits<double>::max();
     for( int i=i0; i<i1; i++){
         if( inputLog[i]==inputLog.NULL_VALUE) continue;
         if( inputLog[i]<min ) min=inputLog[i];
@@ -124,7 +123,7 @@ void blockLogMax( Log& outputLog, const Log& inputLog, int aperture){
     }
 }
 
-
+#include<iostream>
 ProjectProcess::ResultCode VShaleProcess::run(){
 
     emit started(m_wells.size());
@@ -146,7 +145,7 @@ ProjectProcess::ResultCode VShaleProcess::run(){
 }
 
 ProjectProcess::ResultCode VShaleProcess::processWell(QString well){
-
+std::cout<<"process well "<<well.toStdString()<<std::endl<<std::flush;
     auto grLog=project()->loadLog( well, m_grName);
     if( !grLog){
         setErrorString(QString("Loading log \"%1-%2\" failed!").arg(well, m_grName));
@@ -191,6 +190,7 @@ ProjectProcess::ResultCode VShaleProcess::processWell(QString well){
                                        grLog->z0(), grLog->dz(), grLog->nz() );
 
     if( !igrLog || !vshTertiaryRocksLog || !vshOlderRocksLog || !vshSteiberLog || !vshClavierLog || !grMinLog || !grMaxLog ){
+        std::cout<<"!!!1E"<<std::endl<<std::flush;
         setErrorString("Allocating log failed!");
         return ResultCode::Error;
     }
@@ -204,28 +204,25 @@ ProjectProcess::ResultCode VShaleProcess::processWell(QString well){
         }
         QVector<double> depths;
         for(auto name : m_tops){
-            //std::cout<<"name: "<<name.toStdString()<<std::endl;
             if( !topsDB->exists(well, name)){
                 setErrorString(tr("Well %1 has no top%2").arg(well,name));
                 return ResultCode::Error;
             }
             auto depth = topsDB->value(well, name);
             depths<<depth;
-            //std::cout<<"depth: "<<depth<<std::endl;
         }
         std::sort(depths.begin(), depths.end());
         for( int i = 1; i<depths.size(); i++){
             auto topz=depths[i-1];
             auto botz=depths[i];
-            //std::cout<<topz<<" - "<<botz<<std::endl<<std::flush;
             auto i0=grLog->z2index(topz);
             auto i1=grLog->z2index(botz);
-            //std::cout<<i0<<" - "<<i1<<std::endl<<std::flush;
+            i0=std::max(0,i0);
+            i1=std::min(i1,grLog->nz());
             blockLogMin(*grMinLog, *grLog, i0, i1);
             blockLogMax(*grMaxLog, *grLog, i0, i1);
         }
     }
-
     // finally compute igr, vshale
     for( int i=0; i<grLog->nz(); i++){
 
