@@ -117,7 +117,8 @@ SOURCES += prozess.cpp \
     volumesimilarityprocess.cpp \
     velocityconversionprocess.cpp \
     rockpropertiesprocess.cpp \
-    castagnaprocess.cpp
+    castagnaprocess.cpp \
+    exportlasprocess.cpp
 
 HEADERS += prozess.h\
         prozess_global.h \
@@ -215,7 +216,8 @@ HEADERS += prozess.h\
     volumesimilarityprocess.h \
     velocityconversionprocess.h \
     rockpropertiesprocess.h \
-    castagnaprocess.h
+    castagnaprocess.h \
+    exportlasprocess.h
 
 unix {
     target.path = /usr/lib

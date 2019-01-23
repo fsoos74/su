@@ -198,6 +198,8 @@ private slots:
     void on_actionImportTable_triggered();
 
 
+    void on_actionExport_Logs_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

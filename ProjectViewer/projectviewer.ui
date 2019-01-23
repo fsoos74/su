@@ -350,6 +350,7 @@
     <addaction name="actionImportLogs"/>
     <addaction name="action_Logs_Bulk_Mode"/>
     <addaction name="actionExportLog"/>
+    <addaction name="actionExport_Logs"/>
     <addaction name="separator"/>
     <addaction name="action_Smooth_Log"/>
     <addaction name="actionLog_Math"/>
@@ -1100,7 +1101,12 @@
   </action>
   <action name="actionCastagna_VS_Computation">
    <property name="text">
-    <string>Castagna VS Computation</string>
+    <string>Castagna VS Comp&amp;utation</string>
+   </property>
+  </action>
+  <action name="actionExport_Logs">
+   <property name="text">
+    <string>Export Logs(LAS)</string>
    </property>
   </action>
  </widget>

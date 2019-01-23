@@ -68,6 +68,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<exportseismicdialog.h>
 #include<exportlogprocess.h>
 #include<exportlogdialog.h>
+#include<exportlasdialog.h>
+#include<exportlasprocess.h>
 #include <offsetstackdialog.h>
 #include <offsetstackprocess.h>
 #include <stacktogatherdialog.h>
@@ -725,6 +727,19 @@ void ProjectViewer::on_actionExportSeismic_triggered()
 void ProjectViewer::on_actionExportLog_triggered()
 {
     selectAndExportLog();
+}
+
+void ProjectViewer::on_actionExport_Logs_triggered()
+{
+    ExportLASDialog dlg;
+
+    dlg.setProject(m_project);
+    dlg.setWindowTitle(tr("Export Logs(LAS)"));
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    auto params=dlg.params();
+    runProcess<ExportLASProcess>( params );
 }
 
 void ProjectViewer::on_action_ExportTable_triggered()
@@ -2545,6 +2560,7 @@ void ProjectViewer::selectAndExportLog()
     auto params=dlg.params();
     runProcess<ExportLogProcess>( params );
 }
+
 
 void ProjectViewer::selectAndExportTable()
 {
@@ -5161,6 +5177,7 @@ void ProjectViewer::updateMenu(){
     ui->actionExportVolume->setEnabled(isProject);
     ui->actionExportSeismic->setEnabled(isProject);
     ui->actionExportLog->setEnabled(isProject);
+    ui->actionExport_Logs->setEnabled(isProject);
     ui->action_ExportTable->setEnabled(isProject);
     ui->actionExportProject->setEnabled(isProject);
     ui->actionCloseProject->setEnabled(isProject);
@@ -5281,6 +5298,7 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
     runProcess<InterceptGradientVolumeProcess_2>( params );
 }
+
 
 
 
