@@ -44,7 +44,7 @@ ProjectProcess::ResultCode VShaleProcess::init( const QMap<QString, QString>& pa
         m_grMaxName=getParam(parameters, "grmax-log");
         auto s=getParam(parameters, "blocking-mode");
         m_blockingMode=toBlockingMode(s);
-
+        percentage=getParam(parameters,"blocking-percentage").toInt();
         s=getParam(parameters, "blocking-tops");
         m_tops=s.split(";", QString::SkipEmptyParts);
     }
@@ -107,6 +107,25 @@ void VShaleProcess::blockLogMax( Log& outputLog, const Log& inputLog, int i0, in
     }
 }
 
+void VShaleProcess::blockLogMinMax( Log& minLog, Log& maxLog, const Log& inputLog, int i0, int i1){
+    std::vector<double> buf;
+    int n=i1-i0;
+    if(n<=0) return;
+    buf.reserve(n);
+    for(int i=i0; i<=i1; i++){
+        buf.push_back(inputLog[i]);
+    }
+    std::sort(buf.begin(), buf.end());
+
+    double keep=0.01*percentage;
+    int min=0.5*(1.0-keep)*buf.size();
+    int max=buf.size()-min;  // symmetric
+    for(int i=i0; i<i1; i++){
+        minLog[i]=buf[min];
+        maxLog[i]=buf[max];
+    }
+}
+
 void blockLogMax( Log& outputLog, const Log& inputLog, int aperture){
 
     for( int i0=0; i0<outputLog.nz(); i0+=aperture){
@@ -145,12 +164,13 @@ ProjectProcess::ResultCode VShaleProcess::run(){
 }
 
 ProjectProcess::ResultCode VShaleProcess::processWell(QString well){
-std::cout<<"process well "<<well.toStdString()<<std::endl<<std::flush;
     auto grLog=project()->loadLog( well, m_grName);
     if( !grLog){
         setErrorString(QString("Loading log \"%1-%2\" failed!").arg(well, m_grName));
         return ResultCode::Error;
     }
+
+    std::cout<<well.toStdString()<<" "<<grLog->name()<<" "<<grLog->nz()<<std::endl<<std::flush;
 
     std::shared_ptr<Log> grMinLog;
     std::shared_ptr<Log> grMaxLog;
@@ -177,16 +197,16 @@ std::cout<<"process well "<<well.toStdString()<<std::endl<<std::flush;
     auto igrLog=std::make_shared<Log>( m_igrName.toStdString(), "fraction", "gamma ray index",
                                        grLog->z0(), grLog->dz(), grLog->nz() );
 
-    auto vshTertiaryRocksLog=std::make_shared<Log>( m_vshTertiaryRocksName.toStdString(), "V/V", "vsh tertiary rocks (Larionov)",
+    auto vshTertiaryRocksLog=std::make_shared<Log>( m_vshTertiaryRocksName.toStdString(), "V/V", "VSHALE for tertiary rocks (Larionov)",
                                        grLog->z0(), grLog->dz(), grLog->nz() );
 
-    auto vshOlderRocksLog=std::make_shared<Log>( m_vshOlderRocksName.toStdString(), "V/V", "vsh tertiary rocks (Larionov)",
+    auto vshOlderRocksLog=std::make_shared<Log>( m_vshOlderRocksName.toStdString(), "V/V", "VSHALE for older rocks (Larionov)",
                                        grLog->z0(), grLog->dz(), grLog->nz() );
 
-    auto vshSteiberLog=std::make_shared<Log>( m_vshSteiberName.toStdString(), "V/V", "vsh (Steiber)",
+    auto vshSteiberLog=std::make_shared<Log>( m_vshSteiberName.toStdString(), "V/V", "VSHALE (Steiber)",
                                        grLog->z0(), grLog->dz(), grLog->nz() );
 
-    auto vshClavierLog=std::make_shared<Log>( m_vshClavierName.toStdString(), "V/V", "vsh (Clavier)",
+    auto vshClavierLog=std::make_shared<Log>( m_vshClavierName.toStdString(), "V/V", "VSHALE (Clavier)",
                                        grLog->z0(), grLog->dz(), grLog->nz() );
 
     if( !igrLog || !vshTertiaryRocksLog || !vshOlderRocksLog || !vshSteiberLog || !vshClavierLog || !grMinLog || !grMaxLog ){
@@ -205,12 +225,17 @@ std::cout<<"process well "<<well.toStdString()<<std::endl<<std::flush;
         QVector<double> depths;
         for(auto name : m_tops){
             if( !topsDB->exists(well, name)){
-                setErrorString(tr("Well %1 has no top%2").arg(well,name));
-                return ResultCode::Error;
+                //setErrorString(tr("Well %1 has no top%2").arg(well,name));
+                //return ResultCode::Error;
+                continue;	// silently ignore for now - need to issue warning
             }
             auto depth = topsDB->value(well, name);
             depths<<depth;
         }
+        // add start/end
+        depths<<grLog->z0();
+        depths<<grLog->lz();
+
         std::sort(depths.begin(), depths.end());
         for( int i = 1; i<depths.size(); i++){
             auto topz=depths[i-1];
@@ -219,8 +244,22 @@ std::cout<<"process well "<<well.toStdString()<<std::endl<<std::flush;
             auto i1=grLog->z2index(botz);
             i0=std::max(0,i0);
             i1=std::min(i1,grLog->nz());
-            blockLogMin(*grMinLog, *grLog, i0, i1);
-            blockLogMax(*grMaxLog, *grLog, i0, i1);
+            //blockLogMin(*grMinLog, *grLog, i0, i1);
+            //blockLogMax(*grMaxLog, *grLog, i0, i1);
+            blockLogMinMax(*grMinLog,*grMaxLog, *grLog, i0, i1);
+        }
+        // store blocked min/max logs
+        QString minName=QString("%1_block_min%2").arg(grLog->name().c_str()).arg(percentage);
+        grMinLog->setName(minName.toStdString());
+        if(!project()->saveLog(well, minName, *grMinLog)){
+            setErrorString("Saving blocked minimum gr log failed!");
+            return ResultCode::Error;
+        }
+        QString maxName=QString("%1_block_max%2").arg(grLog->name().c_str()).arg(percentage);
+        grMaxLog->setName(maxName.toStdString());
+        if(!project()->saveLog(well, maxName, *grMaxLog)){
+            setErrorString("Saving blocked maximum gr log failed!");
+            return ResultCode::Error;
         }
     }
     // finally compute igr, vshale

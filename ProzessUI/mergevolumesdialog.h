@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QMap>
 
+#include<avoproject.h>
 #include "processparametersdialog.h"
 
 
@@ -28,10 +29,12 @@ public slots:
     void setInputVolumes( const QStringList&);
 
 private slots:
+
     void updateOkButton();
 
 private:
     Ui::MergeVolumesDialog *ui;
+    AVOProject* m_project=nullptr;
 };
 
 #endif // MERGEVOLUMESDIALOG_H

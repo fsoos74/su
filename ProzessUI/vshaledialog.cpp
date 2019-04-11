@@ -52,6 +52,7 @@ QMap<QString,QString> VShaleDialog::params(){
     p.insert( "grmin-log", ui->cbGRMin->currentText() );
     p.insert( "grmax-log", ui->cbGRMax->currentText() );
     p.insert( "blocking-tops", selectedTops().join(";"));
+    p.insert( "blocking-percentage", QString::number(ui->sbBlockingPercent->value()));
     p.insert( "igr-log", ui->leIGR->text() );
     p.insert( "vsh-tertiary-rocks-log", (ui->cbTertiaryRocks->isChecked()) ? ui->leTertiaryRocks->text() : "" );
     p.insert( "vsh-older-rocks-log", (ui->cbOlderRocks->isChecked()) ? ui->leOlderRocks->text() : "" );
@@ -208,6 +209,7 @@ void VShaleDialog::on_cbBlockingMode_currentIndexChanged(const QString &s)
     ui->cbGRMin->setEnabled(s==toQString(VShaleProcess::BlockingMode::Curves));
     ui->cbGRMax->setEnabled(s==toQString(VShaleProcess::BlockingMode::Curves));
     ui->lwTops->setEnabled(s==toQString(VShaleProcess::BlockingMode::LayersTops));
+    ui->sbBlockingPercent->setEnabled(s==toQString(VShaleProcess::BlockingMode::LayersTops));
 }
 
 QStringList VShaleDialog::selectedWells(){

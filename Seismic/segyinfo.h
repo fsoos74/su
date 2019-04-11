@@ -40,6 +40,14 @@ public:
         return m_scalelDef;
     }
 
+    bool isOverrideFixedSampling()const{
+        return m_overrideFixedSampling;
+    }
+
+    bool isFixedSampling()const{
+        return m_fixedSampling;
+    }
+
     bool isOverrideSampleFormat()const{
         return m_overrideSampleFormat;
     }
@@ -81,6 +89,8 @@ public:
     void setScalco( const double&);
     void setScalel( const double&);
     void setOverrideSampleFormat(bool);
+    void setOverrideFixedSampling(bool);
+    void setFixedSamling(bool);
     void setFixedScalco( bool);
     void setFixedScalel(bool);
     void setOverrideNEXT(bool);
@@ -109,6 +119,9 @@ private:
 
     bool                                m_overrideSampleFormat=false;
     SEGYSampleFormat                    m_sampleFormat;
+
+    bool								m_overrideFixedSampling=false;
+    bool								m_fixedSampling=false;
 
     bool                                m_fixedScalel=false;
     double                              m_scalel=1;

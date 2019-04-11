@@ -32,6 +32,10 @@ private:
     QString m_outputName;
     QString m_volume1Name;
     QString m_volume2Name;
+    int m_minIline1;
+    int m_maxIline1;
+    int m_minIline2;
+    int m_maxIline2;
     int m_ov;
     float m_null;
 

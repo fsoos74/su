@@ -23,6 +23,10 @@ ProjectProcess::ResultCode MergeVolumesProcess::init( const QMap<QString, QStrin
         m_outputName=getParam(parameters, "output");
         m_volume1Name=getParam(parameters, "volume1");
         m_volume2Name=getParam(parameters, "volume2");
+        m_minIline1=getParam(parameters,"min-iline1").toInt();
+        m_maxIline1=getParam(parameters,"max-iline1").toInt();
+        m_minIline2=getParam(parameters,"min-iline2").toInt();
+        m_maxIline2=getParam(parameters,"max-iline2").toInt();
         m_ov=getParam(parameters,"overlap").toInt();
     }
     catch(std::exception& ex){
@@ -84,7 +88,7 @@ ProjectProcess::ResultCode MergeVolumesProcess::run(){
     for( int il=m_bounds.i1(); il<=m_bounds.i2(); il++){
 
         std::shared_ptr<Volume> subVolume1;
-        if(il>=ibounds1.i1() && il<=ibounds1.i2()){
+        if(il>=ibounds1.i1() && il<=ibounds1.i2() && il>=m_minIline1 && il<=m_maxIline1){
             subVolume1=m_volume1Reader->readIl(il,il);
             if( !subVolume1){
                 setErrorString("Reading subvolume 1 failed!");
@@ -97,7 +101,7 @@ ProjectProcess::ResultCode MergeVolumesProcess::run(){
         }
 
         std::shared_ptr<Volume> subVolume2;
-        if(il>=ibounds2.i1() && il<=ibounds2.i2()){
+        if(il>=ibounds2.i1() && il<=ibounds2.i2() && il>=m_minIline2 && il<=m_maxIline2){
             subVolume2=m_volume2Reader->readIl(il,il);
             if( !subVolume2){
                 setErrorString("Reading subvolume 2 failed!");

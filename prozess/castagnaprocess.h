@@ -26,6 +26,7 @@ private:
     QStringList m_wells;
     QString m_vpName;
     QString m_vsName;
+    QString m_description;
     double m_a0;
     double m_a1;
     double m_a2;

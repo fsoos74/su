@@ -4372,7 +4372,7 @@ void ProjectViewer::removeSeismicDataset(const QString& name){
     if( m_project->seismicDatasetList().contains(name)){
 
         if( QMessageBox::question(this, "Remove Seismic Dataset",
-                 QString("Are you sure you want to remove dataset %1?").arg(name), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
+                 QString("Are you sure you want to remove dataset %1?\nThe underlying SEG-Y file will also ne deleted!").arg(name), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
             return;
         }
 
@@ -4388,7 +4388,7 @@ void ProjectViewer::removeSeismicDataset(const QString& name){
 void ProjectViewer::removeSeismicDatasets( const QStringList& names){
 
     if( QMessageBox::question(this, QString("Remove Datasets"),
-             QString("Are you sure you want to remove %1 datasets?").arg(names.size()), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
+             QString("Are you sure you want to remove %1 datasets?\nThe underlying SEG-Y files will also be deleted!").arg(names.size()), QMessageBox::Yes|QMessageBox::No)!=QMessageBox::Yes){
         return;
     }
 

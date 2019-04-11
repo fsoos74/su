@@ -175,7 +175,12 @@ void SEGYReader::convert_binary_header(){
 
     m_dt=0.000001 * m_binary_header["dt"].uintValue();
     m_nt=m_binary_header["ns"].uintValue();
-    m_fixed_sampling=m_binary_header["fixlen"].intValue()!=0;
+    if(!m_info.isOverrideFixedSampling()){
+        m_fixed_sampling=m_binary_header["fixlen"].intValue()!=0;
+    }
+    else{
+        m_fixed_sampling=m_info.isFixedSampling();
+    }
     int next=m_binary_header["next"].intValue();
     if(!m_info.isOverrideNEXT()){
         m_info.setNEXT(next);

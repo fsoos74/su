@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>330</width>
-    <height>246</height>
+    <height>366</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,13 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Min Inline:</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
@@ -23,7 +30,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="0" column="2">
       <widget class="QComboBox" name="cbVolume1">
        <property name="minimumSize">
         <size>
@@ -33,24 +40,24 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Output Volume:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="7" column="2">
       <widget class="QLineEdit" name="leOutput"/>
      </item>
-     <item row="4" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Overlap:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="8" column="2">
       <widget class="QComboBox" name="cbOverlap">
        <item>
         <property name="text">
@@ -69,15 +76,48 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Input Volume 2:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="3" column="2">
       <widget class="QComboBox" name="cbVolume2"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Max Inline:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Min Inline:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Max Inline:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLineEdit" name="leMinIline1"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLineEdit" name="leMaxIline1"/>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLineEdit" name="leMinIline2"/>
+     </item>
+     <item row="5" column="2">
+      <widget class="QLineEdit" name="leMaxIline2"/>
      </item>
     </layout>
    </item>
@@ -108,7 +148,11 @@
  </widget>
  <tabstops>
   <tabstop>cbVolume1</tabstop>
+  <tabstop>leMinIline1</tabstop>
+  <tabstop>leMaxIline1</tabstop>
   <tabstop>cbVolume2</tabstop>
+  <tabstop>leMinIline2</tabstop>
+  <tabstop>leMaxIline2</tabstop>
   <tabstop>leOutput</tabstop>
   <tabstop>cbOverlap</tabstop>
  </tabstops>

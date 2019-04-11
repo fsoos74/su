@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>364</width>
-    <height>538</height>
+    <height>572</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -31,17 +31,17 @@
    </property>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="5" column="2">
+     <item row="6" column="2">
       <widget class="QLineEdit" name="leA2"/>
      </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>a2:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>a1:</string>
@@ -72,14 +72,14 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Coefficients:</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
+     <item row="5" column="2">
       <widget class="QComboBox" name="cbCoefficients">
        <item>
         <property name="text">
@@ -108,27 +108,27 @@
        </item>
       </widget>
      </item>
-     <item row="7" column="2">
+     <item row="8" column="2">
       <widget class="QLineEdit" name="leA0"/>
      </item>
-     <item row="7" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
         <string>a0:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="2">
+     <item row="7" column="2">
       <widget class="QLineEdit" name="leA1"/>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
         <string>Unit:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
+     <item row="4" column="2">
       <widget class="QComboBox" name="cbUnit">
        <item>
         <property name="text">
@@ -147,17 +147,31 @@
        </item>
       </widget>
      </item>
-     <item row="8" column="2">
+     <item row="9" column="2">
       <widget class="QListWidget" name="lwWells">
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Wells:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Description:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLineEdit" name="leDescription">
+       <property name="text">
+        <string>VS computed from VP (Castagna)</string>
        </property>
       </widget>
      </item>

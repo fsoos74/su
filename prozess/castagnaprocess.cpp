@@ -22,6 +22,7 @@ ProjectProcess::ResultCode CastagnaProcess::init( const QMap<QString, QString>& 
         m_wells=unpackParamList( getParam(parameters, "wells") );
         m_vpName=getParam(parameters, "vp-log");
         m_vsName=getParam(parameters, "vs-log");
+        m_description=getParam(parameters,"description");
         m_a0=getParam(parameters, "a0").toDouble();
         m_a1=getParam(parameters, "a1").toDouble();
         m_a2=getParam(parameters, "a2").toDouble();
@@ -63,7 +64,7 @@ ProjectProcess::ResultCode CastagnaProcess::processWell(QString well){
         return ResultCode::Error;
     }
 
-    auto vsLog=std::make_shared<Log>( m_vsName.toStdString(), vpLog->unit(), "Castagna",
+    auto vsLog=std::make_shared<Log>( m_vsName.toStdString(), vpLog->unit(), m_description.toStdString(),
                                            vpLog->z0(), vpLog->dz(), vpLog->nz() );
 
     if( !vsLog ){

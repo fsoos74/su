@@ -36,7 +36,12 @@ bool VolumeWriter2::open(const Grid3DBounds &bounds, const Domain &domain, const
 
     m_dataStart=m_file.pos();
 
-    qint64 filesize = m_file.pos() + bounds.ni()*bounds.nj()*bounds.nt()*sizeof(float);
+    qint64 filesize = m_file.pos() + (qint64)(bounds.ni())*bounds.nj()*bounds.nt()*sizeof(float);    // make this 64 bit!!!
+    std::cout<<"start:"<<m_dataStart<<std::endl<<std::flush;
+    std::cout<<"i="<<bounds.i1()<<"-"<<bounds.i2()<<":"<<bounds.ni()<<std::endl<<std::flush;
+    std::cout<<"j="<<bounds.j1()<<"-"<<bounds.j2()<<":"<<bounds.nj()<<std::endl<<std::flush;
+    std::cout<<"nt="<<bounds.nt()<<std::endl<<std::flush;
+    std::cout<<"filesize="<<filesize<<std::endl<<std::flush;
     m_file.resize(filesize);
 
     if( m_file.error()!=QFile::FileError::NoError) return false;

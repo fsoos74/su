@@ -29,8 +29,10 @@ QMap<QString,QString> RockPropertiesDialog::params(){
     QMap<QString, QString> p;
 
     p.insert("well", ui->cbWell->currentText() );
-    p.insert( "dt", ui->cbDT->currentText() );
-    p.insert( "dts", ui->cbDTS->currentText() );
+    //p.insert( "dt", ui->cbDT->currentText() );
+    //p.insert( "dts", ui->cbDTS->currentText() );
+    p.insert( "vp", ui->cbVP->currentText() );
+    p.insert( "vs", ui->cbVS->currentText() );
     p.insert( "den", ui->cbDEN->currentText() );
     p.insert( "youngs-modulus", ui->leYoungsModulus->text() );
     p.insert( "bulk-modulus", ui->leBulkModulus->text() );
@@ -52,8 +54,10 @@ void RockPropertiesDialog::setProject(AVOProject* project){
 
 void RockPropertiesDialog::updateLogs(){
 
-    ui->cbDT->clear();
-    ui->cbDTS->clear();
+    //ui->cbDT->clear();
+    //ui->cbDTS->clear();
+    ui->cbVP->clear();
+    ui->cbVS->clear();
     ui->cbDEN->clear();
 
     if( !m_project ) return;
@@ -62,8 +66,10 @@ void RockPropertiesDialog::updateLogs(){
     auto loglist=m_project->logList(well);
     std::sort( loglist.begin(), loglist.end());
 
-    ui->cbDT->addItems(loglist);
-    ui->cbDTS->addItems(loglist);
+    //ui->cbDT->addItems(loglist);
+    //ui->cbDTS->addItems(loglist);
+    ui->cbVP->addItems(loglist);
+    ui->cbVS->addItems(loglist);
     ui->cbDEN->addItems(loglist);
 
     updateOkButton();

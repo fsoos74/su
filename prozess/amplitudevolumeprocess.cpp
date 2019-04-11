@@ -136,7 +136,7 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
             }
         }
 #endif
-
+        double dt=m_reader->info().dt();        // use constant dt for all traces as test   XXX
         if( vbounds.isInside(iline, xline) ){
 
             for( int i=0; i<m_bounds.nt(); i++){
@@ -144,7 +144,7 @@ ProjectProcess::ResultCode AmplitudeVolumeProcess::run(){
                 double t=m_bounds.sampleToTime(i);
 
                 // interpolate between nearest samples, should add this to trace
-                qreal x=(t - trace.ft() )/trace.dt();
+                qreal x=(t - trace.ft() )/dt; // trace.dt(); XXX
                 size_t j=std::truncf(x);
                 x-=j;
                 if( x<0 ) x=0;

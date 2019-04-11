@@ -23,8 +23,10 @@ public:
 private:
 
     QString m_well;
-    QString m_dtName;
-    QString m_dtsName;
+    //QString m_dtName;
+    //QString m_dtsName;
+    QString m_vpName;
+    QString m_vsName;
     QString m_denName;
     QString m_youngsModulusName;
     QString m_bulkModulusName;

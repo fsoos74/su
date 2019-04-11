@@ -24,6 +24,8 @@ bool XSIWriter::writeFile(QIODevice *device){
     xml.writeAttribute("version", "1.0");
 
     xml.writeAttribute("swap", (m_info.isSwap())? "true":"false");
+    xml.writeAttribute("override-fixed-sampling", (m_info.isOverrideFixedSampling())? "true":"false");
+    xml.writeAttribute("fixed-sampling", (m_info.isFixedSampling())? "true":"false");
 
     QString format="header";
 

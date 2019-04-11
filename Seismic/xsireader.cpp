@@ -44,7 +44,13 @@ void XSIReader::readXSI(){
 
     m_info.setSwap(xml.attributes().value("swap")=="true");
 
+    if(xml.attributes().hasAttribute("override-fixed-sampling")){
+        m_info.setOverrideFixedSampling(xml.attributes().value("override-fixed-sampling")=="true");
+    }
 
+    if(xml.attributes().hasAttribute("fixed-sampling")){
+        m_info.setFixedSamling(xml.attributes().value("fixed-sampling")=="true");
+    }
 
     if( xml.attributes().value("format")=="header" ){
         m_info.setOverrideSampleFormat(false);

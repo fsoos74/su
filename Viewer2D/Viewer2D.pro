@@ -22,7 +22,8 @@ SOURCES += \
     griditemconfigdialog.cpp \
     wellitem.cpp \
     volumeitem.cpp \
-    areaitem.cpp
+    areaitem.cpp \
+    pointitem.cpp
 
 HEADERS += \
     griditem.h \
@@ -31,7 +32,8 @@ HEADERS += \
     griditemconfigdialog.h \
     wellitem.h \
     volumeitem.h \
-    areaitem.h
+    areaitem.h \
+    pointitem.h
 
 unix {
     target.path = /usr/lib

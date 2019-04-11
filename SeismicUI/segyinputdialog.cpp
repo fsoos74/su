@@ -93,6 +93,7 @@ SegyInputDialog::SegyInputDialog(QWidget *parent) :
     connect( ui->cbUseScalel, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
     connect( ui->leScalel, SIGNAL(returnPressed()), this, SLOT(readerParamsChanged()));
     connect( ui->cbSwapBytes, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
+    connect( ui->cbForceFixedSampling, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
     connect( ui->cbUseNEXT, SIGNAL(toggled(bool)), this, SLOT(readerParamsChanged()));
 
     updateButtons();
@@ -201,6 +202,9 @@ void SegyInputDialog::updateControlsFromInfo(){
     }
 
     ui->cbSwapBytes->setChecked(m_info.isSwap());
+
+    bool forceFixed=m_info.isFixedSampling() && m_info.isOverrideFixedSampling();
+    ui->cbForceFixedSampling->setChecked(forceFixed);
 
     int index=0;
     if( m_info.isOverrideSampleFormat()){
@@ -315,6 +319,8 @@ void SegyInputDialog::updateInfoFromControls(){
     }
 
     m_info.setSwap(ui->cbSwapBytes->isChecked());
+    m_info.setOverrideFixedSampling(ui->cbForceFixedSampling->isChecked());
+    m_info.setFixedSamling(ui->cbForceFixedSampling->isChecked());
     //m_infoDirty=true;
 }
 

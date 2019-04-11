@@ -522,6 +522,7 @@ std::shared_ptr<Volume > AVOProject::loadVolume(const QString& name, QProgressBa
     if(!writer) return writer;
 
     if( !writer->open(bounds, domain, type) ){
+        std::cout<<"ERROR:"<<writer->lastError().toStdString()<<std::endl<<std::flush;
         delete writer;
         return nullptr;
     };

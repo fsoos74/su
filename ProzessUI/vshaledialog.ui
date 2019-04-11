@@ -34,7 +34,7 @@
      <item row="3" column="1">
       <widget class="QComboBox" name="cbGRMin"/>
      </item>
-     <item row="9" column="1">
+     <item row="10" column="1">
       <widget class="QLineEdit" name="leOlderRocks">
        <property name="enabled">
         <bool>false</bool>
@@ -44,7 +44,7 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
+     <item row="11" column="0">
       <widget class="QCheckBox" name="cbSteiber">
        <property name="text">
         <string>VSH Steiber:</string>
@@ -71,14 +71,14 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="0">
+     <item row="9" column="0">
       <widget class="QCheckBox" name="cbTertiaryRocks">
        <property name="text">
         <string>VSH Tertiary Rocks (Larionov):</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="11" column="1">
       <widget class="QLineEdit" name="leSteiber">
        <property name="enabled">
         <bool>false</bool>
@@ -95,21 +95,21 @@
        </property>
       </widget>
      </item>
-     <item row="9" column="0">
+     <item row="10" column="0">
       <widget class="QCheckBox" name="cbOlderRocks">
        <property name="text">
         <string>VSH Older Rocks (Larionov):</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="12" column="0">
       <widget class="QCheckBox" name="cbClavier">
        <property name="text">
         <string>VSH Clavier:</string>
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Gamma Ray Index:</string>
@@ -122,7 +122,7 @@
      <item row="2" column="1">
       <widget class="QComboBox" name="cbBlockingMode"/>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QLineEdit" name="leClavier">
        <property name="enabled">
         <bool>false</bool>
@@ -132,7 +132,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QLineEdit" name="leIGR">
        <property name="text">
         <string>IGR</string>
@@ -156,7 +156,7 @@
      <item row="4" column="1">
       <widget class="QComboBox" name="cbGRMax"/>
      </item>
-     <item row="8" column="1">
+     <item row="9" column="1">
       <widget class="QLineEdit" name="leTertiaryRocks">
        <property name="enabled">
         <bool>false</bool>
@@ -173,17 +173,37 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="0">
+     <item row="13" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Wells:</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="13" column="1">
       <widget class="QListWidget" name="lwWells">
        <property name="selectionMode">
         <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Blocking included percentage:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QSpinBox" name="sbBlockingPercent">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>95</number>
        </property>
       </widget>
      </item>

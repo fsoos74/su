@@ -39,6 +39,14 @@ void SEGYInfo::setScalel( const double& s){
     m_scalel=s;
 }
 
+void SEGYInfo::setOverrideFixedSampling(bool on){
+    m_overrideFixedSampling=on;
+}
+
+void SEGYInfo::setFixedSamling(bool on){
+    m_fixedSampling=on;
+}
+
 void SEGYInfo::setOverrideSampleFormat(bool on){
     m_overrideSampleFormat=on;
 }

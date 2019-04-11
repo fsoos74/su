@@ -38,6 +38,7 @@ QMap<QString,QString> CastagnaDialog::params(){
     p.insert("wells", packParamList(wells));
     p.insert( "vp-log", ui->cbVP->currentText() );
     p.insert( "vs-log", ui->leVS->text() );
+    p.insert("description",ui->leDescription->text());
     p.insert( "a0", ui->leA0->text() );
     p.insert( "a1", ui->leA1->text() );
     p.insert( "a2", ui->leA2->text() );

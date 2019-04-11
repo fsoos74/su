@@ -25,6 +25,7 @@ private:
 
     void blockLogMin( Log& outputLog, const Log& inputLog, int i0, int i1);
     void blockLogMax( Log& outputLog, const Log& inputLog, int i0, int i1);
+    void blockLogMinMax( Log& minLog, Log& maxLog, const Log& inputLog, int i0, int i1);
     ResultCode processWell(QString well);
 
     QStringList m_wells;
@@ -37,7 +38,7 @@ private:
     QString m_grMinName;
     QString m_grMaxName;
     BlockingMode m_blockingMode;
-
+    int percentage;
     QStringList m_tops;
 };
 
