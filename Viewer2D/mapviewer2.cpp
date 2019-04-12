@@ -373,6 +373,44 @@ void MapViewer2::updateItemsFromTree(){
         }
     }
 
+    // other grids
+    auto ogrids=ui->treeWidget->items("Other Grids");
+    for(auto name : ogrids){
+        auto item=findItem(ItemType::OtherGrid, name);
+        auto checked=ui->treeWidget->isChecked("Other Grids",name);
+        if(checked){
+            if(!item){	// need to create new item
+                addOtherGridItem(name);
+            }
+        }
+        else{
+            if( item ){	// need to remove item
+                removeItemLegendWidget(item);
+                ui->graphicsView->scene()->removeItem(item);
+                redraw=true;
+            }
+        }
+    }
+
+    // Attribute grids
+    auto agrids=ui->treeWidget->items("Attribute Grids");
+    for(auto name : agrids){
+        auto item=findItem(ItemType::AttributeGrid, name);
+        auto checked=ui->treeWidget->isChecked("Attribute Grids",name);
+        if(checked){
+            if(!item){	// need to create new item
+                addAttributeGridItem(name);
+            }
+        }
+        else{
+            if( item ){	// need to remove item
+                removeItemLegendWidget(item);
+                ui->graphicsView->scene()->removeItem(item);
+                redraw=true;
+            }
+        }
+    }
+
     // wells
     auto wells=ui->treeWidget->items("Wells");
     for(auto name : wells){
@@ -405,6 +443,8 @@ void MapViewer2::updateTreeFromItems(){
     ignoreit=true;
 
     QSet<QString> shorizons;
+    QSet<QString> sothergrids;
+    QSet<QString> sattributegrids;
     QSet<QString> svolumes;
     QSet<QString> swells;
     auto items=ui->graphicsView->items();
@@ -413,6 +453,8 @@ void MapViewer2::updateTreeFromItems(){
         auto name=item->data(ITEM_NAME_INDEX).toString();
         switch(type){
         case ItemType::HorizonGrid: shorizons.insert(name); break;
+        case ItemType::OtherGrid: sothergrids.insert(name); break;
+        case ItemType::AttributeGrid: sattributegrids.insert(name); break;
         case ItemType::Volume: svolumes.insert(name);break;
         case ItemType::Well: swells.insert(name); break;
         default: break;
@@ -425,6 +467,20 @@ void MapViewer2::updateTreeFromItems(){
     for(auto name : horizons){
         auto checked=shorizons.contains(name);
         ui->treeWidget->setChecked("Horizons",name,checked);
+    }
+
+    // other grids
+    auto ogrids=ui->treeWidget->items("Other Grids");
+    for(auto name : ogrids){
+        auto checked=sothergrids.contains(name);
+        ui->treeWidget->setChecked("Other Grids",name,checked);
+    }
+
+    // attribute grids
+    auto agrids=ui->treeWidget->items("Attribute Grids");
+    for(auto name : agrids){
+        auto checked=sattributegrids.contains(name);
+        ui->treeWidget->setChecked("Attribute Grids",name,checked);
     }
 
     // volumes
@@ -489,6 +545,60 @@ void MapViewer2::addHorizonItem(QString name){
     item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::HorizonGrid));
     item->setData(ITEM_NAME_INDEX, name);
     item->setZValue(ItemZMap.value(ItemType::HorizonGrid, 0 ) );
+    ui->graphicsView->scene()->addItem(item);
+
+    auto w = new HistogramColorBarWidget;
+    w->setOrientation(Qt::Horizontal);
+    w->setColorTable(item->colorTable());
+    w->setData( g->data(), g->size(), g->NULL_VALUE);
+    w->setFixedSize( 200, 200);
+    connect(item,SIGNAL(dataChanged(float*,size_t,float)),w,SLOT(setData(float*,size_t,float)));
+    addItemLegendWidget(item,w,name);
+}
+
+void MapViewer2::addOtherGridItem(QString name){
+    auto g = m_project->loadGrid(GridType::Other, name);
+
+    if( !g ){
+        QMessageBox::critical(this, tr("Add Grid"), QString("Loading grid \"%1\" failed!").arg(name) );
+        return;
+    }
+
+    auto item = new GridItem( m_project);
+    item->setLabel(name);
+    item->setGrid(g);
+    item->setShowLineLabels(false);
+    item->setShowMesh(false);
+    item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::OtherGrid));
+    item->setData(ITEM_NAME_INDEX, name);
+    item->setZValue(ItemZMap.value(ItemType::OtherGrid, 0 ) );
+    ui->graphicsView->scene()->addItem(item);
+
+    auto w = new HistogramColorBarWidget;
+    w->setOrientation(Qt::Horizontal);
+    w->setColorTable(item->colorTable());
+    w->setData( g->data(), g->size(), g->NULL_VALUE);
+    w->setFixedSize( 200, 200);
+    connect(item,SIGNAL(dataChanged(float*,size_t,float)),w,SLOT(setData(float*,size_t,float)));
+    addItemLegendWidget(item,w,name);
+}
+
+void MapViewer2::addAttributeGridItem(QString name){
+    auto g = m_project->loadGrid(GridType::Attribute, name);
+
+    if( !g ){
+        QMessageBox::critical(this, tr("Add Grid"), QString("Loading grid \"%1\" failed!").arg(name) );
+        return;
+    }
+
+    auto item = new GridItem( m_project);
+    item->setLabel(name);
+    item->setGrid(g);
+    item->setShowLineLabels(false);
+    item->setShowMesh(false);
+    item->setData(ITEM_TYPE_INDEX, static_cast<int>(ItemType::AttributeGrid));
+    item->setData(ITEM_NAME_INDEX, name);
+    item->setZValue(ItemZMap.value(ItemType::AttributeGrid, 0 ) );
     ui->graphicsView->scene()->addItem(item);
 
     auto w = new HistogramColorBarWidget;
@@ -831,6 +941,14 @@ void MapViewer2::fillTree(){
     ui->treeWidget->addItem("Horizons");
     for(auto name : m_project->gridList(GridType::Horizon)){
         ui->treeWidget->addItem("Horizons", name);
+    }
+    ui->treeWidget->addItem("Other Grids");
+    for(auto name : m_project->gridList(GridType::Other)){
+        ui->treeWidget->addItem("Other Grids", name);
+    }
+    ui->treeWidget->addItem("Attribute Grids");
+    for(auto name : m_project->gridList(GridType::Attribute)){
+        ui->treeWidget->addItem("Attribute Grids", name);
     }
     ui->treeWidget->addItem("Volumes");
     for(auto name : m_project->volumeList()){

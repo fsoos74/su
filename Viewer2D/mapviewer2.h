@@ -89,6 +89,8 @@ private:
     void fillTree();
     void addVolumeItem(QString);
     void addHorizonItem(QString);
+    void addOtherGridItem(QString);
+    void addAttributeGridItem(QString);
     void addWellItem(QString);
     void setupToolBarControls();
     void addItemLegendWidget(QGraphicsItem*, QWidget*, QString );
