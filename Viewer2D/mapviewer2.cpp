@@ -7,7 +7,7 @@
 #include<QLabel>
 #include<QMap>
 #include<dynamicmousemodeselector.h>
-#include<volumeitem.h>
+#include<v2dvolumeitem.h>
 #include<griditem.h>
 #include<griditemconfigdialog.h>
 #include<wellitem.h>
@@ -254,7 +254,7 @@ void MapViewer2::onMouseDoubleClick(QPointF p){
         configAreaItem(dynamic_cast<AreaItem*>(item));
         break;
     case ItemType::Volume:
-        configVolumeItem(dynamic_cast<VolumeItem*>(item));     // dialog handles nullptr
+        configVolumeItem(dynamic_cast<V2DVolumeItem*>(item));     // dialog handles nullptr
         break;
 
     case ItemType::HorizonGrid:
@@ -279,7 +279,7 @@ bool MapViewer2::eventFilter(QObject *watched, QEvent *event){
         if(mdisw){
             if(!m_legendWidgets.values().contains(mdisw)) return false;
             QGraphicsItem* item=m_legendWidgets.key(mdisw);
-            auto vitem=dynamic_cast<VolumeItem*>(item);
+            auto vitem=dynamic_cast<V2DVolumeItem*>(item);
             if(vitem){
                 configVolumeItem(vitem);
                 return true;
@@ -507,7 +507,7 @@ void MapViewer2::addVolumeItem(QString name){
         return;
     }
 
-    auto item = new VolumeItem( m_project);
+    auto item = new V2DVolumeItem( m_project);
     item->setVolume(v);
     item->setLabel(name);
     item->setShowLineLabels(false);
@@ -719,7 +719,7 @@ void MapViewer2::on_actionConfigure_Volume_triggered()
         if(!ok) return;
     }
     auto item=findItem(ItemType::Volume,iname);
-    auto vitem=dynamic_cast<VolumeItem*>(item);
+    auto vitem=dynamic_cast<V2DVolumeItem*>(item);
     if(vitem) configVolumeItem(vitem);
 }
 
@@ -788,7 +788,7 @@ void MapViewer2::configGridItem(GridItem * item){
 }
 
 
-void MapViewer2::configVolumeItem(VolumeItem * item){
+void MapViewer2::configVolumeItem(V2DVolumeItem * item){
 
     if( !item ) return;
     if( !item->grid()) return;

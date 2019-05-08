@@ -8,7 +8,7 @@
 #include<memory>
 #include<areaitem.h>
 #include<griditem.h>
-#include<volumeitem.h>
+#include<v2dvolumeitem.h>
 #include<wellitem.h>
 #include<reversespinbox.h>
 #include<QComboBox>
@@ -83,7 +83,7 @@ private:
     void configAreaItem( AreaItem* );
     void configWellItem( WellItem* );
     void configGridItem( GridItem* );
-    void configVolumeItem( VolumeItem* );
+    void configVolumeItem( V2DVolumeItem* );
     void configAxis( GVRuler*);
 
     void fillTree();

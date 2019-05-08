@@ -21,9 +21,9 @@ SOURCES += \
     viewer2d.cpp \
     griditemconfigdialog.cpp \
     wellitem.cpp \
-    volumeitem.cpp \
     areaitem.cpp \
-    pointitem.cpp
+    pointitem.cpp \
+    v2dvolumeitem.cpp
 
 HEADERS += \
     griditem.h \
@@ -31,9 +31,9 @@ HEADERS += \
     viewer2d.h \
     griditemconfigdialog.h \
     wellitem.h \
-    volumeitem.h \
     areaitem.h \
-    pointitem.h
+    pointitem.h \
+    v2dvolumeitem.h
 
 unix {
     target.path = /usr/lib

@@ -61,10 +61,21 @@ ProjectProcess::ResultCode NNVolumeClassificationProcess::run(){
         auto name=m_inames[i];
         auto r = project()->openVolumeReader(name);
         if( !r ){
-            setErrorString( tr("Open volume \"%1\" failed!").arg(name));
+            setErrorString( tr("Creating reader %1 failed!").arg(name) );
+            return ResultCode::Error;
+        }
+        if( !r->good() ){
+            setErrorString( tr("Open volume \"%1\" failed!\n%2").arg(name,r->lastError()) );
             return ResultCode::Error;
         }
         r->setParent(this);
+
+        std::cout<<"Volume "<<name.toStdString()<<std::endl;
+        auto b=r->bounds();
+        std::cout<<"ilines "<<b.i1()<<" - "<<b.i2()<<std::endl;
+        std::cout<<"xlines "<<b.j1()<<" - "<<b.j2()<<std::endl;
+        std::cout<<"ft="<<b.ft()<<" dt="<<b.dt()<<" lt="<<b.lt()<<std::endl;
+        std::cout<<std::endl<<std::flush;
 
         if( i > 0 ){
             if( r->bounds()!=m_inputVolumeReaders[0]->bounds()){

@@ -14,6 +14,11 @@ bool VolumeReader2::open(){
 
     m_file.open(QFile::ReadOnly);
 
+    if( m_file.error()!=QFile::FileError::NoError){
+        setError(m_file.errorString());
+        return false;
+    }
+
     if( !readMagic(m_file)) return false;
 
     if(!readBounds(m_file, m_bounds )){

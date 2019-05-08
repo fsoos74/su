@@ -1,16 +1,16 @@
-#ifndef VOLUMEITEM_H
-#define VOLUMEITEM_H
+#ifndef V2D_VOLUMEITEM_H
+#define V2D_VOLUMEITEM_H
 
 #include <griditem.h>
 #include <QObject>
 #include <memory>
 #include <volume.h>
 
-class VolumeItem : public GridItem
+class V2DVolumeItem : public GridItem
 {
     Q_OBJECT
 public:
-    VolumeItem(AVOProject* project=nullptr, QGraphicsItem* parentGraphicsItemItem=nullptr, QObject* parentQObject=nullptr );
+    V2DVolumeItem(AVOProject* project=nullptr, QGraphicsItem* parentGraphicsItemItem=nullptr, QObject* parentQObject=nullptr );
 
     int sliceValue()const{
         return m_sliceValue;
@@ -34,4 +34,4 @@ private:
     int m_sliceValue;
 };
 
-#endif // VOLUMEITEM_H
+#endif //V2D_VOLUMEITEM_H

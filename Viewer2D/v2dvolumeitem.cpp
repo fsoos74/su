@@ -1,20 +1,20 @@
-#include "volumeitem.h"
+#include "v2dvolumeitem.h"
 
-VolumeItem::VolumeItem(AVOProject* project, QGraphicsItem* parentGraphicsItem, QObject* parent):
+V2DVolumeItem::V2DVolumeItem(AVOProject* project, QGraphicsItem* parentGraphicsItem, QObject* parent):
     GridItem( project, parentGraphicsItem, parent)
 {
 
 }
 
 
-void VolumeItem::setSliceValue(int t){
+void V2DVolumeItem::setSliceValue(int t){
 
     if( t==m_sliceValue) return;
     m_sliceValue=t;
     updateGrid();
 }
 
-void VolumeItem::setVolume(std::shared_ptr<Volume> v){
+void V2DVolumeItem::setVolume(std::shared_ptr<Volume> v){
 
     if( v==m_volume ) return;
     m_volume=v;
@@ -33,12 +33,12 @@ void VolumeItem::setVolume(std::shared_ptr<Volume> v){
     */
 }
 
-void VolumeItem::setZValueWrapper(int i){
+void V2DVolumeItem::setZValueWrapper(int i){
     if(i==zValue()) return;
     setZValue(i);
 }
 
-void VolumeItem::updateGrid(){
+void V2DVolumeItem::updateGrid(){
     if( !m_volume) return;
     auto bounds=m_volume->bounds();
     auto gbounds=Grid2DBounds(bounds.i1(),bounds.j1(),bounds.i2(),bounds.j2());

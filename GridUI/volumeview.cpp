@@ -1044,6 +1044,7 @@ QImage VolumeView::enhance(QImage src){
     return convolve(src,kernel);
 }
 
+namespace{
 double lininterp(double x1, double y1, double x2, double y2, double x){
 
     if( x<=x1 ) return y1;
@@ -1053,6 +1054,7 @@ double lininterp(double x1, double y1, double x2, double y2, double x){
     // need to add eps check
 
     return y1 + x * ( y2 - y1 ) / ( x2 - x1 );
+}
 }
 
 void VolumeView::fillSceneInline(QGraphicsScene * scene){
