@@ -36,7 +36,10 @@ SOURCES += gridui.cpp \
     volumeviewer2d.cpp \
     volumeitemsconfigdialog.cpp \
     playerdialog.cpp \
-    volumepicker.cpp
+    volumepicker.cpp \
+    volumeitem.cpp \
+    volumeitemsdialog.cpp \
+    volumeitemmodel.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
@@ -55,7 +58,10 @@ HEADERS += gridui.h\
     volumeviewer2d.h \
     volumeitemsconfigdialog.h \
     playerdialog.h \
-    volumepicker.h
+    volumepicker.h \
+    volumeitem.h \
+    volumeitemsdialog.h \
+    volumeitemmodel.h
 
 unix {
     target.path = /usr/lib
@@ -75,7 +81,8 @@ FORMS += \
     gridselectdialog.ui \
     volumepropertydialog.ui \
     volumeviewer2d.ui \
-    playerdialog.ui
+    playerdialog.ui \
+    volumeitemsdialog.ui
 
 
 

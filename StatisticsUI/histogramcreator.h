@@ -37,7 +37,7 @@ Histogram HistogramCreator::createHistogram( ITERATOR begin, ITERATOR end, VALUE
 
     Histogram histogram( min, (max-min)/STEPS, STEPS);
 
-    auto n_total=std::distance(begin, end);
+    auto n_total=static_cast<size_t>(std::distance(begin, end));
     size_t chunk_size=n_total/100;
     size_t n_processed=0;
     auto it=begin;
@@ -70,7 +70,7 @@ Histogram HistogramCreator::createHistogram( ITERATOR begin, ITERATOR end, VALUE
     auto max=std::numeric_limits<VALUE>::lowest();
 
 
-    auto n_total=std::distance(begin, end);
+    auto n_total=static_cast<size_t>(std::distance(begin, end));
     size_t chunk_size=n_total/100;
     size_t n_processed=0;
     auto it=begin;

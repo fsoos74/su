@@ -6,6 +6,8 @@
 #include<cmath>
 #include<volumepicker.h>
 #include<matrix.h>
+#include"volumeitem.h"
+#include"volumeitemmodel.h"
 
 
 namespace  {
@@ -120,40 +122,16 @@ bool operator==(const VolumeView::SliceDef& a, const VolumeView::SliceDef& b){
 }
 
 
-VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.)
+VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.),
+    m_picker(new VolumePicker(this)),
+    mVolumeItemModel(new VolumeItemModel(this))
 {
-    m_picker=new VolumePicker(this);
-    //connect(m_picker, SIGNAL(picksChanged()), this, SLOT(update()));
-    //connect(this, SIGNAL(pointSelected(QPointF)), m_picker, SLOT(pickPoint(QPointF)) );
-    //setSelectionMode(AxisView::SELECTIONMODE::SinglePoint);
-
+    connect(mVolumeItemModel,SIGNAL(changed()), this, SLOT(onVolumeItemModelChanged()));
+    connect(mVolumeItemModel,SIGNAL(itemChanged(VolumeItem*)), this, SLOT(refreshSceneCaller()));
     updateBounds();
     refreshScene();
 }
 
-
-QStringList VolumeView::volumeList(){
-    return m_volumes.keys();
-}
-
-std::shared_ptr<Volume> VolumeView::volume(QString name){
-    if( !m_volumes.contains(name)) return std::shared_ptr<Volume>();
-    auto vitem=m_volumes.value(name);
-    return vitem.volume;
-}
-
-qreal VolumeView::volumeAlpha(QString name){
-    if( !m_volumes.contains(name)) return 0;
-    auto vitem=m_volumes.value(name);
-    return vitem.alpha;
-}
-
-
-ColorTable* VolumeView::volumeColorTable(QString name){
-    if( !m_volumes.contains(name)) return nullptr;
-    auto vitem=m_volumes.value(name);
-    return vitem.colorTable;
-}
 
 QColor VolumeView::horizonColor(QString name){
 
@@ -363,55 +341,6 @@ void VolumeView::setDisplayTables(bool on){
 void VolumeView::setDisplayLastViewed(bool on){
     if( on==m_displayLastViewed) return;
     m_displayLastViewed=on;
-    refreshScene();
-}
-
-
-void VolumeView::addVolume(QString name, std::shared_ptr<Volume> v){
-
-    if( name.isEmpty()) return;
-    if( !v ) return;
-
-    auto r=v->valueRange();
-    ColorTable* ct=new ColorTable(this, ColorTable::defaultColors(), r );
-    if( !ct ) throw std::runtime_error("Allocating colortable failed!");
-    connect(ct, SIGNAL(colorsChanged()), this, SLOT(refreshSceneCaller()));
-    connect(ct, SIGNAL(powerChanged(double)), this, SLOT(refreshSceneCaller()));
-    connect(ct, SIGNAL(rangeChanged(std::pair<double,double>)), this, SLOT(refreshSceneCaller()));
-
-    VolumeItem vitem{ v, 1, ct };
-
-    m_volumes.insert(name, vitem);
-
-    updateBounds();
-
-    refreshScene();
-
-    emit volumesChanged();
-}
-
-void VolumeView::removeVolume(QString name){
-    if( name.isEmpty()) return;
-    if( !m_volumes.contains(name)) return;
-
-    auto vitem=m_volumes.value(name);
-    if( vitem.colorTable) delete vitem.colorTable;
-
-    m_volumes.remove(name);
-
-    updateBounds();
-
-    refreshScene();
-
-    emit volumesChanged();
-}
-
-void VolumeView::setVolumeAlpha(QString name, double a){
-    if( !m_volumes.contains(name)) return;
-    auto vitem=m_volumes.value(name);
-    if(a==vitem.alpha) return;
-    vitem.alpha=a;
-    m_volumes[name]=vitem;
     refreshScene();
 }
 
@@ -1128,19 +1057,20 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
     QPixmap pixmap=QPixmap::fromImage(img);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_Plus);
+    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
 
-    auto vitems=m_volumes.values();
-
-    for( auto vitem : vitems){
-        auto v=vitem.volume;
+    for( int i=0; i<mVolumeItemModel->size(); i++){
+        auto vitem=mVolumeItemModel->at(i);
+        if(!vitem) continue;
+        std::cout<<"drawing i="<<i<<" name="<<vitem->name().toStdString()<<std::endl<<std::flush;
+        auto v=vitem->volume();
         auto vbounds=v->bounds();
         auto ft=vbounds.ft()-0.001*m_flattenRange.second;
         auto lt=vbounds.lt()-0.001*m_flattenRange.first;
-        auto ct = vitem.colorTable;
+        auto ct = vitem->colorTable();
         QImage vimg=intersectVolumeInline(*v, ct, il, ft, lt);
         vimg=enhance(vimg);
-        painter.setOpacity(vitem.alpha);
+        painter.setOpacity(vitem->opacity());
         painter.drawImage( vbounds.j1()-bounds.j1(), bounds.timeToSample(ft), vimg);
     }
 
@@ -1171,19 +1101,19 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
     QPixmap pixmap=QPixmap::fromImage(img);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_Plus);
+    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
 
-    auto vitems=m_volumes.values();
-
-    for( auto vitem : vitems){
-        auto v=vitem.volume;
+    for( int i=0; i<mVolumeItemModel->size(); i++){
+        auto vitem=mVolumeItemModel->at(i);
+        if(!vitem) continue;
+        auto v=vitem->volume();
         auto vbounds=v->bounds();
         auto ft=vbounds.ft()-0.001*m_flattenRange.second;
         auto lt=vbounds.lt()-0.001*m_flattenRange.first;
-        auto ct = vitem.colorTable;
+        auto ct = vitem->colorTable();
         QImage vimg=intersectVolumeCrossline(*v, ct, xl, ft, lt);
         vimg=enhance(vimg);
-        painter.setOpacity(vitem.alpha);
+        painter.setOpacity(vitem->opacity());
         painter.drawImage( vbounds.i1()-bounds.i1(), bounds.timeToSample(ft), vimg);
     }
 
@@ -1212,17 +1142,17 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
     QPixmap pixmap=QPixmap::fromImage(img);
     QPainter painter(&pixmap);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_Plus);
+    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
 
-    auto vitems=m_volumes.values();
-
-    for( auto vitem : vitems){
-        auto v=vitem.volume;
+    for( int i=0; i<mVolumeItemModel->size(); i++){
+        auto vitem=mVolumeItemModel->at(i);
+        if(!vitem) continue;
+        auto v=vitem->volume();
         auto vbounds=v->bounds();
-        auto ct = vitem.colorTable;
+        auto ct = vitem->colorTable();
         QImage vimg=intersectVolumeTime(*v, ct, m_slice.value);
         vimg=enhance(vimg);
-        painter.setOpacity(vitem.alpha);
+        painter.setOpacity(vitem->opacity());
         painter.drawImage( vbounds.i1()-bounds.i1(), vbounds.i2()-bounds.i2(), vimg);
     }
 
@@ -1271,9 +1201,16 @@ void VolumeView::refreshSceneCaller(){
     refreshScene();
 }
 
+void VolumeView::onVolumeItemModelChanged(){
+    std::cout<<"onVolumeItemModelChanged"<<std::endl<<std::flush;
+    emit volumesChanged();
+    updateBounds();
+    refreshScene();
+}
+
 void VolumeView::updateBounds(){
 
-    if( m_volumes.isEmpty()){
+    if( mVolumeItemModel->size()<1){
         m_bounds=Grid3DBounds(0,1,0,1,1,0,1);
         return;
     }
@@ -1286,11 +1223,10 @@ void VolumeView::updateBounds(){
     qreal maxlt=std::numeric_limits<qreal>::lowest();
     qreal dt=std::numeric_limits<qreal>::max();
 
-    for( auto name : m_volumes.keys()){
-
-        auto v=m_volumes.value(name);
-        Q_ASSERT(v.volume);
-        auto bounds=v.volume->bounds();
+    for( int i=0; i<mVolumeItemModel->size(); i++){
+        auto vitem=mVolumeItemModel->at(i);
+        if(!vitem) continue;
+        auto bounds=vitem->volume()->bounds();
 
         if( bounds.i1()<mini1 ) mini1=bounds.i1();
         if( bounds.i2()>maxi2 ) maxi2=bounds.i2();

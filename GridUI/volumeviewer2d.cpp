@@ -17,7 +17,9 @@
 #include <histogramcreator.h>
 #include <volumeitemsconfigdialog.h>
 #include <playerdialog.h>
-
+#include <volumeitem.h>
+#include <volumeitemmodel.h>
+#include <volumeitemsdialog.h>
 #include <topsdbmanager.h>
 
 
@@ -105,9 +107,15 @@ void VolumeViewer2D::addVolume(QString name){
     auto volume=m_project->loadVolume(name, true);
     if( !volume) return;
 
-    ui->volumeView->addVolume(name, volume);
+    VolumeItem* vitem=new VolumeItem(this);
+    vitem->setName(name);
+    auto r=volume->valueRange();
+    vitem->colorTable()->setRange(r);
+    vitem->setVolume(volume);
 
-    if( ui->volumeView->volumeList().size()==1){
+    ui->volumeView->volumeItemModel()->add(vitem);
+
+    if( ui->volumeView->volumeItemModel()->size()==1){
         ui->volumeView->setSlice(VolumeView::SliceType::Inline, volume->bounds().i1());
     }
  }
@@ -383,7 +391,7 @@ void VolumeViewer2D::updateFlattenHorizons(){
 void VolumeViewer2D::on_actionDisplay_Range_triggered()
 {
     QString name;
-    auto vlist=ui->volumeView->volumeList();
+    auto vlist=ui->volumeView->volumeItemModel()->names();
     if( vlist.isEmpty()){
         return;
     }
@@ -396,10 +404,14 @@ void VolumeViewer2D::on_actionDisplay_Range_triggered()
         if( !ok || name.isEmpty()) return;
     }
 
-    auto volume=ui->volumeView->volume(name);
+    int idx=ui->volumeView->volumeItemModel()->indexOf(name);
+    auto vitem=ui->volumeView->volumeItemModel()->at(idx);
+    if(!vitem) return;
+
+    auto volume=vitem->volume();
     if( !volume) return;
 
-    auto ct=ui->volumeView->volumeColorTable(name);
+    auto ct=vitem->colorTable();
     if( !ct ) return;
 
     if( !displayRangeDialog ){
@@ -436,7 +448,7 @@ void VolumeViewer2D::on_actionColorbar_triggered()
 {
 
     QString name;
-    auto vlist=ui->volumeView->volumeList();
+    auto vlist=ui->volumeView->volumeItemModel()->names();
     if( vlist.isEmpty()){
         return;
     }
@@ -449,7 +461,9 @@ void VolumeViewer2D::on_actionColorbar_triggered()
         if( !ok || name.isEmpty()) return;
     }
 
-    auto ct=ui->volumeView->volumeColorTable(name);
+    auto idx=ui->volumeView->volumeItemModel()->indexOf(name);
+    auto vitem=ui->volumeView->volumeItemModel()->at(idx);
+    auto ct=vitem->colorTable();
     if( !ct ) return;
 
     QVector<QRgb> oldColors=ct->colors();
@@ -467,7 +481,7 @@ void VolumeViewer2D::on_actionColorbar_triggered()
 void VolumeViewer2D::on_actionVolume_Opacity_triggered()
 {
     QString name;
-    auto vlist=ui->volumeView->volumeList();
+    auto vlist=ui->volumeView->volumeItemModel()->names();
     if( vlist.isEmpty()){
         return;
     }
@@ -480,12 +494,15 @@ void VolumeViewer2D::on_actionVolume_Opacity_triggered()
         if( !ok || name.isEmpty()) return;
     }
 
-    double o=ui->volumeView->volumeAlpha(name);
+    auto idx=ui->volumeView->volumeItemModel()->indexOf(name);
+    auto vitem=ui->volumeView->volumeItemModel()->at(idx);
+    if(!vitem) return;
+    double o=vitem->opacity();
     bool ok=false;
     o=QInputDialog::getDouble(this, tr("Volume Opacity"), tr("Opacity:"), o, 0, 1, 2, &ok);
     if( !ok ) return;
 
-    ui->volumeView->setVolumeAlpha(name, o);
+    vitem->setOpacity(o);
 }
 
 
@@ -493,21 +510,23 @@ void VolumeViewer2D::on_action_Configure_Volumes_triggered()
 {
     VolumeItemsConfigDialog* dlg=new VolumeItemsConfigDialog();
     dlg->setWindowTitle(tr("Configure Volumes"));
+/*
+    for( int i=0; ){
 
-    for( auto name : ui->volumeView->volumeList()){
+        auto vitem=ui->volumeView->volumeItem(name);
+        if(!vitem) continue;
 
         if( !m_volumeHistograms.contains(name)){
-            auto volume=ui->volumeView->volume(name);
+            auto volume=vitem->volume();
             if( !volume ) continue;
             HistogramCreator hcreator;
             auto histogram=hcreator.createHistogram( QString("Volume %1").arg(name), std::begin(*volume), std::end(*volume), volume->NULL_VALUE, 100 );
             m_volumeHistograms.insert(name, histogram);
         }
-        dlg->addVolumeItem(name, ui->volumeView->volumeAlpha(name), ui->volumeView->volumeColorTable(name), m_volumeHistograms.value(name) );
+
+        dlg->addVolumeItem(vitem->name(), vitem->alpha(), vitem->colorTable(), m_volumeHistograms.value(name) );
     }
-
-    connect(dlg,SIGNAL(alphaChanged(QString,double)), ui->volumeView, SLOT(setVolumeAlpha(QString, double)) );
-
+*/
     dlg->exec();
 }
 
@@ -515,7 +534,7 @@ void VolumeViewer2D::on_action_Configure_Volumes_triggered()
 
 void VolumeViewer2D::onVolumesChanged(){
 
-    auto volumes = ui->volumeView->volumeList();
+    auto volumes = ui->volumeView->volumeItemModel()->names();
 
     // remove colorbars of non-existent volumes
     for( auto name : m_colorbars.keys()){
@@ -527,13 +546,18 @@ void VolumeViewer2D::onVolumesChanged(){
     }
 
     // add colorbars for newly added volumes
-    for( auto name : volumes ){
+    for( auto name : volumes){
 
-        if( m_colorbars.contains(name) ) continue;
+        if(m_colorbars.contains(name)) continue;        // already have color for this volume
+
+        int idx=ui->volumeView->volumeItemModel()->indexOf(name);
+        Q_ASSERT(idx>=0);
+        auto vitem=ui->volumeView->volumeItemModel()->at(idx);
+        if(!vitem) continue;
 
         auto colorbar = new ColorBarWidget(this);
         m_colorbarsLayout->addWidget(colorbar);
-        auto colortable=ui->volumeView->volumeColorTable(name);
+        auto colortable=vitem->colorTable();
         colorbar->setColorTable(colortable);
         colorbar->setLabel(name);
         colorbar->show();
@@ -587,8 +611,8 @@ void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
 
 void VolumeViewer2D::onMouseOver(QPointF p){
 
-    int il,xl;
-    float z;
+    int il=0,xl=0;
+    float z=0;
 
     switch(ui->volumeView->slice().type){
     case VolumeView::SliceType::Inline:
@@ -611,10 +635,11 @@ void VolumeViewer2D::onMouseOver(QPointF p){
     QString msg;
     msg.sprintf("iline=%d, xline=%d, time/depth=%g", il, xl, z);
 
-    auto vlist=ui->volumeView->volumeList();
-    for( auto name : vlist ){
-        msg.append(QString(", %1=").arg(name));
-        auto v=ui->volumeView->volume(name);
+    for(int i=0; i<ui->volumeView->volumeItemModel()->size(); i++){
+        auto vitem=ui->volumeView->volumeItemModel()->at(i);
+        if(!vitem) continue;
+        msg.append(QString(", %1=").arg(vitem->name()));
+        auto v=vitem->volume();
         auto value=v->value(il, xl, 0.001*z);    // z->secs
         if( value!=v->NULL_VALUE){
             msg.append(QString::number(value));
@@ -633,6 +658,10 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
 {
     Q_ASSERT(m_project);
 
+    VolumeItemsDialog* dlg=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel());
+    dlg->setWindowTitle("Setup volumes");
+    dlg->exec();
+/*
     QStringList avail=m_project->volumeList();
     bool ok=false;
     auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Volumes"), tr("Select Volumes:"), avail, &ok, ui->volumeView->volumeList());
@@ -658,6 +687,7 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
 
         ui->volumeView->addVolume(name, v);
     }
+    */
 }
 
 

@@ -16,6 +16,8 @@
 #include<QColor>
 
 class VolumePicker;
+class VolumeItem;
+class VolumeItemModel;
 
 class VolumeView : public RulerAxisView
 {
@@ -60,10 +62,9 @@ public:
         return m_lastViewedColor;
     }
 
-    QStringList volumeList();
-    std::shared_ptr<Volume> volume(QString name);
-    qreal volumeAlpha(QString name);
-    ColorTable* volumeColorTable(QString name);
+    VolumeItemModel* volumeItemModel()const{
+        return mVolumeItemModel;
+    }
 
     QStringList horizonList();
     QColor horizonColor(QString);
@@ -119,10 +120,6 @@ public slots:
     void setSharpenPercent(int);
     void setSharpenKernelSize(int);
 
-    void addVolume(QString name, std::shared_ptr<Volume> );
-    void removeVolume(QString name);
-    void setVolumeAlpha(QString name, double);
-
     void addHorizon(QString name, std::shared_ptr<Grid2D<float>>, QColor);
     void removeHorizon(QString);
     void setHorizonColor(QString, QColor);
@@ -168,6 +165,7 @@ private slots:
     void updateBounds();
     void updateAxes();
     void refreshSceneCaller();
+    void onVolumeItemModelChanged();
 
 private:
 
@@ -179,12 +177,6 @@ private:
     void renderLastViewed(QGraphicsScene*);
 
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
-
-    struct VolumeItem{
-        std::shared_ptr<Volume> volume;
-        qreal alpha;
-        ColorTable* colorTable;
-    };
 
     struct HorizonItem{
         std::shared_ptr<Grid2D<float>> grid;
@@ -223,7 +215,7 @@ private:
     int m_wellViewDist=100;
     int m_sharpenPercent=0;
     int m_sharpenKernelSize=3;
-    QMap<QString, VolumeItem> m_volumes;
+    VolumeItemModel* mVolumeItemModel;
     QMap<QString, HorizonItem> m_horizons;
     QMap<QString, std::shared_ptr<WellPath>> m_wells;
     QMap<QString, std::shared_ptr<WellMarkers>> m_markers;
