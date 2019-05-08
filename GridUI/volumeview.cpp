@@ -1053,16 +1053,14 @@ double lininterp(double x1, double y1, double x2, double y2, double x){
 
     // need to add eps check
 
-    return y1 + x * ( y2 - y1 ) / ( x2 - x1 );
+    return y1 + (x-x1)* ( y2 - y1 ) / ( x2 - x1 );
 }
 }
 
 void VolumeView::fillSceneInline(QGraphicsScene * scene){
 
     if( !scene ) return;
-
     int il=m_slice.value;
-
     auto bounds=m_bounds;
 
     for( int i=0; i<mVolumeItemModel->size(); i++){
@@ -1126,14 +1124,12 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
                 item->setPen(QPen(Qt::black, 0));
                 item->setOpacity(vitem->opacity());
                 scene->addItem(item);
-                /*
+
                 // variable area
                 path=QPainterPath();
                 bool active=false;
                 double xprev=xl;
                 double zprev=ft+d;
-                double xstart=0;
-                double zstart=0;
                 for( auto j=0; j<nt; j++){
                     auto z=ft + j*dt + d;
                     auto value=v->value(il, xl, z);
@@ -1144,17 +1140,17 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
                         if(!active){        // no area yet, start new
                             auto zxl=(j>0) ? lininterp(xprev, zprev,x,z,xl) : z;
                             path.moveTo(xl,zxl);
-                            xstart=xl;
-                            zstart=zxl;
+                            //path.moveTo(x,z);
                             active=true;
                         }
                         path.lineTo(x,z);   // line to current point
                     }
                     else if(active){        // close area
                         auto zxl=lininterp(x,z,xprev, zprev,xl);
-                        path.lineTo(xl,zxl);//xl);
-                        path.lineTo(xstart,zstart);
+                        path.lineTo(xl,zxl);
+                        //path.lineTo(x,z);
                         active=false;
+                        path.closeSubpath();
                     }
                     xprev=x;
                     zprev=z;
@@ -1166,7 +1162,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
                 item->setBrush(Qt::black);
                 item->setOpacity(vitem->opacity());
                 scene->addItem(item);
-                */
+
             }
         }
     }
