@@ -18,6 +18,9 @@ VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, VolumeItemModel* model
     auto ivalidator=new QIntValidator(this);
     ivalidator->setRange(0,100);
 
+    ui->cbStyle->addItem("Attribute",static_cast<int>(VolumeItem::Style::ATTRIBUTE));
+    ui->cbStyle->addItem("Seismic",static_cast<int>(VolumeItem::Style::SEISMIC));
+
     QStringList allVolumes=mProject->volumeList();
     QStringList displayed=mModel->names();
     for(auto name : displayed){
@@ -38,6 +41,9 @@ void VolumeItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
     auto vitem=mModel->at(currentRow);
     if(!vitem) return;
     ui->sbOpacity->setValue(static_cast<int>(100*vitem->opacity()));
+    int idx=ui->cbStyle->findData(static_cast<int>(vitem->style()));
+    if(idx<0) return;
+    ui->cbStyle->setCurrentIndex(idx);
 }
 
 void VolumeItemsDialog::on_pbAdd_clicked()
@@ -144,4 +150,14 @@ void VolumeItemsDialog::on_sbOpacity_valueChanged(int arg1)
 
     auto opacity=0.01*arg1;      // percent -> fraction
     vitem->setOpacity(opacity);
+}
+
+void VolumeItemsDialog::on_cbStyle_currentIndexChanged(int)
+{
+    auto idx=ui->lwDisplayed->currentRow();
+    if(idx<0) return;
+    auto vitem=mModel->at(idx);
+    if(!vitem) return;
+
+    vitem->setStyle(static_cast<VolumeItem::Style>(ui->cbStyle->currentData().toInt()));
 }

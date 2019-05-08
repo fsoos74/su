@@ -2,7 +2,10 @@
 
 #include<colortable.h>
 
-VolumeItem::VolumeItem(QObject* parent) : QObject(parent),mColorTable(new ColorTable(this,ColorTable::defaultColors(),std::make_pair(0.,1.))),mOpacity(1)
+VolumeItem::VolumeItem(QObject* parent) : QObject(parent),
+    mColorTable(new ColorTable(this,ColorTable::defaultColors(),std::make_pair(0.,1.))),
+    mOpacity(1),
+    mStyle(Style::ATTRIBUTE)
 {
     connect(mColorTable, SIGNAL(colorsChanged()), this, SIGNAL(changed()));
     connect(mColorTable, SIGNAL(rangeChanged(std::pair<double,double> )), this, SIGNAL(changed()));
