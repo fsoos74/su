@@ -16,8 +16,10 @@
 #include<QColor>
 
 class VolumePicker;
-class VolumeItem;
-class VolumeItemModel;
+//class VolumeItem;
+//class VolumeItemModel;
+class ViewItem;
+class ViewItemModel;
 
 class VolumeView : public RulerAxisView
 {
@@ -62,12 +64,13 @@ public:
         return m_lastViewedColor;
     }
 
-    VolumeItemModel* volumeItemModel()const{
-        return mVolumeItemModel;
+    ViewItemModel* horizonItemModel()const{
+        return mHorizonItemModel;
     }
 
-    QStringList horizonList();
-    QColor horizonColor(QString);
+    ViewItemModel* volumeItemModel()const{
+        return mVolumeItemModel;
+    }
 
     QStringList wellList();
     QColor wellColor()const{
@@ -120,10 +123,6 @@ public slots:
     void setSharpenPercent(int);
     void setSharpenKernelSize(int);
 
-    void addHorizon(QString name, std::shared_ptr<Grid2D<float>>, QColor);
-    void removeHorizon(QString);
-    void setHorizonColor(QString, QColor);
-
     void addWell( QString name, std::shared_ptr<WellPath>, std::shared_ptr<WellMarkers>);
     void removeWell(QString);
     void setWellColor(QColor);
@@ -148,6 +147,7 @@ public slots:
     void setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy);
 
 signals:
+    void horizonsChanged();
     void volumesChanged();
     void sliceChanged(VolumeView::SliceDef);
     void displayWellsChanged(bool);
@@ -177,11 +177,6 @@ private:
     void renderLastViewed(QGraphicsScene*);
 
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
-
-    struct HorizonItem{
-        std::shared_ptr<Grid2D<float>> grid;
-        QColor color;
-    };
 
     struct TableItem{
         std::shared_ptr<Table> table;
@@ -215,8 +210,8 @@ private:
     int m_wellViewDist=100;
     int m_sharpenPercent=0;
     int m_sharpenKernelSize=3;
-    VolumeItemModel* mVolumeItemModel;
-    QMap<QString, HorizonItem> m_horizons;
+    ViewItemModel* mHorizonItemModel;
+    ViewItemModel* mVolumeItemModel;
     QMap<QString, std::shared_ptr<WellPath>> m_wells;
     QMap<QString, std::shared_ptr<WellMarkers>> m_markers;
     QMap<QString, TableItem> m_tables;         // picks/points

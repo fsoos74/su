@@ -5,6 +5,7 @@
 #include <avoproject.h>
 #include <reversespinbox.h>
 #include <QComboBox>
+#include <QMdiSubWindow>
 #include <histogramrangeselectiondialog.h>
 #include "volumeview.h"
 #include <colorbarwidget.h>
@@ -53,17 +54,12 @@ private slots:
     void cbSlice_currentIndexChanged(QString);
     void sbSlice_valueChanged(int arg1);
 
-    void on_actionDisplay_Range_triggered();
-    void on_actionColorbar_triggered();
     void on_actionSetup_Volumes_triggered();
     void on_actionSetup_Horizons_triggered();
-    void on_actionSet_Horizon_Color_triggered();
     void on_actionSetup_Wells_triggered();
     void on_actionSet_Well_Color_triggered();
     void on_actionSet_Marker_Color_triggered();
     void on_actionSet_Last_Viewed_Color_triggered();
-    void on_actionVolume_Opacity_triggered();
-    void on_action_Configure_Volumes_triggered();
 
     void on_action_Player_triggered();
     void on_actionSetup_Tops_triggered();
@@ -85,18 +81,12 @@ private:
     void setupEnhanceToolBar();
     void updateFlattenHorizons();
     void populateWindowMenu();
-    //void orientate();
 
     Ui::VolumeViewer2D *ui;
     DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
-    QVBoxLayout* m_colorbarsLayout;
-    //QComboBox* m_cbPickMode;
     QComboBox* m_cbSlice;
     ReverseSpinBox* m_sbSlice;
 
-    //QSpinBox* sbWellViewDist;
-    //QSpinBox* sbSharpenPercent;
-    //QSpinBox* sbSharpenKernelSize;
     QComboBox* m_cbHorizon;
 
     QToolBar* m_sliceToolBar;
@@ -106,8 +96,7 @@ private:
     QToolBar* m_pickToolBar;
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     QMap<QString, Histogram> m_volumeHistograms;
-    //QMap<QString, std::pair<double,double>> m_volumeRanges;
-    QMap<QString, ColorBarWidget*> m_colorbars;
+    QMap<QString, QMdiSubWindow*> m_mdiColorbars;
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;
     AVOProject* m_project=nullptr;
     PlayerDialog* m_player=nullptr;

@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <volumeitem.h>
-#include <volumeitemmodel.h>
+#include <viewitemmodel.h>
 #include <avoproject.h>
 
 namespace Ui {
@@ -15,7 +15,7 @@ class VolumeItemsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit VolumeItemsDialog(AVOProject* project, VolumeItemModel* model, QWidget *parent = 0);
+    explicit VolumeItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent = 0);
     ~VolumeItemsDialog();
 
 private slots:
@@ -33,7 +33,7 @@ private slots:
 private:
     Ui::VolumeItemsDialog *ui;
     AVOProject* mProject;
-    VolumeItemModel* mModel=nullptr;
+    ViewItemModel* mModel=nullptr;
 };
 
 #endif // VOLUMEITEMSDIALOG_H

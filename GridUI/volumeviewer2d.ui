@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>951</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,10 +16,54 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="VolumeView" name="volumeView"/>
-    </item>
-    <item>
-     <widget class="QWidget" name="wdColortableArea" native="true"/>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="VolumeView" name="volumeView">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>4</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>400</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::AdjustIgnored</enum>
+       </property>
+      </widget>
+      <widget class="QMdiArea" name="mdiArea">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>4</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="baseSize">
+        <size>
+         <width>100</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -46,8 +90,6 @@
     <bool>false</bool>
    </attribute>
    <addaction name="separator"/>
-   <addaction name="actionDisplay_Range"/>
-   <addaction name="actionColorbar"/>
    <addaction name="action_Player"/>
    <addaction name="actionBack"/>
    <addaction name="separator"/>
@@ -57,7 +99,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>951</width>
      <height>25</height>
     </rect>
    </property>
@@ -72,12 +114,7 @@
     <property name="title">
      <string>&amp;Display</string>
     </property>
-    <addaction name="actionDisplay_Range"/>
-    <addaction name="actionColorbar"/>
-    <addaction name="actionVolume_Opacity"/>
-    <addaction name="action_Configure_Volumes"/>
     <addaction name="separator"/>
-    <addaction name="actionSet_Horizon_Color"/>
     <addaction name="actionSet_Well_Color"/>
     <addaction name="actionSet_Marker_Color"/>
     <addaction name="actionSet_Table_Color"/>

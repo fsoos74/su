@@ -7,7 +7,7 @@
 #include<histogramcreator.h>
 #include<histogramrangeselectiondialog.h>
 
-VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, VolumeItemModel* model, QWidget *parent) :
+VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::VolumeItemsDialog),
     mProject(project),
@@ -33,7 +33,7 @@ VolumeItemsDialog::~VolumeItemsDialog()
 void VolumeItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
 {
     if(currentRow<0) return;
-    auto vitem=mModel->at(currentRow);
+    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(currentRow));
     if(!vitem) return;
     ui->sbOpacity->setValue(static_cast<int>(100*vitem->opacity()));
     int idx=ui->cbStyle->findData(static_cast<int>(vitem->style()));
@@ -60,6 +60,7 @@ void VolumeItemsDialog::on_pbAdd_clicked()
     vitem->setVolume(volume);
 
     mModel->add(vitem);
+    name=vitem->name(); // name could have been updated to make it unique
     ui->lwDisplayed->addItem(name);
 }
 
@@ -94,7 +95,7 @@ void VolumeItemsDialog::on_pbColors_clicked(){
 
     auto idx=ui->lwDisplayed->currentRow();
     if(idx<0) return;
-    auto vitem=mModel->at(idx);
+     auto vitem=dynamic_cast<VolumeItem*>(mModel->at(idx));
     if(!vitem) return;
 
     auto ct=vitem->colorTable();
@@ -114,7 +115,7 @@ void VolumeItemsDialog::on_pbColors_clicked(){
 void VolumeItemsDialog::on_pbScaling_clicked(){
     auto idx=ui->lwDisplayed->currentRow();
     if(idx<0) return;
-    auto vitem=mModel->at(idx);
+    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(idx));
     if(!vitem) return;
 
     auto ct=vitem->colorTable();
@@ -138,7 +139,7 @@ void VolumeItemsDialog::on_sbOpacity_valueChanged(int arg1)
 {
     auto idx=ui->lwDisplayed->currentRow();
     if(idx<0) return;
-    auto vitem=mModel->at(idx);
+    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(idx));
     if(!vitem) return;
 
     auto opacity=0.01*arg1;      // percent -> fraction
@@ -149,7 +150,7 @@ void VolumeItemsDialog::on_cbStyle_currentIndexChanged(int)
 {
     auto idx=ui->lwDisplayed->currentRow();
     if(idx<0) return;
-    auto vitem=mModel->at(idx);
+    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(idx));
     if(!vitem) return;
 
     vitem->setStyle(static_cast<VolumeItem::Style>(ui->cbStyle->currentData().toInt()));

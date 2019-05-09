@@ -15,11 +15,12 @@
 #include <multiinputdialog.h>
 #include <multiitemselectiondialog.h>
 #include <histogramcreator.h>
-#include <volumeitemsconfigdialog.h>
 #include <playerdialog.h>
+#include <horizonitem.h>
 #include <volumeitem.h>
-#include <volumeitemmodel.h>
+#include <viewitemmodel.h>
 #include <volumeitemsdialog.h>
+#include <horizonitemsdialog.h>
 #include <topsdbmanager.h>
 
 
@@ -31,7 +32,8 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    m_colorbarsLayout=new QVBoxLayout(ui->wdColortableArea);
+    //m_colorbarsLayout=new QVBoxLayout(ui->wdColortableArea);
+    ui->splitter->setSizes(QList<int>{400,100});
 
     //setupToolBarControls();
     setupMouseModes();
@@ -301,62 +303,6 @@ void VolumeViewer2D::setupEnhanceToolBar(){
     sbSharpenPercent->setValue(ui->volumeView->sharpenPercent());
 }
 
-/*
-void VolumeViewer2D::setupToolBarControls(){
-
-    auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Slice:"));
-    cbSlice=new QComboBox;
-    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Inline));
-    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
-    cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
-    sbSlice=new QSpinBox;
-    //pbSlice=new QPushButton("Back");
-
-    auto label2=new QLabel(tr("Well Dist:"));
-    sbWellViewDist=new QSpinBox;
-
-    auto label3=new QLabel(tr("Flatten Horizon:"));
-    cbHorizon=new QComboBox;
-
-    auto label4=new QLabel(tr("Pick Mode:"));
-    m_cbPickMode=new QComboBox(this);
-    m_cbPickMode->addItems(volumePickModeNames());
-    m_cbPickMode->setCurrentText(toQString(VolumePicker::PickMode::Points));
-    m_cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
-    auto layout=new QHBoxLayout;
-    layout->addWidget(label);
-    layout->addWidget(cbSlice);
-    layout->addWidget(sbSlice);
-    //layout->addWidget(pbSlice);
-    layout->addSpacing(30);
-    layout->addWidget(label3);
-    layout->addWidget(cbHorizon);
-    layout->addSpacing(20);
-    layout->addWidget(label2);
-    layout->addWidget(sbWellViewDist);
-    layout->addSpacing(30);
-    layout->addWidget(label4);
-    layout->addWidget(m_cbPickMode);
-    widget->setLayout(layout);
-
-    auto toolBar=addToolBar(tr("Controls Toolbar"));
-    toolBar->addWidget(widget);
-
-    connect(cbSlice, SIGNAL(currentIndexChanged(QString)), this, SLOT(cbSlice_currentIndexChanged(QString)) );
-    connect(sbSlice, SIGNAL(valueChanged(int)), this, SLOT(sbSlice_valueChanged(int)) );
-    //connect(pbSlice, SIGNAL(clicked(bool)), ui->volumeView, SLOT(back()));
-    connect(sbWellViewDist, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setWellViewDist(int)) );
-    connect(cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
-
-    connect( m_cbPickMode, SIGNAL(currentIndexChanged(QString)), ui->volumeView->picker(), SLOT(setPickMode(QString)));
-
-    sbWellViewDist->setRange(0, 9999);
-    sbWellViewDist->setValue(ui->volumeView->welViewDist());
-}
-*/
-
 void VolumeViewer2D::setupPickingToolBar(){
 
     m_pickToolBar=new QToolBar( "Picking", this);
@@ -388,180 +334,39 @@ void VolumeViewer2D::updateFlattenHorizons(){
     }
 }
 
-void VolumeViewer2D::on_actionDisplay_Range_triggered()
-{
-    QString name;
-    auto vlist=ui->volumeView->volumeItemModel()->names();
-    if( vlist.isEmpty()){
-        return;
-    }
-    else if( vlist.size()==1){
-        name=vlist.front();
-    }
-    else{
-        bool ok=false;
-        name = QInputDialog::getItem( this, tr("Volume Display Range"), tr("Select Volume:"), vlist, 0, false, &ok);
-        if( !ok || name.isEmpty()) return;
-    }
-
-    int idx=ui->volumeView->volumeItemModel()->indexOf(name);
-    auto vitem=ui->volumeView->volumeItemModel()->at(idx);
-    if(!vitem) return;
-
-    auto volume=vitem->volume();
-    if( !volume) return;
-
-    auto ct=vitem->colorTable();
-    if( !ct ) return;
-
-    if( !displayRangeDialog ){
-
-        displayRangeDialog=new HistogramRangeSelectionDialog(this);
-        displayRangeDialog->setWindowTitle("Configure Display Range" );
-
-        if( !m_volumeHistograms.contains(name)){
-            //QProgressBar* pbar=new QProgressBar(this);
-            //pbar->setRange(0,100);
-            //statusBar()->addPermanentWidget(pbar,1);
-            HistogramCreator hcreator;
-            //connect( &hcreator, SIGNAL(percentDone(int)), pbar, SLOT(setValue(int)) );
-            auto histogram=hcreator.createHistogram( QString("Volume %1").arg(name), std::begin(*volume), std::end(*volume), volume->NULL_VALUE, 100 );
-            //delete pbar;
-            m_volumeHistograms.insert(name, histogram);
-        }
-/*
-        if( !m_volumeRanges.contains(name)){
-            auto rg=volume->valueRange();
-            m_volumeRanges.insert(name, rg);
-        }
-*/
-        displayRangeDialog->setHistogram(m_volumeHistograms.value(name));
-        displayRangeDialog->setRange(ct->range() );//  m_volumeRanges.value(name));
-        displayRangeDialog->setColorTable( ct );   // all updating through colortab
-    }
-
-    displayRangeDialog->show();
-  //  m_displayRangeDialogVolume=name;
-}
-
-void VolumeViewer2D::on_actionColorbar_triggered()
-{
-
-    QString name;
-    auto vlist=ui->volumeView->volumeItemModel()->names();
-    if( vlist.isEmpty()){
-        return;
-    }
-    else if( vlist.size()==1){
-        name=vlist.front();
-    }
-    else{
-        bool ok=false;
-        name = QInputDialog::getItem( this, tr("Volume Colortable"), tr("Select Volume:"), vlist, 0, false, &ok);
-        if( !ok || name.isEmpty()) return;
-    }
-
-    auto idx=ui->volumeView->volumeItemModel()->indexOf(name);
-    auto vitem=ui->volumeView->volumeItemModel()->at(idx);
-    auto ct=vitem->colorTable();
-    if( !ct ) return;
-
-    QVector<QRgb> oldColors=ct->colors();
-
-    ColorTableDialog colorTableDialog( oldColors);
-
-    if( colorTableDialog.exec()==QDialog::Accepted ){
-        ct->setColors( colorTableDialog.colors());
-    }else{
-        ct->setColors( oldColors );
-    }
-}
-
-
-void VolumeViewer2D::on_actionVolume_Opacity_triggered()
-{
-    QString name;
-    auto vlist=ui->volumeView->volumeItemModel()->names();
-    if( vlist.isEmpty()){
-        return;
-    }
-    else if( vlist.size()==1){
-        name=vlist.front();
-    }
-    else{
-        bool ok=false;
-        name = QInputDialog::getItem( this, tr("Volume Opacity"), tr("Select Volume:"), vlist, 0, false, &ok);
-        if( !ok || name.isEmpty()) return;
-    }
-
-    auto idx=ui->volumeView->volumeItemModel()->indexOf(name);
-    auto vitem=ui->volumeView->volumeItemModel()->at(idx);
-    if(!vitem) return;
-    double o=vitem->opacity();
-    bool ok=false;
-    o=QInputDialog::getDouble(this, tr("Volume Opacity"), tr("Opacity:"), o, 0, 1, 2, &ok);
-    if( !ok ) return;
-
-    vitem->setOpacity(o);
-}
-
-
-void VolumeViewer2D::on_action_Configure_Volumes_triggered()
-{
-    VolumeItemsConfigDialog* dlg=new VolumeItemsConfigDialog();
-    dlg->setWindowTitle(tr("Configure Volumes"));
-/*
-    for( int i=0; ){
-
-        auto vitem=ui->volumeView->volumeItem(name);
-        if(!vitem) continue;
-
-        if( !m_volumeHistograms.contains(name)){
-            auto volume=vitem->volume();
-            if( !volume ) continue;
-            HistogramCreator hcreator;
-            auto histogram=hcreator.createHistogram( QString("Volume %1").arg(name), std::begin(*volume), std::end(*volume), volume->NULL_VALUE, 100 );
-            m_volumeHistograms.insert(name, histogram);
-        }
-
-        dlg->addVolumeItem(vitem->name(), vitem->alpha(), vitem->colorTable(), m_volumeHistograms.value(name) );
-    }
-*/
-    dlg->exec();
-}
-
-
-
 void VolumeViewer2D::onVolumesChanged(){
 
     auto volumes = ui->volumeView->volumeItemModel()->names();
 
     // remove colorbars of non-existent volumes
-    for( auto name : m_colorbars.keys()){
+    for( auto name : m_mdiColorbars.keys()){
         if( !volumes.contains(name)){
-            auto cb=m_colorbars.value(name);
+            auto cb=m_mdiColorbars.value(name);
             if( cb ) delete cb;
-            m_colorbars.remove(name);
+            m_mdiColorbars.remove(name);
         }
     }
 
     // add colorbars for newly added volumes
     for( auto name : volumes){
 
-        if(m_colorbars.contains(name)) continue;        // already have color for this volume
+        if(m_mdiColorbars.contains(name)) continue;        // already have color for this volume
 
         int idx=ui->volumeView->volumeItemModel()->indexOf(name);
         Q_ASSERT(idx>=0);
-        auto vitem=ui->volumeView->volumeItemModel()->at(idx);
+        auto vitem=dynamic_cast<VolumeItem*>(ui->volumeView->volumeItemModel()->at(idx));
         if(!vitem) continue;
 
         auto colorbar = new ColorBarWidget(this);
-        m_colorbarsLayout->addWidget(colorbar);
+        colorbar->setMinimumSize(50,150);
+        //m_colorbarsLayout->addWidget(colorbar);
+        auto mdiColorbar=ui->mdiArea->addSubWindow(colorbar);
+        mdiColorbar->setWindowIcon( QIcon(QPixmap(1,1)) );  // no icon
         auto colortable=vitem->colorTable();
         colorbar->setColorTable(colortable);
         colorbar->setLabel(name);
         colorbar->show();
-        m_colorbars.insert(name, colorbar);
+        m_mdiColorbars.insert(name, mdiColorbar);
     }
 }
 
@@ -636,7 +441,7 @@ void VolumeViewer2D::onMouseOver(QPointF p){
     msg.sprintf("iline=%d, xline=%d, time/depth=%g", il, xl, z);
 
     for(int i=0; i<ui->volumeView->volumeItemModel()->size(); i++){
-        auto vitem=ui->volumeView->volumeItemModel()->at(i);
+        auto vitem=dynamic_cast<VolumeItem*>(ui->volumeView->volumeItemModel()->at(i));
         if(!vitem) continue;
         msg.append(QString(", %1=").arg(vitem->name()));
         auto v=vitem->volume();
@@ -661,33 +466,6 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
     VolumeItemsDialog* dlg=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel());
     dlg->setWindowTitle("Setup volumes");
     dlg->exec();
-/*
-    QStringList avail=m_project->volumeList();
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Volumes"), tr("Select Volumes:"), avail, &ok, ui->volumeView->volumeList());
-    if( !ok ) return;
-
-    // first pass remove items
-    for( auto name : ui->volumeView->volumeList() ){
-
-        if( !names.contains(name)) ui->volumeView->removeVolume(name);
-        else names.removeAll(name);
-    }
-
-    // now we only have names that need to be added
-    // second pass add items
-    for( auto name : names){
-
-        auto v = m_project->loadVolume(name, true);
-
-        if( !v ){
-            QMessageBox::critical(this, tr("Add Volume"), QString("Loading volume \"%1\" failed!").arg(name) );
-            break;
-        }
-
-        ui->volumeView->addVolume(name, v);
-    }
-    */
 }
 
 
@@ -696,46 +474,9 @@ void VolumeViewer2D::on_actionSetup_Horizons_triggered()
 {
     Q_ASSERT(m_project);
 
-    QStringList avail=m_project->gridList(GridType::Horizon);
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Horizons"), tr("Select Grids:"), avail, &ok, ui->volumeView->horizonList());
-    if( !ok ) return;
-
-    // first pass remove items
-    for( auto name : ui->volumeView->horizonList() ){
-
-        if( !names.contains(name)) ui->volumeView->removeHorizon(name);
-        else names.removeAll(name);
-    }
-
-    // now we only have names that need to be added
-    // second pass add items
-    for( auto name : names){
-
-        auto g = m_project->loadGrid(GridType::Horizon, name);
-
-        if( !g ){
-            QMessageBox::critical(this, tr("Add Grid"), QString("Loading grid \"%1\" failed!").arg(name) );
-            break;
-        }
-
-        ui->volumeView->addHorizon(name, g, Qt::red);
-    }
-}
-
-void VolumeViewer2D::on_actionSet_Horizon_Color_triggered()
-{
-    bool ok=false;
-    QString name=QInputDialog::getItem(this, tr("Set Horizon Color"), tr("Select Horizon:"), ui->volumeView->horizonList(), 0, false, &ok);
-
-    if(!ok || name.isEmpty()) return;
-
-    QColor initial=ui->volumeView->horizonColor(name);
-    QColor color=QColorDialog::getColor( initial, this, QString("Horizon %1 color").arg(name));
-
-    if( color.isValid()){
-        ui->volumeView->setHorizonColor(name, color);
-    }
+    HorizonItemsDialog* dlg=new HorizonItemsDialog(m_project, ui->volumeView->horizonItemModel());
+    dlg->setWindowTitle("Setup horizons");
+    dlg->exec();
 }
 
 void VolumeViewer2D::on_actionSet_Table_Color_triggered()

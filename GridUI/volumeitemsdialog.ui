@@ -107,9 +107,23 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Style:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QComboBox" name="cbStyle">
        <property name="toolTip">
         <string>Style</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Opacity:</string>
        </property>
       </widget>
      </item>

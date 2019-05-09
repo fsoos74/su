@@ -2,7 +2,7 @@
 
 #include<colortable.h>
 
-VolumeItem::VolumeItem(QObject* parent) : QObject(parent),
+VolumeItem::VolumeItem(QObject* parent) : ViewItem(parent),
     mColorTable(new ColorTable(this,ColorTable::defaultColors(),std::make_pair(0.,1.))),
     mOpacity(1),
     mStyle(Style::ATTRIBUTE)
@@ -21,12 +21,6 @@ void VolumeItem::setVolume(std::shared_ptr<Volume> volume){
 void VolumeItem::setOpacity(qreal opacity){
     if(opacity==mOpacity) return;
     mOpacity=opacity;
-    emit changed();
-}
-
-void VolumeItem::setName(QString name){
-    if(name==mName) return;
-    mName=name;
     emit changed();
 }
 
