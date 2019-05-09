@@ -1063,7 +1063,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
     int il=m_slice.value;
     auto bounds=m_bounds;
 
-    for( int i=0; i<mVolumeItemModel->size(); i++){
+    for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
         auto vitem=mVolumeItemModel->at(i);
         if(!vitem) continue;
 
@@ -1074,7 +1074,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
         auto ft=vbounds.ft()-0.001*m_flattenRange.second;
         auto lt=vbounds.lt()-0.001*m_flattenRange.first;
 
-        if(vitem->style()==VolumeItem::Style::ATTRIBUTE){
+        if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
             auto ct = vitem->colorTable();
             QImage vimg=intersectVolumeInline(*v, ct, il, ft, lt);
             vimg=enhance(vimg);
@@ -1091,7 +1091,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
             tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
             item->setTransform(tf);
         }
-        else{
+        else{                                           // render as seismic traces
             auto ct = vitem->colorTable();  // use this to determine max abs value
             auto m1=std::abs(ct->range().first);
             auto m2=std::abs(ct->range().second);

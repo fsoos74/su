@@ -21,13 +21,8 @@ VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, VolumeItemModel* model
     ui->cbStyle->addItem("Attribute",static_cast<int>(VolumeItem::Style::ATTRIBUTE));
     ui->cbStyle->addItem("Seismic",static_cast<int>(VolumeItem::Style::SEISMIC));
 
-    QStringList allVolumes=mProject->volumeList();
-    QStringList displayed=mModel->names();
-    for(auto name : displayed){
-        allVolumes.removeAll(name);
-    }
-    ui->lwAvailable->addItems(allVolumes);
-    ui->lwDisplayed->addItems(displayed);
+    ui->lwAvailable->addItems(mProject->volumeList());
+    ui->lwDisplayed->addItems(mModel->names());
 }
 
 VolumeItemsDialog::~VolumeItemsDialog()
@@ -65,9 +60,7 @@ void VolumeItemsDialog::on_pbAdd_clicked()
     vitem->setVolume(volume);
 
     mModel->add(vitem);
-
-    auto item=ui->lwAvailable->takeItem(row);
-    ui->lwDisplayed->addItem(item);
+    ui->lwDisplayed->addItem(name);
 }
 
 void VolumeItemsDialog::on_pbRemove_clicked()
@@ -75,7 +68,7 @@ void VolumeItemsDialog::on_pbRemove_clicked()
     int row=ui->lwDisplayed->currentRow();
     if(row<0) return;
     auto item=ui->lwDisplayed->takeItem(row);
-    ui->lwAvailable->addItem(item);
+    delete item;
     mModel->remove(row);
 }
 
@@ -85,7 +78,7 @@ void VolumeItemsDialog::on_pbMoveUp_clicked()
     mModel->moveUp(idx);
     ui->lwDisplayed->clear();
     ui->lwDisplayed->addItems(mModel->names());
-     ui->lwDisplayed->setCurrentRow(std::max(0,idx-1));
+    ui->lwDisplayed->setCurrentRow(std::max(0,idx-1));
 }
 
 void VolumeItemsDialog::on_pbMoveDown_clicked()
