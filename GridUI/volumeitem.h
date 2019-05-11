@@ -19,7 +19,7 @@ public:
     std::shared_ptr<Volume> volume(){
         return mVolume;
     }
-    qreal opacity()const{
+    int opacity()const{
         return mOpacity;
     }
     ColorTable* colorTable()const{
@@ -31,13 +31,13 @@ public:
 
 public slots:
     void setVolume(std::shared_ptr<Volume>);
-    void setOpacity(qreal);
+    void setOpacity(int);
     void setStyle(VolumeItem::Style);
 
 private:
 
     std::shared_ptr<Volume> mVolume;
-    qreal mOpacity;
+    int mOpacity;
     Style mStyle;
     ColorTable* mColorTable;
 };

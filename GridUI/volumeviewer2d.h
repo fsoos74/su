@@ -71,6 +71,8 @@ private slots:
     void on_action_Save_Picks_triggered();
     void on_actionSave_As_Picks_triggered();
 
+    void on_mdiArea_customContextMenuRequested(const QPoint &pos);
+
 private:
     bool canDiscardPicks();
     void setupMouseModes();

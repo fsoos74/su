@@ -360,8 +360,10 @@ void VolumeViewer2D::onVolumesChanged(){
         auto colorbar = new ColorBarWidget(this);
         colorbar->setMinimumSize(50,150);
         //m_colorbarsLayout->addWidget(colorbar);
-        auto mdiColorbar=ui->mdiArea->addSubWindow(colorbar);
+        auto mdiColorbar=ui->mdiArea->addSubWindow(colorbar, Qt::WindowMaximizeButtonHint | Qt::WindowMinimizeButtonHint);
         mdiColorbar->setWindowIcon( QIcon(QPixmap(1,1)) );  // no icon
+        mdiColorbar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(mdiColorbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showColorBarContextMenu(QPoint)));
         auto colortable=vitem->colorTable();
         colorbar->setColorTable(colortable);
         colorbar->setLabel(name);
@@ -369,7 +371,6 @@ void VolumeViewer2D::onVolumesChanged(){
         m_mdiColorbars.insert(name, mdiColorbar);
     }
 }
-
 
 void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
 
@@ -782,4 +783,19 @@ void VolumeViewer2D::populateWindowMenu(){
     ui->menu_Window->addAction( m_wellToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_enhanceToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_pickToolBar->toggleViewAction());
+}
+
+void VolumeViewer2D::on_mdiArea_customContextMenuRequested(const QPoint &pos)
+{
+    QMenu* popup=new QMenu();
+    popup->addAction("tiles");
+    popup->addAction("cascade");
+    auto selected = popup->exec(ui->mdiArea->mapToGlobal(pos));
+    if(!selected) return;
+    if( selected->text()=="tiles"){
+        ui->mdiArea->tileSubWindows();
+    }
+    else if(selected->text()=="cascade"){
+        ui->mdiArea->cascadeSubWindows();
+    }
 }

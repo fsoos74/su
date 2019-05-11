@@ -27,7 +27,6 @@ private slots:
     void on_pbColors_clicked();
     void on_pbScaling_clicked();
     void on_sbOpacity_valueChanged(int arg1);
-
     void on_cbStyle_currentIndexChanged(int index);
 
 private:

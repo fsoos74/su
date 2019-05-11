@@ -4,7 +4,7 @@
 
 VolumeItem::VolumeItem(QObject* parent) : ViewItem(parent),
     mColorTable(new ColorTable(this,ColorTable::defaultColors(),std::make_pair(0.,1.))),
-    mOpacity(1),
+    mOpacity(100),
     mStyle(Style::ATTRIBUTE)
 {
     connect(mColorTable, SIGNAL(colorsChanged()), this, SIGNAL(changed()));
@@ -18,7 +18,7 @@ void VolumeItem::setVolume(std::shared_ptr<Volume> volume){
     emit changed();
 }
 
-void VolumeItem::setOpacity(qreal opacity){
+void VolumeItem::setOpacity(int opacity){
     if(opacity==mOpacity) return;
     mOpacity=opacity;
     emit changed();

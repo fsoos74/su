@@ -30,9 +30,38 @@ ViewItem* ViewItemModel::at(int i){
     return mItems.at(i);
 }
 
+void ViewItemModel::setMute(bool mute){
+    if(mute==mMute) return;
+    mMute=mute;
+    if(!mute){   // unmuted, catch up with changes
+        if(mChangedCounter>0){
+            emit changed();
+        }
+    }
+    mChangedCounter=0;
+}
+
+void ViewItemModel::fireChanged(){
+    if( !mMute){
+        emit changed();
+    }
+    else{
+        mChangedCounter++;
+    }
+}
+
+void ViewItemModel::fireItemChanged(ViewItem * item){
+    if( !mMute){
+        emit itemChanged(item);
+    }
+    else{
+        mChangedCounter++;
+    }
+}
+
 void ViewItemModel::clear(){
     mItems.clear();
-    emit changed();
+    fireChanged();
 }
 
 // this will also adjust the name to be unique within model, multiples will has (2), (3), ... added to name
@@ -48,7 +77,7 @@ void ViewItemModel::add(ViewItem * vitem){
             mItems.append(vitem);
             vitem->setParent(this);
             connect(vitem, SIGNAL(changed()), this, SLOT(itemChanged()));
-            emit changed();
+            fireChanged();
             return;
         }
     }
@@ -58,7 +87,7 @@ void ViewItemModel::add(ViewItem * vitem){
 void ViewItemModel::remove(int i){
     if(i<0 || i>= mItems.size() ) return;
     mItems.remove(i);
-    emit changed();
+    fireChanged();
 }
 
 void ViewItemModel::swap(int i1, int i2){
@@ -66,7 +95,7 @@ void ViewItemModel::swap(int i1, int i2){
     auto temp=mItems.at(i1);
     mItems.replace(i1, mItems.at(i2));
     mItems.replace(i2, temp);
-    emit changed();
+    fireChanged();
 }
 
 void ViewItemModel::moveUp(int i){
@@ -81,5 +110,5 @@ void ViewItemModel::moveDown(int i){
 
 void ViewItemModel::itemChanged(){
     ViewItem* vitem=dynamic_cast<ViewItem*>(QObject::sender());
-    if(vitem) emit itemChanged(vitem);
+    if(vitem) fireItemChanged(vitem);
 }

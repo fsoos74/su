@@ -1011,7 +1011,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
             auto item=new QGraphicsPixmapItem();
             item->setTransformationMode(Qt::SmoothTransformation);
             item->setPixmap( pixmap );
-            item->setOpacity(vitem->opacity());
+            item->setOpacity(0.01*vitem->opacity());    // percent > fraction
             scene->addItem(item);
 
             QTransform tf;
@@ -1050,7 +1050,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
-                item->setOpacity(vitem->opacity());
+                item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
                 scene->addItem(item);
 
                 // variable area
@@ -1088,7 +1088,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
                 item->setPath(path);
                 item->setPen(Qt::NoPen);
                 item->setBrush(Qt::black);
-                item->setOpacity(vitem->opacity());
+                item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
                 scene->addItem(item);
 
             }
@@ -1098,50 +1098,6 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
     scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
-/* original working version
-void VolumeView::fillSceneInline(QGraphicsScene * scene){
-
-    if( !scene ) return;
-
-    int il=m_slice.value;
-
-    auto bounds=m_bounds;
-    QImage img( bounds.nj(), bounds.nt(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-    QPixmap pixmap=QPixmap::fromImage(img);
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
-
-    for( int i=0; i<mVolumeItemModel->size(); i++){
-        auto vitem=mVolumeItemModel->at(i);
-        if(!vitem) continue;
-
-        auto v=vitem->volume();
-        auto vbounds=v->bounds();
-        auto ft=vbounds.ft()-0.001*m_flattenRange.second;
-        auto lt=vbounds.lt()-0.001*m_flattenRange.first;
-        auto ct = vitem->colorTable();
-        QImage vimg=intersectVolumeInline(*v, ct, il, ft, lt);
-        vimg=enhance(vimg);
-        painter.setOpacity(vitem->opacity());
-        painter.drawImage( vbounds.j1()-bounds.j1(), bounds.timeToSample(ft), vimg);
-    }
-
-    auto item=new QGraphicsPixmapItem();
-    item->setTransformationMode(Qt::SmoothTransformation);
-    item->setPixmap( pixmap );
-    scene->addItem(item);
-
-    QTransform tf;
-    tf.translate(xAxis()->min(), zAxis()->min());
-    tf.scale((xAxis()->max()-xAxis()->min())/img.width(), (zAxis()->max()-zAxis()->min())/img.height());
-    item->setTransform(tf);
-
-    scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
-}
-*/
 
 void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
 
@@ -1169,7 +1125,7 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
             auto item=new QGraphicsPixmapItem();
             item->setTransformationMode(Qt::SmoothTransformation);
             item->setPixmap( pixmap );
-            item->setOpacity(vitem->opacity());
+            item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
             scene->addItem(item);
 
             QTransform tf;
@@ -1208,7 +1164,7 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
-                item->setOpacity(vitem->opacity());
+                item->setOpacity(0.01*vitem->opacity());// percent -> fraction
                 scene->addItem(item);
 
                 // variable area
@@ -1246,7 +1202,7 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
                 item->setPath(path);
                 item->setPen(Qt::NoPen);
                 item->setBrush(Qt::black);
-                item->setOpacity(vitem->opacity());
+                item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
                 scene->addItem(item);
 
             }
@@ -1256,49 +1212,120 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
     scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
-/* original working version
-void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
+
+void VolumeView::fillSceneTime(QGraphicsScene * scene){
 
     if( !scene ) return;
-
-    int xl=m_slice.value;
-
+    int t=m_slice.value;
     auto bounds=m_bounds;
-    QImage img( bounds.ni(), bounds.nt(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
 
-    QPixmap pixmap=QPixmap::fromImage(img);
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
-
-    for( int i=0; i<mVolumeItemModel->size(); i++){
+    for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
         auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
         if(!vitem) continue;
+
         auto v=vitem->volume();
         auto vbounds=v->bounds();
-        auto ft=vbounds.ft()-0.001*m_flattenRange.second;
-        auto lt=vbounds.lt()-0.001*m_flattenRange.first;
-        auto ct = vitem->colorTable();
-        QImage vimg=intersectVolumeCrossline(*v, ct, xl, ft, lt);
-        vimg=enhance(vimg);
-        painter.setOpacity(vitem->opacity());
-        painter.drawImage( vbounds.i1()-bounds.i1(), bounds.timeToSample(ft), vimg);
+
+        if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
+            auto ct = vitem->colorTable();
+            QImage vimg=intersectVolumeTime(*v, ct, t);
+            vimg=enhance(vimg);
+            QPixmap pixmap=QPixmap::fromImage(vimg);
+
+            auto item=new QGraphicsPixmapItem();
+            item->setTransformationMode(Qt::SmoothTransformation);
+            item->setPixmap( pixmap );
+            item->setOpacity(0.01*vitem->opacity());    // percent > fraction
+            scene->addItem(item);
+
+            QTransform tf;
+            tf.translate(xAxis()->min(), zAxis()->min());
+            tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
+            item->setTransform(tf);
+        }
+        else{                                           // render as seismic traces
+            auto ct = vitem->colorTable();  // use this to determine max abs value
+            auto m1=std::abs(ct->range().first);
+            auto m2=std::abs(ct->range().second);
+            auto maxabs=(m1>m2) ? m1 : m2;
+
+            for( auto i = 0; i<bounds.ni(); i++){
+                QPainterPath path;
+                bool first=true;
+                auto il=bounds.i1()+i;
+
+
+                // wiggles
+                for( auto j=0; j<bounds.nj(); j++){
+                    int xl=bounds.j1()+j;
+                    auto d=dz(il, xl);
+                    if( std::isnan(d)) continue;
+                    auto tt=0.001*t;// + d;
+                    auto value=v->value(il, xl, tt);
+                    if( value==v->NULL_VALUE) continue;
+                    qreal x = il + value/maxabs;
+                    if(first){
+                        path.moveTo(x,xl);
+                        first=false;
+                    }
+                    else{
+                        path.lineTo(x,xl);
+                    }
+                }
+                auto item=new QGraphicsPathItem();
+                item->setPath(path);
+                item->setPen(QPen(Qt::black, 0));
+                item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
+                scene->addItem(item);
+/*
+                // variable area
+                path=QPainterPath();
+                bool active=false;
+                double xprev=il;
+                double zprev=bounds.j1();
+                for( auto j=0; j<bounds.nj(); j++){
+                    int xl=bounds.j1()+j;
+                    auto d=dz(il, xl);
+                    if( std::isnan(d)) continue;
+                    auto tt=0.001*t;// + d;
+                    auto value=v->value(il, xl, tt);
+                    if( value==v->NULL_VALUE) continue;
+                    qreal x = il + value/maxabs;
+                    if(x>=xl){               // inside va
+                        if(!active){        // no area yet, start new
+                            auto zxl=(j>0) ? lininterp(xprev, zprev,x,xl,il) : xl;
+                            path.moveTo(xl,zxl);
+                            //path.moveTo(x,z);
+                            active=true;
+                        }
+                        path.lineTo(x,z);   // line to current point
+                    }
+                    else if(active){        // close area
+                        auto zxl=lininterp(x,z,xprev, zprev,xl);
+                        path.lineTo(xl,zxl);
+                        //path.lineTo(x,z);
+                        active=false;
+                        path.closeSubpath();
+                    }
+                    xprev=x;
+                    zprev=z;
+                }
+                //path.closeSubpath();
+                item=new QGraphicsPathItem();
+                item->setPath(path);
+                item->setPen(Qt::NoPen);
+                item->setBrush(Qt::black);
+                item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
+                scene->addItem(item);
+                */
+            }
+        }
     }
 
-    auto item=new QGraphicsPixmapItem();
-    item->setTransformationMode(Qt::SmoothTransformation);
-    item->setPixmap( pixmap);
-    scene->addItem(item);
-
-    QTransform tf;
-    tf.translate(xAxis()->min(), zAxis()->min());
-    tf.scale((xAxis()->max()-xAxis()->min())/img.width(), (zAxis()->max()-zAxis()->min())/img.height());
-    item->setTransform(tf);
     scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
-*/
 
+/*
 void VolumeView::fillSceneTime(QGraphicsScene * scene){
 
     if( !scene ) return;
@@ -1321,7 +1348,7 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
         auto ct = vitem->colorTable();
         QImage vimg=intersectVolumeTime(*v, ct, m_slice.value);
         vimg=enhance(vimg);
-        painter.setOpacity(vitem->opacity());
+        painter.setOpacity(0.01*vitem->opacity());
         painter.drawImage( vbounds.i1()-bounds.i1(), vbounds.i2()-bounds.i2(), vimg);
     }
 
@@ -1338,6 +1365,7 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
 
     scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
+*/
 
 void VolumeView::updateAxes(){
 
