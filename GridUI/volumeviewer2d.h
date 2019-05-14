@@ -57,12 +57,11 @@ private slots:
     void on_actionSetup_Volumes_triggered();
     void on_actionSetup_Horizons_triggered();
     void on_actionSetup_Wells_triggered();
-    void on_actionSet_Well_Color_triggered();
-    void on_actionSet_Marker_Color_triggered();
+    void on_actionSetup_Tops_triggered();
+
     void on_actionSet_Last_Viewed_Color_triggered();
 
     void on_action_Player_triggered();
-    void on_actionSetup_Tops_triggered();
     void on_actionSetup_Tables_triggered();
     void on_actionSet_Table_Color_triggered();
 

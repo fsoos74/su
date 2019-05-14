@@ -29,3 +29,15 @@ void VolumeItem::setStyle(VolumeItem::Style style){
     mStyle=style;
     emit changed();
 }
+
+void VolumeItem::setPolarity(VolumeItem::Polarity polarity){
+    if(polarity==mPolarity) return;
+    mPolarity=polarity;
+    emit changed();
+}
+
+void VolumeItem::setGain(qreal gain){
+    if(gain==mGain) return;
+    mGain==gain;
+    emit changed();
+}

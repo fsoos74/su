@@ -72,16 +72,13 @@ public:
         return mVolumeItemModel;
     }
 
-    QStringList wellList();
-    QColor wellColor()const{
-        return m_wellColor;
+    ViewItemModel* wellItemModel()const{
+        return mWellItemModel;
     }
 
-    QStringList markersList();
-    QColor markerColor()const{
-        return m_markerColor;
+    ViewItemModel* markerItemModel()const{
+        return mMarkerItemModel;
     }
-
     QStringList tableList();
     QColor tableColor(QString);
 
@@ -105,10 +102,6 @@ public:
         return m_displayTables;
     }
 
-    QStringList displayedMarkers()const{
-        return m_displayedMarkers;
-    }
-
     bool validSlice(const SliceDef& d);
     int adjustToVolume(SliceType t, int v);
 
@@ -123,22 +116,14 @@ public slots:
     void setSharpenPercent(int);
     void setSharpenKernelSize(int);
 
-    void addWell( QString name, std::shared_ptr<WellPath>, std::shared_ptr<WellMarkers>);
-    void removeWell(QString);
-    void setWellColor(QColor);
-    void setMarkerColor(QColor);
-
     void addTable(QString, std::shared_ptr<Table>, QColor);
     void removeTable(QString);
     void setTableColor(QString, QColor);
-
-    void setDisplayedMarkers(QStringList);
 
     void setLastViewedColor(QColor);
     void setDisplayHorizons(bool);
     void setDisplayWells(bool);
     void setDisplayMarkers(bool);
-    void setDisplayMarkerLabels(bool);
     void setDisplayTables(bool);
     void setDisplayLastViewed(bool);
 
@@ -152,7 +137,6 @@ signals:
     void sliceChanged(VolumeView::SliceDef);
     void displayWellsChanged(bool);
     void displayMarkersChanged(bool);
-    void displayMarkerLabelsChanged(bool);
     void displayHorizonsChanged(bool);
     void displayTablesChanged(bool);
     void displayLastViewedChanged(bool);
@@ -193,8 +177,6 @@ private:
     QVector<QPointF> intersectTableTime(const Table& table, int time);
     QPainterPath projectWellPathInline(const WellPath& wp, int iline);
     QPainterPath projectWellPathCrossline(const WellPath& wp, int xline);
-    QVector<std::pair<QPointF, QString>> projectMarkersInline(int iline);
-    QVector<std::pair<QPointF, QString>> projectMarkersCrossline(int xline);
     QLineF intersectSlices(const SliceDef& s1, const SliceDef& s2);
 
     QImage enhance(QImage);
@@ -212,17 +194,13 @@ private:
     int m_sharpenKernelSize=3;
     ViewItemModel* mHorizonItemModel;
     ViewItemModel* mVolumeItemModel;
-    QMap<QString, std::shared_ptr<WellPath>> m_wells;
-    QMap<QString, std::shared_ptr<WellMarkers>> m_markers;
+    ViewItemModel* mWellItemModel;
+    ViewItemModel* mMarkerItemModel;
     QMap<QString, TableItem> m_tables;         // picks/points
-    QStringList m_displayedMarkers;
-    QColor m_wellColor=Qt::white;
-    QColor m_markerColor=Qt::darkRed;
     QColor m_lastViewedColor=Qt::lightGray;
     bool m_displayHorizons=true;
     bool m_displayWells=true;
     bool m_displayMarkers=true;
-    bool m_displayMarkerLabels=true;
     bool m_displayTables=true;
     bool m_displayLastViewed=true;
     Grid3DBounds m_bounds;

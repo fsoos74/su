@@ -41,7 +41,11 @@ SOURCES += gridui.cpp \
     horizonitem.cpp \
     viewitem.cpp \
     viewitemmodel.cpp \
-    horizonitemsdialog.cpp
+    horizonitemsdialog.cpp \
+    wellitem.cpp \
+    wellitemsdialog.cpp \
+    markeritemsdialog.cpp \
+    markeritem.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
@@ -65,7 +69,11 @@ HEADERS += gridui.h\
     horizonitem.h \
     viewitem.h \
     viewitemmodel.h \
-    horizonitemsdialog.h
+    horizonitemsdialog.h \
+    wellitem.h \
+    wellitemsdialog.h \
+    markeritemsdialog.h \
+    markeritem.h
 
 unix {
     target.path = /usr/lib
@@ -87,7 +95,9 @@ FORMS += \
     volumeviewer2d.ui \
     playerdialog.ui \
     volumeitemsdialog.ui \
-    horizonitemsdialog.ui
+    horizonitemsdialog.ui \
+    wellitemsdialog.ui \
+    markeritemsdialog.ui
 
 
 

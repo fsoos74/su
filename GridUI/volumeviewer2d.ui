@@ -118,7 +118,6 @@
      <string>&amp;Display</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionSet_Well_Color"/>
     <addaction name="actionSet_Marker_Color"/>
     <addaction name="actionSet_Table_Color"/>
     <addaction name="actionSet_Last_Viewed_Color"/>

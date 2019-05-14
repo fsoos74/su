@@ -1,22 +1,22 @@
-#ifndef HORIZONITEMSDIALOG_H
-#define HORIZONITEMSDIALOG_H
+#ifndef WELLITEMSDIALOG_H
+#define WELLITEMSDIALOG_H
 
 #include <QDialog>
-#include <horizonitem.h>
+#include <wellitem.h>
 #include <viewitemmodel.h>
 #include <avoproject.h>
 
 namespace Ui {
-class HorizonItemsDialog;
+class WellItemsDialog;
 }
 
-class HorizonItemsDialog : public QDialog
+class WellItemsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit HorizonItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent = 0);
-    ~HorizonItemsDialog();
+    explicit WellItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent = 0);
+    ~WellItemsDialog();
 
 private slots:
     void on_lwDisplayed_currentRowChanged(int currentRow);
@@ -28,9 +28,9 @@ private slots:
     void on_pbApply_clicked();
 
 private:
-    Ui::HorizonItemsDialog *ui;
+    Ui::WellItemsDialog *ui;
     AVOProject* mProject;
     ViewItemModel* mModel=nullptr;
 };
 
-#endif // HORIZONITEMSDIALOG_H
+#endif // WELLITEMSDIALOG_H

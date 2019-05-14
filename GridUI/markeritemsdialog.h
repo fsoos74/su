@@ -1,22 +1,22 @@
-#ifndef HORIZONITEMSDIALOG_H
-#define HORIZONITEMSDIALOG_H
+#ifndef MARKERITEMSDIALOG_H
+#define MARKERITEMSDIALOG_H
 
 #include <QDialog>
-#include <horizonitem.h>
+#include <markeritem.h>
 #include <viewitemmodel.h>
 #include <avoproject.h>
 
 namespace Ui {
-class HorizonItemsDialog;
+class MarkerItemsDialog;
 }
 
-class HorizonItemsDialog : public QDialog
+class MarkerItemsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit HorizonItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent = 0);
-    ~HorizonItemsDialog();
+    explicit MarkerItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent = 0);
+    ~MarkerItemsDialog();
 
 private slots:
     void on_lwDisplayed_currentRowChanged(int currentRow);
@@ -28,9 +28,9 @@ private slots:
     void on_pbApply_clicked();
 
 private:
-    Ui::HorizonItemsDialog *ui;
+    Ui::MarkerItemsDialog *ui;
     AVOProject* mProject;
     ViewItemModel* mModel=nullptr;
 };
 
-#endif // HORIZONITEMSDIALOG_H
+#endif // MARKERITEMSDIALOG_H

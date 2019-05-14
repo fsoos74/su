@@ -1,67 +1,75 @@
-#include "horizonitemsdialog.h"
-#include "ui_horizonitemsdialog.h"
+#include "markeritemsdialog.h"
+#include "ui_markeritemsdialog.h"
 #include <avoproject.h>
-#include<QIntValidator>
 #include<QMessageBox>
 #include<QColorDialog>
 #include<QListWidget>
+#include<topsdbmanager.h>
+#include<wellpath.h>
 
-HorizonItemsDialog::HorizonItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
+
+MarkerItemsDialog::MarkerItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::HorizonItemsDialog),
+    ui(new Ui::MarkerItemsDialog),
     mProject(project),
     mModel(model)
 {
     ui->setupUi(this);
-
-    auto ivalidator=new QIntValidator(this);
-    ivalidator->setRange(0,100);
-
-    ui->lwAvailable->addItems(mProject->gridList(GridType::Horizon));
+    auto db=mProject->openTopsDatabase();
+    if(db){
+        ui->lwAvailable->addItems(db->names());
+    }
     ui->lwDisplayed->addItems(mModel->names());
 }
 
-HorizonItemsDialog::~HorizonItemsDialog()
+MarkerItemsDialog::~MarkerItemsDialog()
 {
     delete ui;
 }
 
-void HorizonItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
+void MarkerItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
 {
     if(currentRow<0) return;
-    auto hitem=dynamic_cast<HorizonItem*>(mModel->at(currentRow));
-    if(!hitem) return;
-    ui->sbOpacity->setValue(hitem->opacity());
-    ui->cbColor->setColor(hitem->color());
-    ui->sbWidth->setValue(hitem->width());
+    auto mitem=dynamic_cast<MarkerItem*>(mModel->at(currentRow));
+    if(!mitem) return;
+    ui->sbOpacity->setValue(mitem->opacity());
+    ui->cbColor->setColor(mitem->color());
+    ui->sbWidth->setValue(mitem->width());
 }
 
-void HorizonItemsDialog::on_pbAdd_clicked()
+void MarkerItemsDialog::on_pbAdd_clicked()
 {
     mModel->setMute(true);
+    auto mdb=mProject->openTopsDatabase();
     for( auto midx : ui->lwAvailable->selectionModel()->selectedRows()){
         auto lwitem=ui->lwAvailable->item(midx.row());
         if(!lwitem) continue;
         auto name=lwitem->text();
-        auto horizon=mProject->loadGrid(GridType::Horizon, name);
-        if( !horizon){
-            QMessageBox::critical(this, "Add Horizon", "Loading horizon failed!");
-            return;
+        // iterate over wells
+        auto mm=mdb->markersByName(name);
+        for( auto wm : mm){
+            auto mname=QString("%1(%2)").arg(wm.name(), wm.uwi());
+            auto wp=mProject->loadWellPath(wm.uwi());
+            if(!wp) continue;
+            auto z=wp->zAtMD(wm.md());
+            auto location=wp->locationAtZ(z);
+            auto position=QVector3D(location.x(), location.y(), z);
+            MarkerItem* mitem=new MarkerItem(this);
+            mitem->setName(mname);
+            mModel->add(mitem);
+            mitem->setPosition(position);
+            ui->lwDisplayed->addItem(mname);
+            ui->lwDisplayed->setCurrentRow(mModel->size()-1);
+            mitem->setColor(ui->cbColor->color());
+            mitem->setOpacity(ui->sbOpacity->value());
+            mitem->setWidth(ui->sbWidth->value());
         }
-
-        HorizonItem* hitem=new HorizonItem(this);
-        hitem->setName(name);
-        hitem->setHorizon(horizon);
-        mModel->add(hitem);
-        name=hitem->name(); // name could have been updated to make it unique
-        ui->lwDisplayed->addItem(name);
-        ui->lwDisplayed->setCurrentRow(mModel->size()-1);
     }
     mModel->setMute(false);
     ui->lwAvailable->clearSelection();  // prevent accidentally multiple adding
 }
 
-void HorizonItemsDialog::on_pbRemove_clicked()
+void MarkerItemsDialog::on_pbRemove_clicked()
 {
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
     // remove items in reverse order to keep indices valid
@@ -77,7 +85,7 @@ void HorizonItemsDialog::on_pbRemove_clicked()
     mModel->setMute(false);
 }
 
-void HorizonItemsDialog::on_pbMoveUp_clicked()
+void MarkerItemsDialog::on_pbMoveUp_clicked()
 {
     // move items in  order
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
@@ -103,7 +111,7 @@ void HorizonItemsDialog::on_pbMoveUp_clicked()
     mModel->setMute(false);     // finally update view
 }
 
-void HorizonItemsDialog::on_pbMoveDown_clicked()
+void MarkerItemsDialog::on_pbMoveDown_clicked()
 {
     // move items in  reverse order
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
@@ -129,14 +137,14 @@ void HorizonItemsDialog::on_pbMoveDown_clicked()
     mModel->setMute(false); // update views
 }
 
-void HorizonItemsDialog::on_cbColor_clicked()
+void MarkerItemsDialog::on_cbColor_clicked()
 {
-    auto color=QColorDialog::getColor(ui->cbColor->color(),this,"Select horizon color");
+    auto color=QColorDialog::getColor(ui->cbColor->color(),this,"Select Marker color");
     if(!color.isValid()) return;
     ui->cbColor->setColor(color);
 }
 
-void HorizonItemsDialog::on_pbApply_clicked()
+void MarkerItemsDialog::on_pbApply_clicked()
 {
     mModel->setMute(true);
     auto color=ui->cbColor->color();
@@ -145,7 +153,7 @@ void HorizonItemsDialog::on_pbApply_clicked()
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
-        auto hitem=dynamic_cast<HorizonItem*>(mModel->at(row));
+        auto hitem=dynamic_cast<MarkerItem*>(mModel->at(row));
         if(!hitem) continue;
         hitem->setColor(color);
         hitem->setWidth(width);

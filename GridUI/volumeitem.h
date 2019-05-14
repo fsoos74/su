@@ -13,7 +13,8 @@ class VolumeItem : public ViewItem
 
 public:
 
-    enum class Style{ATTRIBUTE=0,SEISMIC=1};
+    enum class Style{ATTRIBUTE,SEISMIC};
+    enum class Polarity{NORMAL, REVERSED};
 
     VolumeItem(QObject* parent=nullptr);
     std::shared_ptr<Volume> volume(){
@@ -28,17 +29,27 @@ public:
     Style style()const{
         return mStyle;
     }
+    Polarity polarity()const{
+        return mPolarity;
+    }
+    qreal gain()const{
+        return mGain;
+    }
 
 public slots:
     void setVolume(std::shared_ptr<Volume>);
     void setOpacity(int);
     void setStyle(VolumeItem::Style);
+    void setPolarity(VolumeItem::Polarity);
+    void setGain(qreal);
 
 private:
 
     std::shared_ptr<Volume> mVolume;
     int mOpacity;
     Style mStyle;
+    Polarity mPolarity;
+    qreal mGain;
     ColorTable* mColorTable;
 };
 

@@ -15,11 +15,11 @@ VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, ViewItemModel* model, 
 {
     ui->setupUi(this);
 
-    auto ivalidator=new QIntValidator(this);
-    ivalidator->setRange(0,100);
-
     ui->cbStyle->addItem("Attribute",static_cast<int>(VolumeItem::Style::ATTRIBUTE));
     ui->cbStyle->addItem("Seismic",static_cast<int>(VolumeItem::Style::SEISMIC));
+
+    ui->cbPolarity->addItem("Normal",static_cast<int>(VolumeItem::Polarity::NORMAL));
+    ui->cbPolarity->addItem("Reversed",static_cast<int>(VolumeItem::Polarity::REVERSED));
 
     ui->lwAvailable->addItems(mProject->volumeList());
     ui->lwDisplayed->addItems(mModel->names());
@@ -32,14 +32,13 @@ VolumeItemsDialog::~VolumeItemsDialog()
 
 void VolumeItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
 {
-    std::cout<<"current row changed "<<currentRow<<std::endl<<std::flush;
     if(currentRow<0) return;
     auto vitem=dynamic_cast<VolumeItem*>(mModel->at(currentRow));
     if(!vitem) return;
     ui->sbOpacity->setValue(vitem->opacity());
-    int idx=ui->cbStyle->findData(static_cast<int>(vitem->style()));
-    if(idx<0) return;
-    ui->cbStyle->setCurrentIndex(idx);
+    ui->cbStyle->setCurrentIndex(ui->cbStyle->findData(static_cast<int>(vitem->style())));
+    ui->cbPolarity->setCurrentIndex(ui->cbPolarity->findData(static_cast<int>(vitem->polarity())));
+    ui->sbGain->setValue(vitem->gain());
 }
 
 void VolumeItemsDialog::on_pbAdd_clicked()
@@ -139,61 +138,72 @@ void VolumeItemsDialog::on_pbMoveDown_clicked()
     mModel->setMute(false); // update views
 }
 
-void VolumeItemsDialog::on_sbOpacity_valueChanged(int arg1)
-{
-    auto opacity=arg1;
-    auto row = ui->lwDisplayed->currentRow();
-    if(row<0) return;
-    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(row));
-    if(!vitem) return;
-    vitem->setOpacity(opacity);
-}
-
 void VolumeItemsDialog::on_pbScaling_clicked(){
-    auto idx=ui->lwDisplayed->currentRow();
-    if(idx<0) return;
-    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(idx));
-    if(!vitem) return;
+    mModel->setMute(true);
+    for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
+        auto row=mitem.row();
+        if(row<0) continue;
+        auto vitem=dynamic_cast<VolumeItem*>(mModel->at(row));
+        if(!vitem) continue;
+        auto ct=vitem->colorTable();
+        if( !ct ) continue;
 
-    auto ct=vitem->colorTable();
-    if( !ct ) return;
+        HistogramCreator hcreator;
+        //connect( &hcreator, SIGNAL(percentDone(int)), pbar, SLOT(setValue(int)) );
+        auto volume=vitem->volume().get();
+        auto histogram=hcreator.createHistogram( QString("Volume %1").arg(vitem->name()), std::begin(*volume), std::end(*volume),
+                                                 volume->NULL_VALUE, 100 );
 
-    HistogramCreator hcreator;
-    //connect( &hcreator, SIGNAL(percentDone(int)), pbar, SLOT(setValue(int)) );
-    auto volume=vitem->volume().get();
-    auto histogram=hcreator.createHistogram( QString("Volume %1").arg(vitem->name()), std::begin(*volume), std::end(*volume), volume->NULL_VALUE, 100 );
+        HistogramRangeSelectionDialog displayRangeDialog;
+        displayRangeDialog.setWindowTitle(QString("Display Range - %1").arg(vitem->name()));
+        displayRangeDialog.setRange(ct->range());
+        displayRangeDialog.setColorTable(ct);       // all connections with ble are made by dialog
+        displayRangeDialog.setHistogram(histogram);
 
-    HistogramRangeSelectionDialog displayRangeDialog;
-    displayRangeDialog.setWindowTitle(QString("Display Range - %1").arg(vitem->name()));
-    displayRangeDialog.setRange(ct->range());
-    displayRangeDialog.setColorTable(ct);       // all connections with ble are made by dialog
-    displayRangeDialog.setHistogram(histogram);
-
-    displayRangeDialog.exec();
+        if( displayRangeDialog.exec()!=QDialog::Accepted){
+            break;  // canceled, no more volumes
+        }
+   }
+   mModel->setMute(false);
 }
 
 void VolumeItemsDialog::on_pbColors_clicked(){
-    auto idx=ui->lwDisplayed->currentRow();
-    if(idx<0) return;
-    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(idx));
-    if(!vitem) return;
-
-    auto ct=vitem->colorTable();
-    if( !ct ) return;
-
-    auto oldColors=ct->colors();
-    auto dlg = new ColorTableDialog(oldColors, this);
-    dlg->setWindowTitle(QString("Edit colortable volume \"%1\"").arg(vitem->name()));
-    if(dlg->exec()==QDialog::Accepted){
+    mModel->setMute(true);
+    for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
+        auto row=mitem.row();
+        if(row<0) continue;
+        auto vitem=dynamic_cast<VolumeItem*>(mModel->at(row));
+        if(!vitem) continue;
+        auto ct=vitem->colorTable();
+        if( !ct ) continue;
+        auto oldColors=ct->colors();
+        auto dlg = new ColorTableDialog(oldColors, this);
+        dlg->setWindowTitle(tr("Edit colortable volume \"%1\"").arg(vitem->name()));
+        if(dlg->exec()!=QDialog::Accepted){
+            ct->setColors(oldColors);
+            break;   // canceled, process no more volumes
+        }
         ct->setColors(dlg->colors());
     }
+    mModel->setMute(false);
 }
 
-void VolumeItemsDialog::on_cbStyle_currentIndexChanged(int)
+void VolumeItemsDialog::on_pbApply_clicked()
 {
-   auto row = ui->lwDisplayed->currentRow();
-   if(row<0) return;
-    auto vitem=dynamic_cast<VolumeItem*>(mModel->at(row));
-    if(!vitem) return;
-    vitem->setStyle(static_cast<VolumeItem::Style>(ui->cbStyle->currentData().toInt()));
+    mModel->setMute(true);
+    auto style=static_cast<VolumeItem::Style>(ui->cbStyle->currentData().toInt());
+    auto polarity=static_cast<VolumeItem::Polarity>(ui->cbPolarity->currentData().toInt());
+    auto gain=ui->sbGain->value();
+    auto opacity=ui->sbOpacity->value();
+    for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
+        auto row=mitem.row();
+        if(row<0) continue;
+        auto vitem=dynamic_cast<VolumeItem*>(mModel->at(row));
+        if(!vitem) continue;
+        vitem->setStyle(style);
+        vitem->setPolarity(polarity);
+        vitem->setGain(gain);
+        vitem->setOpacity(opacity);
+    }
+    mModel->setMute(false);
 }

@@ -21,6 +21,8 @@
 #include <viewitemmodel.h>
 #include <volumeitemsdialog.h>
 #include <horizonitemsdialog.h>
+#include <wellitemsdialog.h>
+#include <markeritemsdialog.h>
 #include <topsdbmanager.h>
 
 
@@ -82,8 +84,6 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     updateSliceConnections();
 
     ui->volumeView->setSlice(VolumeView::SliceType::Inline, 0);
-
-
 }
 
 VolumeViewer2D::~VolumeViewer2D()
@@ -530,63 +530,24 @@ void VolumeViewer2D::on_actionSetup_Tables_triggered()
 void VolumeViewer2D::on_actionSetup_Wells_triggered()
 {
     Q_ASSERT(m_project);
-try{
-    QStringList avail=m_project->wellList();
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Wells"), tr("Select Wells:"), avail, &ok, ui->volumeView->wellList());
-    if( !ok ) return;
 
-    // first pass remove items
-    for( auto name : ui->volumeView->wellList() ){
-
-        if( !names.contains(name)) ui->volumeView->removeWell(name);
-        else names.removeAll(name);
-    }
-
-    // now we only have names that need to be added
-    // second pass add items
-    for( auto name : names){
-
-        auto pt = m_project->loadWellPath(name);
-
-        if( !pt ){
-            QMessageBox::critical(this, tr("Add Well"), QString("Loading well path \"%1\" failed!").arg(name) );
-            break;
-        }
-
-        auto db=m_project->openTopsDatabase();
-        auto tmp=db->markersByWell(name);
-        auto wms=std::make_shared<WellMarkers>(WellMarkers(tmp.begin(), tmp.end()));
-
-        ui->volumeView->addWell(name, pt, wms);
-    }
-}catch(std::exception& ex){
-        QMessageBox::critical(this, "Exception", ex.what(), QMessageBox::Ok);
-    }
+    WellItemsDialog* dlg=new WellItemsDialog(m_project, ui->volumeView->wellItemModel());
+    dlg->setWindowTitle("Setup Wells");
+    dlg->exec();
 }
 
-void VolumeViewer2D::on_actionSet_Well_Color_triggered()
+void VolumeViewer2D::on_actionSetup_Tops_triggered()
 {
-    QColor color=QColorDialog::getColor( ui->volumeView->wellColor(), this, "Well Color");
+    Q_ASSERT(m_project);
 
-    if( color.isValid()){
-        ui->volumeView->setWellColor(color);
-    }
+    MarkerItemsDialog* dlg=new MarkerItemsDialog(m_project, ui->volumeView->markerItemModel());
+    dlg->setWindowTitle("Setup Markers");
+    dlg->exec();
 }
-
-void VolumeViewer2D::on_actionSet_Marker_Color_triggered()
-{
-    QColor color=QColorDialog::getColor( ui->volumeView->markerColor(), this, "Marker Color");
-
-    if( color.isValid()){
-        ui->volumeView->setMarkerColor(color);
-    }
-}
-
 
 void VolumeViewer2D::on_actionSet_Last_Viewed_Color_triggered()
 {
-    QColor color=QColorDialog::getColor( ui->volumeView->wellColor(), this, "Last Viewed Color");
+    QColor color=QColorDialog::getColor( ui->volumeView->lastViewedColor(), this, "Last Viewed Color");
 
     if( color.isValid()){
         ui->volumeView->setLastViewedColor(color);
@@ -609,17 +570,7 @@ void VolumeViewer2D::on_action_Player_triggered()
 }
 
 
-void VolumeViewer2D::on_actionSetup_Tops_triggered()
-{
-    QStringList avail=ui->volumeView->markersList();
-    std::sort( avail.begin(), avail.end());
 
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Tops"), tr("Select Tops:"), avail, &ok, ui->volumeView->displayedMarkers());
-    if( !ok ) return;
-
-    ui->volumeView->setDisplayedMarkers(names);
-}
 
 /*
 void VolumeViewer2D::orientate(){

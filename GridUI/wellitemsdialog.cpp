@@ -1,59 +1,55 @@
-#include "horizonitemsdialog.h"
-#include "ui_horizonitemsdialog.h"
+#include "wellitemsdialog.h"
+#include "ui_wellitemsdialog.h"
 #include <avoproject.h>
 #include<QIntValidator>
 #include<QMessageBox>
 #include<QColorDialog>
 #include<QListWidget>
 
-HorizonItemsDialog::HorizonItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
+WellItemsDialog::WellItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::HorizonItemsDialog),
+    ui(new Ui::WellItemsDialog),
     mProject(project),
     mModel(model)
 {
     ui->setupUi(this);
-
-    auto ivalidator=new QIntValidator(this);
-    ivalidator->setRange(0,100);
-
-    ui->lwAvailable->addItems(mProject->gridList(GridType::Horizon));
+    ui->lwAvailable->addItems(mProject->wellList());
     ui->lwDisplayed->addItems(mModel->names());
 }
 
-HorizonItemsDialog::~HorizonItemsDialog()
+WellItemsDialog::~WellItemsDialog()
 {
     delete ui;
 }
 
-void HorizonItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
+void WellItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
 {
     if(currentRow<0) return;
-    auto hitem=dynamic_cast<HorizonItem*>(mModel->at(currentRow));
-    if(!hitem) return;
-    ui->sbOpacity->setValue(hitem->opacity());
-    ui->cbColor->setColor(hitem->color());
-    ui->sbWidth->setValue(hitem->width());
+    auto witem=dynamic_cast<WellItem*>(mModel->at(currentRow));
+    if(!witem) return;
+    ui->sbOpacity->setValue(witem->opacity());
+    ui->cbColor->setColor(witem->color());
+    ui->sbWidth->setValue(witem->width());
 }
 
-void HorizonItemsDialog::on_pbAdd_clicked()
+void WellItemsDialog::on_pbAdd_clicked()
 {
     mModel->setMute(true);
     for( auto midx : ui->lwAvailable->selectionModel()->selectedRows()){
         auto lwitem=ui->lwAvailable->item(midx.row());
         if(!lwitem) continue;
         auto name=lwitem->text();
-        auto horizon=mProject->loadGrid(GridType::Horizon, name);
-        if( !horizon){
-            QMessageBox::critical(this, "Add Horizon", "Loading horizon failed!");
+        auto wellPath=mProject->loadWellPath(name);
+        if( !wellPath){
+            QMessageBox::critical(this, "Add Well", "Loading Well failed!");
             return;
         }
 
-        HorizonItem* hitem=new HorizonItem(this);
-        hitem->setName(name);
-        hitem->setHorizon(horizon);
-        mModel->add(hitem);
-        name=hitem->name(); // name could have been updated to make it unique
+        WellItem* witem=new WellItem(this);
+        witem->setName(name);
+        witem->setWellPath(wellPath);
+        mModel->add(witem);
+        name=witem->name(); // name could have been updated to make it unique
         ui->lwDisplayed->addItem(name);
         ui->lwDisplayed->setCurrentRow(mModel->size()-1);
     }
@@ -61,7 +57,7 @@ void HorizonItemsDialog::on_pbAdd_clicked()
     ui->lwAvailable->clearSelection();  // prevent accidentally multiple adding
 }
 
-void HorizonItemsDialog::on_pbRemove_clicked()
+void WellItemsDialog::on_pbRemove_clicked()
 {
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
     // remove items in reverse order to keep indices valid
@@ -77,7 +73,7 @@ void HorizonItemsDialog::on_pbRemove_clicked()
     mModel->setMute(false);
 }
 
-void HorizonItemsDialog::on_pbMoveUp_clicked()
+void WellItemsDialog::on_pbMoveUp_clicked()
 {
     // move items in  order
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
@@ -103,7 +99,7 @@ void HorizonItemsDialog::on_pbMoveUp_clicked()
     mModel->setMute(false);     // finally update view
 }
 
-void HorizonItemsDialog::on_pbMoveDown_clicked()
+void WellItemsDialog::on_pbMoveDown_clicked()
 {
     // move items in  reverse order
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
@@ -129,14 +125,14 @@ void HorizonItemsDialog::on_pbMoveDown_clicked()
     mModel->setMute(false); // update views
 }
 
-void HorizonItemsDialog::on_cbColor_clicked()
+void WellItemsDialog::on_cbColor_clicked()
 {
-    auto color=QColorDialog::getColor(ui->cbColor->color(),this,"Select horizon color");
+    auto color=QColorDialog::getColor(ui->cbColor->color(),this,"Select Well color");
     if(!color.isValid()) return;
     ui->cbColor->setColor(color);
 }
 
-void HorizonItemsDialog::on_pbApply_clicked()
+void WellItemsDialog::on_pbApply_clicked()
 {
     mModel->setMute(true);
     auto color=ui->cbColor->color();
@@ -145,7 +141,7 @@ void HorizonItemsDialog::on_pbApply_clicked()
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
-        auto hitem=dynamic_cast<HorizonItem*>(mModel->at(row));
+        auto hitem=dynamic_cast<WellItem*>(mModel->at(row));
         if(!hitem) continue;
         hitem->setColor(color);
         hitem->setWidth(width);

@@ -8,6 +8,8 @@
 #include<matrix.h>
 #include"volumeitem.h"
 #include"horizonitem.h"
+#include"wellitem.h"
+#include"markeritem.h"
 #include"viewitemmodel.h"
 
 
@@ -85,12 +87,18 @@ bool operator==(const VolumeView::SliceDef& a, const VolumeView::SliceDef& b){
 VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.),
     m_picker(new VolumePicker(this)),
     mHorizonItemModel(new ViewItemModel(this)),
-    mVolumeItemModel(new ViewItemModel(this))
+    mVolumeItemModel(new ViewItemModel(this)),
+    mWellItemModel(new ViewItemModel(this)),
+    mMarkerItemModel(new ViewItemModel(this))
 {
     connect(mVolumeItemModel,SIGNAL(changed()), this, SLOT(onVolumeItemModelChanged()));
     connect(mVolumeItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
     connect(mHorizonItemModel,SIGNAL(changed()), this, SLOT(refreshSceneCaller()));
     connect(mHorizonItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
+    connect(mWellItemModel,SIGNAL(changed()), this, SLOT(refreshSceneCaller()));
+    connect(mWellItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
+    connect(mMarkerItemModel,SIGNAL(changed()), this, SLOT(refreshSceneCaller()));
+    connect(mMarkerItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
     updateBounds();
     refreshScene();
 }
@@ -99,18 +107,6 @@ QColor VolumeView::tableColor(QString name){
     if( !m_tables.contains(name)) return QColor();
     auto ti=m_tables.value(name);
     return ti.color;
-}
-
-QStringList VolumeView::markersList(){
-    QSet<QString> all;
-    foreach( std::shared_ptr<WellMarkers> wms, m_markers){
-        if( !wms) continue;
-        foreach( WellMarker m, *wms){
-            all.insert(m.name());
-        }
-    }
-
-    return QStringList::fromSet(all);
 }
 
 void VolumeView::setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy){
@@ -238,19 +234,6 @@ void VolumeView::setSharpenKernelSize(int s){
     refreshScene();
 }
 
-void VolumeView::setWellColor(QColor c){
-    if( c==m_wellColor) return;
-    m_wellColor=c;
-    refreshScene();
-}
-
-void VolumeView::setMarkerColor(QColor c){
-    if( c==m_markerColor) return;
-    m_markerColor=c;
-    refreshScene();
-}
-
-
 void VolumeView::setLastViewedColor(QColor c){
     if(c==m_lastViewedColor) return;
     m_lastViewedColor=c;
@@ -275,17 +258,6 @@ void VolumeView::setDisplayMarkers(bool on){
     refreshScene();
 }
 
-void VolumeView::setDisplayMarkerLabels(bool on){
-    if(on==m_displayMarkerLabels ) return;
-    m_displayMarkerLabels=on;
-    refreshScene();
-}
-
-void VolumeView::setDisplayedMarkers(QStringList l){
-    m_displayedMarkers=l;
-    refreshScene();
-}
-
 void VolumeView::setDisplayTables(bool on){
     if( on==m_displayTables ) return;
     m_displayTables=on;
@@ -297,26 +269,6 @@ void VolumeView::setDisplayLastViewed(bool on){
     m_displayLastViewed=on;
     refreshScene();
 }
-
-void VolumeView::addWell(QString name, std::shared_ptr<WellPath> pt, std::shared_ptr<WellMarkers> wms){
-    if(m_wells.contains(name)) return; // no dupes
-    if(!pt) return;
-    m_wells.insert(name, pt);
-    m_markers.insert(name, wms);
-
-    refreshScene();
-}
-
-void VolumeView::removeWell(QString name){
-    m_wells.remove(name);
-    m_markers.remove(name);
-    refreshScene();
-}
-
-QStringList VolumeView::wellList(){
-    return m_wells.keys();
-}
-
 
 void VolumeView::addTable(QString name, std::shared_ptr<Table> table, QColor color){
     if(m_tables.contains(name)) return;  // no dupes
@@ -629,19 +581,13 @@ QPainterPath VolumeView::projectWellPathCrossline(const WellPath& wp, int xline)
     return path;
 }
 
-
+/*
 QVector<std::pair<QPointF, QString>> VolumeView::projectMarkersInline(int iline){
 
-    QVector<std::pair<QPointF, QString>> markers;
+    for( int i=mMarkerItemModel->size()-1; i>=0; i-- ){
+        auto mitem=dynamic_cast<MarkerItem*>(mWellItemModel->at(i));
+        if(!mitem)continue;
 
-    for( auto wname : m_wells.keys()){
-
-        auto wp=m_wells.value(wname);
-        if( !wp) continue;
-        auto wms=m_markers.value(wname);
-        if(!wms) continue;
-
-        for( auto wm : *wms ){
             auto ilxl=m_xy_to_ilxl.map(wp->locationAtMD(wm.md()));
             if( std::fabs(ilxl.x()-iline)>m_wellViewDist) continue;
             auto z=wp->zAtMD(wm.md());
@@ -658,11 +604,12 @@ QVector<std::pair<QPointF, QString>> VolumeView::projectMarkersCrossline(int xli
 
     QVector<std::pair<QPointF, QString>> markers;
 
-    for( auto wname : m_wells.keys()){
-
-        auto wp=m_wells.value(wname);
+    for( int i=0; i<mHorizonItemModel->size(); i++ ){
+        auto witem=dynamic_cast<WellItem*>(mHorizonItemModel->at(i));
+        if(!witem)continue;
+        auto wp=witem->wellPath();
         if( !wp) continue;
-        auto wms=m_markers.value(wname);
+        auto wms=m_markers.value(witem->name());
         if( !wms) continue;
 
         for( auto wm : *wms ){
@@ -677,7 +624,7 @@ QVector<std::pair<QPointF, QString>> VolumeView::projectMarkersCrossline(int xli
     return markers;
 }
 
-
+*/
 QLineF VolumeView::intersectSlices(const SliceDef &s1, const SliceDef &s2){
 
     auto bounds=m_bounds;
@@ -800,80 +747,66 @@ void VolumeView::renderHorizons(QGraphicsScene* scene){
 }
 
 void VolumeView::renderWells(QGraphicsScene * scene){
-    QPen wellPen( m_wellColor, 2);
-    wellPen.setCosmetic(true);
-    for( auto wname : m_wells.keys()){
 
-        auto wp=m_wells.value(wname);
+    for( int i=mWellItemModel->size()-1; i>=0; i-- ){
+        auto witem=dynamic_cast<WellItem*>(mWellItemModel->at(i));
+        if(!witem) continue;
+        auto wp=witem->wellPath();
         if( !wp) continue;
 
-        QPainterPath path;   
-        switch(m_slice.type){
-        case SliceType::Inline:
-            path=projectWellPathInline(*wp, m_slice.value);
-            break;
-        case SliceType::Crossline:
-            path=projectWellPathCrossline(*wp, m_slice.value);
-            break;
-        case SliceType::Z:{
+        if(m_slice.type==SliceType::Inline || m_slice.type==SliceType::Crossline){
+            QPainterPath path;
+            if(m_slice.type==SliceType::Inline){
+                path=projectWellPathInline(*wp, m_slice.value);
+            }
+            else{
+                path=projectWellPathCrossline(*wp, m_slice.value);
+            }
+            if( !path.isEmpty()){
+                QPen wellPen( witem->color(), witem->width());
+                wellPen.setCosmetic(true);
+                auto item=new QGraphicsPathItem(path);
+                item->setPen(wellPen);
+                scene->addItem(item);
+            }
+        }
+        else if(m_slice.type==SliceType::Z){
             auto p=m_xy_to_ilxl.map( wp->locationAtZ(-m_slice.value) );
-            //std::cout<<"p_ "<<p.x()<<"/"<<p.y()<<std::endl<<std::flush;
-            auto item=new QGraphicsEllipseItem( -2,-2, 4, 4);
-            item->setPen(wellPen);
+            auto s=witem->width();
+            auto item=new QGraphicsEllipseItem( -s,-s, 2*s, 2*s);
+            item->setPen(Qt::NoPen);
+            item->setBrush(witem->color());
             item->setPos(p);
             item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
             scene->addItem(item);
-            break;
         }
-        }
-
-        if( !path.isEmpty()){
-            auto item=new QGraphicsPathItem(path);
-            item->setPen(wellPen);
-
-            scene->addItem(item);
-        }
-
     }
 }
 
 void VolumeView::renderMarkers(QGraphicsScene* scene){
 
-    QVector<std::pair<QPointF,QString>> markers;
-    switch(m_slice.type){
-    case SliceType::Inline:
-        markers=projectMarkersInline(m_slice.value);
-        break;
-    case SliceType::Crossline:
-        markers=projectMarkersCrossline(m_slice.value);
-        break;
-    default:
-        break;
-    }
+    if(m_slice.type==SliceType::Z) return;
 
-    QPen wmPen(m_markerColor, 2);
-    wmPen.setCosmetic(true);
-    QFont wmFont("Helvetica [Cronyx]", 8);
-    QPen wmLabelPen(m_markerColor,0);
-
-    for( auto marker : markers){
-
-        if( !m_displayedMarkers.contains(marker.second)) continue;
-
+    for( int i=mMarkerItemModel->size()-1; i>=0; i--){
+        auto mitem=dynamic_cast<MarkerItem*>(mMarkerItemModel->at(i));
+        if(!mitem) continue;
+        QPen wmPen(mitem->color(), mitem->width());
+        wmPen.setCosmetic(true);
+        QFont wmFont("Helvetica [Cronyx]", 8);
+        QPen wmLabelPen(mitem->color(),0);
         QGraphicsLineItem* item=new QGraphicsLineItem( -10, 0, 10, 0);
         item->setPen(wmPen);
         item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        item->setPos(marker.first.x(), marker.first.y());
+        auto mposition=mitem->position();
+        auto x=(m_slice.type==SliceType::Inline) ? mposition.y() : mposition.x();
+        item->setPos( x, mposition.z());
         scene->addItem(item);
-
-        if( m_displayMarkerLabels){
-            auto item=new QGraphicsSimpleTextItem(marker.second);
-            item->setPen(wmLabelPen);
-            item->setFont(wmFont);
-            item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-            item->setPos(marker.first.x(), marker.first.y() );
-            scene->addItem(item);
-        }
+        auto litem=new QGraphicsSimpleTextItem(mitem->name());
+        litem->setPen(wmLabelPen);
+        litem->setFont(wmFont);
+        litem->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        litem->setPos(x, mposition.z() );
+        scene->addItem(litem);
     }
 }
 
@@ -1277,7 +1210,7 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
                 item->setPen(QPen(Qt::black, 0));
                 item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
                 scene->addItem(item);
-/*
+
                 // variable area
                 path=QPainterPath();
                 bool active=false;
@@ -1291,19 +1224,18 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
                     auto value=v->value(il, xl, tt);
                     if( value==v->NULL_VALUE) continue;
                     qreal x = il + value/maxabs;
-                    if(x>=xl){               // inside va
+                    qreal z=xl;
+                    if(x>=il){               // inside va
                         if(!active){        // no area yet, start new
-                            auto zxl=(j>0) ? lininterp(xprev, zprev,x,xl,il) : xl;
-                            path.moveTo(xl,zxl);
-                            //path.moveTo(x,z);
+                            auto zil=(j>0) ? lininterp(xprev, zprev,x,z,il) : z;
+                            path.moveTo(x,zil);
                             active=true;
                         }
                         path.lineTo(x,z);   // line to current point
                     }
                     else if(active){        // close area
-                        auto zxl=lininterp(x,z,xprev, zprev,xl);
-                        path.lineTo(xl,zxl);
-                        //path.lineTo(x,z);
+                        auto zil=lininterp(x,z, xprev,zprev, il);
+                        path.lineTo(x,zil);
                         active=false;
                         path.closeSubpath();
                     }
@@ -1317,7 +1249,6 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
                 item->setBrush(Qt::black);
                 item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
                 scene->addItem(item);
-                */
             }
         }
     }
