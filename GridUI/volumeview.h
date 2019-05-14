@@ -79,8 +79,10 @@ public:
     ViewItemModel* markerItemModel()const{
         return mMarkerItemModel;
     }
-    QStringList tableList();
-    QColor tableColor(QString);
+
+    ViewItemModel* tableItemModel()const{
+        return mTableItemModel;
+    }
 
     bool displayHorizons()const{
         return m_displayHorizons;
@@ -115,10 +117,6 @@ public slots:
     void setWellViewDist(int);
     void setSharpenPercent(int);
     void setSharpenKernelSize(int);
-
-    void addTable(QString, std::shared_ptr<Table>, QColor);
-    void removeTable(QString);
-    void setTableColor(QString, QColor);
 
     void setLastViewedColor(QColor);
     void setDisplayHorizons(bool);
@@ -162,11 +160,6 @@ private:
 
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
 
-    struct TableItem{
-        std::shared_ptr<Table> table;
-        QColor color;
-    };
-
     QImage intersectVolumeInline(const Volume& volume, ColorTable* colorTable, int iline, double ft, double lt);
     QImage intersectVolumeCrossline(const Volume& volume, ColorTable* colorTable, int xline, double ft, double lt);
     QImage intersectVolumeTime(const Volume& volume, ColorTable* colorTable, int time);
@@ -196,7 +189,7 @@ private:
     ViewItemModel* mVolumeItemModel;
     ViewItemModel* mWellItemModel;
     ViewItemModel* mMarkerItemModel;
-    QMap<QString, TableItem> m_tables;         // picks/points
+    ViewItemModel* mTableItemModel;
     QColor m_lastViewedColor=Qt::lightGray;
     bool m_displayHorizons=true;
     bool m_displayWells=true;

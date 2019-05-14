@@ -1,80 +1,63 @@
-#include "markeritemsdialog.h"
-#include "ui_markeritemsdialog.h"
+#include "tableitemsdialog.h"
+#include "ui_tableitemsdialog.h"
 #include <avoproject.h>
+#include<QIntValidator>
 #include<QMessageBox>
 #include<QColorDialog>
 #include<QListWidget>
-#include<topsdbmanager.h>
-#include<wellpath.h>
 
-
-MarkerItemsDialog::MarkerItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
+TableItemsDialog::TableItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::MarkerItemsDialog),
+    ui(new Ui::TableItemsDialog),
     mProject(project),
     mModel(model)
 {
     ui->setupUi(this);
-    auto db=mProject->openTopsDatabase();
-    if(db){
-        ui->lwAvailable->addItems(db->names());
-    }
+    ui->lwAvailable->addItems(mProject->tableList());
     ui->lwDisplayed->addItems(mModel->names());
-
-    ui->lwWells->addItems(mProject->wellList());
 }
 
-MarkerItemsDialog::~MarkerItemsDialog()
+TableItemsDialog::~TableItemsDialog()
 {
     delete ui;
 }
 
-void MarkerItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
+void TableItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
 {
     if(currentRow<0) return;
-    auto mitem=dynamic_cast<MarkerItem*>(mModel->at(currentRow));
-    if(!mitem) return;
-    ui->sbOpacity->setValue(mitem->opacity());
-    ui->cbColor->setColor(mitem->color());
-    ui->sbWidth->setValue(mitem->width());
+    auto witem=dynamic_cast<TableItem*>(mModel->at(currentRow));
+    if(!witem) return;
+    ui->sbOpacity->setValue(witem->opacity());
+    ui->cbColor->setColor(witem->color());
+    ui->sbPointSize->setValue(witem->pointSize());
 }
 
-void MarkerItemsDialog::on_pbAdd_clicked()
+void TableItemsDialog::on_pbAdd_clicked()
 {
     mModel->setMute(true);
-    auto mdb=mProject->openTopsDatabase();
     for( auto midx : ui->lwAvailable->selectionModel()->selectedRows()){
         auto lwitem=ui->lwAvailable->item(midx.row());
         if(!lwitem) continue;
         auto name=lwitem->text();
-        auto mm=mdb->markersByName(name);   // database access
-        for( auto widx : ui->lwWells->selectionModel()->selectedIndexes()){
-            auto uwi = ui->lwWells->item(widx.row())->text();
-            auto it=std::find_if(mm.begin(), mm.end(), [uwi](const WellMarker& m)->bool{return m.uwi()==uwi;});
-            if(it==mm.end()) return;
-            auto wm=*it;
-            auto wp=mProject->loadWellPath(wm.uwi());
-            if(!wp) continue;
-            auto z=wp->zAtMD(wm.md());
-            auto location=wp->locationAtZ(z);
-            auto position=QVector3D(location.x(), location.y(), z);
-            auto mname=QString("%1@%2").arg(wm.name(), wm.uwi());
-            MarkerItem* mitem=new MarkerItem(this);
-            mitem->setName(mname);
-            mModel->add(mitem);
-            mitem->setPosition(position);
-            ui->lwDisplayed->addItem(mname);
-            ui->lwDisplayed->setCurrentRow(mModel->size()-1);
-            mitem->setColor(ui->cbColor->color());
-            mitem->setOpacity(ui->sbOpacity->value());
-            mitem->setWidth(ui->sbWidth->value());
+        auto table=mProject->loadTable(name);
+        if( !table){
+            QMessageBox::critical(this, "Add Table", tr("Loading table %1 failed!").arg(name));
+            return;
         }
+
+        TableItem* witem=new TableItem(this);
+        witem->setName(name);
+        witem->setTable(table);
+        mModel->add(witem);
+        name=witem->name(); // name could have been updated to make it unique
+        ui->lwDisplayed->addItem(name);
+        ui->lwDisplayed->setCurrentRow(mModel->size()-1);
     }
     mModel->setMute(false);
     ui->lwAvailable->clearSelection();  // prevent accidentally multiple adding
 }
 
-void MarkerItemsDialog::on_pbRemove_clicked()
+void TableItemsDialog::on_pbRemove_clicked()
 {
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
     // remove items in reverse order to keep indices valid
@@ -90,7 +73,7 @@ void MarkerItemsDialog::on_pbRemove_clicked()
     mModel->setMute(false);
 }
 
-void MarkerItemsDialog::on_pbMoveUp_clicked()
+void TableItemsDialog::on_pbMoveUp_clicked()
 {
     // move items in  order
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
@@ -116,7 +99,7 @@ void MarkerItemsDialog::on_pbMoveUp_clicked()
     mModel->setMute(false);     // finally update view
 }
 
-void MarkerItemsDialog::on_pbMoveDown_clicked()
+void TableItemsDialog::on_pbMoveDown_clicked()
 {
     // move items in  reverse order
     auto midcs=ui->lwDisplayed->selectionModel()->selectedRows();
@@ -142,26 +125,26 @@ void MarkerItemsDialog::on_pbMoveDown_clicked()
     mModel->setMute(false); // update views
 }
 
-void MarkerItemsDialog::on_cbColor_clicked()
+void TableItemsDialog::on_cbColor_clicked()
 {
-    auto color=QColorDialog::getColor(ui->cbColor->color(),this,"Select Marker color");
+    auto color=QColorDialog::getColor(ui->cbColor->color(),this,"Select Table color");
     if(!color.isValid()) return;
     ui->cbColor->setColor(color);
 }
 
-void MarkerItemsDialog::on_pbApply_clicked()
+void TableItemsDialog::on_pbApply_clicked()
 {
     mModel->setMute(true);
     auto color=ui->cbColor->color();
-    auto width=ui->sbWidth->value();
+    auto pointSize=ui->sbPointSize->value();
     auto opacity=ui->sbOpacity->value();
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
-        auto hitem=dynamic_cast<MarkerItem*>(mModel->at(row));
+        auto hitem=dynamic_cast<TableItem*>(mModel->at(row));
         if(!hitem) continue;
         hitem->setColor(color);
-        hitem->setWidth(width);
+        hitem->setPointSize(pointSize);
         hitem->setOpacity(opacity);
     }
     mModel->setMute(false);

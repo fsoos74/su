@@ -45,7 +45,10 @@ SOURCES += gridui.cpp \
     wellitem.cpp \
     wellitemsdialog.cpp \
     markeritemsdialog.cpp \
-    markeritem.cpp
+    markeritem.cpp \
+    simplescalingdialog.cpp \
+    tableitem.cpp \
+    tableitemsdialog.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
@@ -73,7 +76,10 @@ HEADERS += gridui.h\
     wellitem.h \
     wellitemsdialog.h \
     markeritemsdialog.h \
-    markeritem.h
+    markeritem.h \
+    simplescalingdialog.h \
+    tableitem.h \
+    tableitemsdialog.h
 
 unix {
     target.path = /usr/lib
@@ -97,7 +103,9 @@ FORMS += \
     volumeitemsdialog.ui \
     horizonitemsdialog.ui \
     wellitemsdialog.ui \
-    markeritemsdialog.ui
+    markeritemsdialog.ui \
+    simplescalingdialog.ui \
+    tableitemsdialog.ui
 
 
 

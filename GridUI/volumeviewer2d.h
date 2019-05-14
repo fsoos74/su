@@ -58,12 +58,11 @@ private slots:
     void on_actionSetup_Horizons_triggered();
     void on_actionSetup_Wells_triggered();
     void on_actionSetup_Tops_triggered();
+    void on_actionSetup_Tables_triggered();
 
     void on_actionSet_Last_Viewed_Color_triggered();
-
+    void on_actionWell_Visibility_Distance_triggered();
     void on_action_Player_triggered();
-    void on_actionSetup_Tables_triggered();
-    void on_actionSet_Table_Color_triggered();
 
     void on_action_New_Picks_triggered();
     void on_action_Load_Picks_triggered();
@@ -71,13 +70,13 @@ private slots:
     void on_actionSave_As_Picks_triggered();
 
     void on_mdiArea_customContextMenuRequested(const QPoint &pos);
+    void colorBarContextMenuRequested(const QPoint &pos);
 
 private:
     bool canDiscardPicks();
     void setupMouseModes();
     void setupSliceToolBar();
     void setupFlattenToolBar();
-    void setupWellToolBar();
     void setupPickingToolBar();
     void setupEnhanceToolBar();
     void updateFlattenHorizons();
@@ -92,7 +91,6 @@ private:
 
     QToolBar* m_sliceToolBar;
     QToolBar* m_flattenToolBar;
-    QToolBar* m_wellToolBar;
     QToolBar* m_enhanceToolBar;
     QToolBar* m_pickToolBar;
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;

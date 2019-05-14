@@ -12,6 +12,7 @@
 #include <qprogressbar.h>
 
 #include <colortabledialog.h>
+#include <simplescalingdialog.h>
 #include <multiinputdialog.h>
 #include <multiitemselectiondialog.h>
 #include <histogramcreator.h>
@@ -23,6 +24,7 @@
 #include <horizonitemsdialog.h>
 #include <wellitemsdialog.h>
 #include <markeritemsdialog.h>
+#include <tableitemsdialog.h>
 #include <topsdbmanager.h>
 
 
@@ -41,12 +43,10 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     setupMouseModes();
     setupSliceToolBar();
     setupFlattenToolBar();
-    setupWellToolBar();
     setupPickingToolBar();
     setupEnhanceToolBar();
     populateWindowMenu();
     m_flattenToolBar->setVisible(false);
-    m_wellToolBar->setVisible(false);
     m_pickToolBar->setVisible(false);
     setAttribute( Qt::WA_DeleteOnClose);
 
@@ -57,7 +57,8 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     ui->volumeView->setHScaleAlignment(Qt::AlignTop);
     ui->volumeView->setVScaleAlignment(Qt::AlignLeft);
 
-    connect( ui->volumeView, SIGNAL(volumesChanged()), this, SLOT(onVolumesChanged()) );
+    connect( ui->volumeView->volumeItemModel(), SIGNAL(changed()), this, SLOT(onVolumesChanged()) );
+    connect( ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(onVolumesChanged()) );
     connect( ui->volumeView, SIGNAL(sliceChanged(VolumeView::SliceDef)), this, SLOT(onSliceChanged(VolumeView::SliceDef)));
     connect( ui->volumeView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)));
 
@@ -80,6 +81,9 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     connect( ui->volumeView, SIGNAL(displayLastViewedChanged(bool)), ui->actionDisplay_Last_Viewed, SLOT(setChecked(bool)) );
 
     connect( ui->actionBack, SIGNAL(triggered(bool)), ui->volumeView, SLOT(back()));
+
+    connect(ui->volumeView->volumeItemModel(), SIGNAL(changed()), this, SLOT(updateColorBars()) );
+    connect(ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(updateColorBars()) );
 
     updateSliceConnections();
 
@@ -263,23 +267,6 @@ void VolumeViewer2D::setupFlattenToolBar(){
     connect(m_cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
 }
 
-void VolumeViewer2D::setupWellToolBar(){
-    m_wellToolBar=new QToolBar( "Well", this);
-    auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Dist:"));
-    auto sbWellViewDist=new QSpinBox;
-    auto layout=new QHBoxLayout;
-    layout->addWidget(label);
-    layout->addWidget(sbWellViewDist);
-    widget->setLayout(layout);
-    m_wellToolBar->addWidget(widget);
-    addToolBar(m_wellToolBar);
-    connect(sbWellViewDist, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setWellViewDist(int)) );
-
-    sbWellViewDist->setRange(0, 9999);
-    sbWellViewDist->setValue(ui->volumeView->welViewDist());
-}
-
 void VolumeViewer2D::setupEnhanceToolBar(){
     m_enhanceToolBar=new QToolBar( "Enhance", this);
     auto widget=new QWidget(this);
@@ -358,18 +345,30 @@ void VolumeViewer2D::onVolumesChanged(){
         if(!vitem) continue;
 
         auto colorbar = new ColorBarWidget(this);
-        colorbar->setMinimumSize(50,150);
+        colorbar->setMinimumSize(150,300);
+        colorbar->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(colorbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(colorBarContextMenuRequested(QPoint)));
         //m_colorbarsLayout->addWidget(colorbar);
-        auto mdiColorbar=ui->mdiArea->addSubWindow(colorbar, Qt::WindowMaximizeButtonHint | Qt::WindowMinimizeButtonHint);
+        auto mdiColorbar=ui->mdiArea->addSubWindow(colorbar, Qt::WindowMinMaxButtonsHint | Qt::WindowTitleHint );
         mdiColorbar->setWindowIcon( QIcon(QPixmap(1,1)) );  // no icon
-        mdiColorbar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(mdiColorbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showColorBarContextMenu(QPoint)));
+        mdiColorbar->setWindowTitle(name);
         auto colortable=vitem->colorTable();
         colorbar->setColorTable(colortable);
-        colorbar->setLabel(name);
+        colorbar->setLabel("");//name);
+        colorbar->setPrecision(3);
         colorbar->show();
         m_mdiColorbars.insert(name, mdiColorbar);
     }
+
+    // show attribute volume colorbars, hide seismic colorbars
+    auto model=ui->volumeView->volumeItemModel();
+    for( int i=0; i<model->size(); i++){
+        auto vitem=dynamic_cast<VolumeItem*>(model->at(i));
+        if(!vitem)continue;
+        auto name=vitem->name();
+        if(!m_mdiColorbars.contains(name)) continue;     // should never happen
+        m_mdiColorbars.value(name)->setVisible(vitem->style()==VolumeItem::Style::ATTRIBUTE);
+     }
 }
 
 void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
@@ -465,6 +464,7 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
     Q_ASSERT(m_project);
 
     VolumeItemsDialog* dlg=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel());
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setWindowTitle("Setup volumes");
     dlg->exec();
 }
@@ -476,55 +476,9 @@ void VolumeViewer2D::on_actionSetup_Horizons_triggered()
     Q_ASSERT(m_project);
 
     HorizonItemsDialog* dlg=new HorizonItemsDialog(m_project, ui->volumeView->horizonItemModel());
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setWindowTitle("Setup horizons");
     dlg->exec();
-}
-
-void VolumeViewer2D::on_actionSet_Table_Color_triggered()
-{
-    bool ok=false;
-    QString name=QInputDialog::getItem(this, tr("Set Table Color"), tr("Select Table:"), ui->volumeView->tableList(), 0, false, &ok);
-
-    if(!ok || name.isEmpty()) return;
-
-    QColor initial=ui->volumeView->tableColor(name);
-    QColor color=QColorDialog::getColor( initial, this, QString("Table %1 color").arg(name));
-
-    if( color.isValid()){
-        ui->volumeView->setTableColor(name, color);
-    }
-}
-
-
-void VolumeViewer2D::on_actionSetup_Tables_triggered()
-{
-    Q_ASSERT(m_project);
-
-    QStringList avail=m_project->tableList();
-    bool ok=false;
-    auto names=MultiItemSelectionDialog::getItems(nullptr, tr("Setup Tables"), tr("Select tables:"), avail, &ok, ui->volumeView->tableList());
-    if( !ok ) return;
-
-    // first pass remove items
-    for( auto name : ui->volumeView->tableList() ){
-
-        if( !names.contains(name)) ui->volumeView->removeTable(name);
-        else names.removeAll(name);
-    }
-
-    // now we only have names that need to be added
-    // second pass add items
-    for( auto name : names){
-
-        auto t = m_project->loadTable(name);
-
-        if( !t ){
-            QMessageBox::critical(this, tr("Add Table"), QString("Loading table \"%1\" failed!").arg(name) );
-            break;
-        }
-
-        ui->volumeView->addTable(name, t, Qt::blue);
-    }
 }
 
 void VolumeViewer2D::on_actionSetup_Wells_triggered()
@@ -532,6 +486,7 @@ void VolumeViewer2D::on_actionSetup_Wells_triggered()
     Q_ASSERT(m_project);
 
     WellItemsDialog* dlg=new WellItemsDialog(m_project, ui->volumeView->wellItemModel());
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setWindowTitle("Setup Wells");
     dlg->exec();
 }
@@ -541,7 +496,18 @@ void VolumeViewer2D::on_actionSetup_Tops_triggered()
     Q_ASSERT(m_project);
 
     MarkerItemsDialog* dlg=new MarkerItemsDialog(m_project, ui->volumeView->markerItemModel());
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setWindowTitle("Setup Markers");
+    dlg->exec();
+}
+
+void VolumeViewer2D::on_actionSetup_Tables_triggered()
+{
+    Q_ASSERT(m_project);
+
+    TableItemsDialog* dlg=new TableItemsDialog(m_project, ui->volumeView->tableItemModel());
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setWindowTitle("Setup Tables");
     dlg->exec();
 }
 
@@ -554,6 +520,16 @@ void VolumeViewer2D::on_actionSet_Last_Viewed_Color_triggered()
     }
 }
 
+
+void VolumeViewer2D::on_actionWell_Visibility_Distance_triggered()
+{
+    bool ok=false;
+    auto dist=QInputDialog::getDouble(this, "Set maximum visible well distance",
+                                      "distance:", ui->volumeView->welViewDist(), 0, 999999, 1, &ok);
+    if(ok){
+        ui->volumeView->setWellViewDist(dist);
+    }
+}
 
 
 void VolumeViewer2D::on_action_Player_triggered()
@@ -731,22 +707,54 @@ void VolumeViewer2D::populateWindowMenu(){
     ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_sliceToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_flattenToolBar->toggleViewAction());
-    ui->menu_Window->addAction( m_wellToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_enhanceToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_pickToolBar->toggleViewAction());
 }
 
 void VolumeViewer2D::on_mdiArea_customContextMenuRequested(const QPoint &pos)
 {
-    QMenu* popup=new QMenu();
-    popup->addAction("tiles");
-    popup->addAction("cascade");
-    auto selected = popup->exec(ui->mdiArea->mapToGlobal(pos));
+    QMenu popup;
+    popup.addAction("tiles");
+    popup.addAction("cascade");
+    auto selected = popup.exec(ui->mdiArea->mapToGlobal(pos));
     if(!selected) return;
     if( selected->text()=="tiles"){
         ui->mdiArea->tileSubWindows();
     }
     else if(selected->text()=="cascade"){
         ui->mdiArea->cascadeSubWindows();
+    }
+}
+
+void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
+
+    ColorBarWidget* cbwidget=dynamic_cast<ColorBarWidget*>(sender());
+    if(!cbwidget) return;
+    ColorTable* ct=cbwidget->colorTable();
+    if(!ct) return;
+
+    QMenu menu;
+    menu.addAction("Scaling");
+    menu.addAction("Colors");
+    auto res=menu.exec(cbwidget->mapToGlobal(pos));
+    if(res->text()=="Scaling"){
+        auto dlg=new SimpleScalingDialog(this);
+        dlg->setWindowTitle("Configure scaling");
+        dlg->setMinimum(ct->range().first);
+        dlg->setMaximum(ct->range().second);
+        dlg->setPower(ct->power());
+        if(dlg->exec()==QDialog::Accepted){
+            ct->setRange(dlg->minimum(), dlg->maximum());
+            ct->setPower(dlg->power());
+        }
+        delete dlg;
+    }
+    else if(res->text()=="Colors"){
+        auto dlg=new ColorTableDialog(ct->colors(), this);
+        dlg->setWindowTitle("Configure colors");
+        if(dlg->exec()==QDialog::Accepted){
+            ct->setColors(dlg->colors());
+        }
+        delete dlg;
     }
 }

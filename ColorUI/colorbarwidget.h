@@ -16,6 +16,10 @@ public:
 
     explicit ColorBarWidget(QWidget *parent = 0);
 
+    ColorTable* colorTable()const{
+        return m_colorTable;
+    }
+
     QVector<double> ticks()const{
         return m_ticks;
     }

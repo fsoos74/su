@@ -10,6 +10,7 @@
 #include"horizonitem.h"
 #include"wellitem.h"
 #include"markeritem.h"
+#include"tableitem.h"
 #include"viewitemmodel.h"
 
 
@@ -89,7 +90,8 @@ VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.
     mHorizonItemModel(new ViewItemModel(this)),
     mVolumeItemModel(new ViewItemModel(this)),
     mWellItemModel(new ViewItemModel(this)),
-    mMarkerItemModel(new ViewItemModel(this))
+    mMarkerItemModel(new ViewItemModel(this)),
+    mTableItemModel(new ViewItemModel(this))
 {
     connect(mVolumeItemModel,SIGNAL(changed()), this, SLOT(onVolumeItemModelChanged()));
     connect(mVolumeItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
@@ -101,12 +103,6 @@ VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.
     connect(mMarkerItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
     updateBounds();
     refreshScene();
-}
-
-QColor VolumeView::tableColor(QString name){
-    if( !m_tables.contains(name)) return QColor();
-    auto ti=m_tables.value(name);
-    return ti.color;
 }
 
 void VolumeView::setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy){
@@ -269,31 +265,6 @@ void VolumeView::setDisplayLastViewed(bool on){
     m_displayLastViewed=on;
     refreshScene();
 }
-
-void VolumeView::addTable(QString name, std::shared_ptr<Table> table, QColor color){
-    if(m_tables.contains(name)) return;  // no dupes
-    if(!table) return;
-    m_tables.insert(name, TableItem{table, color});
-    refreshScene();
-}
-
-void VolumeView::removeTable(QString name){
-    m_tables.remove(name);
-    refreshScene();
-}
-
-void VolumeView::setTableColor(QString name, QColor color){
-    if( !m_tables.contains(name)) return;
-    auto titem=m_tables.value(name);
-    titem.color=color;
-    m_tables[name]=titem;
-    refreshScene();
-}
-
-QStringList VolumeView::tableList(){
-    return m_tables.keys();
-}
-
 
 void VolumeView::setFlattenHorizon(std::shared_ptr<Grid2D<float> > h){
 
@@ -581,50 +552,6 @@ QPainterPath VolumeView::projectWellPathCrossline(const WellPath& wp, int xline)
     return path;
 }
 
-/*
-QVector<std::pair<QPointF, QString>> VolumeView::projectMarkersInline(int iline){
-
-    for( int i=mMarkerItemModel->size()-1; i>=0; i-- ){
-        auto mitem=dynamic_cast<MarkerItem*>(mWellItemModel->at(i));
-        if(!mitem)continue;
-
-            auto ilxl=m_xy_to_ilxl.map(wp->locationAtMD(wm.md()));
-            if( std::fabs(ilxl.x()-iline)>m_wellViewDist) continue;
-            auto z=wp->zAtMD(wm.md());
-            markers.push_back( std::make_pair(QPointF(ilxl.y(), -z), wm.name()));
-         }
-
-    }
-
-    return markers;
-}
-
-
-QVector<std::pair<QPointF, QString>> VolumeView::projectMarkersCrossline(int xline){
-
-    QVector<std::pair<QPointF, QString>> markers;
-
-    for( int i=0; i<mHorizonItemModel->size(); i++ ){
-        auto witem=dynamic_cast<WellItem*>(mHorizonItemModel->at(i));
-        if(!witem)continue;
-        auto wp=witem->wellPath();
-        if( !wp) continue;
-        auto wms=m_markers.value(witem->name());
-        if( !wms) continue;
-
-        for( auto wm : *wms ){
-            auto ilxl=m_xy_to_ilxl.map(wp->locationAtMD(wm.md()));
-            if( std::fabs(ilxl.y()-xline)>m_wellViewDist) continue;
-            auto z=wp->zAtMD(wm.md());
-            markers.push_back( std::make_pair(QPointF(ilxl.x(), -z), wm.name()));
-         }
-
-    }
-
-    return markers;
-}
-
-*/
 QLineF VolumeView::intersectSlices(const SliceDef &s1, const SliceDef &s2){
 
     auto bounds=m_bounds;
@@ -790,6 +717,15 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
     for( int i=mMarkerItemModel->size()-1; i>=0; i--){
         auto mitem=dynamic_cast<MarkerItem*>(mMarkerItemModel->at(i));
         if(!mitem) continue;
+
+        auto mposition=mitem->position();
+        auto ilxl=m_xy_to_ilxl.map( QPointF(mposition.x(), mposition.y() ) );   // convert coords to lines
+        auto x=(m_slice.type==SliceType::Inline) ? ilxl.y() : ilxl.x();         // use xline for iline slices and vice versa
+        auto dist=(m_slice.type==SliceType::Inline) ?                           // distance in lines
+                    ilxl.x() - m_slice.value : ilxl.y() -m_slice.value;
+        if(std::abs(dist)>m_wellViewDist) continue;                             // too far away to be shown
+        auto y=-mposition.z();                                                  // position-z-axis points upwards but view y-axis increases downwards
+
         QPen wmPen(mitem->color(), mitem->width());
         wmPen.setCosmetic(true);
         QFont wmFont("Helvetica [Cronyx]", 8);
@@ -797,44 +733,42 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
         QGraphicsLineItem* item=new QGraphicsLineItem( -10, 0, 10, 0);
         item->setPen(wmPen);
         item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        auto mposition=mitem->position();
-        auto x=(m_slice.type==SliceType::Inline) ? mposition.y() : mposition.x();
-        item->setPos( x, mposition.z());
+        item->setPos( x, y);
         scene->addItem(item);
         auto litem=new QGraphicsSimpleTextItem(mitem->name());
         litem->setPen(wmLabelPen);
         litem->setFont(wmFont);
         litem->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        litem->setPos(x, mposition.z() );
+        litem->setPos(x, y );
         scene->addItem(litem);
     }
 }
 
 void VolumeView::renderTables(QGraphicsScene* scene){
 
-    for( auto name : m_tables.keys()){
-
-        auto ti=m_tables.value(name);
+    for( int i=mTableItemModel->size()-1; i>=0; i--){
+        auto titem=dynamic_cast<TableItem*>(mTableItemModel->at(i));
+        if(!titem) continue;
+        auto table=titem->table();
         QVector<QPointF> points;
         switch(m_slice.type){
         case SliceType::Inline:
-            points=intersectTableInline(*ti.table, m_slice.value);
+            points=intersectTableInline(*table, m_slice.value);
             break;
         case SliceType::Crossline:
-            points=intersectTableCrossline(*ti.table, m_slice.value);
+            points=intersectTableCrossline(*table, m_slice.value);
             break;
         case SliceType::Z:
-            points=intersectTableTime(*ti.table, m_slice.value);
+            points=intersectTableTime(*table, m_slice.value);
             break;
         default:
             break;
         }
 
-        //QPen pen(ti.color, 2);
-        //pen.setCosmetic(true);
-        QBrush brush(ti.color);
+        auto s=titem->pointSize();
+        QBrush brush(titem->color());
         for( auto p : points){
-            auto item=new QGraphicsRectItem( -2,-2, 4, 4);
+            auto item=new QGraphicsRectItem( -s/2,-s/2, s, s);
             item->setPen(Qt::NoPen);
             item->setBrush(brush);
             item->setPos(p);
