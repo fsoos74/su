@@ -1,6 +1,9 @@
 #include "imageprocessing.h"
 
+namespace sliceviewer {
+
 namespace imageprocessing {
+
 
 Matrix<double> buildSharpenKernel( int size, double power){
 
@@ -44,4 +47,7 @@ QImage convolve( QImage src, Matrix<double> kernel){
 
     return dest;
 }
+
+}
+
 }

@@ -1,5 +1,8 @@
 #include "markeritem.h"
 
+namespace sliceviewer {
+
+
 MarkerItem::MarkerItem(QObject* parent) : ViewItem(parent), mColor(Qt::red), mWidth(2), mOpacity(100)
 {
 
@@ -33,4 +36,6 @@ void MarkerItem::setOpacity(int opacity){
     if(opacity==mOpacity) return;
     opacity=mOpacity;
     return;
+}
+
 }

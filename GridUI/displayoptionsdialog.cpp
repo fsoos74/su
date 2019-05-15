@@ -2,6 +2,8 @@
 #include "ui_displayoptionsdialog.h"
 #include <QColorDialog>
 
+namespace sliceviewer{
+
 
 DisplayOptionsDialog::DisplayOptionsDialog(QWidget *parent) :
     QDialog(parent),
@@ -51,4 +53,6 @@ void DisplayOptionsDialog::on_cbLastViewedColor_clicked()
     if(color.isValid()){
         ui->cbLastViewedColor->setColor(color);
     }
+}
+
 }

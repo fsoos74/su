@@ -14,6 +14,10 @@
 #include"viewitemmodel.h"
 #include"imageprocessing.h"
 
+
+namespace sliceviewer {
+
+
 namespace  {
 
     QMap<VolumeView::SliceType, QString> sliceTypeLookup{
@@ -1179,4 +1183,7 @@ void VolumeView::updateBounds(){
     m_bounds=bounds;
 
     updateAxes();
+}
+
+
 }

@@ -2169,7 +2169,7 @@ void ProjectViewer::on_actionColor_Composite_Grids_triggered()
 
 void ProjectViewer::on_actionOpen_Slice_Viewer_triggered()
 {
-    VolumeViewer2D* viewer=new VolumeViewer2D;
+    auto viewer=new sliceviewer::VolumeViewer2D;
     viewer->setProject(m_project);
     viewer->setWindowTitle("2D Volume Viewer");
     viewer->show();
@@ -3221,7 +3221,7 @@ void ProjectViewer::displayVolumeRelativeSlice( const QString& name){
 
 void ProjectViewer::displayVolumes(const QStringList & names){
 
-    VolumeViewer2D* viewer=new VolumeViewer2D;
+    auto viewer=new sliceviewer::VolumeViewer2D;
     viewer->setProject(m_project);
     viewer->show();
     for( auto name:names){

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>WellItemsDialog</class>
- <widget class="QDialog" name="WellItemsDialog">
+ <class>sliceviewer::WellItemsDialog</class>
+ <widget class="QDialog" name="sliceviewer::WellItemsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -276,7 +276,7 @@
   <connection>
    <sender>pbClose</sender>
    <signal>clicked()</signal>
-   <receiver>WellItemsDialog</receiver>
+   <receiver>sliceviewer::WellItemsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

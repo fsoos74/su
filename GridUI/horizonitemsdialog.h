@@ -6,6 +6,9 @@
 #include <viewitemmodel.h>
 #include <avoproject.h>
 
+
+namespace sliceviewer {
+
 namespace Ui {
 class HorizonItemsDialog;
 }
@@ -32,5 +35,7 @@ private:
     AVOProject* mProject;
     ViewItemModel* mModel=nullptr;
 };
+
+}
 
 #endif // HORIZONITEMSDIALOG_H

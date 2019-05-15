@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QVector>
 
+namespace sliceviewer {
+
 class ViewItem;
 
 class ViewItemModel : public QObject
@@ -47,5 +49,7 @@ private:
     bool mMute=false;
     int mChangedCounter=0;
 };
+
+}
 
 #endif // VIEWITEMMODEL_H

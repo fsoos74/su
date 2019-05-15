@@ -6,6 +6,9 @@
 #include<QColorDialog>
 #include<QListWidget>
 
+namespace sliceviewer {
+
+
 WellItemsDialog::WellItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::WellItemsDialog),
@@ -148,4 +151,7 @@ void WellItemsDialog::on_pbApply_clicked()
         hitem->setOpacity(opacity);
     }
     mModel->setMute(false);
+}
+
+
 }

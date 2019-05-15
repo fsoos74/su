@@ -6,6 +6,8 @@
 #include <memory>
 #include <QColor>
 
+namespace sliceviewer {
+
 
 class HorizonItem : public ViewItem
 {
@@ -37,5 +39,7 @@ private:
     int mWidth=2;
     int mOpacity=100;
 };
+
+}
 
 #endif // HORIZONITEM_H

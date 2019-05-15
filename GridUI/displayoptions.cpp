@@ -1,5 +1,8 @@
 #include "displayoptions.h"
 
+namespace sliceviewer{
+
+
 DisplayOptions::DisplayOptions()
 {
 
@@ -47,4 +50,6 @@ void DisplayOptions::setSharpenFilterSize(int s){
 
 void DisplayOptions::setSharpenFilterStrength(int p){
     mSharpenFilterStrength=p;
+}
+
 }

@@ -15,6 +15,7 @@
 #include <dynamicmousemodeselector.h>
 #include <volumepicker.h>
 
+namespace sliceviewer {
 
 namespace Ui {
 class VolumeViewer2D;
@@ -102,5 +103,8 @@ private:
 
     bool m_noupdate=false;
 };
+
+
+}
 
 #endif // VOLUMEEDITOR_H

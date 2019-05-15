@@ -6,6 +6,9 @@
 #include <wellpath.h>
 #include <QColor>
 
+namespace sliceviewer {
+
+
 class WellItem : public ViewItem
 {
     Q_OBJECT
@@ -36,5 +39,7 @@ private:
     int mWidth;
     int mOpacity;
 };
+
+}
 
 #endif // WELLITEM_H

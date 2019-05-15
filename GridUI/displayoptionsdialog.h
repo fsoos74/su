@@ -4,6 +4,8 @@
 #include <QDialog>
 #include "displayoptions.h"
 
+namespace sliceviewer {
+
 
 namespace Ui {
 class DisplayOptionsDialog;
@@ -27,5 +29,7 @@ private slots:
 private:
     Ui::DisplayOptionsDialog *ui;
 };
+
+}
 
 #endif // DISPLAYOPTIONSDIALOG_H

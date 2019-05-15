@@ -8,6 +8,8 @@
 #include <functional>
 #include <volumeview.h>
 
+namespace sliceviewer{
+
 class VolumePicker : public QObject
 {
     Q_OBJECT
@@ -74,5 +76,7 @@ QString toQString(VolumePicker::PickMode);
 VolumePicker::PickMode toVolumePickMode(QString);
 QStringList volumePickModeNames();
 QList<VolumePicker::PickMode> volumePickModes();
+
+}
 
 #endif // VOLUMEPICKER_H

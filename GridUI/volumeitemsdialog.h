@@ -6,6 +6,10 @@
 #include <viewitemmodel.h>
 #include <avoproject.h>
 
+
+namespace sliceviewer {
+
+
 namespace Ui {
 class VolumeItemsDialog;
 }
@@ -33,5 +37,7 @@ private:
     AVOProject* mProject;
     ViewItemModel* mModel=nullptr;
 };
+
+}
 
 #endif // VOLUMEITEMSDIALOG_H

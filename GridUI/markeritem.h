@@ -5,6 +5,9 @@
 #include <QColor>
 #include <QVector3D>
 
+namespace sliceviewer {
+
+
 // position will be set for all displayed wells by accessing marker name from db
 
 class MarkerItem : public ViewItem{
@@ -41,5 +44,7 @@ private:
     int mWidth;
     int mOpacity;
 };
+
+}
 
 #endif // MARKERITEM_H

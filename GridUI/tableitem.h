@@ -6,6 +6,8 @@
 #include <table.h>
 #include <QColor>
 
+namespace sliceviewer {
+
 class TableItem : public ViewItem
 {
     Q_OBJECT
@@ -36,5 +38,7 @@ private:
     int mPointSize;
     int mOpacity;
 };
+
+}
 
 #endif // TABLEITEM_H

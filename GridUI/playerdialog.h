@@ -7,6 +7,8 @@
 #include <volumeview.h>
 #include <grid3d.h>
 
+namespace sliceviewer {
+
 namespace Ui {
 class PlayerDialog;
 }
@@ -70,5 +72,7 @@ private:
     bool m_running=false;
     Grid3DBounds m_bounds;
 };
+
+}
 
 #endif // PLAYERDIALOG_H

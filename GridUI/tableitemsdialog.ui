@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TableItemsDialog</class>
- <widget class="QDialog" name="TableItemsDialog">
+ <class>sliceviewer::TableItemsDialog</class>
+ <widget class="QDialog" name="sliceviewer::TableItemsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -276,7 +276,7 @@
   <connection>
    <sender>pbClose</sender>
    <signal>clicked()</signal>
-   <receiver>TableItemsDialog</receiver>
+   <receiver>sliceviewer::TableItemsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

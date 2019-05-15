@@ -8,6 +8,8 @@
 #include<QMap>
 
 
+namespace sliceviewer{
+
 namespace{
 QMap<VolumePicker::PickMode, QString> lookup{
     { VolumePicker::PickMode::Points, "Points"},
@@ -493,3 +495,4 @@ void VolumePicker::setDirty(bool on){
     m_dirty=on;
 }
 
+}

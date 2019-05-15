@@ -3,6 +3,9 @@
 
 #include <QObject>
 
+namespace sliceviewer {
+
+
 class ViewItem : public QObject
 {
     Q_OBJECT
@@ -20,5 +23,7 @@ public slots:
 private:
     QString mName;
 };
+
+}
 
 #endif // VIEWITEM_H

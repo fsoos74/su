@@ -7,6 +7,8 @@
 #include<topsdbmanager.h>
 #include<wellpath.h>
 
+namespace sliceviewer {
+
 
 MarkerItemsDialog::MarkerItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
@@ -165,4 +167,6 @@ void MarkerItemsDialog::on_pbApply_clicked()
         hitem->setOpacity(opacity);
     }
     mModel->setMute(false);
+}
+
 }

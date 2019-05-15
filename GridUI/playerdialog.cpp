@@ -1,6 +1,9 @@
 #include "playerdialog.h"
 #include "ui_playerdialog.h"
 
+namespace sliceviewer {
+
+
 PlayerDialog::PlayerDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PlayerDialog)
@@ -192,4 +195,6 @@ void PlayerDialog::on_pbClose_clicked()
 {
     stopAnimation();
     hide();
+}
+
 }

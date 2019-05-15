@@ -3,6 +3,9 @@
 
 #include<QColor>
 
+namespace sliceviewer {
+
+
 class DisplayOptions
 {
 public:
@@ -77,5 +80,7 @@ private:
     int mSharpenFilterSize=3;
     int mSharpenFilterStrength=50;
 };
+
+}
 
 #endif // DISPLAYOPTIONS_H

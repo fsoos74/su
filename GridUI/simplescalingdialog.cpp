@@ -3,6 +3,8 @@
 #include<QDoubleValidator>
 #include<iostream>
 
+namespace sliceviewer {
+
 SimpleScalingDialog::SimpleScalingDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SimpleScalingDialog)
@@ -42,4 +44,6 @@ void SimpleScalingDialog::setMaximum(double maximum){
 
 void SimpleScalingDialog::setPower(double power){
     ui->lePower->setText(QString::number(power));
+}
+
 }

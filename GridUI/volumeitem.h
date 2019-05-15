@@ -6,6 +6,8 @@
 #include <colortable.h>
 #include<memory>
 
+namespace sliceviewer {
+
 
 class VolumeItem : public ViewItem
 {
@@ -52,5 +54,7 @@ private:
     qreal mGain;
     ColorTable* mColorTable;
 };
+
+}
 
 #endif // VOLUMEITEM_H

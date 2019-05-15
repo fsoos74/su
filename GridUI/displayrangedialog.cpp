@@ -4,6 +4,7 @@
 #include<QDoubleValidator>
 #include <QKeyEvent>
 
+
 DisplayRangeDialog::DisplayRangeDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::DisplayRangeDialog)

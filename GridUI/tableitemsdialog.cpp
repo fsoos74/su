@@ -6,6 +6,9 @@
 #include<QColorDialog>
 #include<QListWidget>
 
+namespace sliceviewer {
+
+
 TableItemsDialog::TableItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::TableItemsDialog),
@@ -148,4 +151,6 @@ void TableItemsDialog::on_pbApply_clicked()
         hitem->setOpacity(opacity);
     }
     mModel->setMute(false);
+}
+
 }

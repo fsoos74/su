@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+namespace sliceviewer {
+
 namespace Ui {
 class SimpleScalingDialog;
 }
@@ -26,5 +28,7 @@ public slots:
 private:
     Ui::SimpleScalingDialog *ui;
 };
+
+}
 
 #endif // SIMPLESCALINGDIALOG_H

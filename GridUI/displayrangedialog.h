@@ -4,12 +4,11 @@
 #include <QDialog>
 
 
+
 namespace Ui {
 class DisplayRangeDialog;
 }
 
-
-class QDoubleValidator;
 
 class DisplayRangeDialog : public QDialog
 {

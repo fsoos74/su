@@ -7,6 +7,9 @@
 #include<histogramcreator.h>
 #include<histogramrangeselectiondialog.h>
 
+namespace sliceviewer {
+
+
 VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::VolumeItemsDialog),
@@ -206,4 +209,7 @@ void VolumeItemsDialog::on_pbApply_clicked()
         vitem->setOpacity(opacity);
     }
     mModel->setMute(false);
+}
+
+
 }

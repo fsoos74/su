@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>VolumeItemsDialog</class>
- <widget class="QDialog" name="VolumeItemsDialog">
+ <class>sliceviewer::VolumeItemsDialog</class>
+ <widget class="QDialog" name="sliceviewer::VolumeItemsDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -315,7 +315,7 @@
   <connection>
    <sender>pbClose</sender>
    <signal>clicked()</signal>
-   <receiver>VolumeItemsDialog</receiver>
+   <receiver>sliceviewer::VolumeItemsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">

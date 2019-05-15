@@ -10,16 +10,18 @@
 #include <wellmarkers.h>
 #include <table.h>
 #include <histogram.h>
-
+#include "displayoptions.h"
 #include<QList>
 #include<QMap>
 #include<QColor>
+
+namespace sliceviewer {
 
 class VolumePicker;
 class ViewItem;
 class ViewItemModel;
 
-#include "displayoptions.h"
+
 
 class VolumeView : public RulerAxisView
 {
@@ -151,5 +153,7 @@ private:
 
     QList<SliceDef> m_sliceList;
 };
+
+}
 
 #endif // VOLUMEVIEW_H

@@ -6,6 +6,10 @@
 #include<QColorDialog>
 #include<QListWidget>
 
+
+namespace sliceviewer {
+
+
 HorizonItemsDialog::HorizonItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::HorizonItemsDialog),
@@ -152,4 +156,7 @@ void HorizonItemsDialog::on_pbApply_clicked()
         hitem->setOpacity(opacity);
     }
     mModel->setMute(false);
+}
+
+
 }

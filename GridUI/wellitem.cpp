@@ -1,5 +1,8 @@
 #include "wellitem.h"
 
+namespace sliceviewer {
+
+
 WellItem::WellItem(QObject *parent) : ViewItem(parent), mColor(Qt::lightGray), mWidth(2), mOpacity(100)
 {
 
@@ -27,4 +30,6 @@ void WellItem::setOpacity(int opacity){
     if(opacity==mOpacity) return;
     mOpacity=opacity;
     emit changed();
+}
+
 }

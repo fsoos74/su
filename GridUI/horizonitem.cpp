@@ -1,5 +1,8 @@
 #include "horizonitem.h"
 
+namespace sliceviewer {
+
+
 HorizonItem::HorizonItem(QObject *parent) : ViewItem(parent)
 {
 
@@ -27,4 +30,6 @@ void HorizonItem::setOpacity(int opacity){
     if(opacity==mOpacity) return;
     mOpacity=opacity;
     emit changed();
+}
+
 }

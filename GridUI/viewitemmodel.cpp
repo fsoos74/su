@@ -1,6 +1,8 @@
 #include "viewitemmodel.h"
 #include "viewitem.h"
 
+namespace sliceviewer {
+
 ViewItemModel::ViewItemModel(QObject *parent) : QObject(parent)
 {
 
@@ -111,4 +113,6 @@ void ViewItemModel::moveDown(int i){
 void ViewItemModel::itemChanged(){
     ViewItem* vitem=dynamic_cast<ViewItem*>(QObject::sender());
     if(vitem) fireItemChanged(vitem);
+}
+
 }

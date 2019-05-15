@@ -2,6 +2,9 @@
 
 #include<colortable.h>
 
+namespace sliceviewer {
+
+
 VolumeItem::VolumeItem(QObject* parent) : ViewItem(parent),
     mColorTable(new ColorTable(this,ColorTable::defaultColors(),std::make_pair(0.,1.))),
     mOpacity(100),
@@ -40,4 +43,7 @@ void VolumeItem::setGain(qreal gain){
     if(gain==mGain) return;
     mGain==gain;
     emit changed();
+}
+
+
 }

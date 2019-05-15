@@ -28,6 +28,8 @@
 #include <displayoptionsdialog.h>
 #include <topsdbmanager.h>
 
+namespace sliceviewer {
+
 
 const char* NO_HORIZON="NONE";
 
@@ -706,4 +708,7 @@ void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
         }
         delete dlg;
     }
+}
+
+
 }

@@ -8,6 +8,7 @@
 #include<memory>
 #include<areaitem.h>
 #include<griditem.h>
+#include"wellitem.h"
 #include<v2dvolumeitem.h>
 #include<wellitem.h>
 #include<reversespinbox.h>
