@@ -25,6 +25,7 @@
 #include <wellitemsdialog.h>
 #include <markeritemsdialog.h>
 #include <tableitemsdialog.h>
+#include <displayoptionsdialog.h>
 #include <topsdbmanager.h>
 
 
@@ -44,7 +45,6 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     setupSliceToolBar();
     setupFlattenToolBar();
     setupPickingToolBar();
-    setupEnhanceToolBar();
     populateWindowMenu();
     m_flattenToolBar->setVisible(false);
     m_pickToolBar->setVisible(false);
@@ -61,24 +61,6 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     connect( ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(onVolumesChanged()) );
     connect( ui->volumeView, SIGNAL(sliceChanged(VolumeView::SliceDef)), this, SLOT(onSliceChanged(VolumeView::SliceDef)));
     connect( ui->volumeView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)));
-
-    connect( ui->actionDisplay_Horizons, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayHorizons(bool)) );
-    connect( ui->volumeView, SIGNAL(displayHorizonsChanged(bool)), ui->actionDisplay_Horizons, SLOT(setChecked(bool)) );
-
-    connect( ui->actionDisplay_Wells, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayWells(bool)) );
-    connect( ui->volumeView, SIGNAL(displayWellsChanged(bool)), ui->actionDisplay_Wells, SLOT(setChecked(bool)) );
-
-    connect( ui->actionDisplay_Tables, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayTables(bool)) );
-    connect( ui->volumeView, SIGNAL(displayTablesChanged(bool)), ui->actionDisplay_Tables, SLOT(setChecked(bool)) );
-
-    connect( ui->actionDisplay_Markers, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayMarkers(bool)) );
-    connect( ui->volumeView, SIGNAL(displayMarkersChanged(bool)), ui->actionDisplay_Markers, SLOT(setChecked(bool)) );
-
-    connect( ui->actionDisplay_Marker_Labels, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayMarkerLabels(bool)) );
-    connect( ui->volumeView, SIGNAL(displayMarkerLabelsChanged(bool)), ui->actionDisplay_Marker_Labels, SLOT(setChecked(bool)) );
-
-    connect( ui->actionDisplay_Last_Viewed, SIGNAL(toggled(bool)), ui->volumeView, SLOT(setDisplayLastViewed(bool)) );
-    connect( ui->volumeView, SIGNAL(displayLastViewedChanged(bool)), ui->actionDisplay_Last_Viewed, SLOT(setChecked(bool)) );
 
     connect( ui->actionBack, SIGNAL(triggered(bool)), ui->volumeView, SLOT(back()));
 
@@ -124,6 +106,7 @@ void VolumeViewer2D::addVolume(QString name){
     if( ui->volumeView->volumeItemModel()->size()==1){
         ui->volumeView->setSlice(VolumeView::SliceType::Inline, volume->bounds().i1());
     }
+
  }
 
 void VolumeViewer2D::cbSlice_currentIndexChanged(QString s)
@@ -265,29 +248,6 @@ void VolumeViewer2D::setupFlattenToolBar(){
     m_flattenToolBar->addWidget(widget);
     addToolBar(m_flattenToolBar);
     connect(m_cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
-}
-
-void VolumeViewer2D::setupEnhanceToolBar(){
-    m_enhanceToolBar=new QToolBar( "Enhance", this);
-    auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Sharpen:"));
-    auto sbSharpenKernelSize=new QSpinBox;
-    auto sbSharpenPercent=new QSpinBox;
-    auto layout=new QHBoxLayout;
-    layout->addWidget(label);
-    layout->addWidget(sbSharpenKernelSize);
-    layout->addWidget(sbSharpenPercent);
-    widget->setLayout(layout);
-    m_enhanceToolBar->addWidget(widget);
-    addToolBar(m_enhanceToolBar);
-    connect(sbSharpenKernelSize, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setSharpenKernelSize(int)));
-    connect(sbSharpenPercent, SIGNAL(valueChanged(int)), ui->volumeView, SLOT(setSharpenPercent(int)) );
-
-    sbSharpenKernelSize->setRange(3, 11);
-    sbSharpenKernelSize->setSingleStep(2);
-    sbSharpenKernelSize->setValue(ui->volumeView->sharpenKernelSize());
-    sbSharpenPercent->setRange(0, 100);
-    sbSharpenPercent->setValue(ui->volumeView->sharpenPercent());
 }
 
 void VolumeViewer2D::setupPickingToolBar(){
@@ -511,26 +471,16 @@ void VolumeViewer2D::on_actionSetup_Tables_triggered()
     dlg->exec();
 }
 
-void VolumeViewer2D::on_actionSet_Last_Viewed_Color_triggered()
-{
-    QColor color=QColorDialog::getColor( ui->volumeView->lastViewedColor(), this, "Last Viewed Color");
 
-    if( color.isValid()){
-        ui->volumeView->setLastViewedColor(color);
+void VolumeViewer2D::on_actionDisplay_Options_triggered()
+{
+    DisplayOptionsDialog dlg;
+    dlg.setWindowTitle("Configure display options");
+    dlg.setDisplayOptions(ui->volumeView->displayOptions());
+    if(dlg.exec()==QDialog::Accepted){
+        ui->volumeView->setDisplayOptions(dlg.displayOptions());
     }
 }
-
-
-void VolumeViewer2D::on_actionWell_Visibility_Distance_triggered()
-{
-    bool ok=false;
-    auto dist=QInputDialog::getDouble(this, "Set maximum visible well distance",
-                                      "distance:", ui->volumeView->welViewDist(), 0, 999999, 1, &ok);
-    if(ok){
-        ui->volumeView->setWellViewDist(dist);
-    }
-}
-
 
 void VolumeViewer2D::on_action_Player_triggered()
 {
@@ -707,7 +657,6 @@ void VolumeViewer2D::populateWindowMenu(){
     ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_sliceToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_flattenToolBar->toggleViewAction());
-    ui->menu_Window->addAction( m_enhanceToolBar->toggleViewAction());
     ui->menu_Window->addAction( m_pickToolBar->toggleViewAction());
 }
 

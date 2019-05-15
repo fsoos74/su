@@ -119,31 +119,17 @@
     <addaction name="separator"/>
     <addaction name="actionE_xit"/>
    </widget>
-   <widget class="QMenu" name="menu_Display">
-    <property name="title">
-     <string>&amp;Display</string>
-    </property>
-    <addaction name="separator"/>
-    <addaction name="actionWell_Visibility_Distance"/>
-    <addaction name="actionSet_Last_Viewed_Color"/>
-    <addaction name="separator"/>
-    <addaction name="actionDisplay_Horizons"/>
-    <addaction name="actionDisplay_Wells"/>
-    <addaction name="actionDisplay_Markers"/>
-    <addaction name="actionDisplay_Marker_Labels"/>
-    <addaction name="actionDisplay_Tables"/>
-    <addaction name="actionDisplay_Last_Viewed"/>
-    <addaction name="separator"/>
-   </widget>
    <widget class="QMenu" name="menu_Items">
     <property name="title">
-     <string>&amp;Items</string>
+     <string>&amp;Display</string>
     </property>
     <addaction name="actionSetup_Volumes"/>
     <addaction name="actionSetup_Horizons"/>
     <addaction name="actionSetup_Wells"/>
     <addaction name="actionSetup_Tops"/>
     <addaction name="actionSetup_Tables"/>
+    <addaction name="separator"/>
+    <addaction name="actionDisplay_Options"/>
    </widget>
    <widget class="QMenu" name="menu_Navigation">
     <property name="title">
@@ -168,7 +154,6 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Items"/>
-   <addaction name="menu_Display"/>
    <addaction name="menu_Navigation"/>
    <addaction name="menuPicking"/>
    <addaction name="menu_Window"/>
@@ -181,50 +166,12 @@
     <string>Ctrl+X</string>
    </property>
   </action>
-  <action name="actionDisplay_Range">
-   <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
-     <normaloff>:/icons/images/select-range-icon-32x32.png</normaloff>:/icons/images/select-range-icon-32x32.png</iconset>
-   </property>
-   <property name="text">
-    <string>Volume Display &amp;Range</string>
-   </property>
-  </action>
-  <action name="actionColorbar">
-   <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
-     <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
-   </property>
-   <property name="text">
-    <string>Vol&amp;ume Colortable</string>
-   </property>
-  </action>
-  <action name="action_Sampling">
-   <property name="text">
-    <string>Edit &amp;Sampling</string>
-   </property>
-  </action>
-  <action name="actionChange_Domain">
-   <property name="text">
-    <string>Change &amp;Domain</string>
-   </property>
-  </action>
-  <action name="actionChanged_Type">
-   <property name="text">
-    <string>Changed &amp;Type</string>
-   </property>
-  </action>
   <action name="actionSetup_Horizons">
    <property name="text">
     <string>Setup &amp;Horizons</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
-   </property>
-  </action>
-  <action name="actionSet_Horizon_Color">
-   <property name="text">
-    <string>Set &amp;Horizon Color</string>
    </property>
   </action>
   <action name="actionSetup_Wells">
@@ -235,73 +182,12 @@
     <string>Ctrl+W</string>
    </property>
   </action>
-  <action name="actionSet_Well_Color">
-   <property name="text">
-    <string>Set &amp;Well Color</string>
-   </property>
-  </action>
-  <action name="actionSet_Last_Viewed_Color">
-   <property name="text">
-    <string>Set &amp;Last Viewed Color</string>
-   </property>
-  </action>
-  <action name="actionDisplay_Horizons">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Display Horizons</string>
-   </property>
-  </action>
-  <action name="actionDisplay_Wells">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>D&amp;isplay Wells</string>
-   </property>
-  </action>
-  <action name="actionDisplay_Last_Viewed">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Display Last &amp;Viewed</string>
-   </property>
-  </action>
   <action name="actionSetup_Volumes">
    <property name="text">
     <string>Setup &amp;Volumes</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
-   </property>
-  </action>
-  <action name="actionVolume_Opacity">
-   <property name="text">
-    <string>Volume &amp;Opacity</string>
-   </property>
-  </action>
-  <action name="actionVolume_Z_Value">
-   <property name="text">
-    <string>Volume &amp;Z-Value</string>
-   </property>
-  </action>
-  <action name="action_Configure_Volumes">
-   <property name="text">
-    <string>&amp;Configure Volumes</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+C</string>
    </property>
   </action>
   <action name="action_Player">
@@ -328,22 +214,6 @@
     <string>Ctrl+B</string>
    </property>
   </action>
-  <action name="actionDisplay_Markers">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Display &amp;Tops</string>
-   </property>
-  </action>
-  <action name="actionSet_Marker_Color">
-   <property name="text">
-    <string>&amp;Set Tops Color</string>
-   </property>
-  </action>
   <action name="actionSetup_Tops">
    <property name="text">
     <string>Setup &amp;Markers</string>
@@ -355,39 +225,12 @@
     <string>Ctrl+M</string>
    </property>
   </action>
-  <action name="actionDisplay_Marker_Labels">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Dis&amp;play Top Labels</string>
-   </property>
-  </action>
   <action name="actionSetup_Tables">
    <property name="text">
     <string>Setup &amp;Tables</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
-   </property>
-  </action>
-  <action name="actionDisplay_Tables">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Display Ta&amp;bles</string>
-   </property>
-  </action>
-  <action name="actionSet_Table_Color">
-   <property name="text">
-    <string>S&amp;et Table Color</string>
    </property>
   </action>
   <action name="action_Load_Picks">
@@ -410,9 +253,12 @@
     <string>Save &amp;As Picks </string>
    </property>
   </action>
-  <action name="actionWell_Visibility_Distance">
+  <action name="actionDisplay_Options">
    <property name="text">
-    <string>Well Visibility Distance</string>
+    <string>Display &amp;Options</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

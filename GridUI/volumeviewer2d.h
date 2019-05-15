@@ -59,9 +59,8 @@ private slots:
     void on_actionSetup_Wells_triggered();
     void on_actionSetup_Tops_triggered();
     void on_actionSetup_Tables_triggered();
+    void on_actionDisplay_Options_triggered();
 
-    void on_actionSet_Last_Viewed_Color_triggered();
-    void on_actionWell_Visibility_Distance_triggered();
     void on_action_Player_triggered();
 
     void on_action_New_Picks_triggered();
@@ -78,7 +77,6 @@ private:
     void setupSliceToolBar();
     void setupFlattenToolBar();
     void setupPickingToolBar();
-    void setupEnhanceToolBar();
     void updateFlattenHorizons();
     void populateWindowMenu();
 
@@ -91,7 +89,6 @@ private:
 
     QToolBar* m_sliceToolBar;
     QToolBar* m_flattenToolBar;
-    QToolBar* m_enhanceToolBar;
     QToolBar* m_pickToolBar;
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     QMap<QString, Histogram> m_volumeHistograms;

@@ -44,7 +44,7 @@ private slots:
 
 private:
     QVector<ViewItem*> mItems;
-    bool mMute;
+    bool mMute=false;
     int mChangedCounter=0;
 };
 

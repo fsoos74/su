@@ -12,7 +12,7 @@
 #include"markeritem.h"
 #include"tableitem.h"
 #include"viewitemmodel.h"
-
+#include"imageprocessing.h"
 
 namespace  {
 
@@ -22,53 +22,6 @@ namespace  {
         { VolumeView::SliceType::Crossline, "Crossline"},
         { VolumeView::SliceType::Z, "Z"}
     };
-
-}
-
-namespace{
-
-Matrix<double> buildSharpenKernel( int size, double power){
-
-    Matrix<double> m(size,size, -power);
-    m(size/2, size/2)=size*size-power;
-    return m;
-}
-
-QImage convolve( QImage src, Matrix<double> kernel){
-
-    QImage dest(src);//src.width(), src.height(), src.format());
-
-    for( int i=kernel.rows()/2; i<src.height()-kernel.rows()/2; i++){
-
-        for( int j=kernel.columns()/2; j<src.width()-kernel.columns()/2; j++){
-
-           qreal sr=0;
-           qreal sg=0;
-           qreal sb=0;
-           qreal sc=0;
-
-            for( int ii=0; ii<kernel.rows(); ii++){
-
-                for( int jj=0; jj<kernel.columns(); jj++){
-
-                    auto rgb=src.pixel( j+jj-kernel.columns()/2, i+ii-kernel.rows()/2);
-                    auto ciijj=kernel(ii,jj);
-                    sc+=ciijj;
-                    sr+=ciijj*qRed(rgb);
-                    sg+=ciijj*qGreen(rgb);
-                    sb+=ciijj*qBlue(rgb);
-                }
-
-            }
-            auto r=std::max(0,std::min(255, static_cast<int>(std::round(sr/sc))));
-            auto g=std::max(0,std::min(255, static_cast<int>(std::round(sg/sc))));
-            auto b=std::max(0,std::min(255, static_cast<int>(std::round(sb/sc))));
-            dest.setPixel(j,i, qRgb(r,g,b));
-        }
-    }
-
-    return dest;
-}
 }
 
 QString VolumeView::toQString(SliceType t){
@@ -83,7 +36,6 @@ VolumeView::SliceType VolumeView::toSliceType(QString s){
 bool operator==(const VolumeView::SliceDef& a, const VolumeView::SliceDef& b){
     return a.type==b.type && a.value==b.value;
 }
-
 
 VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.),
     m_picker(new VolumePicker(this)),
@@ -117,6 +69,11 @@ void VolumeView::setSlice(SliceType t, int v){
     setSlice(SliceDef{t,v});
 }
 
+
+void VolumeView::setDisplayOptions(const DisplayOptions & opts){
+    mDisplayOptions=opts;
+    refreshScene();
+}
 
 bool VolumeView::validSlice(const SliceDef& d){
 
@@ -210,60 +167,6 @@ void VolumeView::back(){
     m_sliceList.pop_back();
     setSlice(slice);
     if(!m_sliceList.isEmpty()) m_sliceList.pop_back();
-}
-
-void VolumeView::setWellViewDist(int d){
-    if( d==m_wellViewDist) return;
-    m_wellViewDist=d;
-    refreshScene();
-}
-
-void VolumeView::setSharpenPercent(int s){
-    if( s==m_sharpenPercent) return;
-    m_sharpenPercent=s;
-    refreshScene();
-}
-
-void VolumeView::setSharpenKernelSize(int s){
-    if( s==m_sharpenKernelSize) return;
-    m_sharpenKernelSize=s;
-    refreshScene();
-}
-
-void VolumeView::setLastViewedColor(QColor c){
-    if(c==m_lastViewedColor) return;
-    m_lastViewedColor=c;
-    refreshScene();
-}
-
-void VolumeView::setDisplayHorizons(bool on){
-    if( on==m_displayHorizons ) return;
-    m_displayHorizons=on;
-    refreshScene();
-}
-
-void VolumeView::setDisplayWells(bool on){
-    if(on==m_displayWells ) return;
-    m_displayWells=on;
-    refreshScene();
-}
-
-void VolumeView::setDisplayMarkers(bool on){
-    if(on==m_displayMarkers ) return;
-    m_displayMarkers=on;
-    refreshScene();
-}
-
-void VolumeView::setDisplayTables(bool on){
-    if( on==m_displayTables ) return;
-    m_displayTables=on;
-    refreshScene();
-}
-
-void VolumeView::setDisplayLastViewed(bool on){
-    if( on==m_displayLastViewed) return;
-    m_displayLastViewed=on;
-    refreshScene();
 }
 
 void VolumeView::setFlattenHorizon(std::shared_ptr<Grid2D<float> > h){
@@ -490,7 +393,7 @@ QPainterPath VolumeView::projectWellPathInline(const WellPath& wp, int iline){
         auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
         auto xl=ilxl.y(); // static_cast<int>(std::round(ilxl.y()));
 
-        if( std::fabs(ilxl.x()-iline)>m_wellViewDist){
+        if( std::fabs(ilxl.x()-iline)>mDisplayOptions.wellVisibilityDistance()){
             isDown=false;
             continue;
         }
@@ -526,7 +429,7 @@ QPainterPath VolumeView::projectWellPathCrossline(const WellPath& wp, int xline)
         auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
         auto il=ilxl.x();// static_cast<int>(std::round(ilxl.x()));
 
-        if( std::fabs(ilxl.y()-xline)>m_wellViewDist){
+        if( std::fabs(ilxl.y()-xline)>mDisplayOptions.wellVisibilityDistance()){
             isDown=false;
             continue;
         }
@@ -612,33 +515,34 @@ void VolumeView::refreshScene(){
 
     QGraphicsScene* scene=new QGraphicsScene(this);
 
-    renderSlice(scene);
+    if(mDisplayOptions.isDisplayVolumes()) renderVolumes(scene);
 
-    if( m_displayHorizons) renderHorizons(scene);
+    if( mDisplayOptions.isDisplayHorizons()) renderHorizons(scene);
 
-    if( m_displayWells) renderWells(scene);
+    if( mDisplayOptions.isDisplayWells()) renderWells(scene);
 
-    if( m_displayMarkers) renderMarkers(scene);
+    if( mDisplayOptions.isDisplayMarkers()) renderMarkers(scene);
 
-    if( m_displayTables) renderTables(scene);
+    if( mDisplayOptions.isDisplayTables()) renderTables(scene);
 
-    if( m_displayLastViewed) renderLastViewed(scene);
+    if( mDisplayOptions.isDisplayLastViewed() ) renderLastViewed(scene);
 
     setScene(scene);
  }
 
 
-void VolumeView::renderSlice(QGraphicsScene * scene){
+void VolumeView::renderVolumes(QGraphicsScene * scene){
+
     switch(m_slice.type){
 
     case SliceType::Inline:
-        fillSceneInline(scene);
+        renderVolumesInline(scene);
         break;
     case SliceType::Crossline:
-        fillSceneCrossline(scene);
+        renderVolumesCrossline(scene);
         break;
     case SliceType::Z:
-        fillSceneTime(scene);
+        renderVolumesTime(scene);
         break;
     }
 }
@@ -723,7 +627,7 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
         auto x=(m_slice.type==SliceType::Inline) ? ilxl.y() : ilxl.x();         // use xline for iline slices and vice versa
         auto dist=(m_slice.type==SliceType::Inline) ?                           // distance in lines
                     ilxl.x() - m_slice.value : ilxl.y() -m_slice.value;
-        if(std::abs(dist)>m_wellViewDist) continue;                             // too far away to be shown
+        if(std::abs(dist)>mDisplayOptions.wellVisibilityDistance()) continue;   // too far away to be shown
         auto y=-mposition.z();                                                  // position-z-axis points upwards but view y-axis increases downwards
 
         QPen wmPen(mitem->color(), mitem->width());
@@ -821,7 +725,7 @@ void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
 
 void VolumeView::renderLastViewed(QGraphicsScene * scene){
     if(!m_sliceList.isEmpty()){
-        QPen prevPen( m_lastViewedColor, 2);
+        QPen prevPen( mDisplayOptions.lastViewedColor(), 2);
         prevPen.setCosmetic(true);
         prevPen.setStyle(Qt::DotLine);
 
@@ -833,10 +737,11 @@ void VolumeView::renderLastViewed(QGraphicsScene * scene){
     }
 }
 
-QImage VolumeView::enhance(QImage src){
-    if( m_sharpenPercent==0) return src;
-    auto kernel=buildSharpenKernel(m_sharpenKernelSize,0.01*m_sharpenPercent);
-    return convolve(src,kernel);
+QImage VolumeView::sharpen(QImage src){
+    if(!mDisplayOptions.isSharpen()) return src;
+    auto kernel=imageprocessing::buildSharpenKernel(mDisplayOptions.sharpenFilterSize(),
+                                                    0.01*mDisplayOptions.sharpenFilterStrength());
+    return imageprocessing::convolve(src,kernel);
 }
 
 namespace{
@@ -852,7 +757,7 @@ double lininterp(double x1, double y1, double x2, double y2, double x){
 }
 }
 
-void VolumeView::fillSceneInline(QGraphicsScene * scene){
+void VolumeView::renderVolumesInline(QGraphicsScene * scene){
 
     if( !scene ) return;
     int il=m_slice.value;
@@ -872,7 +777,7 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
             auto ct = vitem->colorTable();
             QImage vimg=intersectVolumeInline(*v, ct, il, ft, lt);
-            vimg=enhance(vimg);
+            vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
             auto item=new QGraphicsPixmapItem();
@@ -962,11 +867,11 @@ void VolumeView::fillSceneInline(QGraphicsScene * scene){
         }
     }
 
-    scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
+    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
 
-void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
+void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
 
     if( !scene ) return;
     int xl=m_slice.value;
@@ -986,7 +891,7 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
             auto ct = vitem->colorTable();
             QImage vimg=intersectVolumeCrossline(*v, ct, xl, ft, lt);
-            vimg=enhance(vimg);
+            vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
             auto item=new QGraphicsPixmapItem();
@@ -1076,11 +981,11 @@ void VolumeView::fillSceneCrossline(QGraphicsScene * scene){
         }
     }
 
-    scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
+    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
 
-void VolumeView::fillSceneTime(QGraphicsScene * scene){
+void VolumeView::renderVolumesTime(QGraphicsScene * scene){
 
     if( !scene ) return;
     int t=m_slice.value;
@@ -1096,7 +1001,7 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
             auto ct = vitem->colorTable();
             QImage vimg=intersectVolumeTime(*v, ct, t);
-            vimg=enhance(vimg);
+            vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
             auto item=new QGraphicsPixmapItem();
@@ -1187,50 +1092,8 @@ void VolumeView::fillSceneTime(QGraphicsScene * scene){
         }
     }
 
-    scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
+    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
-
-/*
-void VolumeView::fillSceneTime(QGraphicsScene * scene){
-
-    if( !scene ) return;
-
-    auto bounds=m_bounds;
-    QImage img( bounds.ni(), bounds.nj(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-
-    QPixmap pixmap=QPixmap::fromImage(img);
-    QPainter painter(&pixmap);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.setCompositionMode(QPainter::CompositionMode::CompositionMode_SourceOver);
-
-    for( int i=0; i<mVolumeItemModel->size(); i++){
-        auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
-        if(!vitem) continue;
-        auto v=vitem->volume();
-        auto vbounds=v->bounds();
-        auto ct = vitem->colorTable();
-        QImage vimg=intersectVolumeTime(*v, ct, m_slice.value);
-        vimg=enhance(vimg);
-        painter.setOpacity(0.01*vitem->opacity());
-        painter.drawImage( vbounds.i1()-bounds.i1(), vbounds.i2()-bounds.i2(), vimg);
-    }
-
-    auto item=new QGraphicsPixmapItem();
-    item->setTransformationMode(Qt::SmoothTransformation);
-    item->setPixmap( pixmap);
-    item->setTransformationMode(Qt::SmoothTransformation);
-    scene->addItem(item);
-
-    QTransform tf;
-    tf.translate(xAxis()->min(), zAxis()->min());
-    tf.scale((xAxis()->max()-xAxis()->min())/img.width(), (zAxis()->max()-zAxis()->min())/img.height());
-    item->setTransform(tf);
-
-    scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
-}
-*/
 
 void VolumeView::updateAxes(){
 
@@ -1264,7 +1127,6 @@ void VolumeView::refreshSceneCaller(){
 }
 
 void VolumeView::onVolumeItemModelChanged(){
-    std::cout<<"onVolumeItemModelChanged"<<std::endl<<std::flush;
     emit volumesChanged();
     updateBounds();
     refreshScene();

@@ -16,10 +16,10 @@
 #include<QColor>
 
 class VolumePicker;
-//class VolumeItem;
-//class VolumeItemModel;
 class ViewItem;
 class ViewItemModel;
+
+#include "displayoptions.h"
 
 class VolumeView : public RulerAxisView
 {
@@ -44,24 +44,8 @@ public:
         return m_bounds;
     }
 
-    int welViewDist()const{
-        return m_wellViewDist;
-    }
-
-    int sharpenPercent()const{
-        return m_sharpenPercent;
-    }
-
-    int sharpenKernelSize()const{
-        return m_sharpenKernelSize;
-    }
-
     SliceDef slice()const{
         return m_slice;
-    }
-
-    QColor lastViewedColor()const{
-        return m_lastViewedColor;
     }
 
     ViewItemModel* horizonItemModel()const{
@@ -84,24 +68,8 @@ public:
         return mTableItemModel;
     }
 
-    bool displayHorizons()const{
-        return m_displayHorizons;
-    }
-
-    bool displayWells()const{
-        return m_displayWells;
-    }
-
-    bool displayLasViewed()const{
-        return m_displayLastViewed;
-    }
-
-    bool displayMarkers()const{
-        return m_displayMarkers;
-    }
-
-    bool displayTables()const{
-        return m_displayTables;
+    DisplayOptions displayOptions()const{
+        return mDisplayOptions;
     }
 
     bool validSlice(const SliceDef& d);
@@ -114,30 +82,15 @@ public slots:
 
     void setSlice(SliceType,int);
     void setSlice(VolumeView::SliceDef);
-    void setWellViewDist(int);
-    void setSharpenPercent(int);
-    void setSharpenKernelSize(int);
-
-    void setLastViewedColor(QColor);
-    void setDisplayHorizons(bool);
-    void setDisplayWells(bool);
-    void setDisplayMarkers(bool);
-    void setDisplayTables(bool);
-    void setDisplayLastViewed(bool);
+    void setDisplayOptions(const DisplayOptions&);
 
     void back();
     void setFlattenHorizon( std::shared_ptr<Grid2D<float>>);
     void setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy);
 
 signals:
-    void horizonsChanged();
+    void  sliceChanged(VolumeView::SliceDef);
     void volumesChanged();
-    void sliceChanged(VolumeView::SliceDef);
-    void displayWellsChanged(bool);
-    void displayMarkersChanged(bool);
-    void displayHorizonsChanged(bool);
-    void displayTablesChanged(bool);
-    void displayLastViewedChanged(bool);
 
 protected:
     void drawForeground(QPainter *painter, const QRectF &rect)override; // need to draw picks
@@ -151,7 +104,11 @@ private slots:
 
 private:
 
-    void renderSlice(QGraphicsScene*);
+    void renderVolumes(QGraphicsScene*);
+    void renderVolumesInline(QGraphicsScene*);
+    void renderVolumesCrossline(QGraphicsScene*);
+    void renderVolumesTime(QGraphicsScene*);
+    QImage sharpen(QImage);
     void renderHorizons(QGraphicsScene*);
     void renderWells(QGraphicsScene*);
     void renderMarkers(QGraphicsScene*);
@@ -172,30 +129,22 @@ private:
     QPainterPath projectWellPathCrossline(const WellPath& wp, int xline);
     QLineF intersectSlices(const SliceDef& s1, const SliceDef& s2);
 
-    QImage enhance(QImage);
-    void fillSceneInline(QGraphicsScene*);
-    void fillSceneCrossline(QGraphicsScene*);
-    void fillSceneTime(QGraphicsScene*);
+
+
 
     QTransform m_xy_to_ilxl, m_ilxl_to_xy;
 
     VolumePicker* m_picker;
 
     SliceDef m_slice;
-    int m_wellViewDist=100;
-    int m_sharpenPercent=0;
-    int m_sharpenKernelSize=3;
+
     ViewItemModel* mHorizonItemModel;
     ViewItemModel* mVolumeItemModel;
     ViewItemModel* mWellItemModel;
     ViewItemModel* mMarkerItemModel;
     ViewItemModel* mTableItemModel;
-    QColor m_lastViewedColor=Qt::lightGray;
-    bool m_displayHorizons=true;
-    bool m_displayWells=true;
-    bool m_displayMarkers=true;
-    bool m_displayTables=true;
-    bool m_displayLastViewed=true;
+    DisplayOptions mDisplayOptions;
+
     Grid3DBounds m_bounds;
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;
     std::pair<double,double> m_flattenRange;
