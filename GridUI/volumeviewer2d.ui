@@ -142,21 +142,25 @@
     <property name="title">
      <string>Pic&amp;king</string>
     </property>
+    <widget class="QMenu" name="menuPick_Mode">
+     <property name="title">
+      <string>Pick Mode</string>
+     </property>
+     <addaction name="actionPickPoints"/>
+     <addaction name="actionPickLines"/>
+     <addaction name="actionPickOutline"/>
+    </widget>
     <addaction name="action_New_Picks"/>
     <addaction name="action_Load_Picks"/>
     <addaction name="action_Save_Picks"/>
     <addaction name="actionSave_As_Picks"/>
-   </widget>
-   <widget class="QMenu" name="menu_Window">
-    <property name="title">
-     <string>&amp;Window</string>
-    </property>
+    <addaction name="separator"/>
+    <addaction name="menuPick_Mode"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Items"/>
    <addaction name="menu_Navigation"/>
    <addaction name="menuPicking"/>
-   <addaction name="menu_Window"/>
   </widget>
   <action name="actionE_xit">
    <property name="text">
@@ -259,6 +263,39 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionPickPoints">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Points</string>
+   </property>
+   <property name="toolTip">
+    <string>Pick Points</string>
+   </property>
+  </action>
+  <action name="actionPickLines">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Lines</string>
+   </property>
+   <property name="toolTip">
+    <string>Pick Lines</string>
+   </property>
+  </action>
+  <action name="actionPickOutline">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Outline</string>
+   </property>
+   <property name="toolTip">
+    <string>Pick Outline</string>
    </property>
   </action>
  </widget>

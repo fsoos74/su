@@ -27,6 +27,7 @@
 #include <tableitemsdialog.h>
 #include <displayoptionsdialog.h>
 #include <topsdbmanager.h>
+#include <QActionGroup>
 
 namespace sliceviewer {
 
@@ -42,14 +43,10 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     //m_colorbarsLayout=new QVBoxLayout(ui->wdColortableArea);
     ui->splitter->setSizes(QList<int>{400,100});
 
-    //setupToolBarControls();
     setupMouseModes();
     setupSliceToolBar();
     setupFlattenToolBar();
-    setupPickingToolBar();
-    populateWindowMenu();
-    m_flattenToolBar->setVisible(false);
-    m_pickToolBar->setVisible(false);
+
     setAttribute( Qt::WA_DeleteOnClose);
 
     ui->volumeView->setZoomMode(AxisView::ZOOMMODE::BOTH);
@@ -68,6 +65,14 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 
     connect(ui->volumeView->volumeItemModel(), SIGNAL(changed()), this, SLOT(updateColorBars()) );
     connect(ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(updateColorBars()) );
+
+    auto group=new QActionGroup(this);
+    group->addAction(ui->actionPickPoints);
+    group->addAction(ui->actionPickLines);
+    group->addAction(ui->actionPickOutline);
+    group->setExclusive(true);
+    connect(group, SIGNAL(triggered(QAction*)),this,SLOT(updatePickModePicker()));
+    updatePickModeActions();
 
     updateSliceConnections();
 
@@ -219,16 +224,16 @@ void VolumeViewer2D::setupMouseModes(){
 void VolumeViewer2D::setupSliceToolBar(){
     m_sliceToolBar=new QToolBar( "Slice", this);
     auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Slice:"));
     m_cbSlice=new QComboBox;
+    m_cbSlice->setToolTip(tr("Slice type"));
     m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Inline));
     m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
     m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
     m_cbSlice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     m_sbSlice=new ReverseSpinBox;
+    m_sbSlice->setToolTip(tr("Sclice value"));
     m_sbSlice->setReverse(false);
     auto layout=new QHBoxLayout;
-    layout->addWidget(label);
     layout->addWidget(m_cbSlice);
     layout->addWidget(m_sbSlice);
     widget->setLayout(layout);
@@ -241,35 +246,15 @@ void VolumeViewer2D::setupSliceToolBar(){
 void VolumeViewer2D::setupFlattenToolBar(){
     m_flattenToolBar=new QToolBar( "Flatten", this);
     auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Flatten:"));
     m_cbHorizon=new QComboBox;
+    m_cbHorizon->setToolTip("Flatten on horizon");
     auto layout=new QHBoxLayout;
-    layout->addWidget(label);
     layout->addWidget(m_cbHorizon);
     widget->setLayout(layout);
     m_flattenToolBar->addWidget(widget);
     addToolBar(m_flattenToolBar);
     connect(m_cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
 }
-
-void VolumeViewer2D::setupPickingToolBar(){
-
-    m_pickToolBar=new QToolBar( "Picking", this);
-    auto widget=new QWidget(this);
-    auto label=new QLabel(tr("Pick:"));
-    auto cbPickMode=new QComboBox(this);
-    cbPickMode->addItems(volumePickModeNames());
-    cbPickMode->setCurrentText(toQString(VolumePicker::PickMode::Points));
-    cbPickMode->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    auto layout=new QHBoxLayout;
-    layout->addWidget(label);
-    layout->addWidget(cbPickMode);
-    widget->setLayout(layout);
-    m_pickToolBar->addWidget(widget);
-    addToolBar(m_pickToolBar);
-    connect( cbPickMode, SIGNAL(currentIndexChanged(QString)), ui->volumeView->picker(), SLOT(setPickMode(QString)));
-}
-
 
 void VolumeViewer2D::updateFlattenHorizons(){
 
@@ -653,13 +638,32 @@ void VolumeViewer2D::keyPressEvent(QKeyEvent * event){
     event->accept();
 }
 
-void VolumeViewer2D::populateWindowMenu(){
+void VolumeViewer2D::updatePickModeActions(){
+    if(!ui->volumeView->picker()) return;
+    switch(ui->volumeView->picker()->pickMode()){
+    case VolumePicker::PickMode::Points:
+        ui->actionPickPoints->setChecked(true);
+        break;
+    case VolumePicker::PickMode::Lines:
+        ui->actionPickLines->setChecked(true);
+        break;
+    case VolumePicker::PickMode::Outline:
+        ui->actionPickOutline->setChecked(true);
+        break;
+    }
+}
 
-    ui->menu_Window->addAction( ui->toolBar->toggleViewAction());
-    ui->menu_Window->addAction( ui->mouseToolBar->toggleViewAction());
-    ui->menu_Window->addAction( m_sliceToolBar->toggleViewAction());
-    ui->menu_Window->addAction( m_flattenToolBar->toggleViewAction());
-    ui->menu_Window->addAction( m_pickToolBar->toggleViewAction());
+void VolumeViewer2D::updatePickModePicker(){
+    if(!ui->volumeView->picker()) return;
+    if(ui->actionPickPoints->isChecked()){
+        ui->volumeView->picker()->setPickMode(VolumePicker::PickMode::Points);
+    }
+    else if(ui->actionPickLines->isChecked()){
+        ui->volumeView->picker()->setPickMode(VolumePicker::PickMode::Lines);
+    }
+    else if(ui->actionPickOutline->isChecked()){
+        ui->volumeView->picker()->setPickMode(VolumePicker::PickMode::Outline);
+    }
 }
 
 void VolumeViewer2D::on_mdiArea_customContextMenuRequested(const QPoint &pos)

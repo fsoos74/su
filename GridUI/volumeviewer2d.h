@@ -37,6 +37,7 @@ public slots:
 protected:
     void closeEvent(QCloseEvent*);
     void keyPressEvent(QKeyEvent*);
+
 private slots:
 
     void setInlineSliceX(QPointF);
@@ -61,7 +62,6 @@ private slots:
     void on_actionSetup_Tops_triggered();
     void on_actionSetup_Tables_triggered();
     void on_actionDisplay_Options_triggered();
-
     void on_action_Player_triggered();
 
     void on_action_New_Picks_triggered();
@@ -71,6 +71,9 @@ private slots:
 
     void on_mdiArea_customContextMenuRequested(const QPoint &pos);
     void colorBarContextMenuRequested(const QPoint &pos);
+
+    void updatePickModeActions();
+    void updatePickModePicker();
 
 private:
     bool canDiscardPicks();
@@ -90,7 +93,6 @@ private:
 
     QToolBar* m_sliceToolBar;
     QToolBar* m_flattenToolBar;
-    QToolBar* m_pickToolBar;
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     QMap<QString, Histogram> m_volumeHistograms;
     QMap<QString, QMdiSubWindow*> m_mdiColorbars;
