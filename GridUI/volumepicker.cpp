@@ -37,21 +37,7 @@ QList<VolumePicker::PickMode> volumePickModes(){
 
 using namespace std::placeholders;
 
-namespace{
 
-double lininterp(double x1, double y1, double x2, double y2, double x){
-
-    // need to add eps checks instead ==
-
-
-   // if( x<=x1 ) return y1;
-   // if( x>=x2 ) return y2;
-    if( x1 == x2 ) return (y1+y2)/2;
-
-    return y1 + x * ( y2 - y1 ) / ( x2 - x1 );
-}
-
-}
 
 
 VolumePicker::VolumePicker(VolumeView *view) : QObject(view), m_view(view), m_dirty(false), m_pickMode(PickMode::Points)
@@ -109,7 +95,6 @@ void VolumePicker::pickPoint(QPointF p){
     int il=0;
     int xl=0;
     float t=0;
-    auto bounds=m_view->bounds();
     auto sdef=m_view->slice();
     switch( sdef.type){
     case VolumeView::SliceType::Inline:
@@ -128,7 +113,7 @@ void VolumePicker::pickPoint(QPointF p){
         t=0.001*sdef.value;     // sdef is in millis
         break;
     }
-    //std::cout<<"Pick il="<<il<<" xl="<<xl<<" t="<<t<<std::endl<<std::flush;
+
     m_picks->insert(il,xl,t);
     setDirty(true);
     emit picksChanged();

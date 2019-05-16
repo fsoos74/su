@@ -18,25 +18,6 @@
 namespace sliceviewer {
 
 
-namespace  {
-
-    QMap<VolumeView::SliceType, QString> sliceTypeLookup{
-
-        { VolumeView::SliceType::Inline, "Inline" },
-        { VolumeView::SliceType::Crossline, "Crossline"},
-        { VolumeView::SliceType::Z, "Z"}
-    };
-}
-
-QString VolumeView::toQString(SliceType t){
-    return sliceTypeLookup.value(t, "Inline");
-}
-
-VolumeView::SliceType VolumeView::toSliceType(QString s){
-    return sliceTypeLookup.key(s, VolumeView::SliceType::Inline);
-}
-
-
 bool operator==(const VolumeView::SliceDef& a, const VolumeView::SliceDef& b){
     return a.type==b.type && a.value==b.value;
 }
@@ -66,13 +47,6 @@ void VolumeView::setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy){
     m_ilxl_to_xy=ilxl_to_xy;
     refreshScene();
 }
-
-
-void VolumeView::setSlice(SliceType t, int v){
-
-    setSlice(SliceDef{t,v});
-}
-
 
 void VolumeView::setDisplayOptions(const DisplayOptions & opts){
     mDisplayOptions=opts;

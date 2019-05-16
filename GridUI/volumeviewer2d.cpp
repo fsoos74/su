@@ -76,7 +76,7 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 
     updateSliceConnections();
 
-    ui->volumeView->setSlice(VolumeView::SliceType::Inline, 0);
+    ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, 0});
 }
 
 VolumeViewer2D::~VolumeViewer2D()
@@ -111,19 +111,18 @@ void VolumeViewer2D::addVolume(QString name){
     ui->volumeView->volumeItemModel()->add(vitem);
 
     if( ui->volumeView->volumeItemModel()->size()==1){
-        ui->volumeView->setSlice(VolumeView::SliceType::Inline, volume->bounds().i1());
+        ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, volume->bounds().i1()});
     }
 
  }
 
-void VolumeViewer2D::cbSlice_currentIndexChanged(QString s)
+void VolumeViewer2D::cbSlice_currentIndexChanged(QString)
 {
     if(m_noupdate) return;
-
-    auto t=VolumeView::toSliceType(s);
+    auto sliceType=static_cast<VolumeView::SliceType>(m_cbSlice->currentData().toInt());
     auto v=m_sbSlice->value();
-    v=ui->volumeView->adjustToVolume(t,v);
-    ui->volumeView->setSlice(t,v);
+    v=ui->volumeView->adjustToVolume(sliceType,v);
+    ui->volumeView->setSlice(VolumeView::SliceDef{sliceType,v});
 }
 
 void VolumeViewer2D::sbSlice_valueChanged(int arg1)
@@ -131,37 +130,37 @@ void VolumeViewer2D::sbSlice_valueChanged(int arg1)
     if(m_noupdate) return;
 
     auto t=ui->volumeView->slice().type;
-    ui->volumeView->setSlice(t, arg1);
+    ui->volumeView->setSlice(VolumeView::SliceDef{t, arg1});
 }
 
 void VolumeViewer2D::setInlineSliceX(QPointF p){
 
     int il=static_cast<int>(std::round(p.x()));
-    ui->volumeView->setSlice(VolumeView::SliceType::Inline, il);
+    ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, il});
 }
 
 void VolumeViewer2D::setInlineSliceY(QPointF p){
 
     int il=static_cast<int>(std::round(p.y()));
-    ui->volumeView->setSlice(VolumeView::SliceType::Inline, il);
+    ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, il});
 }
 
 void VolumeViewer2D::setCrosslineSliceX(QPointF p){
 
     int xl=static_cast<int>(std::round(p.x()));
-    ui->volumeView->setSlice(VolumeView::SliceType::Crossline, xl);
+    ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Crossline, xl});
 }
 
 void VolumeViewer2D::setCrosslineSliceY(QPointF p){
 
     int xl=static_cast<int>(std::round(p.y()));
-    ui->volumeView->setSlice(VolumeView::SliceType::Crossline, xl);
+    ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Crossline, xl});
 }
 
 void VolumeViewer2D::setZSlice(QPointF p){
 
     int z=static_cast<int>(std::round(p.y()));
-    ui->volumeView->setSlice(VolumeView::SliceType::Z, z);
+    ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Z, z});
 }
 
 void VolumeViewer2D::setFlattenHorizon(QString name){
@@ -226,9 +225,9 @@ void VolumeViewer2D::setupSliceToolBar(){
     auto widget=new QWidget(this);
     m_cbSlice=new QComboBox;
     m_cbSlice->setToolTip(tr("Slice type"));
-    m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Inline));
-    m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Crossline));
-    m_cbSlice->addItem( VolumeView::toQString(VolumeView::SliceType::Z));
+    m_cbSlice->addItem( tr("Inline"), static_cast<int>(VolumeView::SliceType::Inline));
+    m_cbSlice->addItem( tr("Crossline"), static_cast<int>(VolumeView::SliceType::Crossline));
+    m_cbSlice->addItem( tr("depth/time"), static_cast<int>(VolumeView::SliceType::Z));
     m_cbSlice->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     m_sbSlice=new ReverseSpinBox;
     m_sbSlice->setToolTip(tr("Sclice value"));
@@ -323,7 +322,7 @@ void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
     if( m_noupdate) return;
 
     m_noupdate=true;
-    m_cbSlice->setCurrentText(VolumeView::toQString(d.type));
+    m_cbSlice->setCurrentIndex(m_cbSlice->findData(static_cast<int>(d.type)));
 
     int min=0;
     int max=0;

@@ -77,12 +77,8 @@ public:
     bool validSlice(const SliceDef& d);
     int adjustToVolume(SliceType t, int v);
 
-    static QString toQString(SliceType);
-    static SliceType toSliceType(QString);
-
 public slots:
 
-    void setSlice(SliceType,int);
     void setSlice(VolumeView::SliceDef);
     void setDisplayOptions(const DisplayOptions&);
 

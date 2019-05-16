@@ -14,9 +14,9 @@ PlayerDialog::PlayerDialog(QWidget *parent) :
     m_timer->setSingleShot(true);
     connect( m_timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
 
-    ui->cbType->addItem(VolumeView::toQString(VolumeView::SliceType::Inline));
-    ui->cbType->addItem(VolumeView::toQString(VolumeView::SliceType::Crossline));
-    ui->cbType->addItem(VolumeView::toQString(VolumeView::SliceType::Z));
+    ui->cbType->addItem( tr("Inline"), static_cast<int>(VolumeView::SliceType::Inline));
+    ui->cbType->addItem( tr("Crossline"), static_cast<int>(VolumeView::SliceType::Crossline));
+    ui->cbType->addItem( tr("depth/time"), static_cast<int>(VolumeView::SliceType::Z));
 
     connect( ui->slCurrent, SIGNAL(valueChanged(int)), ui->sbCurrent, SLOT(setValue(int)) );
     connect( ui->sbCurrent, SIGNAL(valueChanged(int)), ui->slCurrent, SLOT(setValue(int)) );
@@ -29,7 +29,7 @@ PlayerDialog::~PlayerDialog()
 
 
 VolumeView::SliceType PlayerDialog::type(){
-    return VolumeView::toSliceType(ui->cbType->currentText());
+    return static_cast<VolumeView::SliceType>(ui->cbType->currentData().toInt());
 }
 
 int PlayerDialog::start(){
@@ -53,7 +53,7 @@ int PlayerDialog::delay(){
 }
 
 void PlayerDialog::setType(VolumeView::SliceType t){
-    ui->cbType->setCurrentText(VolumeView::toQString(t));
+    ui->cbType->setCurrentIndex(ui->cbType->findData(static_cast<int>(t)));
 }
 
 void PlayerDialog::setStart(int i){
@@ -133,7 +133,7 @@ void PlayerDialog::on_sbCurrent_valueChanged(int arg1)
 {
     VolumeView::SliceDef def;
     def.type=type();
-    def.value=current();
+    def.value=arg1;
     emit sliceRequested(def);
 }
 
@@ -152,7 +152,7 @@ void PlayerDialog::on_sbStep_valueChanged(int arg1)
     ui->slCurrent->setSingleStep(arg1);
 }
 
-void PlayerDialog::on_cbType_currentIndexChanged(const QString &arg1)
+void PlayerDialog::on_cbType_currentIndexChanged(const QString &)
 {
     updateControls();
 }

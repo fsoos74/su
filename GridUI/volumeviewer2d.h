@@ -76,13 +76,13 @@ private slots:
     void updatePickModePicker();
 
 private:
+
     bool canDiscardPicks();
     void setupMouseModes();
     void setupSliceToolBar();
     void setupFlattenToolBar();
     void setupPickingToolBar();
     void updateFlattenHorizons();
-    void populateWindowMenu();
 
     Ui::VolumeViewer2D *ui;
     DynamicMouseModeSelector* m_mousemodeSelector=nullptr;

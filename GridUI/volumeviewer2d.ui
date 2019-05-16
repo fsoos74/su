@@ -131,13 +131,6 @@
     <addaction name="separator"/>
     <addaction name="actionDisplay_Options"/>
    </widget>
-   <widget class="QMenu" name="menu_Navigation">
-    <property name="title">
-     <string>&amp;Navigation</string>
-    </property>
-    <addaction name="action_Player"/>
-    <addaction name="actionBack"/>
-   </widget>
    <widget class="QMenu" name="menuPicking">
     <property name="title">
      <string>Pic&amp;king</string>
@@ -159,7 +152,6 @@
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Items"/>
-   <addaction name="menu_Navigation"/>
    <addaction name="menuPicking"/>
   </widget>
   <action name="actionE_xit">
