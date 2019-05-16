@@ -61,10 +61,10 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     connect( ui->volumeView, SIGNAL(sliceChanged(VolumeView::SliceDef)), this, SLOT(onSliceChanged(VolumeView::SliceDef)));
     connect( ui->volumeView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)));
 
-    connect( ui->actionBack, SIGNAL(triggered(bool)), ui->volumeView, SLOT(back()));
-
     connect(ui->volumeView->volumeItemModel(), SIGNAL(changed()), this, SLOT(updateColorBars()) );
     connect(ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(updateColorBars()) );
+
+    connect( ui->actionBack, SIGNAL(triggered(bool)), ui->volumeView, SLOT(back()));
 
     auto group=new QActionGroup(this);
     group->addAction(ui->actionPickPoints);
@@ -199,8 +199,14 @@ void VolumeViewer2D::updateSliceConnections(){
          break;
 
     case VolumeView::SliceType::Z:
-         connect( hsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setInlineSliceX(QPointF)) );
-         connect( vsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setCrosslineSliceY(QPointF)) );
+        if(ui->volumeView->inlineOrientation()==Qt::Vertical){
+             connect( hsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setInlineSliceX(QPointF)) );
+             connect( vsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setCrosslineSliceY(QPointF)) );
+        }
+        else{
+            connect( hsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setCrosslineSliceX(QPointF)) );
+            connect( vsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setInlineSliceY(QPointF)) );
+        }
          break;
     }
 
@@ -380,6 +386,9 @@ void VolumeViewer2D::onMouseOver(QPointF p){
         z=m_sbSlice->value();
         il=static_cast<int>(std::round(p.x()));
         xl=static_cast<int>(std::round(p.y()));
+        if(ui->volumeView->inlineOrientation()==Qt::Horizontal){
+            std::swap(il,xl);
+        }
         break;
     }
 
@@ -480,49 +489,6 @@ void VolumeViewer2D::on_action_Player_triggered()
     }
     m_player->show();
 }
-
-
-
-
-/*
-void VolumeViewer2D::orientate(){
-
-    if( !m_project) return;
-
-    auto geom=m_project->geometry();
-
-    if( !isValid(geom)) return false;
-
-    // p0: origin, p1: far end 1st inline, p2: far end first xline
-
-    qreal dx10=(geom.coords(1).x()-geom.coords(0).x());
-    qreal dy10=(geom.coords(1).y()-geom.coords(0).y());
-
-    qreal dx20=(geom.coords(2).x()-geom.coords(0).x());
-    qreal dy20=(geom.coords(2).y()-geom.coords(0).y());
-
-    AxxisOrientation ilOrientation=(std::fabs(dx10) > std::fabs(dy10))?
-                AxxisOrientation::Horizontal : AxxisOrientation::Vertical;
-
-    AxxisDirection ilDirection;
-    AxxisDirection xlDirection;
-    if( ilOrientation==AxxisOrientation::Horizontal){
-
-        ilDirection=(dy20<0)?AxxisDirection::Ascending : AxxisDirection::Descending; // count from equator
-        xlDirection=(dx10>0)?AxxisDirection::Ascending : AxxisDirection::Descending;
-    }else{
-
-        ilDirection=(dx20>0)?AxxisDirection::Ascending : AxxisDirection::Descending;
-        xlDirection=(dy10<0)?AxxisDirection::Ascending : AxxisDirection::Descending; // count from equator
-    }
-
-    gridView()->setInlineOrientation(ilOrientation);
-    gridView()->setInlineDirection(ilDirection);
-    gridView()->setCrosslineDirection(xlDirection);
-
-    return true;
-}
-*/
 
 bool VolumeViewer2D::canDiscardPicks(){
     if( !ui->volumeView->picker()->isDirty()) return true;
@@ -714,4 +680,16 @@ void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
 }
 
 
+}
+
+void sliceviewer::VolumeViewer2D::on_actionSet_Inline_Orientation_triggered()
+{
+    QStringList orientations;
+    orientations<<"Vertical"<<"Horizontal";
+    int current=(ui->volumeView->inlineOrientation()==Qt::Vertical)?0:1;
+    bool ok=false;
+    auto item=QInputDialog::getItem(this, "Set inline orientation", "Select orientation:", orientations, current, false, &ok  );
+    if(!ok) return;
+    Qt::Orientation orientation=(item=="Vertical") ? Qt::Vertical : Qt::Horizontal;
+    ui->volumeView->setInlineOrientation(orientation);
 }

@@ -130,6 +130,7 @@
     <addaction name="actionSetup_Tables"/>
     <addaction name="separator"/>
     <addaction name="actionDisplay_Options"/>
+    <addaction name="actionSet_Inline_Orientation"/>
    </widget>
    <widget class="QMenu" name="menuPicking">
     <property name="title">
@@ -288,6 +289,11 @@
    </property>
    <property name="toolTip">
     <string>Pick Outline</string>
+   </property>
+  </action>
+  <action name="actionSet_Inline_Orientation">
+   <property name="text">
+    <string>Set Inline Orientation</string>
    </property>
   </action>
  </widget>

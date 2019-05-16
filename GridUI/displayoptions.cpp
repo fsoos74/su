@@ -52,4 +52,5 @@ void DisplayOptions::setSharpenFilterStrength(int p){
     mSharpenFilterStrength=p;
 }
 
+
 }

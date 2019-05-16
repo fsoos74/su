@@ -53,6 +53,13 @@ void VolumeView::setDisplayOptions(const DisplayOptions & opts){
     refreshScene();
 }
 
+void VolumeView::setInlineOrientation(Qt::Orientation o){
+    if(o==mInlineOrientation) return;
+    mInlineOrientation=o;
+    updateAxes();
+    refreshScene();
+}
+
 bool VolumeView::validSlice(const SliceDef& d){
 
     bool valid=false;
@@ -227,6 +234,7 @@ QImage VolumeView::intersectVolumeCrossline(const Volume &volume, ColorTable* co
 QImage VolumeView::intersectVolumeTime(const Volume &volume, ColorTable* colorTable, int ms){
 
     auto bounds=volume.bounds();
+
     QImage img( bounds.ni(), bounds.nj(), QImage::Format_RGBA8888);
     img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
 
@@ -245,7 +253,6 @@ QImage VolumeView::intersectVolumeTime(const Volume &volume, ColorTable* colorTa
             img.setPixel( i, j, col );
        }
     }
-
     return img;
 }
 
@@ -989,8 +996,16 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             scene->addItem(item);
 
             QTransform tf;
-            tf.translate(xAxis()->min(), zAxis()->min());
-            tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
+            if(mInlineOrientation==Qt::Vertical){
+                tf.translate(xAxis()->min(), zAxis()->min());
+                tf.scale((xAxis()->max()-xAxis()->min())/vimg.height(), (zAxis()->max()-zAxis()->min())/vimg.width());
+            }
+            else{
+                tf.translate(xAxis()->min(), zAxis()->min());
+                tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), (xAxis()->max()-xAxis()->min())/vimg.height());
+                tf.rotate(-90);
+                tf.translate(-vimg.width(),0);
+            }
             item->setTransform(tf);
         }
         else{                                           // render as seismic traces
@@ -1091,14 +1106,23 @@ void VolumeView::updateAxes(){
         zAxis()->setName(tr("Time/Depth"));
         break;
     case SliceType::Z:
-        xAxis()->setRange(bounds.i1(), bounds.i2());
-        xAxis()->setName(tr("Inline"));
-        zAxis()->setRange(bounds.j1(), bounds.j2());
-        zAxis()->setName(tr("Crossline"));
+        if(mInlineOrientation==Qt::Vertical){
+            xAxis()->setRange(bounds.i1(), bounds.i2());
+            xAxis()->setName(tr("Inline"));
+            zAxis()->setRange(bounds.j1(), bounds.j2());
+            zAxis()->setName(tr("Crossline"));
+        }
+        else{
+            xAxis()->setRange(bounds.j1(), bounds.j2());
+            xAxis()->setName(tr("Crossline"));
+            zAxis()->setRange(bounds.i1(), bounds.i2());
+            zAxis()->setName(tr("Inline"));
+        }
         break;
     }
     zoomFitWindow();
 }
+
 
 void VolumeView::refreshSceneCaller(){
     refreshScene();
