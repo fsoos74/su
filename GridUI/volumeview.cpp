@@ -998,13 +998,19 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             QTransform tf;
             if(mInlineOrientation==Qt::Vertical){
                 tf.translate(xAxis()->min(), zAxis()->min());
-                tf.scale((xAxis()->max()-xAxis()->min())/vimg.height(), (zAxis()->max()-zAxis()->min())/vimg.width());
+                //tf.scale((xAxis()->max()-xAxis()->min())/vimg.height(), (zAxis()->max()-zAxis()->min())/vimg.width());
+                tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
             }
             else{
+                /*
                 tf.translate(xAxis()->min(), zAxis()->min());
                 tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), (xAxis()->max()-xAxis()->min())/vimg.height());
                 tf.rotate(-90);
                 tf.translate(-vimg.width(),0);
+                */
+                tf.translate(xAxis()->min(), zAxis()->min());
+                tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), -(xAxis()->max()-xAxis()->min())/vimg.height());
+                tf.rotate(-90);
             }
             item->setTransform(tf);
         }
@@ -1014,11 +1020,27 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             auto m2=std::abs(ct->range().second);
             auto maxabs=(m1>m2) ? m1 : m2;
 
+            QTransform tf;
+            if(mInlineOrientation==Qt::Horizontal){
+                /*
+                std::cout<<"sr: x="<<sceneRect().x()<<" y="<<sceneRect().y()<<" w="<<sceneRect().width()<<" h="<<sceneRect().height()<<std::endl;
+                std::cout<<"ni="<<v->bounds().ni()<<" nj="<<v->bounds().nj()<<std::endl;
+                std::cout<<"i1="<<v->bounds().i1()<<" i2="<<v->bounds().i2()<<std::endl;
+                std::cout<<"j1="<<v->bounds().j1()<<" j2="<<v->bounds().j2()<<std::endl;
+                std::cout<<std::endl<<std::flush;
+                */
+
+                tf.translate(0,sceneRect().y());
+                tf.scale(1,-1);
+                tf.translate(0,-sceneRect().y());
+                tf.rotate(-90);
+                tf.translate(-sceneRect().x(),0);
+            }
+
             for( auto i = 0; i<bounds.ni(); i++){
                 QPainterPath path;
                 bool first=true;
                 auto il=bounds.i1()+i;
-
 
                 // wiggles
                 for( auto j=0; j<bounds.nj(); j++){
@@ -1041,6 +1063,7 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
                 item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
 
                 // variable area
@@ -1080,12 +1103,12 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 item->setPen(Qt::NoPen);
                 item->setBrush(Qt::black);
                 item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
             }
         }
     }
 
-    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
 void VolumeView::updateAxes(){
@@ -1165,8 +1188,6 @@ void VolumeView::updateBounds(){
 
     int nt=static_cast<int>(std::round( (maxlt-minft)/dt)) +1;
     auto bounds=Grid3DBounds( mini1, maxi2, minj1, maxj2, nt, minft, dt);
-
-    //std::cout<<"IBOUNDS: ft="<<bounds.ft()<<" lt="<<bounds.lt()<<" dt="<<bounds.dt()<<" nt="<<bounds.nt()<<std::endl<<std::flush;
 
     if( m_flattenHorizon){
         auto rg=valueRange( *m_flattenHorizon);
