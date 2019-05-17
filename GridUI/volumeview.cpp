@@ -564,6 +564,11 @@ void VolumeView::renderHorizons(QGraphicsScene* scene){
 
 void VolumeView::renderWells(QGraphicsScene * scene){
 
+    QTransform tf;
+    if(m_slice.type==SliceType::Z && mInlineOrientation==Qt::Horizontal){
+        tf=swappedIlineXlineTransform();
+    }
+
     for( int i=mWellItemModel->size()-1; i>=0; i-- ){
         auto witem=dynamic_cast<WellItem*>(mWellItemModel->at(i));
         if(!witem) continue;
@@ -592,6 +597,7 @@ void VolumeView::renderWells(QGraphicsScene * scene){
             auto item=new QGraphicsEllipseItem( -s,-s, 2*s, 2*s);
             item->setPen(Qt::NoPen);
             item->setBrush(witem->color());
+            p=tf.map(p);
             item->setPos(p);
             item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
             scene->addItem(item);
@@ -998,13 +1004,12 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             QTransform tf;
             if(mInlineOrientation==Qt::Vertical){
                 tf.translate(xAxis()->min(), zAxis()->min());
-                tf.scale((xAxis()->max()-xAxis()->min())/vimg.height(), (zAxis()->max()-zAxis()->min())/vimg.width());
+                tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
             }
             else{
                 tf.translate(xAxis()->min(), zAxis()->min());
-                tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), (xAxis()->max()-xAxis()->min())/vimg.height());
+                tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), -(xAxis()->max()-xAxis()->min())/vimg.height());
                 tf.rotate(-90);
-                tf.translate(-vimg.width(),0);
             }
             item->setTransform(tf);
         }
@@ -1014,11 +1019,15 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             auto m2=std::abs(ct->range().second);
             auto maxabs=(m1>m2) ? m1 : m2;
 
+            QTransform tf;
+            if(mInlineOrientation==Qt::Horizontal){
+                tf=swappedIlineXlineTransform();
+            }
+
             for( auto i = 0; i<bounds.ni(); i++){
                 QPainterPath path;
                 bool first=true;
                 auto il=bounds.i1()+i;
-
 
                 // wiggles
                 for( auto j=0; j<bounds.nj(); j++){
@@ -1041,6 +1050,7 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
                 item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
 
                 // variable area
@@ -1080,12 +1090,12 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 item->setPen(Qt::NoPen);
                 item->setBrush(Qt::black);
                 item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
             }
         }
     }
 
-    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
 void VolumeView::updateAxes(){
@@ -1121,6 +1131,16 @@ void VolumeView::updateAxes(){
         break;
     }
     zoomFitWindow();
+}
+
+QTransform VolumeView::swappedIlineXlineTransform()const{
+    QTransform tf;
+    tf.translate(0,sceneRect().y());
+    tf.scale(1,-1);
+    tf.translate(0,-sceneRect().y());
+    tf.rotate(-90);
+    tf.translate(-sceneRect().x(),0);
+    return tf;
 }
 
 
@@ -1165,8 +1185,6 @@ void VolumeView::updateBounds(){
 
     int nt=static_cast<int>(std::round( (maxlt-minft)/dt)) +1;
     auto bounds=Grid3DBounds( mini1, maxi2, minj1, maxj2, nt, minft, dt);
-
-    //std::cout<<"IBOUNDS: ft="<<bounds.ft()<<" lt="<<bounds.lt()<<" dt="<<bounds.dt()<<" nt="<<bounds.nt()<<std::endl<<std::flush;
 
     if( m_flattenHorizon){
         auto rg=valueRange( *m_flattenHorizon);
