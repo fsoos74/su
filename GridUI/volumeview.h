@@ -118,9 +118,8 @@ private:
     void renderMarkers(QGraphicsScene*);
     void renderTables(QGraphicsScene*);
     void renderLastViewed(QGraphicsScene*);
-
+    QTransform swappedIlineXlineTransform()const;
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
-
     QImage intersectVolumeInline(const Volume& volume, ColorTable* colorTable, int iline, double ft, double lt);
     QImage intersectVolumeCrossline(const Volume& volume, ColorTable* colorTable, int xline, double ft, double lt);
     QImage intersectVolumeTime(const Volume& volume, ColorTable* colorTable, int time);

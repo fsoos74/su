@@ -564,6 +564,11 @@ void VolumeView::renderHorizons(QGraphicsScene* scene){
 
 void VolumeView::renderWells(QGraphicsScene * scene){
 
+    QTransform tf;
+    if(m_slice.type==SliceType::Z && mInlineOrientation==Qt::Horizontal){
+        tf=swappedIlineXlineTransform();
+    }
+
     for( int i=mWellItemModel->size()-1; i>=0; i-- ){
         auto witem=dynamic_cast<WellItem*>(mWellItemModel->at(i));
         if(!witem) continue;
@@ -592,6 +597,7 @@ void VolumeView::renderWells(QGraphicsScene * scene){
             auto item=new QGraphicsEllipseItem( -s,-s, 2*s, 2*s);
             item->setPen(Qt::NoPen);
             item->setBrush(witem->color());
+            p=tf.map(p);
             item->setPos(p);
             item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
             scene->addItem(item);
@@ -998,20 +1004,14 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             QTransform tf;
             if(mInlineOrientation==Qt::Vertical){
                 tf.translate(xAxis()->min(), zAxis()->min());
-                //tf.scale((xAxis()->max()-xAxis()->min())/vimg.height(), (zAxis()->max()-zAxis()->min())/vimg.width());
                 tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
             }
             else{
-                /*
-                tf.translate(xAxis()->min(), zAxis()->min());
-                tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), (xAxis()->max()-xAxis()->min())/vimg.height());
-                tf.rotate(-90);
-                tf.translate(-vimg.width(),0);
-                */
+
                 tf.translate(xAxis()->min(), zAxis()->min());
                 tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), -(xAxis()->max()-xAxis()->min())/vimg.height());
                 tf.rotate(-90);
-            }
+             }
             item->setTransform(tf);
         }
         else{                                           // render as seismic traces
@@ -1022,19 +1022,7 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
 
             QTransform tf;
             if(mInlineOrientation==Qt::Horizontal){
-                /*
-                std::cout<<"sr: x="<<sceneRect().x()<<" y="<<sceneRect().y()<<" w="<<sceneRect().width()<<" h="<<sceneRect().height()<<std::endl;
-                std::cout<<"ni="<<v->bounds().ni()<<" nj="<<v->bounds().nj()<<std::endl;
-                std::cout<<"i1="<<v->bounds().i1()<<" i2="<<v->bounds().i2()<<std::endl;
-                std::cout<<"j1="<<v->bounds().j1()<<" j2="<<v->bounds().j2()<<std::endl;
-                std::cout<<std::endl<<std::flush;
-                */
-
-                tf.translate(0,sceneRect().y());
-                tf.scale(1,-1);
-                tf.translate(0,-sceneRect().y());
-                tf.rotate(-90);
-                tf.translate(-sceneRect().x(),0);
+                tf=swappedIlineXlineTransform();
             }
 
             for( auto i = 0; i<bounds.ni(); i++){
@@ -1144,6 +1132,16 @@ void VolumeView::updateAxes(){
         break;
     }
     zoomFitWindow();
+}
+
+QTransform VolumeView::swappedIlineXlineTransform()const{
+    QTransform tf;
+    tf.translate(0,sceneRect().y());
+    tf.scale(1,-1);
+    tf.translate(0,-sceneRect().y());
+    tf.rotate(-90);
+    tf.translate(-sceneRect().x(),0);
+    return tf;
 }
 
 
