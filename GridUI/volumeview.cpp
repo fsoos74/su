@@ -1003,12 +1003,12 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
 
             QTransform tf;
             if(mInlineOrientation==Qt::Vertical){
-                tf.translate(xAxis()->min(), zAxis()->min());
+                tf.translate(v->bounds().i1(), v->bounds().j1());
                 tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
             }
             else{
-
-                tf.translate(xAxis()->min(), zAxis()->min());
+                //tf.translate(xAxis()->min(), zAxis()->min());
+                tf.translate(v->bounds().j1(),v->bounds().i1());
                 tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), -(xAxis()->max()-xAxis()->min())/vimg.height());
                 tf.rotate(-90);
              }
