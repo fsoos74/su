@@ -694,7 +694,6 @@ void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
         break;
     }
 
-
     QPen pickPen(Qt::red,2);
     pickPen.setCosmetic(true);
     painter->setPen(pickPen);
@@ -706,7 +705,6 @@ void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
         painter->drawLine(pp.x()-S, pp.y(), pp.x()+S, pp.y()+S);
         painter->drawLine(pp.x()+S, pp.y(), pp.x()-S, pp.y()+S);
     }
-
 
     painter->setWorldMatrixEnabled(true);
     painter->restore();
@@ -724,6 +722,9 @@ void VolumeView::renderLastViewed(QGraphicsScene * scene){
         QLineF l=intersectSlices(m_slice, prev);
         QGraphicsLineItem* item=new QGraphicsLineItem(l);
         item->setPen(prevPen);
+        if(m_slice.type==SliceType::Z && mInlineOrientation==Qt::Horizontal){
+            item->setTransform(swappedIlineXlineTransform());
+        }
         scene->addItem(item);
     }
 }
@@ -1002,16 +1003,11 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             scene->addItem(item);
 
             QTransform tf;
-            if(mInlineOrientation==Qt::Vertical){
-                tf.translate(v->bounds().i1(), v->bounds().j1());
-                tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
+            tf.translate(v->bounds().i1(), v->bounds().j1());
+            tf.scale(qreal(bounds.i2()-bounds.i1())/vimg.width(), qreal(bounds.j2()-bounds.j1())/vimg.height());
+            if(mInlineOrientation==Qt::Horizontal){
+                tf*=swappedIlineXlineTransform();
             }
-            else{
-                //tf.translate(xAxis()->min(), zAxis()->min());
-                tf.translate(v->bounds().j1(),v->bounds().i1());
-                tf.scale((zAxis()->max()-zAxis()->min())/vimg.width(), -(xAxis()->max()-xAxis()->min())/vimg.height());
-                tf.rotate(-90);
-             }
             item->setTransform(tf);
         }
         else{                                           // render as seismic traces
