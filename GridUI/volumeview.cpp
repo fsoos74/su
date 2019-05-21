@@ -205,6 +205,41 @@ QImage VolumeView::intersectVolumeInline(const Volume &volume, ColorTable* color
     return img;
 }
 
+QVector<float> VolumeView::intersectVolumeCDP(const Volume& volume, ColorTable* ct,
+                                              int iline, int xline, double ft, double dt, int nt){
+    QVector<float> values;
+    values.reserve(nt);
+    auto m1=std::abs(ct->range().first);
+    auto m2=std::abs(ct->range().second);
+    auto maxabs=(m1>m2) ? m1 : m2;
+    for(int i=0; i<nt; i++){
+        auto z=ft+i*dt;
+        auto value=volume.value(iline, xline, z);
+        if( value!=volume.NULL_VALUE){
+            value/=maxabs;
+        }
+        values.push_back(value);
+    }
+    return values;
+}
+
+QVector<float> VolumeView::intersectVolumeInlineTime(const Volume& volume, ColorTable* ct,
+                                              int iline, double t){
+    QVector<float> values;
+    values.reserve(volume.bounds().nj());
+    auto m1=std::abs(ct->range().first);
+    auto m2=std::abs(ct->range().second);
+    auto maxabs=(m1>m2) ? m1 : m2;
+    for(int j=0; j<volume.bounds().nj(); j++){
+        auto xl=volume.bounds().j1()+j;
+        auto value=volume.value(iline, xl, 0.001*t);        // mills->sec
+        if( value!=volume.NULL_VALUE){
+            value/=maxabs;
+        }
+        values.push_back(value);
+    }
+    return values;
+}
 
 QImage VolumeView::intersectVolumeCrossline(const Volume &volume, ColorTable* colorTable, int xline, double ft, double lt){
 
@@ -739,14 +774,61 @@ QImage VolumeView::sharpen(QImage src){
 namespace{
 double lininterp(double x1, double y1, double x2, double y2, double x){
 
-    if( x<=x1 ) return y1;
-    if( x>=x2 ) return y2;
-    if( x1 == x2 ) return (y1+y2)/2;
-
     // need to add eps check
+    if( x1 == x2 ) return (y1+y2)/2;
 
     return y1 + (x-x1)* ( y2 - y1 ) / ( x2 - x1 );
 }
+}
+
+QPainterPath VolumeView::valuesToWiggles(QVector<float> values, float NULL_VALUE){
+    // wiggles
+    QPainterPath path;
+    bool first=true;
+    for( auto j=0; j<values.size(); j++){
+        auto value=values[j];
+        if( value==NULL_VALUE) continue;
+        if(first){
+            path.moveTo(value,j);
+            first=false;
+        }
+        else{
+            path.lineTo(value,j);
+        }
+    }
+    return path;
+}
+
+QPainterPath VolumeView::valuesToVariableArea(QVector<float> values, float NULL_VALUE){
+    QPainterPath path;
+    bool active=false;
+    double xprev=0;
+    double zprev=0;
+    for( auto j=0; j<values.size(); j++){
+        auto z=j;
+        auto x=values[j];
+        if( x==NULL_VALUE) continue;
+        if(x>=0){               // inside va
+            if(!active){        // no area yet, start new
+                auto zxl=(j>0) ? lininterp(xprev, zprev,x,z,0) : z;
+                path.moveTo(0,zxl);
+                //path.moveTo(x,z);
+                active=true;
+            }
+            path.lineTo(x,z);   // line to current point
+        }
+        else if(active){        // close area
+            auto zxl=lininterp(xprev, zprev, x, z, 0);
+            std::cout<<"xprev="<<xprev<<" zprev="<<zprev<<" x="<<x<<" z="<<z<<" zxl="<<zxl<<std::endl<<std::flush;
+            path.lineTo(0,zxl);
+            //path.lineTo(x,z);
+            active=false;
+            path.closeSubpath();
+        }
+        xprev=x;
+        zprev=z;
+    }
+    return path;
 }
 
 void VolumeView::renderVolumesInline(QGraphicsScene * scene){
@@ -785,81 +867,34 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
         }
         else{                                           // render as seismic traces
             auto ct = vitem->colorTable();  // use this to determine max abs value
-            auto m1=std::abs(ct->range().first);
-            auto m2=std::abs(ct->range().second);
-            auto maxabs=(m1>m2) ? m1 : m2;
-
             for( auto i = 0; i<bounds.nj(); i++){
-                QPainterPath path;
-                bool first=true;
                 auto xl=bounds.j1()+i;
-                auto d=dz(il, xl);
-                if( std::isnan(d)) continue;
+                auto values=intersectVolumeCDP(*vitem->volume(), ct, il, xl, ft, dt, nt);
+                QTransform tf;
+                tf.scale(1,1000*dt);
+                tf.translate(xl,ft);
 
                 // wiggles
-                for( auto j=0; j<nt; j++){
-                    auto z=ft + j*dt + d;
-                    auto value=v->value(il, xl, z);
-                    if( value==v->NULL_VALUE) continue;
-                    qreal x = xl + value/maxabs;
-                    z*=1000;
-                    if(first){
-                        path.moveTo(x,z);
-                        first=false;
-                    }
-                    else{
-                        path.lineTo(x,z);
-                    }
-                }
+                QPainterPath path=valuesToWiggles(values, vitem->volume()->NULL_VALUE);
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
                 item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
 
                 // variable area
-                path=QPainterPath();
-                bool active=false;
-                double xprev=xl;
-                double zprev=ft+d;
-                for( auto j=0; j<nt; j++){
-                    auto z=ft + j*dt + d;
-                    auto value=v->value(il, xl, z);
-                    if( value==v->NULL_VALUE) continue;
-                    qreal x = xl + value/maxabs;
-                    z*=1000;
-                    if(x>=xl){               // inside va
-                        if(!active){        // no area yet, start new
-                            auto zxl=(j>0) ? lininterp(xprev, zprev,x,z,xl) : z;
-                            path.moveTo(xl,zxl);
-                            //path.moveTo(x,z);
-                            active=true;
-                        }
-                        path.lineTo(x,z);   // line to current point
-                    }
-                    else if(active){        // close area
-                        auto zxl=lininterp(x,z,xprev, zprev,xl);
-                        path.lineTo(xl,zxl);
-                        //path.lineTo(x,z);
-                        active=false;
-                        path.closeSubpath();
-                    }
-                    xprev=x;
-                    zprev=z;
-                }
-                //path.closeSubpath();
+                path=valuesToVariableArea(values, vitem->volume()->NULL_VALUE);
                 item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(Qt::NoPen);
                 item->setBrush(Qt::black);
                 item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
-
             }
         }
     }
-
-    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
 
@@ -897,83 +932,37 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
             tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
             item->setTransform(tf);
         }
-        else{                                           // render as seismic traces
+        else{
+            // render as seismic traces
             auto ct = vitem->colorTable();  // use this to determine max abs value
-            auto m1=std::abs(ct->range().first);
-            auto m2=std::abs(ct->range().second);
-            auto maxabs=(m1>m2) ? m1 : m2;
-
-            for( auto i = 0; i<bounds.ni(); i++){
-                QPainterPath path;
-                bool first=true;
+            for( auto i = 0; i<bounds.nj(); i++){
                 auto il=bounds.i1()+i;
-                auto d=dz(il, xl);
-                if( std::isnan(d)) continue;
+                auto values=intersectVolumeCDP(*vitem->volume(), ct, il, xl, ft, dt, nt);
+                QTransform tf;
+                tf.scale(1,1000*dt);
+                tf.translate(il,ft);
 
                 // wiggles
-                for( auto j=0; j<nt; j++){
-                    auto z=ft + j*dt + d;
-                    auto value=v->value(il, xl, z);
-                    if( value==v->NULL_VALUE) continue;
-                    qreal x = il + value/maxabs;
-                    z*=1000;
-                    if(first){
-                        path.moveTo(x,z);
-                        first=false;
-                    }
-                    else{
-                        path.lineTo(x,z);
-                    }
-                }
+                QPainterPath path=valuesToWiggles(values, vitem->volume()->NULL_VALUE);
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
-                item->setOpacity(0.01*vitem->opacity());// percent -> fraction
+                item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
 
                 // variable area
-                path=QPainterPath();
-                bool active=false;
-                double xprev=xl;
-                double zprev=ft+d;
-                for( auto j=0; j<nt; j++){
-                    auto z=ft + j*dt + d;
-                    auto value=v->value(il, xl, z);
-                    if( value==v->NULL_VALUE) continue;
-                    qreal x = il + value/maxabs;
-                    z*=1000;
-                    if(x>=il){               // inside va
-                        if(!active){        // no area yet, start new
-                            auto zil=(j>0) ? lininterp(xprev, zprev,x,z,il) : z;
-                            path.moveTo(il,zil);
-                            //path.moveTo(x,z);
-                            active=true;
-                        }
-                        path.lineTo(x,z);   // line to current point
-                    }
-                    else if(active){        // close area
-                        auto zil=lininterp(x,z,xprev, zprev,il);
-                        path.lineTo(il,zil);
-                        //path.lineTo(x,z);
-                        active=false;
-                        path.closeSubpath();
-                    }
-                    xprev=x;
-                    zprev=z;
-                }
-                //path.closeSubpath();
+                path=valuesToVariableArea(values, vitem->volume()->NULL_VALUE);
                 item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(Qt::NoPen);
                 item->setBrush(Qt::black);
                 item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
+                item->setTransform(tf);
                 scene->addItem(item);
-
             }
         }
     }
-
-    //scene->setSceneRect(xAxis()->min(), zAxis()->min(), xAxis()->max() - xAxis()->min(), zAxis()->max()-zAxis()->min());
 }
 
 
@@ -1011,38 +1000,20 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             item->setTransform(tf);
         }
         else{                                           // render as seismic traces
+            // render as seismic traces
             auto ct = vitem->colorTable();  // use this to determine max abs value
-            auto m1=std::abs(ct->range().first);
-            auto m2=std::abs(ct->range().second);
-            auto maxabs=(m1>m2) ? m1 : m2;
-
-            QTransform tf;
-            if(mInlineOrientation==Qt::Horizontal){
-                tf=swappedIlineXlineTransform();
-            }
-
-            for( auto i = 0; i<bounds.ni(); i++){
-                QPainterPath path;
-                bool first=true;
-                auto il=bounds.i1()+i;
+            for( auto i = 0; i<vbounds.ni(); i++){
+                auto il=vbounds.i1()+i;
+                auto values=intersectVolumeInlineTime(*vitem->volume(), ct, il, t);
+                QTransform tf;
+                //tf.scale(1,1000*dt);
+                tf.translate(il,vbounds.j1());
+                if(mInlineOrientation==Qt::Horizontal){
+                    tf*=swappedIlineXlineTransform();
+                }
 
                 // wiggles
-                for( auto j=0; j<bounds.nj(); j++){
-                    int xl=bounds.j1()+j;
-                    auto d=dz(il, xl);
-                    if( std::isnan(d)) continue;
-                    auto tt=0.001*t;// + d;
-                    auto value=v->value(il, xl, tt);
-                    if( value==v->NULL_VALUE) continue;
-                    qreal x = il + value/maxabs;
-                    if(first){
-                        path.moveTo(x,xl);
-                        first=false;
-                    }
-                    else{
-                        path.lineTo(x,xl);
-                    }
-                }
+                QPainterPath path=valuesToWiggles(values, vitem->volume()->NULL_VALUE);
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
@@ -1051,37 +1022,7 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 scene->addItem(item);
 
                 // variable area
-                path=QPainterPath();
-                bool active=false;
-                double xprev=il;
-                double zprev=bounds.j1();
-                for( auto j=0; j<bounds.nj(); j++){
-                    int xl=bounds.j1()+j;
-                    auto d=dz(il, xl);
-                    if( std::isnan(d)) continue;
-                    auto tt=0.001*t;// + d;
-                    auto value=v->value(il, xl, tt);
-                    if( value==v->NULL_VALUE) continue;
-                    qreal x = il + value/maxabs;
-                    qreal z=xl;
-                    if(x>=il){               // inside va
-                        if(!active){        // no area yet, start new
-                            auto zil=(j>0) ? lininterp(xprev, zprev,x,z,il) : z;
-                            path.moveTo(x,zil);
-                            active=true;
-                        }
-                        path.lineTo(x,z);   // line to current point
-                    }
-                    else if(active){        // close area
-                        auto zil=lininterp(x,z, xprev,zprev, il);
-                        path.lineTo(x,zil);
-                        active=false;
-                        path.closeSubpath();
-                    }
-                    xprev=x;
-                    zprev=z;
-                }
-                //path.closeSubpath();
+                path=valuesToVariableArea(values, vitem->volume()->NULL_VALUE);
                 item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(Qt::NoPen);

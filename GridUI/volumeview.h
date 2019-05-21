@@ -123,6 +123,10 @@ private:
     QImage intersectVolumeInline(const Volume& volume, ColorTable* colorTable, int iline, double ft, double lt);
     QImage intersectVolumeCrossline(const Volume& volume, ColorTable* colorTable, int xline, double ft, double lt);
     QImage intersectVolumeTime(const Volume& volume, ColorTable* colorTable, int time);
+    QVector<float> intersectVolumeCDP(const Volume& volume, ColorTable* colorTable, int iline, int xline, double ft, double dt, int nt);
+    QVector<float> intersectVolumeInlineTime(const Volume& volume, ColorTable* colorTable, int iline, double t);
+    QPainterPath valuesToWiggles(QVector<float>, float NULL_VALUE);
+    QPainterPath valuesToVariableArea(QVector<float>, float NULL_VALUE);
     QPainterPath intersectHorizonInline(const Grid2D<float>& grid, int iline);
     QPainterPath intersectHorizonCrossline(const Grid2D<float>& grid, int xline);
     QVector<QPointF> intersectTableInline(const Table& table, int iline);
