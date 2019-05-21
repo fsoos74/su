@@ -2,7 +2,7 @@ DEFINES += COMPANY=\\\"SeismicUtensils\\\"
 DEFINES += PROGRAM=\\\"AVO-Detect\\\"
 DEFINES += VERSION=\\\"1.9.37\\\"
 
-CONFIG += c++11
+CONFIG += c++14
 
 #  optimization on windows
 win32{

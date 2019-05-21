@@ -831,6 +831,94 @@ QPainterPath VolumeView::valuesToVariableArea(QVector<float> values, float NULL_
     return path;
 }
 
+namespace{
+
+// x==j, y==i
+QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
+    auto b2d=g2d.bounds();
+    QImage img(b2d.nj(), b2d.ni(), QImage::Format_ARGB32);
+    img.fill(QColor(0,0,0,0));  // transparent
+    for(int i=0; i<img.height(); i++){
+        for(int j=0; j<img.width(); j++){
+            auto value=g2d(i+b2d.i1(), j+b2d.j1());
+            if(value==g2d.NULL_VALUE) continue;
+            auto color=ct.map(value);
+            img.setPixel(j,i,color);
+        }
+    }
+    return img;
+}
+
+// x==i, y==j
+QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct){
+    auto b2d=g2d.bounds();
+    QImage img(b2d.ni(), b2d.nj(), QImage::Format_ARGB32);
+    img.fill(QColor(0,0,0,0));  // transparent
+    for(int i=0; i<img.width(); i++){
+        for(int j=0; j<img.height(); j++){
+            auto value=g2d(i+b2d.i1(), j+b2d.j1());
+            if(value==g2d.NULL_VALUE) continue;
+            auto color=ct.map(value);
+            img.setPixel(i,j,color);
+        }
+    }
+    return img;
+}
+
+// y=bounds.i1...bounds.i2, x:g1d.valuerange
+QPainterPath grid1d2wiggles(const Grid1D<float>& g1d){
+    // wiggles
+    QPainterPath path;
+    auto b1d=g1d.bounds();
+    bool first=true;
+    for( auto i=b1d.i1(); i<=b1d.i2(); i++){
+        auto value=g1d(i);
+        if( value==g1d.NULL_VALUE) continue;
+        if(first){
+            path.moveTo(value,i);
+            first=false;
+        }
+        else{
+            path.lineTo(value,i);
+        }
+    }
+    return path;
+}
+
+QPainterPath grid1d2va(const Grid1D<float>& g1d){
+    auto b1d=g1d.bounds();
+    QPainterPath path;
+    bool active=false;
+    double xprev=0;
+    double zprev=0;
+    for( auto i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=i;
+        auto x=g1d(i);
+        if( x==g1d.NULL_VALUE) continue;
+        if(x>=0){               // inside va
+            if(!active){        // no area yet, start new
+                auto zxl=(i>b1d.i1()) ? lininterp(xprev, zprev,x,z,0) : z;
+                path.moveTo(0,zxl);
+                //path.moveTo(x,z);
+                active=true;
+            }
+            path.lineTo(x,z);   // line to current point
+        }
+        else if(active){        // close area
+            auto zxl=lininterp(xprev, zprev, x, z, 0);
+            path.lineTo(0,zxl);
+            //path.lineTo(x,z);
+            active=false;
+            path.closeSubpath();
+        }
+        xprev=x;
+        zprev=z;
+    }
+    return path;
+}
+
+}
+
 void VolumeView::renderVolumesInline(QGraphicsScene * scene){
 
     if( !scene ) return;
@@ -978,10 +1066,11 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
 
         auto v=vitem->volume();
         auto vbounds=v->bounds();
+        auto ct = vitem->colorTable();
 
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            auto ct = vitem->colorTable();
-            QImage vimg=intersectVolumeTime(*v, ct, t);
+            auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
+            auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
             vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
@@ -989,7 +1078,6 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             item->setTransformationMode(Qt::SmoothTransformation);
             item->setPixmap( pixmap );
             item->setOpacity(0.01*vitem->opacity());    // percent > fraction
-            scene->addItem(item);
 
             QTransform tf;
             tf.translate(v->bounds().i1(), v->bounds().j1());
@@ -998,22 +1086,31 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 tf*=swappedIlineXlineTransform();
             }
             item->setTransform(tf);
+            scene->addItem(item);
         }
-        else{                                           // render as seismic traces
+        else{
             // render as seismic traces
-            auto ct = vitem->colorTable();  // use this to determine max abs value
-            for( auto i = 0; i<vbounds.ni(); i++){
-                auto il=vbounds.i1()+i;
-                auto values=intersectVolumeInlineTime(*vitem->volume(), ct, il, t);
+            // compute trace  scaling factor
+            auto rg=ct->range();
+            auto m1=std::abs(rg.first);
+            auto m2=std::abs(rg.second);
+            auto maxabs=(m1>m2) ? m1 : m2;
+            auto facx=1./maxabs;
+
+            for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
+                auto g1d=vitem->volume()->atIT(i,0.001*t);
+                if(!g1d) continue;
+
                 QTransform tf;
-                //tf.scale(1,1000*dt);
-                tf.translate(il,vbounds.j1());
+
+                tf.translate(i,0);
+                tf.scale(facx,1);
                 if(mInlineOrientation==Qt::Horizontal){
                     tf*=swappedIlineXlineTransform();
                 }
 
                 // wiggles
-                QPainterPath path=valuesToWiggles(values, vitem->volume()->NULL_VALUE);
+                auto path=grid1d2wiggles(*g1d);
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
@@ -1022,7 +1119,7 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
                 scene->addItem(item);
 
                 // variable area
-                path=valuesToVariableArea(values, vitem->volume()->NULL_VALUE);
+                path=grid1d2va(*g1d);
                 item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(Qt::NoPen);
@@ -1033,7 +1130,6 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             }
         }
     }
-
 }
 
 void VolumeView::updateAxes(){

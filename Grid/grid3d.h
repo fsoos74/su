@@ -4,7 +4,9 @@
 #include<array3d.h>
 #include<algorithm>
 #include<stdexcept>
+#include<grid1d.h>
 #include<grid2d.h>
+#include<memory>
 
 
 class Grid3DBounds{
@@ -189,23 +191,13 @@ public:
             if( *it < min ) min=*it;
             if( *it > max ) max=*it;
         }
-/*
-        if( min>max ){
-            return std::pair<value_type, value_type>(NULL_VALUE, NULL_VALUE);
-        }
-*/
+
         return std::pair<value_type, value_type>(min, max);
     }
 
     value_type value( int i, int j, double t)const{
 
         if( !m_bounds.isInside(i, j ) ) return NULL_VALUE;
-/*
-        int i=m_bounds.timeToSample(t);
-        if( i<0 ) return NULL_VALUE;
-        if( i>=m_bounds.nt()) return NULL_VALUE;
-        return (*this)(i, j, i);
-*/
 
         int k=m_bounds.timeToSample(t);
         if( k<0 ) return NULL_VALUE;
@@ -279,7 +271,7 @@ public:
         m_bounds=Grid3DBounds(m_bounds.i1(), m_bounds.i2(), m_bounds.j1(), m_bounds.j2(),
                               m_bounds.nt(), m_bounds.ft(), dt );
     }
-
+/*
     Grid2D<T> atK(int k)const{
         Grid2DBounds b2d(m_bounds.i1(), m_bounds.j1(), m_bounds.i2(), m_bounds.j2() );
         Grid2D<T> g2d(b2d);     // initialized with NULL_VALUE
@@ -305,12 +297,113 @@ public:
         }
         return true;
     }
+*/
+    // j->i, k->j
+    std::unique_ptr<Grid2D<T>> atI(int i)const{
+        if(i<m_bounds.i1() || i>m_bounds.i2() || m_bounds.nt()<1) return std::unique_ptr<Grid2D<T>>();
+        Grid2DBounds b2d(m_bounds.j1(), 0, m_bounds.j2(), m_bounds.nt());
+        auto g2d=std::make_unique<Grid2D<T>>(b2d);
+        for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+            for(int k=0; k<m_bounds.nt(); k++){
+                g2d(j,k)=(*this)(i,j,k);
+            }
+        }
+        return g2d;
+    }
+
+    // i->i, k->j
+    std::unique_ptr<Grid2D<T>> atJ(int j)const{
+        if(j<m_bounds.j1() || j>m_bounds.j2() || m_bounds.nt()<1) return std::unique_ptr<Grid2D<T>>();
+        Grid2DBounds b2d(m_bounds.i1(), 0, m_bounds.i2(), m_bounds.nt());
+        auto g2d=std::make_unique<Grid2D<T>>(b2d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            for(int k=0; k<m_bounds.nt(); k++){
+                g2d(j,k)=(*this)(i,j,k);
+            }
+        }
+        return g2d;
+    }
+
+    // i->i, j->j
+    std::unique_ptr<Grid2D<T>> atK(int k)const{
+        if(k<0 || k>=m_bounds.nt()) return std::unique_ptr<Grid2D<T>>();
+        Grid2DBounds b2d(m_bounds.i1(), m_bounds.j1(), m_bounds.i2(), m_bounds.j2());
+        auto g2d=std::make_unique<Grid2D<T>>(b2d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+                g2d(i,j)=(*this)(i,j,k);
+            }
+        }
+        return g2d;
+    }
+
+    // i->i, j->j
+    std::unique_ptr<Grid2D<T>> atT(double t)const{
+        if(t<m_bounds.ft() || t>m_bounds.lt()) return std::unique_ptr<Grid2D<T>>();
+        Grid2DBounds b2d(m_bounds.i1(), m_bounds.j1(), m_bounds.i2(), m_bounds.j2());
+        auto g2d=std::make_unique<Grid2D<T>>(b2d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+                (*g2d)(i,j)=value(i,j,t);
+            }
+        }
+        return g2d;
+    }
+
+    std::unique_ptr<Grid1D<T>> atIJ(int i, int j)const{
+        if(!m_bounds.isInside(i,j,0)) return std::unique_ptr<Grid1D<T>>();
+        auto b1d=Grid1DBounds(0,m_bounds.nt()-1);
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int k=0; k<m_bounds.nt(); k++){
+            (*g1d)(k)=(*this)(i,j,k);
+        }
+        return g1d;
+    }
+
+    std::unique_ptr<Grid1D<T>> atIK(int i, int k)const{
+        if(!m_bounds.isInside(i,m_bounds.j1(),k)) return std::unique_ptr<Grid1D<T>>();
+        auto b1d=Grid1DBounds(m_bounds.j1(),m_bounds.j2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+            (*g1d)(j)=(*this)(i,j,k);
+        }
+        return g1d;
+    }
+
+    std::unique_ptr<Grid1D<T>> atJK(int j, int k)const{
+        if(!m_bounds.isInside(m_bounds.i1(),j,k)) return std::unique_ptr<Grid1D<T>>();
+        auto b1d=Grid1DBounds(m_bounds.i1(),m_bounds.i2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            (*g1d)(i)=(*this)(i,j,k);
+        }
+        return g1d;
+    }
+
+    std::unique_ptr<Grid1D<T>> atIT(int i, double t)const{
+        if(!m_bounds.isInside(i,m_bounds.j1(),t)) return std::unique_ptr<Grid1D<T>>();
+        auto b1d=Grid1DBounds(m_bounds.j1(), m_bounds.j2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+            (*g1d)(j)=value(i,j,t);
+        }
+        return g1d;
+    }
+
+    std::unique_ptr<Grid1D<T>> atJT(int j, double t)const{
+        if(!m_bounds.isInside(m_bounds.i1(),j,t)) return std::unique_ptr<Grid1D<T>>();
+        auto b1d=Grid1DBounds(m_bounds.i1(), m_bounds.i2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            (*g1d)(j)=value(i,j,t);
+        }
+        return g1d;
+    }
 
 private:
 
     bounds_type  m_bounds;
     values_type  m_values;
-
 };
 
 

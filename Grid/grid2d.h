@@ -37,12 +37,20 @@ public:
         return m_j2;
     }
 
-    int width()const {
+    int nj()const {
         return 1 + m_j2 - m_j1;
     }
 
-    int height()const{
+    int ni()const{
         return 1+ m_i2 - m_i1;
+    }
+
+    int width()const {
+        return nj();
+    }
+
+    int height()const{
+        return ni();
     }
 
     bool isInside(int i, int j)const{
