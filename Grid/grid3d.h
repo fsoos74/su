@@ -305,7 +305,7 @@ public:
         auto g2d=std::make_unique<Grid2D<T>>(b2d);
         for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
             for(int k=0; k<m_bounds.nt(); k++){
-                g2d(j,k)=(*this)(i,j,k);
+                (*g2d)(j,k)=(*this)(i,j,k);
             }
         }
         return g2d;
@@ -318,7 +318,7 @@ public:
         auto g2d=std::make_unique<Grid2D<T>>(b2d);
         for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
             for(int k=0; k<m_bounds.nt(); k++){
-                g2d(j,k)=(*this)(i,j,k);
+                (*g2d)(i,k)=(*this)(i,j,k);
             }
         }
         return g2d;

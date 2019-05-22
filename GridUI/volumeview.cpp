@@ -22,6 +22,131 @@ bool operator==(const VolumeView::SliceDef& a, const VolumeView::SliceDef& b){
     return a.type==b.type && a.value==b.value;
 }
 
+namespace{
+
+double lininterp(double x1, double y1, double x2, double y2, double x){
+
+    // need to add eps check
+    if( x1 == x2 ) return (y1+y2)/2;
+
+    return y1 + (x-x1)* ( y2 - y1 ) / ( x2 - x1 );
+}
+
+// x==j, y==i
+QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
+    auto b2d=g2d.bounds();
+    QImage img(b2d.nj(), b2d.ni(), QImage::Format_ARGB32);
+    img.fill(QColor(0,0,0,0));  // transparent
+    for(int i=0; i<img.height(); i++){
+        for(int j=0; j<img.width(); j++){
+            auto value=g2d(i+b2d.i1(), j+b2d.j1());
+            if(value==g2d.NULL_VALUE) continue;
+            auto color=ct.map(value);
+            img.setPixel(j,i,color);
+        }
+    }
+    return img;
+}
+
+// x==i, y==j
+QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct){
+    auto b2d=g2d.bounds();
+    QImage img(b2d.ni(), b2d.nj(), QImage::Format_ARGB32);
+    img.fill(QColor(0,0,0,0));  // transparent
+    for(int i=0; i<img.width(); i++){
+        for(int j=0; j<img.height(); j++){
+            auto value=g2d(i+b2d.i1(), j+b2d.j1());
+            if(value==g2d.NULL_VALUE) continue;
+            auto color=ct.map(value);
+            img.setPixel(i,j,color);
+        }
+    }
+    return img;
+}
+
+// y=bounds.i1...bounds.i2, x:g1d.valuerange
+QPainterPath grid1d2wiggles(const Grid1D<float>& g1d){
+    // wiggles
+    QPainterPath path;
+    auto b1d=g1d.bounds();
+    bool first=true;
+    for( auto i=b1d.i1(); i<=b1d.i2(); i++){
+        auto value=g1d(i);
+        if( value==g1d.NULL_VALUE) continue;
+        if(first){
+            path.moveTo(value,i);
+            first=false;
+        }
+        else{
+            path.lineTo(value,i);
+        }
+    }
+    return path;
+}
+
+QPainterPath grid1d2va(const Grid1D<float>& g1d){
+    auto b1d=g1d.bounds();
+    QPainterPath path;
+    bool active=false;
+    double xprev=0;
+    double zprev=0;
+    for( auto i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=i;
+        auto x=g1d(i);
+        if( x==g1d.NULL_VALUE) continue;
+        if(x>=0){               // inside va
+            if(!active){        // no area yet, start new
+                auto zxl=(i>b1d.i1()) ? lininterp(xprev, zprev,x,z,0) : z;
+                path.moveTo(0,zxl);
+                //path.moveTo(x,z);
+                active=true;
+            }
+            path.lineTo(x,z);   // line to current point
+        }
+        else if(active){        // close area
+            auto zxl=lininterp(xprev, zprev, x, z, 0);
+            path.lineTo(0,zxl);
+            //path.lineTo(x,z);
+            active=false;
+            path.closeSubpath();
+        }
+        xprev=x;
+        zprev=z;
+    }
+    return path;
+}
+
+QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
+
+    QPainterPath path;
+
+    auto b1d=g1d.bounds();
+    bool isDown=false;
+
+    for( int i=b1d.i1(); i<=b1d.i2(); i++){
+
+        auto value=g1d(i);
+        if( value==g1d.NULL_VALUE){
+            isDown=false;
+            continue;
+        }
+
+        std::cout<<"i="<<i<<" value="<<value<<std::endl<<std::flush;
+        if(isDown){
+            path.lineTo(i, value);
+        }
+        else{
+            path.moveTo(i, value);
+        }
+
+        isDown=true;
+    }
+
+    return path;
+}
+
+}
+
 VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.),
     m_picker(new VolumePicker(this)),
     mHorizonItemModel(new ViewItemModel(this)),
@@ -179,119 +304,6 @@ double VolumeView::dz(int i, int j)const{
         return ( dz!=m_flattenHorizon->NULL_VALUE) ? 0.001*dz : std::numeric_limits<double>::quiet_NaN();
     }
 }
-
-QImage VolumeView::intersectVolumeInline(const Volume &volume, ColorTable* colorTable, int iline, double ft, double lt){
-
-    auto bounds=volume.bounds();
-    auto dt=bounds.dt();
-    auto nt=static_cast<int>(std::round((lt-ft)/dt)+1);
-    QImage img( bounds.nj(), nt, QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-    for( auto i = 0; i<bounds.nj(); i++){
-        auto xl=bounds.j1()+i;
-        auto d=dz(iline, xl);
-        if( std::isnan(d)) continue;
-
-        for( auto j=0; j<nt; j++){
-            auto z=ft + j*dt + d;
-            auto value=volume.value(iline, xl, z);
-            if( value==volume.NULL_VALUE) continue;
-            auto col = colorTable->map(value);
-            img.setPixel( i, j, col );
-       }
-    }
-
-    return img;
-}
-
-QVector<float> VolumeView::intersectVolumeCDP(const Volume& volume, ColorTable* ct,
-                                              int iline, int xline, double ft, double dt, int nt){
-    QVector<float> values;
-    values.reserve(nt);
-    auto m1=std::abs(ct->range().first);
-    auto m2=std::abs(ct->range().second);
-    auto maxabs=(m1>m2) ? m1 : m2;
-    for(int i=0; i<nt; i++){
-        auto z=ft+i*dt;
-        auto value=volume.value(iline, xline, z);
-        if( value!=volume.NULL_VALUE){
-            value/=maxabs;
-        }
-        values.push_back(value);
-    }
-    return values;
-}
-
-QVector<float> VolumeView::intersectVolumeInlineTime(const Volume& volume, ColorTable* ct,
-                                              int iline, double t){
-    QVector<float> values;
-    values.reserve(volume.bounds().nj());
-    auto m1=std::abs(ct->range().first);
-    auto m2=std::abs(ct->range().second);
-    auto maxabs=(m1>m2) ? m1 : m2;
-    for(int j=0; j<volume.bounds().nj(); j++){
-        auto xl=volume.bounds().j1()+j;
-        auto value=volume.value(iline, xl, 0.001*t);        // mills->sec
-        if( value!=volume.NULL_VALUE){
-            value/=maxabs;
-        }
-        values.push_back(value);
-    }
-    return values;
-}
-
-QImage VolumeView::intersectVolumeCrossline(const Volume &volume, ColorTable* colorTable, int xline, double ft, double lt){
-
-    auto bounds=volume.bounds();
-    auto dt=bounds.dt();
-    auto nt=static_cast<int>(std::round((lt-ft)/dt)+1);
-    QImage img( bounds.ni(), nt, QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-    for( auto i = 0; i<bounds.ni(); i++){
-        auto il=bounds.i1()+i;
-        auto d=dz(il, xline);
-        if( std::isnan(d)) continue;
-
-        for( auto j=0; j<nt; j++){
-            auto z=ft + j*dt + d;
-            auto value=volume.value(il, xline, z);
-            if( value==volume.NULL_VALUE) continue;
-            auto col = colorTable->map(value);
-            img.setPixel( i, j, col );
-       }
-    }
-
-    return img;
-}
-
-QImage VolumeView::intersectVolumeTime(const Volume &volume, ColorTable* colorTable, int ms){
-
-    auto bounds=volume.bounds();
-
-    QImage img( bounds.ni(), bounds.nj(), QImage::Format_RGBA8888);
-    img.fill(qRgba(255,255,255,0));  // make transparent, for NULL values pixels will not be set
-
-    for( auto i = 0; i<bounds.ni(); i++){
-        auto il=bounds.i1()+i;
-
-        for( auto j=0; j<bounds.nj(); j++){
-            int xl=bounds.j1()+j;
-
-            auto d=dz(il, xl);
-            if( std::isnan(d)) continue;
-            auto z=0.001*ms + d;
-            auto value=volume.value(il, xl, z);
-            if( value==volume.NULL_VALUE) continue;
-            auto col = colorTable->map(value);
-            img.setPixel( i, j, col );
-       }
-    }
-    return img;
-}
-
-
 
 
 QPainterPath VolumeView::intersectHorizonInline(const Grid2D<float>& grid, int iline){
@@ -569,31 +581,23 @@ void VolumeView::renderVolumes(QGraphicsScene * scene){
 
 void VolumeView::renderHorizons(QGraphicsScene* scene){
 
+    if(m_slice.type==SliceType::Z) return;
+
     for( int i=mHorizonItemModel->size()-1; i>=0; i--){
 
         auto hi=dynamic_cast<HorizonItem*>(mHorizonItemModel->at(i));
         if(!hi) continue;
+        auto g1d=(m_slice.type==SliceType::Inline) ? hi->horizon()->atI(m_slice.value)
+                                                   : hi->horizon()->atJ(m_slice.value);
+        if(!g1d) continue;
 
-        QPainterPath path;
-        switch(m_slice.type){
-        case SliceType::Inline:
-            path=intersectHorizonInline(*hi->horizon(), m_slice.value);
-            break;
-        case SliceType::Crossline:
-            path=intersectHorizonCrossline(*hi->horizon(), m_slice.value);
-            break;
-        default:
-            break;
-        }
-
-        if( !path.isEmpty()){
-            auto item=new QGraphicsPathItem(path);
-            QPen pen(hi->color(), hi->width());
-            pen.setCosmetic(true);
-            item->setPen(pen);
-            item->setOpacity(0.01*hi->opacity());   // percent -> fraction
-            scene->addItem(item);
-        }
+        QPen pen(hi->color(), hi->width());
+        pen.setCosmetic(true);
+        auto path=grid1d2hpath(*g1d);
+        auto item=new QGraphicsPathItem(path);
+        item->setPen(pen);
+        item->setOpacity(0.01*hi->opacity());   // percent -> fraction
+        scene->addItem(item);
     }
 }
 
@@ -771,159 +775,10 @@ QImage VolumeView::sharpen(QImage src){
     return imageprocessing::convolve(src,kernel);
 }
 
-namespace{
-double lininterp(double x1, double y1, double x2, double y2, double x){
-
-    // need to add eps check
-    if( x1 == x2 ) return (y1+y2)/2;
-
-    return y1 + (x-x1)* ( y2 - y1 ) / ( x2 - x1 );
-}
-}
-
-QPainterPath VolumeView::valuesToWiggles(QVector<float> values, float NULL_VALUE){
-    // wiggles
-    QPainterPath path;
-    bool first=true;
-    for( auto j=0; j<values.size(); j++){
-        auto value=values[j];
-        if( value==NULL_VALUE) continue;
-        if(first){
-            path.moveTo(value,j);
-            first=false;
-        }
-        else{
-            path.lineTo(value,j);
-        }
-    }
-    return path;
-}
-
-QPainterPath VolumeView::valuesToVariableArea(QVector<float> values, float NULL_VALUE){
-    QPainterPath path;
-    bool active=false;
-    double xprev=0;
-    double zprev=0;
-    for( auto j=0; j<values.size(); j++){
-        auto z=j;
-        auto x=values[j];
-        if( x==NULL_VALUE) continue;
-        if(x>=0){               // inside va
-            if(!active){        // no area yet, start new
-                auto zxl=(j>0) ? lininterp(xprev, zprev,x,z,0) : z;
-                path.moveTo(0,zxl);
-                //path.moveTo(x,z);
-                active=true;
-            }
-            path.lineTo(x,z);   // line to current point
-        }
-        else if(active){        // close area
-            auto zxl=lininterp(xprev, zprev, x, z, 0);
-            std::cout<<"xprev="<<xprev<<" zprev="<<zprev<<" x="<<x<<" z="<<z<<" zxl="<<zxl<<std::endl<<std::flush;
-            path.lineTo(0,zxl);
-            //path.lineTo(x,z);
-            active=false;
-            path.closeSubpath();
-        }
-        xprev=x;
-        zprev=z;
-    }
-    return path;
-}
-
-namespace{
-
-// x==j, y==i
-QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
-    auto b2d=g2d.bounds();
-    QImage img(b2d.nj(), b2d.ni(), QImage::Format_ARGB32);
-    img.fill(QColor(0,0,0,0));  // transparent
-    for(int i=0; i<img.height(); i++){
-        for(int j=0; j<img.width(); j++){
-            auto value=g2d(i+b2d.i1(), j+b2d.j1());
-            if(value==g2d.NULL_VALUE) continue;
-            auto color=ct.map(value);
-            img.setPixel(j,i,color);
-        }
-    }
-    return img;
-}
-
-// x==i, y==j
-QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct){
-    auto b2d=g2d.bounds();
-    QImage img(b2d.ni(), b2d.nj(), QImage::Format_ARGB32);
-    img.fill(QColor(0,0,0,0));  // transparent
-    for(int i=0; i<img.width(); i++){
-        for(int j=0; j<img.height(); j++){
-            auto value=g2d(i+b2d.i1(), j+b2d.j1());
-            if(value==g2d.NULL_VALUE) continue;
-            auto color=ct.map(value);
-            img.setPixel(i,j,color);
-        }
-    }
-    return img;
-}
-
-// y=bounds.i1...bounds.i2, x:g1d.valuerange
-QPainterPath grid1d2wiggles(const Grid1D<float>& g1d){
-    // wiggles
-    QPainterPath path;
-    auto b1d=g1d.bounds();
-    bool first=true;
-    for( auto i=b1d.i1(); i<=b1d.i2(); i++){
-        auto value=g1d(i);
-        if( value==g1d.NULL_VALUE) continue;
-        if(first){
-            path.moveTo(value,i);
-            first=false;
-        }
-        else{
-            path.lineTo(value,i);
-        }
-    }
-    return path;
-}
-
-QPainterPath grid1d2va(const Grid1D<float>& g1d){
-    auto b1d=g1d.bounds();
-    QPainterPath path;
-    bool active=false;
-    double xprev=0;
-    double zprev=0;
-    for( auto i=b1d.i1(); i<=b1d.i2(); i++){
-        auto z=i;
-        auto x=g1d(i);
-        if( x==g1d.NULL_VALUE) continue;
-        if(x>=0){               // inside va
-            if(!active){        // no area yet, start new
-                auto zxl=(i>b1d.i1()) ? lininterp(xprev, zprev,x,z,0) : z;
-                path.moveTo(0,zxl);
-                //path.moveTo(x,z);
-                active=true;
-            }
-            path.lineTo(x,z);   // line to current point
-        }
-        else if(active){        // close area
-            auto zxl=lininterp(xprev, zprev, x, z, 0);
-            path.lineTo(0,zxl);
-            //path.lineTo(x,z);
-            active=false;
-            path.closeSubpath();
-        }
-        xprev=x;
-        zprev=z;
-    }
-    return path;
-}
-
-}
-
 void VolumeView::renderVolumesInline(QGraphicsScene * scene){
 
     if( !scene ) return;
     int il=m_slice.value;
-    auto bounds=m_bounds;
 
     for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
         auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
@@ -931,14 +786,14 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
 
         auto v=vitem->volume();
         auto vbounds=v->bounds();
-        auto dt=v->bounds().dt();
-        auto nt=v->bounds().nt();
-        auto ft=vbounds.ft()-0.001*m_flattenRange.second;
-        auto lt=vbounds.lt()-0.001*m_flattenRange.first;
+        auto ct = vitem->colorTable();
 
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            auto ct = vitem->colorTable();
-            QImage vimg=intersectVolumeInline(*v, ct, il, ft, lt);
+            auto g2d=v->atI(il);
+            if(!g2d){
+                continue;
+            }
+            auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
             vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
@@ -946,24 +801,33 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
             item->setTransformationMode(Qt::SmoothTransformation);
             item->setPixmap( pixmap );
             item->setOpacity(0.01*vitem->opacity());    // percent > fraction
-            scene->addItem(item);
 
             QTransform tf;
-            tf.translate(xAxis()->min(), zAxis()->min());
-            tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
+            tf.translate(vbounds.j1(),vbounds.ft());
+            tf.scale(1,1000.*vbounds.dt());         // sec -> msec
             item->setTransform(tf);
+            scene->addItem(item);
         }
-        else{                                           // render as seismic traces
-            auto ct = vitem->colorTable();  // use this to determine max abs value
-            for( auto i = 0; i<bounds.nj(); i++){
-                auto xl=bounds.j1()+i;
-                auto values=intersectVolumeCDP(*vitem->volume(), ct, il, xl, ft, dt, nt);
+        else{
+            // render as seismic traces
+            // compute trace  scaling factor
+            auto rg=ct->range();
+            auto m1=std::abs(rg.first);
+            auto m2=std::abs(rg.second);
+            auto maxabs=(m1>m2) ? m1 : m2;
+            auto facx=1./maxabs;
+
+            for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
+                auto g1d=vitem->volume()->atIJ(il,j);
+                if(!g1d) continue;
+
                 QTransform tf;
-                tf.scale(1,1000*dt);
-                tf.translate(xl,ft);
+                tf.translate(j,vbounds.ft());
+                tf.scale(facx,1000*vbounds.dt());
+
 
                 // wiggles
-                QPainterPath path=valuesToWiggles(values, vitem->volume()->NULL_VALUE);
+                auto path=grid1d2wiggles(*g1d);
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
@@ -972,7 +836,7 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
                 scene->addItem(item);
 
                 // variable area
-                path=valuesToVariableArea(values, vitem->volume()->NULL_VALUE);
+                path=grid1d2va(*g1d);
                 item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(Qt::NoPen);
@@ -990,7 +854,6 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
 
     if( !scene ) return;
     int xl=m_slice.value;
-    auto bounds=m_bounds;
 
     for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
         auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
@@ -998,40 +861,48 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
 
         auto v=vitem->volume();
         auto vbounds=v->bounds();
-        auto dt=v->bounds().dt();
-        auto nt=v->bounds().nt();
-        auto ft=vbounds.ft()-0.001*m_flattenRange.second;
-        auto lt=vbounds.lt()-0.001*m_flattenRange.first;
+        auto ct = vitem->colorTable();
 
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            auto ct = vitem->colorTable();
-            QImage vimg=intersectVolumeCrossline(*v, ct, xl, ft, lt);
+            auto g2d=v->atJ(xl);
+            if(!g2d){
+                continue;
+            }
+            auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
             vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
             auto item=new QGraphicsPixmapItem();
             item->setTransformationMode(Qt::SmoothTransformation);
             item->setPixmap( pixmap );
-            item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
-            scene->addItem(item);
+            item->setOpacity(0.01*vitem->opacity());    // percent > fraction
 
             QTransform tf;
-            tf.translate(xAxis()->min(), zAxis()->min());
-            tf.scale((xAxis()->max()-xAxis()->min())/vimg.width(), (zAxis()->max()-zAxis()->min())/vimg.height());
+            tf.translate(vbounds.i1(),vbounds.ft());
+            tf.scale(1,1000.*vbounds.dt());         // sec -> msec
             item->setTransform(tf);
+            scene->addItem(item);
         }
         else{
             // render as seismic traces
-            auto ct = vitem->colorTable();  // use this to determine max abs value
-            for( auto i = 0; i<bounds.nj(); i++){
-                auto il=bounds.i1()+i;
-                auto values=intersectVolumeCDP(*vitem->volume(), ct, il, xl, ft, dt, nt);
+            // compute trace  scaling factor
+            auto rg=ct->range();
+            auto m1=std::abs(rg.first);
+            auto m2=std::abs(rg.second);
+            auto maxabs=(m1>m2) ? m1 : m2;
+            auto facx=1./maxabs;
+
+            for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
+                auto g1d=vitem->volume()->atIJ(i,xl);
+                if(!g1d) continue;
+
                 QTransform tf;
-                tf.scale(1,1000*dt);
-                tf.translate(il,ft);
+                tf.translate(i,vbounds.ft());
+                tf.scale(facx,1000*vbounds.dt());
+
 
                 // wiggles
-                QPainterPath path=valuesToWiggles(values, vitem->volume()->NULL_VALUE);
+                auto path=grid1d2wiggles(*g1d);
                 auto item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(QPen(Qt::black, 0));
@@ -1040,7 +911,7 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
                 scene->addItem(item);
 
                 // variable area
-                path=valuesToVariableArea(values, vitem->volume()->NULL_VALUE);
+                path=grid1d2va(*g1d);
                 item=new QGraphicsPathItem();
                 item->setPath(path);
                 item->setPen(Qt::NoPen);

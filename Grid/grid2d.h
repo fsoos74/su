@@ -7,7 +7,8 @@
 #include<cassert>
 #include<array2d.h>
 #include<rectangle.h>
-
+#include<grid1d.h>
+#include<memory>
 
 class Grid2DBounds{
 public:
@@ -145,18 +146,32 @@ public:
         return m_values.cend();
     }
 
-    /*
-    std::pair< value_type, value_type> Grid2D<float>ange()const{
-        return std::pair<value_type, value_type>(value_type(), value_type());
-    }
-    */
-
     value_type* data(){
         return &m_values[0];
     }
 
     size_t size()const{
         return m_values.size();
+    }
+
+    std::unique_ptr<Grid1D<T>> atI(int i)const{
+        if(!m_bounds.isInside(i,m_bounds.j1())) return std::unique_ptr<Grid1D<T>>();
+        Grid1DBounds b1d(m_bounds.j1(),m_bounds.j2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+            (*g1d)(j)=(*this)(i,j);
+        }
+        return g1d;
+    }
+
+    std::unique_ptr<Grid1D<T>> atJ(int j)const{
+        if(!m_bounds.isInside(m_bounds.i1(),j)) return std::unique_ptr<Grid1D<T>>();
+        Grid1DBounds b1d(m_bounds.i1(),m_bounds.i2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            (*g1d)(i)=(*this)(i,j);
+        }
+        return g1d;
     }
 
 private:
