@@ -22,7 +22,7 @@ public:
 
     class IOP{
     public:
-        virtual void start()=0;
+        virtual void start(const double& startValue=0)=0;
         virtual double operator()(const double&)=0;
         double nullValue()const{
             return m_nullValue;
@@ -48,7 +48,7 @@ private:
     QString m_unit;
     QString m_descr;
     QString m_inputName;
-
+    double m_startValue;
     std::shared_ptr<IOP> m_op;
 };
 

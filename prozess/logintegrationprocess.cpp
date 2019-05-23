@@ -36,8 +36,8 @@ QStringList LogIntegrationProcess::opNames(){
 
 class RunningSum : public LogIntegrationProcess::IOP{
 public:
-    void start()override{
-        m_sum=0;
+    void start(const double& startValue)override{
+        m_sum=startValue;
     }
     double operator()(const double& x)override{
         if(x==nullValue()) return x;
@@ -50,7 +50,7 @@ private:
 
 class RunningAverage: public LogIntegrationProcess::IOP{
 public:
-    void start()override{
+    void start(const double&)override{      // start value is ignored
         m_sum=0;
         m_count=0;
     }
@@ -67,8 +67,8 @@ private:
 
 class SubtractPrevious : public LogIntegrationProcess::IOP{
 public:
-    void start()override{
-        m_prev=nullValue();
+    void start(const double& startValue)override{
+        m_prev=startValue; //nullValue();
     }
     double operator()(const double& x)override{
         if( x==nullValue()){
@@ -101,8 +101,8 @@ ProjectProcess::ResultCode LogIntegrationProcess::init( const QMap<QString, QStr
 
     try{
         func=getParam(parameters, "function");
-
-        m_outputName=getParam(parameters, "output-name");
+        m_startValue=getParam(parameters,"start-value").toDouble();
+        m_outputName=getParam(parameters,"output-name");
         m_unit=getParam( parameters, "unit");
         m_descr=getParam(parameters, "description");
 
@@ -160,7 +160,7 @@ ProjectProcess::ResultCode LogIntegrationProcess::processWell(QString well){
     }
 
     m_op->setNullValue(inputLog->NULL_VALUE);
-    m_op->start();
+    m_op->start(m_startValue);
 
     for( int i=0; i<outputLog->nz(); i++){
 

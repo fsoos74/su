@@ -145,7 +145,35 @@ QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
     return path;
 }
 
+struct Statistics{
+    unsigned n;
+    double min;
+    double max;
+    double mean;
+    double rms;
+};
+
+Statistics computeStatistics(Volume& v){
+    double sum=0;
+    double sum2=0;
+    double min=std::numeric_limits<double>::max();
+    double max=std::numeric_limits<double>::lowest();
+    unsigned n=0;
+    for( auto const& x : v){
+        if(x==v.NULL_VALUE) continue;
+        if(x<min) min=x;
+        if(x>max) max=x;
+        sum+=x;
+        sum2+=x*x;
+        n++;
+    }
+    auto mean=sum/n;
+    auto rms=std::sqrt(sum2/n);
+    return Statistics{n, min, max, mean, rms};
 }
+
+}
+
 
 VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.),
     m_picker(new VolumePicker(this)),
@@ -811,11 +839,21 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
         else{
             // render as seismic traces
             // compute trace  scaling factor
+            /*
             auto rg=ct->range();
             auto m1=std::abs(rg.first);
             auto m2=std::abs(rg.second);
             auto maxabs=(m1>m2) ? m1 : m2;
             auto facx=1./maxabs;
+            */
+            auto stats=computeStatistics(*v);
+            auto maxabs=(std::fabs(stats.max)>std::fabs(stats.min))?std::fabs(stats.max):std::fabs(stats.min);
+            auto tx=-stats.rms;
+            auto sx=1./(maxabs-stats.rms);//std::fabs(mean));
+            sx*=vitem->gain();
+            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
+                sx*=-1;
+            }
 
             for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
                 auto g1d=vitem->volume()->atIJ(il,j);
@@ -823,8 +861,8 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
 
                 QTransform tf;
                 tf.translate(j,vbounds.ft());
-                tf.scale(facx,1000*vbounds.dt());
-
+                tf.scale(sx,1000*vbounds.dt());
+                tf.translate(tx,0);
 
                 // wiggles
                 auto path=grid1d2wiggles(*g1d);

@@ -8,7 +8,9 @@ namespace sliceviewer {
 VolumeItem::VolumeItem(QObject* parent) : ViewItem(parent),
     mColorTable(new ColorTable(this,ColorTable::defaultColors(),std::make_pair(0.,1.))),
     mOpacity(100),
-    mStyle(Style::ATTRIBUTE)
+    mStyle(Style::ATTRIBUTE),
+    mPolarity(Polarity::NORMAL),
+    mGain(1)
 {
     connect(mColorTable, SIGNAL(colorsChanged()), this, SIGNAL(changed()));
     connect(mColorTable, SIGNAL(rangeChanged(std::pair<double,double> )), this, SIGNAL(changed()));
@@ -41,7 +43,7 @@ void VolumeItem::setPolarity(VolumeItem::Polarity polarity){
 
 void VolumeItem::setGain(qreal gain){
     if(gain==mGain) return;
-    mGain==gain;
+    mGain=gain;
     emit changed();
 }
 

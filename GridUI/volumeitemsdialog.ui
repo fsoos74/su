@@ -161,7 +161,7 @@
         <item>
          <widget class="QComboBox" name="cbPolarity">
           <property name="enabled">
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -173,12 +173,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QDoubleSpinBox" name="sbGain">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
+         <widget class="QLineEdit" name="leGain">
+          <property name="text">
+           <string>1</string>
           </property>
          </widget>
         </item>

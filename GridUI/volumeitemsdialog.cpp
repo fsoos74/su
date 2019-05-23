@@ -2,6 +2,7 @@
 #include "ui_volumeitemsdialog.h"
 #include <avoproject.h>
 #include<QIntValidator>
+#include<QDoubleValidator>
 #include<QMessageBox>
 #include<colortabledialog.h>
 #include<histogramcreator.h>
@@ -18,12 +19,12 @@ VolumeItemsDialog::VolumeItemsDialog(AVOProject* project, ViewItemModel* model, 
 {
     ui->setupUi(this);
 
+    auto validator=new QDoubleValidator(this);
+    ui->leGain->setValidator(validator);
     ui->cbStyle->addItem("Attribute",static_cast<int>(VolumeItem::Style::ATTRIBUTE));
     ui->cbStyle->addItem("Seismic",static_cast<int>(VolumeItem::Style::SEISMIC));
-
     ui->cbPolarity->addItem("Normal",static_cast<int>(VolumeItem::Polarity::NORMAL));
     ui->cbPolarity->addItem("Reversed",static_cast<int>(VolumeItem::Polarity::REVERSED));
-
     ui->lwAvailable->addItems(mProject->volumeList());
     ui->lwDisplayed->addItems(mModel->names());
 }
@@ -41,7 +42,7 @@ void VolumeItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
     ui->sbOpacity->setValue(vitem->opacity());
     ui->cbStyle->setCurrentIndex(ui->cbStyle->findData(static_cast<int>(vitem->style())));
     ui->cbPolarity->setCurrentIndex(ui->cbPolarity->findData(static_cast<int>(vitem->polarity())));
-    ui->sbGain->setValue(vitem->gain());
+    ui->leGain->setText(QString::number(vitem->gain()));
 }
 
 void VolumeItemsDialog::on_pbAdd_clicked()
@@ -196,7 +197,7 @@ void VolumeItemsDialog::on_pbApply_clicked()
     mModel->setMute(true);
     auto style=static_cast<VolumeItem::Style>(ui->cbStyle->currentData().toInt());
     auto polarity=static_cast<VolumeItem::Polarity>(ui->cbPolarity->currentData().toInt());
-    auto gain=ui->sbGain->value();
+    auto gain=ui->leGain->text().toDouble();
     auto opacity=ui->sbOpacity->value();
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
