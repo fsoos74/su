@@ -11,6 +11,7 @@
 #include <table.h>
 #include <histogram.h>
 #include "displayoptions.h"
+#include "statistics.h"
 #include<QList>
 #include<QMap>
 #include<QColor>
@@ -149,6 +150,9 @@ private:
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;
     std::pair<double,double> m_flattenRange;
 
+    // buffer statistics per volume to avoid unnecessary computations
+    QMap<QString, statistics::Statistics >mVolumeStatistics;
+    // keep track of previous slices for go back functionality
     QList<SliceDef> m_sliceList;
 };
 

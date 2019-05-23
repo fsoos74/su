@@ -85,7 +85,8 @@ HEADERS += gridui.h\
     tableitemsdialog.h \
     displayoptionsdialog.h \
     displayoptions.h \
-    imageprocessing.h
+    imageprocessing.h \
+    statistics.h
 
 unix {
     target.path = /usr/lib

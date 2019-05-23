@@ -4,6 +4,7 @@
 #include<QImage>
 #include<iostream>
 #include<cmath>
+#include<iterator>
 #include<volumepicker.h>
 #include<matrix.h>
 #include"volumeitem.h"
@@ -143,33 +144,6 @@ QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
     }
 
     return path;
-}
-
-struct Statistics{
-    unsigned n;
-    double min;
-    double max;
-    double mean;
-    double rms;
-};
-
-Statistics computeStatistics(Volume& v){
-    double sum=0;
-    double sum2=0;
-    double min=std::numeric_limits<double>::max();
-    double max=std::numeric_limits<double>::lowest();
-    unsigned n=0;
-    for( auto const& x : v){
-        if(x==v.NULL_VALUE) continue;
-        if(x<min) min=x;
-        if(x>max) max=x;
-        sum+=x;
-        sum2+=x*x;
-        n++;
-    }
-    auto mean=sum/n;
-    auto rms=std::sqrt(sum2/n);
-    return Statistics{n, min, max, mean, rms};
 }
 
 }
@@ -821,6 +795,16 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
             if(!g2d){
                 continue;
             }
+            // apply gain, polarity
+            double b=0;
+            double m=vitem->gain();
+            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
+                b=ct->range().second;
+                m*=-1;
+            }
+            for( auto &x : *g2d){
+                x=b+m*x;
+            }
             auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
             vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
@@ -837,19 +821,13 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
             scene->addItem(item);
         }
         else{
-            // render as seismic traces
-            // compute trace  scaling factor
-            /*
-            auto rg=ct->range();
-            auto m1=std::abs(rg.first);
-            auto m2=std::abs(rg.second);
-            auto maxabs=(m1>m2) ? m1 : m2;
-            auto facx=1./maxabs;
-            */
-            auto stats=computeStatistics(*v);
-            auto maxabs=(std::fabs(stats.max)>std::fabs(stats.min))?std::fabs(stats.max):std::fabs(stats.min);
+            if(!mVolumeStatistics.contains(vitem->name())){
+                mVolumeStatistics.insert(vitem->name(),
+                    statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
+            }
+            auto stats=mVolumeStatistics.value(vitem->name());
             auto tx=-stats.rms;
-            auto sx=1./(maxabs-stats.rms);//std::fabs(mean));
+            auto sx=1./(stats.maxabs-stats.rms);//std::fabs(mean));
             sx*=vitem->gain();
             if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
                 sx*=-1;
@@ -906,6 +884,16 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
             if(!g2d){
                 continue;
             }
+            // apply gain, polarity
+            double b=0;
+            double m=vitem->gain();
+            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
+                b=ct->range().second;
+                m*=-1;
+            }
+            for( auto &x : *g2d){
+                x=b+m*x;
+            }
             auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
             vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
@@ -923,12 +911,17 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
         }
         else{
             // render as seismic traces
-            // compute trace  scaling factor
-            auto rg=ct->range();
-            auto m1=std::abs(rg.first);
-            auto m2=std::abs(rg.second);
-            auto maxabs=(m1>m2) ? m1 : m2;
-            auto facx=1./maxabs;
+            if(!mVolumeStatistics.contains(vitem->name())){
+                mVolumeStatistics.insert(vitem->name(),
+                    statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
+            }
+            auto stats=mVolumeStatistics.value(vitem->name());
+            auto tx=-stats.rms;
+            auto sx=1./(stats.maxabs-stats.rms);//std::fabs(mean));
+            sx*=vitem->gain();
+            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
+                sx*=-1;
+            }
 
             for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
                 auto g1d=vitem->volume()->atIJ(i,xl);
@@ -936,8 +929,8 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
 
                 QTransform tf;
                 tf.translate(i,vbounds.ft());
-                tf.scale(facx,1000*vbounds.dt());
-
+                tf.scale(sx,1000*vbounds.dt());
+                tf.translate(tx,0);
 
                 // wiggles
                 auto path=grid1d2wiggles(*g1d);
@@ -979,6 +972,17 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
 
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
             auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
+            if(!g2d) continue;
+            // apply gain, polarity
+            double b=0;
+            double m=vitem->gain();
+            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
+                b=ct->range().second;
+                m*=-1;
+            }
+            for( auto &x : *g2d){
+                x=b+m*x;
+            }
             auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
             vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
@@ -999,21 +1003,27 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
         }
         else{
             // render as seismic traces
-            // compute trace  scaling factor
-            auto rg=ct->range();
-            auto m1=std::abs(rg.first);
-            auto m2=std::abs(rg.second);
-            auto maxabs=(m1>m2) ? m1 : m2;
-            auto facx=1./maxabs;
+            if(!mVolumeStatistics.contains(vitem->name())){
+                mVolumeStatistics.insert(vitem->name(),
+                    statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
+            }
+            auto stats=mVolumeStatistics.value(vitem->name());
+            auto tx=-stats.rms;
+            auto sx=1./(stats.maxabs-stats.rms);//std::fabs(mean));
+            sx*=vitem->gain();
+            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
+                sx*=-1;
+            }
+
 
             for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
                 auto g1d=vitem->volume()->atIT(i,0.001*t);
                 if(!g1d) continue;
 
                 QTransform tf;
-
                 tf.translate(i,0);
-                tf.scale(facx,1);
+                tf.scale(sx,1);
+                tf.translate(tx,0);
                 if(mInlineOrientation==Qt::Horizontal){
                     tf*=swappedIlineXlineTransform();
                 }
