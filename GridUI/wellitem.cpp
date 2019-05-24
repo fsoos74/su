@@ -3,7 +3,8 @@
 namespace sliceviewer {
 
 
-WellItem::WellItem(QObject *parent) : ViewItem(parent), mColor(Qt::lightGray), mWidth(2), mOpacity(100)
+WellItem::WellItem(QObject *parent) : ViewItem(parent),
+    mColor(Qt::lightGray), mWidth(2), mOpacity(100), mLabelStyle(LabelStyle::NO_LABEL)
 {
 
 }
@@ -35,6 +36,12 @@ void WellItem::setWidth(int width){
 void WellItem::setOpacity(int opacity){
     if(opacity==mOpacity) return;
     mOpacity=opacity;
+    emit changed();
+}
+
+void WellItem::setLabelStyle(LabelStyle labelStyle){
+    if(labelStyle==mLabelStyle) return;
+    mLabelStyle=labelStyle;
     emit changed();
 }
 

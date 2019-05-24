@@ -616,6 +616,14 @@ void VolumeView::renderWells(QGraphicsScene * scene){
         if(!witem) continue;
         auto wp=witem->wellPath();
         if( !wp) continue;
+        QString label;
+        if(witem->labelStyle()==WellItem::LabelStyle::NAME_LABEL){
+            label=witem->name();
+        }
+        else if(witem->labelStyle()==WellItem::LabelStyle::UWI_LABEL){
+            label=witem->uwi();
+        }
+        QFont labelFont("Helvetica [Cronyx]", 8);
 
         if(m_slice.type==SliceType::Inline || m_slice.type==SliceType::Crossline){
             QPainterPath path;
@@ -631,6 +639,14 @@ void VolumeView::renderWells(QGraphicsScene * scene){
                 auto item=new QGraphicsPathItem(path);
                 item->setPen(wellPen);
                 scene->addItem(item);
+                if(!label.isEmpty()){
+                    auto item=new QGraphicsTextItem(label);
+                    item->setPos(path.currentPosition());
+                    item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+                    item->setFont(labelFont);
+                    item->setDefaultTextColor(witem->color());
+                    scene->addItem(item);
+                }
             }
         }
         else if(m_slice.type==SliceType::Z){
@@ -643,6 +659,14 @@ void VolumeView::renderWells(QGraphicsScene * scene){
             item->setPos(p);
             item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
             scene->addItem(item);
+            if(!label.isEmpty()){
+                auto item=new QGraphicsTextItem(label);
+                item->setPos(p);
+                item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+                item->setFont(labelFont);
+                item->setDefaultTextColor(witem->color());
+                scene->addItem(item);
+            }
         }
     }
 }

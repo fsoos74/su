@@ -22,8 +22,11 @@ WellItemsDialog::WellItemsDialog(AVOProject* project, ViewItemModel* model, QWid
         auto name=tr("%1|%2").arg(uwi,winfo.name());
         ui->lwAvailable->addItem(name);
     }
-    // ui->lwAvailable->addItems(mProject->wellList());
     ui->lwDisplayed->addItems(mModel->names());
+
+    ui->cbLabelStyle->addItem("No label", static_cast<int>(WellItem::LabelStyle::NO_LABEL));
+    ui->cbLabelStyle->addItem("Name", static_cast<int>(WellItem::LabelStyle::NAME_LABEL));
+    ui->cbLabelStyle->addItem("UWI", static_cast<int>(WellItem::LabelStyle::UWI_LABEL));
 }
 
 WellItemsDialog::~WellItemsDialog()
@@ -39,6 +42,7 @@ void WellItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
     ui->sbOpacity->setValue(witem->opacity());
     ui->cbColor->setColor(witem->color());
     ui->sbWidth->setValue(witem->width());
+    ui->cbLabelStyle->setCurrentIndex(ui->cbLabelStyle->findData(static_cast<int>(witem->labelStyle())));
 }
 
 void WellItemsDialog::on_pbAdd_clicked()
@@ -64,6 +68,7 @@ void WellItemsDialog::on_pbAdd_clicked()
         witem->setName(name);
         witem->setUwi(uwi);
         witem->setWellPath(wellPath);
+        witem->setLabelStyle(static_cast<WellItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt()));
         mModel->add(witem);
         name=witem->name(); // name could have been updated to make it unique
         ui->lwDisplayed->addItem(name);
@@ -154,6 +159,7 @@ void WellItemsDialog::on_pbApply_clicked()
     auto color=ui->cbColor->color();
     auto width=ui->sbWidth->value();
     auto opacity=ui->sbOpacity->value();
+    auto labelStyle=static_cast<WellItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt());
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
@@ -162,6 +168,7 @@ void WellItemsDialog::on_pbApply_clicked()
         hitem->setColor(color);
         hitem->setWidth(width);
         hitem->setOpacity(opacity);
+        hitem->setLabelStyle(labelStyle);
     }
     mModel->setMute(false);
 }

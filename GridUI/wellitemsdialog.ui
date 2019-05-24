@@ -190,6 +190,16 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Label style:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cbLabelStyle"/>
+      </item>
+      <item>
        <widget class="QPushButton" name="pbApply">
         <property name="text">
          <string>Apply</string>

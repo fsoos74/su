@@ -13,6 +13,12 @@ class WellItem : public ViewItem
 {
     Q_OBJECT
 public:
+    enum class LabelStyle{
+        NO_LABEL,
+        NAME_LABEL,
+        UWI_LABEL
+    };
+
     explicit WellItem(QObject *parent = nullptr);
     QString uwi()const{
         return mUwi;
@@ -29,6 +35,9 @@ public:
     int opacity()const{
         return mOpacity;
     }
+    LabelStyle labelStyle()const{
+        return mLabelStyle;
+    }
 
 public slots:
     void setUwi(QString);
@@ -36,6 +45,7 @@ public slots:
     void setColor(QColor);
     void setWidth(int);
     void setOpacity(int);
+    void setLabelStyle(LabelStyle);
 
 private:
     QString mUwi;
@@ -43,6 +53,7 @@ private:
     QColor mColor;
     int mWidth;
     int mOpacity;
+    LabelStyle mLabelStyle;
 };
 
 }
