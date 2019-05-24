@@ -5,6 +5,7 @@
 #include<QMessageBox>
 #include<QColorDialog>
 #include<QListWidget>
+#include<QDebug>
 
 namespace sliceviewer {
 
@@ -16,7 +17,12 @@ WellItemsDialog::WellItemsDialog(AVOProject* project, ViewItemModel* model, QWid
     mModel(model)
 {
     ui->setupUi(this);
-    ui->lwAvailable->addItems(mProject->wellList());
+    for(auto uwi : mProject->wellList()){
+        auto winfo=mProject->getWellInfo(uwi);
+        auto name=tr("%1|%2").arg(uwi,winfo.name());
+        ui->lwAvailable->addItem(name);
+    }
+    // ui->lwAvailable->addItems(mProject->wellList());
     ui->lwDisplayed->addItems(mModel->names());
 }
 
@@ -42,14 +48,21 @@ void WellItemsDialog::on_pbAdd_clicked()
         auto lwitem=ui->lwAvailable->item(midx.row());
         if(!lwitem) continue;
         auto name=lwitem->text();
-        auto wellPath=mProject->loadWellPath(name);
+        auto uwiAndName=name.split("|", QString::SkipEmptyParts);
+        if(uwiAndName.size()<1){
+            qDebug()<<"No uwi in "<<name<<"\n";
+            continue;
+        }
+        auto uwi=uwiAndName[0];
+        auto wellPath=mProject->loadWellPath(uwi);
         if( !wellPath){
-            QMessageBox::critical(this, "Add Well", "Loading Well failed!");
+            QMessageBox::critical(this, "Add Well", tr("Loading Well %1 failed!").arg(name));
             return;
         }
 
         WellItem* witem=new WellItem(this);
         witem->setName(name);
+        witem->setUwi(uwi);
         witem->setWellPath(wellPath);
         mModel->add(witem);
         name=witem->name(); // name could have been updated to make it unique

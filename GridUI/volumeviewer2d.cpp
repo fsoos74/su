@@ -76,7 +76,7 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 
     updateSliceConnections();
 
-    ui->volumeView->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+    ui->volumeView->setRenderHints( QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, 0});
 }

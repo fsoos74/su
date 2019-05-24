@@ -30,6 +30,7 @@ DisplayOptions DisplayOptionsDialog::displayOptions(){
     opts.setSharpen(ui->cbSharpen->isChecked());
     opts.setSharpenFilterSize(ui->sbFilterSize->value());
     opts.setSharpenFilterStrength(ui->sbFilterStrength->value());
+    opts.setAntiAliasing(ui->cbAntiAliasing->isChecked());
     return opts;
 }
 
@@ -45,6 +46,7 @@ void DisplayOptionsDialog::setDisplayOptions(const DisplayOptions & opts){
     ui->cbSharpen->setChecked(opts.isSharpen());
     ui->sbFilterSize->setValue(opts.sharpenFilterSize());
     ui->sbFilterStrength->setValue(opts.sharpenFilterStrength());
+    ui->cbAntiAliasing->setChecked(opts.isAntiliasing());
 }
 
 void DisplayOptionsDialog::on_cbLastViewedColor_clicked()

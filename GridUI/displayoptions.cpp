@@ -52,5 +52,8 @@ void DisplayOptions::setSharpenFilterStrength(int p){
     mSharpenFilterStrength=p;
 }
 
+void DisplayOptions::setAntiAliasing(bool on){
+    mAntiAliasing=on;
+}
 
 }

@@ -177,6 +177,7 @@ void VolumeView::setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy){
 
 void VolumeView::setDisplayOptions(const DisplayOptions & opts){
     mDisplayOptions=opts;
+    setRenderHint(QPainter::RenderHint::Antialiasing, mDisplayOptions.isAntiliasing());
     refreshScene();
 }
 

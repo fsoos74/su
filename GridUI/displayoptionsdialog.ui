@@ -129,6 +129,13 @@
            </property>
           </spacer>
          </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="cbAntiAliasing">
+           <property name="text">
+            <string>Anti Aliasing</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>

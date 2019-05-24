@@ -2000,9 +2000,24 @@ void ProjectViewer::on_actionCrossplot_Logs_triggered()
     bool ok=false;
     //QString well = QInputDialog::getItem( this, tr("Crossplot Logs"), tr("Select Well:"), m_project->wellList(), 0, false, &ok );
     //if( well.isEmpty() || !ok ) return;
-    QStringList wells=MultiItemSelectionDialog::getItems(this, "Crossplot Logs", "Select Well(s)", m_project->wellList(), &ok);
-    if( wells.isEmpty() || !ok ) return;
+    // build list of uwi with well name for easier selection
+    QStringList avail;
+    for(auto uwi : m_project->wellList()){
+        auto winfo=m_project->getWellInfo(uwi);
+        auto name=tr("%1|%2").arg(uwi,winfo.name());
+        avail.append(name);
+    }
+    QStringList selected=MultiItemSelectionDialog::getItems(this, "Crossplot Logs", "Select Well(s)", avail, &ok);
+    if( selected.isEmpty() || !ok ) return;
 
+    // extract uwi from selected names
+    QStringList wells;
+    for(auto name : selected){
+        auto uwiAndName=name.split("|", QString::SkipEmptyParts);
+        if(uwiAndName.size()<1) continue;   // skip invalid empty names
+        auto uwi=uwiAndName[0];
+        wells.append(uwi);
+    }
     crossplotLogs(wells);
     /*
     // find logs that all selected wells have in common

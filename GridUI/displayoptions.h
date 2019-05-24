@@ -55,6 +55,10 @@ public:
         return mSharpenFilterStrength;
     }
 
+    bool isAntiliasing()const{
+        return mAntiAliasing;
+    }
+
     void setDisplayVolumes(bool);
     void setDisplayHorizons(bool);
     void setDisplayWells(bool);
@@ -66,6 +70,7 @@ public:
     void setSharpen(bool);
     void setSharpenFilterSize(int);
     void setSharpenFilterStrength(int);
+    void setAntiAliasing(bool);
 
 private:
     bool mDisplayVolumes=true;
@@ -79,6 +84,7 @@ private:
     bool mSharpen=false;
     int mSharpenFilterSize=3;
     int mSharpenFilterStrength=50;
+    bool mAntiAliasing=true;
 };
 
 }
