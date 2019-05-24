@@ -8,6 +8,12 @@ WellItem::WellItem(QObject *parent) : ViewItem(parent), mColor(Qt::lightGray), m
 
 }
 
+void WellItem::setUwi(QString uwi){
+    if(uwi==mUwi)return;
+    mUwi=uwi;
+    emit changed();
+}
+
 void WellItem::setWellPath(std::shared_ptr<WellPath> wellPath){
     if(wellPath==mWellPath) return;
     mWellPath=wellPath;

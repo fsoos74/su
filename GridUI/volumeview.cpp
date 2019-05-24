@@ -827,12 +827,12 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
             }
             auto stats=mVolumeStatistics.value(vitem->name());
             auto tx=-stats.rms;
-            auto sx=1./(stats.maxabs-stats.rms);//std::fabs(mean));
+            auto sx=1./(3*stats.sigma);  // 3 standard deviations
             sx*=vitem->gain();
             if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
                 sx*=-1;
             }
-
+std::cout<<"rms="<<stats.rms<<" maxabs="<<stats.maxabs<<" sx="<<sx<<" tx="<<tx<<std::endl<<std::flush;
             for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
                 auto g1d=vitem->volume()->atIJ(il,j);
                 if(!g1d) continue;

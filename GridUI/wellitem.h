@@ -14,6 +14,9 @@ class WellItem : public ViewItem
     Q_OBJECT
 public:
     explicit WellItem(QObject *parent = nullptr);
+    QString uwi()const{
+        return mUwi;
+    }
     std::shared_ptr<WellPath> wellPath()const{
         return mWellPath;
     }
@@ -28,12 +31,14 @@ public:
     }
 
 public slots:
+    void setUwi(QString);
     void setWellPath(std::shared_ptr<WellPath>);
     void setColor(QColor);
     void setWidth(int);
     void setOpacity(int);
 
 private:
+    QString mUwi;
     std::shared_ptr<WellPath> mWellPath;
     QColor mColor;
     int mWidth;
