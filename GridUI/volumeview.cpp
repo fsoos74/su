@@ -164,13 +164,14 @@ QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
 }
 
 
-VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent), m_flattenRange(0.,0.),
+VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent),
     m_picker(new VolumePicker(this)),
     mHorizonItemModel(new ViewItemModel(this)),
     mVolumeItemModel(new ViewItemModel(this)),
     mWellItemModel(new ViewItemModel(this)),
     mMarkerItemModel(new ViewItemModel(this)),
-    mTableItemModel(new ViewItemModel(this))
+    mTableItemModel(new ViewItemModel(this)),
+    m_flattenRange(0.,0.)
 {
     connect(mVolumeItemModel,SIGNAL(changed()), this, SLOT(onVolumeItemModelChanged()));
     connect(mVolumeItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
@@ -568,23 +569,6 @@ void VolumeView::refreshScene(){
  }
 
 
-void VolumeView::renderVolumes(QGraphicsScene * scene){
-
-    switch(m_slice.type){
-
-    case SliceType::Inline:
-        renderVolumesInline(scene);
-        break;
-    case SliceType::Crossline:
-        renderVolumesCrossline(scene);
-        break;
-    case SliceType::Z:
-        renderVolumesTime(scene);
-        break;
-    }
-}
-
-
 void VolumeView::renderHorizonIline(QGraphicsScene* scene, const HorizonItem& hi, int iline){
 
     auto g1d=hi.horizon()->atI(iline);
@@ -875,296 +859,293 @@ QImage VolumeView::sharpen(QImage src){
     return imageprocessing::convolve(src,kernel);
 }
 
-void VolumeView::renderVolumesInline(QGraphicsScene * scene){
+void VolumeView::renderVolumes(QGraphicsScene * scene){
 
     if( !scene ) return;
-    int il=m_slice.value;
 
     for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
         auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
         if(!vitem) continue;
 
-        auto v=vitem->volume();
-        auto vbounds=v->bounds();
-        auto ct = vitem->colorTable();
+        switch(m_slice.type){
+        case SliceType::Inline: renderVolumeIline(scene, *vitem, m_slice.value); break;
+        case SliceType::Crossline: renderVolumeXline(scene, *vitem, m_slice.value); break;
+        case SliceType::Z: renderVolumeTime(scene,*vitem, m_slice.value); break;
+        }
+    }
+ }
 
-        if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            // find range for this line because this matches image, not overall flatten range
-            auto mindz=std::numeric_limits<float>::max();
-            auto maxdz=std::numeric_limits<float>::lowest();
-            for( int xl=vbounds.j1(); xl<=vbounds.j2(); xl++){
-                auto d=dz(il,xl);
-                if(d<mindz) mindz=d;
-                if(d>maxdz) maxdz=d;
-            }
-            auto nt=static_cast<int>(std::round(vbounds.nt()+(maxdz-mindz)/vbounds.dt()+1));
-            QImage vimg(vbounds.nj(),nt,QImage::Format_ARGB32);
-            vimg.fill(qRgba(0,0,0,0));
-            QPainter painter(&vimg);
-            for(int j=0; j<vimg.width(); j++){
-                auto xl=vbounds.j1()+j;
-                auto g1d=vitem->volume()->atIJ(il,xl);
-                if(!g1d) continue;
-                auto imgj=grid2image_column(*g1d,*ct);
-                auto d=dz(il,xl);
-                auto y=(maxdz-d)/vbounds.dt();
-                painter.drawImage(j,y,imgj);
-            }
-            QPixmap pixmap=QPixmap::fromImage(vimg);
+void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vitem, int il){
 
-            auto item=new QGraphicsPixmapItem();
-            item->setTransformationMode(Qt::SmoothTransformation);
-            item->setPixmap( pixmap );
-            item->setOpacity(0.01*vitem->opacity());    // percent > fraction
+    auto v=vitem.volume();
+    Q_ASSERT(v);
+    auto vbounds=v->bounds();
+    auto ct = vitem.colorTable();
+    Q_ASSERT(ct);
+
+    if(vitem.style()==VolumeItem::Style::ATTRIBUTE){   // render as image
+        // find range for this line because this matches image, not overall flatten range
+        auto mindz=std::numeric_limits<float>::max();
+        auto maxdz=std::numeric_limits<float>::lowest();
+        for( int xl=vbounds.j1(); xl<=vbounds.j2(); xl++){
+            auto d=dz(il,xl);
+            if(d<mindz) mindz=d;
+            if(d>maxdz) maxdz=d;
+        }
+        auto nt=static_cast<int>(std::round(vbounds.nt()+(maxdz-mindz)/vbounds.dt()+1));
+        QImage vimg(vbounds.nj(),nt,QImage::Format_ARGB32);
+        vimg.fill(qRgba(0,0,0,0));
+        QPainter painter(&vimg);
+        for(int j=0; j<vimg.width(); j++){
+            auto xl=vbounds.j1()+j;
+            auto g1d=v->atIJ(il,xl);
+            if(!g1d) continue;
+            auto imgj=grid2image_column(*g1d,*ct);
+            auto d=dz(il,xl);
+            auto y=(maxdz-d)/vbounds.dt();
+            painter.drawImage(j,y,imgj);
+        }
+        QPixmap pixmap=QPixmap::fromImage(vimg);
+
+        auto item=new QGraphicsPixmapItem();
+        item->setTransformationMode(Qt::SmoothTransformation);
+        item->setPixmap( pixmap );
+        item->setOpacity(0.01*vitem.opacity());    // percent > fraction
+
+        QTransform tf;
+        tf.translate(vbounds.j1(),1000*(vbounds.ft()-maxdz));//vbounds.ft());
+        tf.scale(1,1000.*vbounds.dt());         // sec -> msec
+        item->setTransform(tf);
+        scene->addItem(item);
+    }
+    else{
+        if(!mVolumeStatistics.contains(vitem.name())){
+            mVolumeStatistics.insert(vitem.name(),
+                statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
+        }
+        auto stats=mVolumeStatistics.value(vitem.name());
+        auto tx=-stats.rms;
+        auto sx=1./(3*stats.sigma);  // 3 standard deviations
+        sx*=vitem.gain();
+        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
+            sx*=-1;
+        }
+
+        for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
+            auto g1d=v->atIJ(il,j);
+            if(!g1d) continue;
 
             QTransform tf;
-            tf.translate(vbounds.j1(),1000*(vbounds.ft()-maxdz));//vbounds.ft());
-            tf.scale(1,1000.*vbounds.dt());         // sec -> msec
+            tf.translate(j,1000*(vbounds.ft()-dz(il,j)));
+            tf.scale(sx,1000*vbounds.dt());
+            tf.translate(tx,0);
+
+            // wiggles
+            auto path=grid1d2wiggles(*g1d);
+            auto item=new QGraphicsPathItem();
+            item->setPath(path);
+            item->setPen(QPen(Qt::black, 0));
+            item->setOpacity(0.01*vitem.opacity());  // percent -> fraction
+            item->setTransform(tf);
+            scene->addItem(item);
+
+            // variable area
+            path=grid1d2va(*g1d);
+            item=new QGraphicsPathItem();
+            item->setPath(path);
+            item->setPen(Qt::NoPen);
+            item->setBrush(Qt::black);
+            item->setOpacity(0.01*vitem.opacity());        // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
         }
-        else{
-            if(!mVolumeStatistics.contains(vitem->name())){
-                mVolumeStatistics.insert(vitem->name(),
-                    statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
-            }
-            auto stats=mVolumeStatistics.value(vitem->name());
-            auto tx=-stats.rms;
-            auto sx=1./(3*stats.sigma);  // 3 standard deviations
-            sx*=vitem->gain();
-            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
-                sx*=-1;
-            }
+    }
+}
 
-            for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
-                auto g1d=vitem->volume()->atIJ(il,j);
-                if(!g1d) continue;
+void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vitem, int xl){
 
-                QTransform tf;
-                tf.translate(j,1000*(vbounds.ft()-dz(il,j)));
-                tf.scale(sx,1000*vbounds.dt());
-                tf.translate(tx,0);
+    auto v=vitem.volume();
+    Q_ASSERT(v);
+    auto vbounds=v->bounds();
+    auto ct = vitem.colorTable();
+    Q_ASSERT(ct);
 
-                // wiggles
-                auto path=grid1d2wiggles(*g1d);
-                auto item=new QGraphicsPathItem();
-                item->setPath(path);
-                item->setPen(QPen(Qt::black, 0));
-                item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
-                item->setTransform(tf);
-                scene->addItem(item);
+    if(vitem.style()==VolumeItem::Style::ATTRIBUTE){   // render as image
+        // find range for this line because this matches image, not overall flatten range
+        auto mindz=std::numeric_limits<float>::max();
+        auto maxdz=std::numeric_limits<float>::lowest();
+        for( int il=vbounds.i1(); il<=vbounds.i2(); il++){
+            auto d=dz(il,xl);
+            if(d<mindz) mindz=d;
+            if(d>maxdz) maxdz=d;
+        }
+        auto nt=static_cast<int>(std::round(vbounds.nt()+(maxdz-mindz)/vbounds.dt()+1));
+        QImage vimg(vbounds.nj(),nt,QImage::Format_ARGB32);
+        vimg.fill(qRgba(0,0,0,0));
+        QPainter painter(&vimg);
+        for(int j=0; j<vimg.width(); j++){
+            auto il=vbounds.i1()+j;
+            auto g1d=v->atIJ(il,xl);
+            if(!g1d) continue;
+            auto imgj=grid2image_column(*g1d,*ct);
+            auto d=dz(il,xl);
+            auto y=(maxdz-d)/vbounds.dt();
+            painter.drawImage(j,y,imgj);
+        }
+        QPixmap pixmap=QPixmap::fromImage(vimg);
 
-                // variable area
-                path=grid1d2va(*g1d);
-                item=new QGraphicsPathItem();
-                item->setPath(path);
-                item->setPen(Qt::NoPen);
-                item->setBrush(Qt::black);
-                item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
-                item->setTransform(tf);
-                scene->addItem(item);
-            }
+        auto item=new QGraphicsPixmapItem();
+        item->setTransformationMode(Qt::SmoothTransformation);
+        item->setPixmap( pixmap );
+        item->setOpacity(0.01*vitem.opacity());    // percent > fraction
+
+        QTransform tf;
+        tf.translate(vbounds.i1(),1000*(vbounds.ft()-maxdz));//vbounds.ft());
+        tf.scale(1,1000.*vbounds.dt());         // sec -> msec
+        item->setTransform(tf);
+        scene->addItem(item);
+    }
+    else{
+        // render as seismic traces
+        if(!mVolumeStatistics.contains(vitem.name())){
+            mVolumeStatistics.insert(vitem.name(),
+                statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
+        }
+        auto stats=mVolumeStatistics.value(vitem.name());
+        auto tx=-stats.rms;
+        auto sx=1./(3*stats.sigma);  // 3 standard deviations
+        sx*=vitem.gain();
+        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
+            sx*=-1;
+        }
+
+        for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
+            auto g1d=v->atIJ(i,xl);
+            if(!g1d) continue;
+
+            QTransform tf;
+            tf.translate(i,1000*(vbounds.ft()-dz(i,xl)));
+            tf.scale(sx,1000*vbounds.dt());
+            tf.translate(tx,0);
+
+            // wiggles
+            auto path=grid1d2wiggles(*g1d);
+            auto item=new QGraphicsPathItem();
+            item->setPath(path);
+            item->setPen(QPen(Qt::black, 0));
+            item->setOpacity(0.01*vitem.opacity());  // percent -> fraction
+            item->setTransform(tf);
+            scene->addItem(item);
+
+            // variable area
+            path=grid1d2va(*g1d);
+            item=new QGraphicsPathItem();
+            item->setPath(path);
+            item->setPen(Qt::NoPen);
+            item->setBrush(Qt::black);
+            item->setOpacity(0.01*vitem.opacity());        // percent -> fraction
+            item->setTransform(tf);
+            scene->addItem(item);
         }
     }
 }
 
 
-void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
+void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vitem, int t){
 
-    if( !scene ) return;
-    int xl=m_slice.value;
+    auto v=vitem.volume();
+    Q_ASSERT(v);
+    auto vbounds=v->bounds();
+    auto ct = vitem.colorTable();
+    Q_ASSERT(ct);
 
-    for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
-        auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
-        if(!vitem) continue;
-
-        auto v=vitem->volume();
-        auto vbounds=v->bounds();
-        auto ct = vitem->colorTable();
-
-        if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            // find range for this line because this matches image, not overall flatten range
-            auto mindz=std::numeric_limits<float>::max();
-            auto maxdz=std::numeric_limits<float>::lowest();
-            for( int il=vbounds.i1(); il<=vbounds.i2(); il++){
-                auto d=dz(il,xl);
-                if(d<mindz) mindz=d;
-                if(d>maxdz) maxdz=d;
-            }
-            auto nt=static_cast<int>(std::round(vbounds.nt()+(maxdz-mindz)/vbounds.dt()+1));
-            QImage vimg(vbounds.nj(),nt,QImage::Format_ARGB32);
-            vimg.fill(qRgba(0,0,0,0));
-            QPainter painter(&vimg);
-            for(int j=0; j<vimg.width(); j++){
-                auto il=vbounds.i1()+j;
-                auto g1d=vitem->volume()->atIJ(il,xl);
-                if(!g1d) continue;
-                auto imgj=grid2image_column(*g1d,*ct);
-                auto d=dz(il,xl);
-                auto y=(maxdz-d)/vbounds.dt();
-                painter.drawImage(j,y,imgj);
-            }
-            QPixmap pixmap=QPixmap::fromImage(vimg);
-
-            auto item=new QGraphicsPixmapItem();
-            item->setTransformationMode(Qt::SmoothTransformation);
-            item->setPixmap( pixmap );
-            item->setOpacity(0.01*vitem->opacity());    // percent > fraction
-
-            QTransform tf;
-            tf.translate(vbounds.i1(),1000*(vbounds.ft()-maxdz));//vbounds.ft());
-            tf.scale(1,1000.*vbounds.dt());         // sec -> msec
-            item->setTransform(tf);
-            scene->addItem(item);
-        }
-        else{
-            // render as seismic traces
-            if(!mVolumeStatistics.contains(vitem->name())){
-                mVolumeStatistics.insert(vitem->name(),
-                    statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
-            }
-            auto stats=mVolumeStatistics.value(vitem->name());
-            auto tx=-stats.rms;
-            auto sx=1./(3*stats.sigma);  // 3 standard deviations
-            sx*=vitem->gain();
-            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
-                sx*=-1;
-            }
-
-            for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
-                auto g1d=vitem->volume()->atIJ(i,xl);
-                if(!g1d) continue;
-
-                QTransform tf;
-                tf.translate(i,1000*(vbounds.ft()-dz(i,xl)));
-                tf.scale(sx,1000*vbounds.dt());
-                tf.translate(tx,0);
-
-                // wiggles
-                auto path=grid1d2wiggles(*g1d);
-                auto item=new QGraphicsPathItem();
-                item->setPath(path);
-                item->setPen(QPen(Qt::black, 0));
-                item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
-                item->setTransform(tf);
-                scene->addItem(item);
-
-                // variable area
-                path=grid1d2va(*g1d);
-                item=new QGraphicsPathItem();
-                item->setPath(path);
-                item->setPen(Qt::NoPen);
-                item->setBrush(Qt::black);
-                item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
-                item->setTransform(tf);
-                scene->addItem(item);
-            }
+    auto b2d=Grid2DBounds(vbounds.i1(), vbounds.j1(), vbounds.i2(), vbounds.j2());
+    auto times=std::make_unique<Grid2D<double>>(b2d);
+    for(int i=b2d.i1(); i<=b2d.i2(); i++){
+        for(auto j=b2d.j1(); j<=b2d.j2(); j++){
+            (*times)(i,j)=0.001*t+dz(i,j);
         }
     }
-}
 
+    if(vitem.style()==VolumeItem::Style::ATTRIBUTE){   // render as image
+        //auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
+        auto g2d=vitem.volume()->atT(*times);
+        if(!g2d) return;
+        // apply gain, polarity
+        double b=0;
+        double m=vitem.gain();
+        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
+            b=ct->range().second;
+            m*=-1;
+        }
+        for( auto &x : *g2d){
+            x=b+m*x;
+        }
+        auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
+        vimg=sharpen(vimg);
+        QPixmap pixmap=QPixmap::fromImage(vimg);
 
-void VolumeView::renderVolumesTime(QGraphicsScene * scene){
+        auto item=new QGraphicsPixmapItem();
+        item->setTransformationMode(Qt::SmoothTransformation);
+        item->setPixmap( pixmap );
+        item->setOpacity(0.01*vitem.opacity());    // percent > fraction
 
-    if( !scene ) return;
-    int t=m_slice.value;
-    auto bounds=m_bounds;
-
-    for( int i=mVolumeItemModel->size()-1; i>=0; i--){      // iterate in reverse order, first item in list is on top
-        auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
-        if(!vitem) continue;
-
-        auto v=vitem->volume();
-        auto vbounds=v->bounds();
-        auto ct = vitem->colorTable();
-
-        auto b2d=Grid2DBounds(vbounds.i1(), vbounds.j1(), vbounds.i2(), vbounds.j2());
-        auto times=std::make_unique<Grid2D<double>>(b2d);
-        for(int i=b2d.i1(); i<=b2d.i2(); i++){
-            for(auto j=b2d.j1(); j<=b2d.j2(); j++){
-                (*times)(i,j)=0.001*t+dz(i,j);
-            }
+        QTransform tf;
+        tf.translate(v->bounds().i1(), v->bounds().j1());
+        tf.scale(qreal(vbounds.i2()-vbounds.i1())/vimg.width(),
+                 qreal(vbounds.j2()-vbounds.j1())/vimg.height());
+        if(mInlineOrientation==Qt::Horizontal){
+            tf*=swappedIlineXlineTransform();
+        }
+        item->setTransform(tf);
+        scene->addItem(item);
+    }
+    else{
+        // render as seismic traces
+        if(!mVolumeStatistics.contains(vitem.name())){
+            mVolumeStatistics.insert(vitem.name(),
+                statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
+        }
+        auto stats=mVolumeStatistics.value(vitem.name());
+        auto tx=-stats.rms;
+        auto sx=1./(3*stats.sigma);  // 3 standard deviations
+        sx*=vitem.gain();
+        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
+            sx*=-1;
         }
 
-        if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            //auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
-            auto g2d=vitem->volume()->atT(*times);
-            if(!g2d) continue;
-            // apply gain, polarity
-            double b=0;
-            double m=vitem->gain();
-            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
-                b=ct->range().second;
-                m*=-1;
-            }
-            for( auto &x : *g2d){
-                x=b+m*x;
-            }
-            auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
-            vimg=sharpen(vimg);
-            QPixmap pixmap=QPixmap::fromImage(vimg);
 
-            auto item=new QGraphicsPixmapItem();
-            item->setTransformationMode(Qt::SmoothTransformation);
-            item->setPixmap( pixmap );
-            item->setOpacity(0.01*vitem->opacity());    // percent > fraction
+        for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
+            //auto g1d=vitem->volume()->atIT(i,0.001*t);
+            auto g1d=v->atIT(i,*times);
+            if(!g1d) continue;
 
             QTransform tf;
-            tf.translate(v->bounds().i1(), v->bounds().j1());
-            tf.scale(qreal(bounds.i2()-bounds.i1())/vimg.width(), qreal(bounds.j2()-bounds.j1())/vimg.height());
+            tf.translate(i,0);
+            tf.scale(sx,1);
+            tf.translate(tx,0);
             if(mInlineOrientation==Qt::Horizontal){
                 tf*=swappedIlineXlineTransform();
             }
+
+            // wiggles
+            auto path=grid1d2wiggles(*g1d);
+            auto item=new QGraphicsPathItem();
+            item->setPath(path);
+            item->setPen(QPen(Qt::black, 0));
+            item->setOpacity(0.01*vitem.opacity());  // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
-        }
-        else{
-            // render as seismic traces
-            if(!mVolumeStatistics.contains(vitem->name())){
-                mVolumeStatistics.insert(vitem->name(),
-                    statistics::computeStatistics(v->cbegin(), v->cend(), v->NULL_VALUE) );
-            }
-            auto stats=mVolumeStatistics.value(vitem->name());
-            auto tx=-stats.rms;
-            auto sx=1./(3*stats.sigma);  // 3 standard deviations
-            sx*=vitem->gain();
-            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
-                sx*=-1;
-            }
 
-
-            for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
-                //auto g1d=vitem->volume()->atIT(i,0.001*t);
-                auto g1d=vitem->volume()->atIT(i,*times);
-                if(!g1d) continue;
-
-                QTransform tf;
-                tf.translate(i,0);
-                tf.scale(sx,1);
-                tf.translate(tx,0);
-                if(mInlineOrientation==Qt::Horizontal){
-                    tf*=swappedIlineXlineTransform();
-                }
-
-                // wiggles
-                auto path=grid1d2wiggles(*g1d);
-                auto item=new QGraphicsPathItem();
-                item->setPath(path);
-                item->setPen(QPen(Qt::black, 0));
-                item->setOpacity(0.01*vitem->opacity());  // percent -> fraction
-                item->setTransform(tf);
-                scene->addItem(item);
-
-                // variable area
-                path=grid1d2va(*g1d);
-                item=new QGraphicsPathItem();
-                item->setPath(path);
-                item->setPen(Qt::NoPen);
-                item->setBrush(Qt::black);
-                item->setOpacity(0.01*vitem->opacity());        // percent -> fraction
-                item->setTransform(tf);
-                scene->addItem(item);
-            }
+            // variable area
+            path=grid1d2va(*g1d);
+            item=new QGraphicsPathItem();
+            item->setPath(path);
+            item->setPen(Qt::NoPen);
+            item->setBrush(Qt::black);
+            item->setOpacity(0.01*vitem.opacity());        // percent -> fraction
+            item->setTransform(tf);
+            scene->addItem(item);
         }
     }
 }

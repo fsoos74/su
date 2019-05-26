@@ -19,7 +19,7 @@ public:
     enum class Polarity{NORMAL, REVERSED};
 
     VolumeItem(QObject* parent=nullptr);
-    std::shared_ptr<Volume> volume(){
+    std::shared_ptr<Volume> volume()const{
         return mVolume;
     }
     int opacity()const{

@@ -22,6 +22,7 @@ class VolumePicker;
 class ViewItem;
 class ViewItemModel;
 class HorizonItem;
+class VolumeItem;
 
 
 class VolumeView : public RulerAxisView
@@ -110,9 +111,9 @@ private slots:
 private:
 
     void renderVolumes(QGraphicsScene*);
-    void renderVolumesInline(QGraphicsScene*);
-    void renderVolumesCrossline(QGraphicsScene*);
-    void renderVolumesTime(QGraphicsScene*);
+    void renderVolumeIline(QGraphicsScene*, const VolumeItem&, int);
+    void renderVolumeXline(QGraphicsScene*, const VolumeItem&, int);
+    void renderVolumeTime(QGraphicsScene*, const VolumeItem&, int);
     QImage sharpen(QImage);
     void renderHorizons(QGraphicsScene*);
     void renderHorizonIline(QGraphicsScene*, const HorizonItem&, int);
