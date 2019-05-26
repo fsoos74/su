@@ -33,6 +33,21 @@ double lininterp(double x1, double y1, double x2, double y2, double x){
     return y1 + (x-x1)* ( y2 - y1 ) / ( x2 - x1 );
 }
 
+QImage grid2image_column(const Grid1D<float>& g1d, const ColorTable& ct){
+    auto b1d=g1d.bounds();
+    QImage img(1, b1d.ni(), QImage::Format_ARGB32);
+    img.fill(QColor(0,0,0,0));  // transparent
+    for(int i=0; i<img.height(); i++){
+        for(int j=0; j<img.width(); j++){
+            auto value=g1d(i+b1d.i1());
+            if(value==g1d.NULL_VALUE) continue;
+            auto color=ct.map(value);
+            img.setPixel(0,i,color);
+        }
+    }
+    return img;
+}
+
 // x==j, y==i
 QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
     auto b2d=g2d.bounds();
@@ -304,7 +319,7 @@ double VolumeView::dz(int i, int j)const{
     }
     else{
         auto dz=m_flattenHorizon->valueAt(i,j);
-        return ( dz!=m_flattenHorizon->NULL_VALUE) ? 0.001*dz : std::numeric_limits<double>::quiet_NaN();
+        return ( dz!=m_flattenHorizon->NULL_VALUE) ? 0.001*dz : 0;
     }
 }
 
@@ -426,25 +441,19 @@ QPainterPath VolumeView::projectWellPathInline(const WellPath& wp, int iline){
 
         auto p=wp[i];
         auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
-        auto xl=ilxl.y(); // static_cast<int>(std::round(ilxl.y()));
 
         if( std::fabs(ilxl.x()-iline)>mDisplayOptions.wellVisibilityDistance()){
             isDown=false;
             continue;
         }
 
-        auto d=dz(iline, xl);
-        if( std::isnan(d)){
-            isDown=false;
-            continue;
-        }
-        auto z=-p.z()-1000*d;
+        auto z=-p.z()-1000*dz(ilxl.x(), ilxl.y());
 
         if(isDown){
-            path.lineTo(xl, z);
+            path.lineTo(ilxl.x(), z);
         }
         else{
-            path.moveTo(xl, z);
+            path.moveTo(ilxl.x(), z);
         }
 
         isDown=true;
@@ -462,26 +471,19 @@ QPainterPath VolumeView::projectWellPathCrossline(const WellPath& wp, int xline)
 
         auto p=wp[i];
         auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
-        auto il=ilxl.x();// static_cast<int>(std::round(ilxl.x()));
 
         if( std::fabs(ilxl.y()-xline)>mDisplayOptions.wellVisibilityDistance()){
             isDown=false;
             continue;
         }
 
-        auto d=dz(il, xline);
-        if( std::isnan(d)){
-            isDown=false;
-            continue;
-        }
-
-        auto z=-p.z()-1000*d;
+        auto z=-p.z()-1000*dz(ilxl.x(),ilxl.y());
 
         if(isDown){
-            path.lineTo(il, z);
+            path.lineTo(ilxl.x(), z);
         }
         else{
-            path.moveTo(il, z);
+            path.moveTo(ilxl.x(), z);
         }
 
         isDown=true;
@@ -582,25 +584,95 @@ void VolumeView::renderVolumes(QGraphicsScene * scene){
     }
 }
 
-void VolumeView::renderHorizons(QGraphicsScene* scene){
 
-    if(m_slice.type==SliceType::Z) return;
+void VolumeView::renderHorizonIline(QGraphicsScene* scene, const HorizonItem& hi, int iline){
+
+    auto g1d=hi.horizon()->atI(iline);
+    if(!g1d) return;
+
+    // build path
+    QPainterPath path;
+    auto b1d=g1d->bounds();
+    bool isDown=false;
+    for( int i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=(*g1d)(i);
+        if( z==g1d->NULL_VALUE){
+            isDown=false;
+            continue;
+        }
+
+        // apply flatening
+        z-=1000*dz(iline,i);
+
+        if(isDown){
+            path.lineTo(i, z);
+        }
+        else{
+            path.moveTo(i, z);
+        }
+
+        isDown=true;
+    }
+
+    QPen pen(hi.color(), hi.width());
+    pen.setCosmetic(true);
+    auto item=new QGraphicsPathItem(path);
+    item->setPen(pen);
+    item->setOpacity(0.01*hi.opacity());   // percent -> fraction
+    scene->addItem(item);
+}
+
+void VolumeView::renderHorizonXline(QGraphicsScene* scene, const HorizonItem& hi, int xline){
+
+    auto g1d=hi.horizon()->atJ(xline);
+    if(!g1d) return;
+
+    // build path
+    QPainterPath path;
+    auto b1d=g1d->bounds();
+    bool isDown=false;
+    for( int i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=(*g1d)(i);
+        if( z==g1d->NULL_VALUE){
+            isDown=false;
+            continue;
+        }
+
+        // apply flatening
+        z-=1000*dz(i, xline);
+
+        if(isDown){
+            path.lineTo(i, z);
+        }
+        else{
+            path.moveTo(i, z);
+        }
+
+        isDown=true;
+    }
+
+    QPen pen(hi.color(), hi.width());
+    pen.setCosmetic(true);
+    auto item=new QGraphicsPathItem(path);
+    item->setPen(pen);
+    item->setOpacity(0.01*hi.opacity());   // percent -> fraction
+    scene->addItem(item);
+}
+
+void VolumeView::renderHorizons(QGraphicsScene* scene){
 
     for( int i=mHorizonItemModel->size()-1; i>=0; i--){
 
         auto hi=dynamic_cast<HorizonItem*>(mHorizonItemModel->at(i));
         if(!hi) continue;
-        auto g1d=(m_slice.type==SliceType::Inline) ? hi->horizon()->atI(m_slice.value)
-                                                   : hi->horizon()->atJ(m_slice.value);
-        if(!g1d) continue;
 
-        QPen pen(hi->color(), hi->width());
-        pen.setCosmetic(true);
-        auto path=grid1d2hpath(*g1d);
-        auto item=new QGraphicsPathItem(path);
-        item->setPen(pen);
-        item->setOpacity(0.01*hi->opacity());   // percent -> fraction
-        scene->addItem(item);
+        if(m_slice.type==SliceType::Inline){
+            renderHorizonIline(scene, *hi, m_slice.value);
+        }
+        else if(m_slice.type==SliceType::Crossline){
+            renderHorizonXline(scene, *hi, m_slice.value);
+        }
+
     }
 }
 
@@ -686,6 +758,7 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
                     ilxl.x() - m_slice.value : ilxl.y() -m_slice.value;
         if(std::abs(dist)>mDisplayOptions.wellVisibilityDistance()) continue;   // too far away to be shown
         auto y=-mposition.z();                                                  // position-z-axis points upwards but view y-axis increases downwards
+        y-=1000*dz(ilxl.x(),ilxl.y());                                          // apply flatening
 
         QPen wmPen(mitem->color(), mitem->width());
         wmPen.setCosmetic(true);
@@ -816,22 +889,27 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
         auto ct = vitem->colorTable();
 
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            auto g2d=v->atI(il);
-            if(!g2d){
-                continue;
+            // find range for this line because this matches image, not overall flatten range
+            auto mindz=std::numeric_limits<float>::max();
+            auto maxdz=std::numeric_limits<float>::lowest();
+            for( int xl=vbounds.j1(); xl<=vbounds.j2(); xl++){
+                auto d=dz(il,xl);
+                if(d<mindz) mindz=d;
+                if(d>maxdz) maxdz=d;
             }
-            // apply gain, polarity
-            double b=0;
-            double m=vitem->gain();
-            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
-                b=ct->range().second;
-                m*=-1;
+            auto nt=static_cast<int>(std::round(vbounds.nt()+(maxdz-mindz)/vbounds.dt()+1));
+            QImage vimg(vbounds.nj(),nt,QImage::Format_ARGB32);
+            vimg.fill(qRgba(0,0,0,0));
+            QPainter painter(&vimg);
+            for(int j=0; j<vimg.width(); j++){
+                auto xl=vbounds.j1()+j;
+                auto g1d=vitem->volume()->atIJ(il,xl);
+                if(!g1d) continue;
+                auto imgj=grid2image_column(*g1d,*ct);
+                auto d=dz(il,xl);
+                auto y=(maxdz-d)/vbounds.dt();
+                painter.drawImage(j,y,imgj);
             }
-            for( auto &x : *g2d){
-                x=b+m*x;
-            }
-            auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
-            vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
             auto item=new QGraphicsPixmapItem();
@@ -840,7 +918,7 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
             item->setOpacity(0.01*vitem->opacity());    // percent > fraction
 
             QTransform tf;
-            tf.translate(vbounds.j1(),vbounds.ft());
+            tf.translate(vbounds.j1(),1000*(vbounds.ft()-maxdz));//vbounds.ft());
             tf.scale(1,1000.*vbounds.dt());         // sec -> msec
             item->setTransform(tf);
             scene->addItem(item);
@@ -857,13 +935,13 @@ void VolumeView::renderVolumesInline(QGraphicsScene * scene){
             if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
                 sx*=-1;
             }
-std::cout<<"rms="<<stats.rms<<" maxabs="<<stats.maxabs<<" sx="<<sx<<" tx="<<tx<<std::endl<<std::flush;
+
             for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
                 auto g1d=vitem->volume()->atIJ(il,j);
                 if(!g1d) continue;
 
                 QTransform tf;
-                tf.translate(j,vbounds.ft());
+                tf.translate(j,1000*(vbounds.ft()-dz(il,j)));
                 tf.scale(sx,1000*vbounds.dt());
                 tf.translate(tx,0);
 
@@ -905,22 +983,27 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
         auto ct = vitem->colorTable();
 
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            auto g2d=v->atJ(xl);
-            if(!g2d){
-                continue;
+            // find range for this line because this matches image, not overall flatten range
+            auto mindz=std::numeric_limits<float>::max();
+            auto maxdz=std::numeric_limits<float>::lowest();
+            for( int il=vbounds.i1(); il<=vbounds.i2(); il++){
+                auto d=dz(il,xl);
+                if(d<mindz) mindz=d;
+                if(d>maxdz) maxdz=d;
             }
-            // apply gain, polarity
-            double b=0;
-            double m=vitem->gain();
-            if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
-                b=ct->range().second;
-                m*=-1;
+            auto nt=static_cast<int>(std::round(vbounds.nt()+(maxdz-mindz)/vbounds.dt()+1));
+            QImage vimg(vbounds.nj(),nt,QImage::Format_ARGB32);
+            vimg.fill(qRgba(0,0,0,0));
+            QPainter painter(&vimg);
+            for(int j=0; j<vimg.width(); j++){
+                auto il=vbounds.i1()+j;
+                auto g1d=vitem->volume()->atIJ(il,xl);
+                if(!g1d) continue;
+                auto imgj=grid2image_column(*g1d,*ct);
+                auto d=dz(il,xl);
+                auto y=(maxdz-d)/vbounds.dt();
+                painter.drawImage(j,y,imgj);
             }
-            for( auto &x : *g2d){
-                x=b+m*x;
-            }
-            auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
-            vimg=sharpen(vimg);
             QPixmap pixmap=QPixmap::fromImage(vimg);
 
             auto item=new QGraphicsPixmapItem();
@@ -929,7 +1012,7 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
             item->setOpacity(0.01*vitem->opacity());    // percent > fraction
 
             QTransform tf;
-            tf.translate(vbounds.i1(),vbounds.ft());
+            tf.translate(vbounds.i1(),1000*(vbounds.ft()-maxdz));//vbounds.ft());
             tf.scale(1,1000.*vbounds.dt());         // sec -> msec
             item->setTransform(tf);
             scene->addItem(item);
@@ -942,7 +1025,7 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
             }
             auto stats=mVolumeStatistics.value(vitem->name());
             auto tx=-stats.rms;
-            auto sx=1./(stats.maxabs-stats.rms);//std::fabs(mean));
+            auto sx=1./(3*stats.sigma);  // 3 standard deviations
             sx*=vitem->gain();
             if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
                 sx*=-1;
@@ -953,7 +1036,7 @@ void VolumeView::renderVolumesCrossline(QGraphicsScene * scene){
                 if(!g1d) continue;
 
                 QTransform tf;
-                tf.translate(i,vbounds.ft());
+                tf.translate(i,1000*(vbounds.ft()-dz(i,xl)));
                 tf.scale(sx,1000*vbounds.dt());
                 tf.translate(tx,0);
 
@@ -995,8 +1078,17 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
         auto vbounds=v->bounds();
         auto ct = vitem->colorTable();
 
+        auto b2d=Grid2DBounds(vbounds.i1(), vbounds.j1(), vbounds.i2(), vbounds.j2());
+        auto times=std::make_unique<Grid2D<double>>(b2d);
+        for(int i=b2d.i1(); i<=b2d.i2(); i++){
+            for(auto j=b2d.j1(); j<=b2d.j2(); j++){
+                (*times)(i,j)=0.001*t+dz(i,j);
+            }
+        }
+
         if(vitem->style()==VolumeItem::Style::ATTRIBUTE){   // render as image
-            auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
+            //auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
+            auto g2d=vitem->volume()->atT(*times);
             if(!g2d) continue;
             // apply gain, polarity
             double b=0;
@@ -1034,7 +1126,7 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
             }
             auto stats=mVolumeStatistics.value(vitem->name());
             auto tx=-stats.rms;
-            auto sx=1./(stats.maxabs-stats.rms);//std::fabs(mean));
+            auto sx=1./(3*stats.sigma);  // 3 standard deviations
             sx*=vitem->gain();
             if(vitem->polarity()==VolumeItem::Polarity::REVERSED){
                 sx*=-1;
@@ -1042,7 +1134,8 @@ void VolumeView::renderVolumesTime(QGraphicsScene * scene){
 
 
             for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
-                auto g1d=vitem->volume()->atIT(i,0.001*t);
+                //auto g1d=vitem->volume()->atIT(i,0.001*t);
+                auto g1d=vitem->volume()->atIT(i,*times);
                 if(!g1d) continue;
 
                 QTransform tf;

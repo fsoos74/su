@@ -7,7 +7,7 @@
 #include<grid1d.h>
 #include<grid2d.h>
 #include<memory>
-
+#include<functional>
 
 class Grid3DBounds{
 public:
@@ -350,6 +350,20 @@ public:
         return g2d;
     }
 
+    template<typename TT>
+    std::unique_ptr<Grid2D<T>> atT(const Grid2D<TT>& times)const{
+        Grid2DBounds b2d(m_bounds.i1(), m_bounds.j1(), m_bounds.i2(), m_bounds.j2());
+        auto g2d=std::make_unique<Grid2D<T>>(b2d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+                auto t=times.valueAt(i,j);
+                if(t==times.NULL_VALUE) continue;
+                (*g2d)(i,j)=value(i,j,t);
+            }
+        }
+        return g2d;
+    }
+
     std::unique_ptr<Grid1D<T>> atIJ(int i, int j)const{
         if(!m_bounds.isInside(i,j,0)) return std::unique_ptr<Grid1D<T>>();
         auto b1d=Grid1DBounds(0,m_bounds.nt()-1);
@@ -386,6 +400,16 @@ public:
         auto g1d=std::make_unique<Grid1D<T>>(b1d);
         for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
             (*g1d)(j)=value(i,j,t);
+        }
+        return g1d;
+    }
+
+    template<typename TT>
+    std::unique_ptr<Grid1D<T>> atIT(int i, const Grid2D<TT>& t)const{
+        auto b1d=Grid1DBounds(m_bounds.j1(), m_bounds.j2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int j=m_bounds.j1(); j<=m_bounds.j2(); j++){
+            (*g1d)(j)=value(i,j,t(i,j));
         }
         return g1d;
     }

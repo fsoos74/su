@@ -11,6 +11,8 @@ namespace seismic {
 template<>
 const Grid2D<float>::value_type Grid2D<float>::NULL_VALUE = std::numeric_limits<Grid2D::value_type>::max();
 
+template<>
+const Grid2D<double>::value_type Grid2D<double>::NULL_VALUE = std::numeric_limits<Grid2D::value_type>::max();
 
 template<>
 const Grid2D<std::pair<double, double>>::value_type Grid2D<std::pair<double, double>>::NULL_VALUE =

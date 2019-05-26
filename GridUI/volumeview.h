@@ -21,7 +21,7 @@ namespace sliceviewer {
 class VolumePicker;
 class ViewItem;
 class ViewItemModel;
-
+class HorizonItem;
 
 
 class VolumeView : public RulerAxisView
@@ -115,6 +115,8 @@ private:
     void renderVolumesTime(QGraphicsScene*);
     QImage sharpen(QImage);
     void renderHorizons(QGraphicsScene*);
+    void renderHorizonIline(QGraphicsScene*, const HorizonItem&, int);
+    void renderHorizonXline(QGraphicsScene*, const HorizonItem&, int);
     void renderWells(QGraphicsScene*);
     void renderMarkers(QGraphicsScene*);
     void renderTables(QGraphicsScene*);
