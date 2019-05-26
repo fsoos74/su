@@ -23,7 +23,8 @@ class ViewItem;
 class ViewItemModel;
 class HorizonItem;
 class VolumeItem;
-
+class WellItem;
+class TableItem;
 
 class VolumeView : public RulerAxisView
 {
@@ -119,22 +120,18 @@ private:
     void renderHorizonIline(QGraphicsScene*, const HorizonItem&, int);
     void renderHorizonXline(QGraphicsScene*, const HorizonItem&, int);
     void renderWells(QGraphicsScene*);
+    void renderWellIline(QGraphicsScene*, const WellItem&, int);
+    void renderWellXline(QGraphicsScene*, const WellItem&, int);
+    void renderWellTime(QGraphicsScene*, const WellItem&, int);
     void renderMarkers(QGraphicsScene*);
     void renderTables(QGraphicsScene*);
+    void renderTableIline(QGraphicsScene*, const TableItem&, int);
+    void renderTableXline(QGraphicsScene*, const TableItem&, int);
+    void renderTableTime(QGraphicsScene*, const TableItem&, int);
     void renderLastViewed(QGraphicsScene*);
     QTransform swappedIlineXlineTransform()const;
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
-    QPainterPath intersectHorizonInline(const Grid2D<float>& grid, int iline);
-    QPainterPath intersectHorizonCrossline(const Grid2D<float>& grid, int xline);
-    QVector<QPointF> intersectTableInline(const Table& table, int iline);
-    QVector<QPointF> intersectTableCrossline(const Table& table, int xline);
-    QVector<QPointF> intersectTableTime(const Table& table, int time);
-    QPainterPath projectWellPathInline(const WellPath& wp, int iline);
-    QPainterPath projectWellPathCrossline(const WellPath& wp, int xline);
     QLineF intersectSlices(const SliceDef& s1, const SliceDef& s2);
-
-
-
 
     QTransform m_xy_to_ilxl, m_ilxl_to_xy;
     Qt::Orientation mInlineOrientation=Qt::Vertical;

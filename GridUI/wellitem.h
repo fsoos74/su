@@ -39,6 +39,10 @@ public:
         return mLabelStyle;
     }
 
+    int labelFontSize()const{
+        return mLabelFontSize;
+    }
+
 public slots:
     void setUwi(QString);
     void setWellPath(std::shared_ptr<WellPath>);
@@ -46,6 +50,7 @@ public slots:
     void setWidth(int);
     void setOpacity(int);
     void setLabelStyle(LabelStyle);
+    void setLabelFontSize(int);
 
 private:
     QString mUwi;
@@ -54,6 +59,7 @@ private:
     int mWidth;
     int mOpacity;
     LabelStyle mLabelStyle;
+    int mLabelFontSize;
 };
 
 }

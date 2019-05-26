@@ -147,7 +147,6 @@ QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
             continue;
         }
 
-        std::cout<<"i="<<i<<" value="<<value<<std::endl<<std::flush;
         if(isDown){
             path.lineTo(i, value);
         }
@@ -159,6 +158,36 @@ QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
     }
 
     return path;
+}
+
+QVector<QPointF> intersectTableIline(const Table &table, int iline){
+
+    auto points=table.atKey1(iline);
+    QVector<QPointF> res;
+    for( auto p : points ){
+        res.push_back(QPointF(std::get<1>(p), 1000*std::get<2>(p)));   // millis
+    }
+    return res;
+}
+
+QVector<QPointF> intersectTableXline(const Table &table, int xline){
+    auto points=table.atKey2(xline);
+    QVector<QPointF> res;
+    for( auto p : points ){
+        res.push_back(QPointF(std::get<0>(p), 1000*std::get<2>(p)));   // millis
+    }
+    return res;
+}
+
+QVector<QPointF> intersectTableTime(const Table &table, int time, float EPS=0.01f){
+
+    auto points=table.inValueRange(0.001*time-EPS,0.001*time+EPS );           // msec -> sec
+    QVector<QPointF> res;
+    for( auto p : points ){
+        res.push_back(QPointF(std::get<0>(p), std::get<1>(p)));
+    }
+
+    return res;
 }
 
 }
@@ -173,6 +202,7 @@ VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent),
     mTableItemModel(new ViewItemModel(this)),
     m_flattenRange(0.,0.)
 {
+    setMouseMode(MouseMode::Explore);
     connect(mVolumeItemModel,SIGNAL(changed()), this, SLOT(onVolumeItemModelChanged()));
     connect(mVolumeItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
     connect(mHorizonItemModel,SIGNAL(changed()), this, SLOT(refreshSceneCaller()));
@@ -324,174 +354,6 @@ double VolumeView::dz(int i, int j)const{
     }
 }
 
-
-QPainterPath VolumeView::intersectHorizonInline(const Grid2D<float>& grid, int iline){
-
-    QPainterPath path;
-
-    auto bounds=grid.bounds();
-    bool isDown=false;
-
-    for( int xline=bounds.j1(); xline<=bounds.j2(); xline++){
-
-        auto p=grid.valueAt(iline,xline);  // returns NULL for non existent location
-
-        if( p==grid.NULL_VALUE){
-            isDown=false;
-            continue;
-        }
-
-        auto d=dz(iline, xline);
-        if( std::isnan(d)){
-            isDown=false;
-            continue;
-        }
-
-        p-=1000*d;
-
-        if(isDown){
-            path.lineTo(xline, p);
-        }
-        else{
-            path.moveTo(xline, p);
-        }
-
-        isDown=true;
-
-    }
-
-    return path;
-}
-
-
-QPainterPath VolumeView::intersectHorizonCrossline(const Grid2D<float>& grid, int xline){
-
-    QPainterPath path;
-
-    auto bounds=grid.bounds();
-    bool isDown=false;
-
-    for( int iline=bounds.i1(); iline<=bounds.i2(); iline++){
-
-        auto p=grid.valueAt(iline,xline);   // returns NULL for non existent location
-
-        if( p==grid.NULL_VALUE){
-            isDown=false;
-            continue;
-        }
-
-        auto d=dz(iline, xline);
-        if( std::isnan(d)){
-            isDown=false;
-            continue;
-        }
-
-        p-=1000*d;
-
-        if(isDown){
-            path.lineTo(iline, p);
-        }
-        else{
-            path.moveTo(iline, p);
-        }
-
-        isDown=true;
-
-    }
-
-    return path;
-}
-
-
-QVector<QPointF> VolumeView::intersectTableInline(const Table &table, int iline){
-
-    auto points=table.atKey1(iline);
-    QVector<QPointF> res;
-    for( auto p : points ){
-        res.push_back(QPointF(std::get<1>(p), 1000*std::get<2>(p)));   // millis
-    }
-    return res;
-}
-
-QVector<QPointF> VolumeView::intersectTableCrossline(const Table &table, int xline){
-    auto points=table.atKey2(xline);
-    QVector<QPointF> res;
-    for( auto p : points ){
-        res.push_back(QPointF(std::get<0>(p), 1000*std::get<2>(p)));   // millis
-    }
-    return res;
-}
-
-QVector<QPointF> VolumeView::intersectTableTime(const Table &table, int time){
-
-    auto points=table.inValueRange(0.001*time-0.01,0.001*time+0.01 );           // msec -> sec
-    QVector<QPointF> res;
-    for( auto p : points ){
-        res.push_back(QPointF(std::get<0>(p), std::get<1>(p)));
-    }
-
-    return res;
-}
-
-QPainterPath VolumeView::projectWellPathInline(const WellPath& wp, int iline){
-
-    QPainterPath path;
-    bool isDown=false;
-
-    for( int i=0; i<wp.size(); i++){
-
-        auto p=wp[i];
-        auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
-
-        if( std::fabs(ilxl.x()-iline)>mDisplayOptions.wellVisibilityDistance()){
-            isDown=false;
-            continue;
-        }
-
-        auto z=-p.z()-1000*dz(ilxl.x(), ilxl.y());
-
-        if(isDown){
-            path.lineTo(ilxl.x(), z);
-        }
-        else{
-            path.moveTo(ilxl.x(), z);
-        }
-
-        isDown=true;
-    }
-
-    return path;
-}
-
-QPainterPath VolumeView::projectWellPathCrossline(const WellPath& wp, int xline){
-
-    QPainterPath path;
-    bool isDown=false;
-
-    for( int i=0; i<wp.size(); i++){
-
-        auto p=wp[i];
-        auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
-
-        if( std::fabs(ilxl.y()-xline)>mDisplayOptions.wellVisibilityDistance()){
-            isDown=false;
-            continue;
-        }
-
-        auto z=-p.z()-1000*dz(ilxl.x(),ilxl.y());
-
-        if(isDown){
-            path.lineTo(ilxl.x(), z);
-        }
-        else{
-            path.moveTo(ilxl.x(), z);
-        }
-
-        isDown=true;
-    }
-
-    return path;
-}
 
 QLineF VolumeView::intersectSlices(const SliceDef &s1, const SliceDef &s2){
 
@@ -662,68 +524,162 @@ void VolumeView::renderHorizons(QGraphicsScene* scene){
 
 void VolumeView::renderWells(QGraphicsScene * scene){
 
-    QTransform tf;
-    if(m_slice.type==SliceType::Z && mInlineOrientation==Qt::Horizontal){
-        tf=swappedIlineXlineTransform();
-    }
-
     for( int i=mWellItemModel->size()-1; i>=0; i-- ){
         auto witem=dynamic_cast<WellItem*>(mWellItemModel->at(i));
         if(!witem) continue;
-        auto wp=witem->wellPath();
-        if( !wp) continue;
-        QString label;
-        if(witem->labelStyle()==WellItem::LabelStyle::NAME_LABEL){
-            label=witem->name();
-        }
-        else if(witem->labelStyle()==WellItem::LabelStyle::UWI_LABEL){
-            label=witem->uwi();
-        }
-        QFont labelFont("Helvetica [Cronyx]", 8);
 
-        if(m_slice.type==SliceType::Inline || m_slice.type==SliceType::Crossline){
-            QPainterPath path;
-            if(m_slice.type==SliceType::Inline){
-                path=projectWellPathInline(*wp, m_slice.value);
+        switch(m_slice.type){
+        case SliceType::Inline: renderWellIline(scene, *witem, m_slice.value); break;
+        case SliceType::Crossline: renderWellXline(scene, *witem, m_slice.value); break;
+        case SliceType::Z: renderWellTime(scene, *witem, m_slice.value); break;
+        }
+    }
+}
+
+void VolumeView::renderWellIline(QGraphicsScene * scene, const WellItem& witem, int il){
+
+        auto wp=witem.wellPath();
+        if( !wp) return;
+        QString label;
+        if(witem.labelStyle()==WellItem::LabelStyle::NAME_LABEL){
+            label=witem.name();
+        }
+        else if(witem.labelStyle()==WellItem::LabelStyle::UWI_LABEL){
+            label=witem.uwi();
+        }
+        QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
+
+        QPainterPath path;
+        bool isDown=false;
+
+        for( int i=0; i<wp->size(); i++){
+
+            auto p=(*wp)[i];
+            auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
+
+            if( std::fabs(ilxl.x()-il)>mDisplayOptions.wellVisibilityDistance()){
+                isDown=false;
+                continue;
+            }
+
+            auto z=-p.z()-1000*dz(ilxl.x(), ilxl.y());
+
+            if(isDown){
+                path.lineTo(ilxl.y(), z);
             }
             else{
-                path=projectWellPathCrossline(*wp, m_slice.value);
+                path.moveTo(ilxl.y(), z);
             }
-            if( !path.isEmpty()){
-                QPen wellPen( witem->color(), witem->width());
-                wellPen.setCosmetic(true);
-                auto item=new QGraphicsPathItem(path);
-                item->setPen(wellPen);
-                scene->addItem(item);
-                if(!label.isEmpty()){
-                    auto item=new QGraphicsTextItem(label);
-                    item->setPos(path.currentPosition());
-                    item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-                    item->setFont(labelFont);
-                    item->setDefaultTextColor(witem->color());
-                    scene->addItem(item);
-                }
-            }
+
+            isDown=true;
         }
-        else if(m_slice.type==SliceType::Z){
-            auto p=m_xy_to_ilxl.map( wp->locationAtZ(-m_slice.value) );
-            auto s=witem->width();
-            auto item=new QGraphicsEllipseItem( -s,-s, 2*s, 2*s);
-            item->setPen(Qt::NoPen);
-            item->setBrush(witem->color());
-            p=tf.map(p);
-            item->setPos(p);
-            item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+
+        if( !path.isEmpty()){
+            QPen wellPen( witem.color(), witem.width());
+            wellPen.setCosmetic(true);
+            auto item=new QGraphicsPathItem(path);
+            item->setPen(wellPen);
             scene->addItem(item);
             if(!label.isEmpty()){
                 auto item=new QGraphicsTextItem(label);
-                item->setPos(p);
+                item->setPos(path.currentPosition());
                 item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
                 item->setFont(labelFont);
-                item->setDefaultTextColor(witem->color());
+                item->setDefaultTextColor(witem.color());
                 scene->addItem(item);
             }
         }
+}
+
+void VolumeView::renderWellXline(QGraphicsScene * scene, const WellItem& witem, int xl){
+
+        auto wp=witem.wellPath();
+        if( !wp) return;
+        QString label;
+        if(witem.labelStyle()==WellItem::LabelStyle::NAME_LABEL){
+            label=witem.name();
+        }
+        else if(witem.labelStyle()==WellItem::LabelStyle::UWI_LABEL){
+            label=witem.uwi();
+        }
+        QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
+
+        QPainterPath path;
+        bool isDown=false;
+
+        for( int i=0; i<wp->size(); i++){
+
+            auto p=(*wp)[i];
+            auto ilxl=m_xy_to_ilxl.map( QPointF(p.x(), p.y() ) );
+
+            if( std::fabs(ilxl.y()-xl)>mDisplayOptions.wellVisibilityDistance()){
+                isDown=false;
+                continue;
+            }
+
+            auto z=-p.z()-1000*dz(ilxl.x(), ilxl.y());
+
+            if(isDown){
+                path.lineTo(ilxl.x(), z);
+            }
+            else{
+                path.moveTo(ilxl.x(), z);
+            }
+
+            isDown=true;
+        }
+
+        if( !path.isEmpty()){
+            QPen wellPen( witem.color(), witem.width());
+            wellPen.setCosmetic(true);
+            auto item=new QGraphicsPathItem(path);
+            item->setPen(wellPen);
+            scene->addItem(item);
+            if(!label.isEmpty()){
+                auto item=new QGraphicsTextItem(label);
+                item->setPos(path.currentPosition());
+                item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+                item->setFont(labelFont);
+                item->setDefaultTextColor(witem.color());
+                scene->addItem(item);
+            }
+        }
+}
+
+void VolumeView::renderWellTime(QGraphicsScene * scene, const WellItem& witem, int t){
+    auto wp=witem.wellPath();
+    if( !wp) return;
+
+    QTransform tf;
+    if(mInlineOrientation==Qt::Horizontal){
+        tf=swappedIlineXlineTransform();
+    }
+
+    QString label;
+    if(witem.labelStyle()==WellItem::LabelStyle::NAME_LABEL){
+        label=witem.name();
+    }
+    else if(witem.labelStyle()==WellItem::LabelStyle::UWI_LABEL){
+        label=witem.uwi();
+    }
+    QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
+
+    auto p=m_xy_to_ilxl.map( wp->locationAtZ(-t) );
+    auto s=witem.width();
+    auto item=new QGraphicsEllipseItem( -s,-s, 2*s, 2*s);
+    item->setPen(Qt::NoPen);
+    item->setBrush(witem.color());
+    p=tf.map(p);
+    item->setPos(p);
+    item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    scene->addItem(item);
+    if(!label.isEmpty()){
+        auto item=new QGraphicsTextItem(label);
+        item->setPos(p);
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        item->setFont(labelFont);
+        item->setDefaultTextColor(witem.color());
+        scene->addItem(item);
     }
 }
 
@@ -767,35 +723,68 @@ void VolumeView::renderTables(QGraphicsScene* scene){
     for( int i=mTableItemModel->size()-1; i>=0; i--){
         auto titem=dynamic_cast<TableItem*>(mTableItemModel->at(i));
         if(!titem) continue;
-        auto table=titem->table();
-        QVector<QPointF> points;
-        switch(m_slice.type){
-        case SliceType::Inline:
-            points=intersectTableInline(*table, m_slice.value);
-            break;
-        case SliceType::Crossline:
-            points=intersectTableCrossline(*table, m_slice.value);
-            break;
-        case SliceType::Z:
-            points=intersectTableTime(*table, m_slice.value);
-            break;
-        default:
-            break;
-        }
 
-        auto s=titem->pointSize();
-        QBrush brush(titem->color());
-        for( auto p : points){
-            auto item=new QGraphicsRectItem( -s/2,-s/2, s, s);
-            item->setPen(Qt::NoPen);
-            item->setBrush(brush);
-            item->setPos(p);
-            item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-            scene->addItem(item);
+        switch(m_slice.type){
+        case SliceType::Inline: renderTableIline(scene, *titem, m_slice.value); break;
+        case SliceType::Crossline: renderTableXline(scene, *titem, m_slice.value); break;
+        case SliceType::Z: renderTableTime(scene,*titem, m_slice.value); break;
         }
     }
 }
 
+
+void VolumeView::renderTableIline(QGraphicsScene* scene, const TableItem& titem, int il){
+    auto table=titem.table();
+    if(!table) return;
+    auto s=titem.pointSize();
+    QBrush brush(titem.color());
+    for( auto pos : intersectTableIline(*table, il) ){
+        auto item=new QGraphicsRectItem( -s/2,-s/2, s, s);
+        item->setPen(Qt::NoPen);
+        item->setBrush(brush);
+        item->setPos(pos);
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        scene->addItem(item);
+    }
+}
+
+void VolumeView::renderTableXline(QGraphicsScene* scene, const TableItem& titem, int xl){
+    auto table=titem.table();
+    if(!table) return;
+    auto s=titem.pointSize();
+    QBrush brush(titem.color());
+    for( auto pos : intersectTableXline(*table, xl) ){
+        auto item=new QGraphicsRectItem( -s/2,-s/2, s, s);
+        item->setPen(Qt::NoPen);
+        item->setBrush(brush);
+        item->setPos(pos);
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        scene->addItem(item);
+    }
+}
+
+void VolumeView::renderTableTime(QGraphicsScene* scene, const TableItem& titem, int t){
+    const float EPS=0.01f;  // z-range around z for table values to be included for z
+
+    auto table=titem.table();
+    if(!table) return;
+    QTransform tf;
+    if(mInlineOrientation==Qt::Horizontal){
+        tf=swappedIlineXlineTransform();
+    }
+    auto s=titem.pointSize();
+    QBrush brush(titem.color());
+    for( auto p : intersectTableTime(*table,t,EPS) ){
+        auto pos=tf.map(p);
+        auto item=new QGraphicsRectItem( -s/2,-s/2, s, s);
+        item->setPen(Qt::NoPen);
+        item->setBrush(brush);
+        item->setPos(pos);
+        item->setTransform(tf);
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+        scene->addItem(item);
+    }
+}
 
 void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
 
@@ -805,13 +794,19 @@ void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
     QVector<QPointF> points;
     switch(m_slice.type){
     case SliceType::Inline:
-        points=intersectTableInline(*m_picker->picks(), m_slice.value);
+        points=intersectTableIline(*m_picker->picks(), m_slice.value);
         break;
     case SliceType::Crossline:
-        points=intersectTableCrossline(*m_picker->picks(), m_slice.value);
+        points=intersectTableXline(*m_picker->picks(), m_slice.value);
         break;
     case SliceType::Z:
         points=intersectTableTime(*m_picker->picks(), m_slice.value);
+        if(mInlineOrientation==Qt::Horizontal){
+              QTransform tf=swappedIlineXlineTransform();
+              for(auto& p : points){
+                  p=tf.map(p);
+              }
+        }
         break;
     default:
         break;

@@ -43,6 +43,7 @@ void WellItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
     ui->cbColor->setColor(witem->color());
     ui->sbWidth->setValue(witem->width());
     ui->cbLabelStyle->setCurrentIndex(ui->cbLabelStyle->findData(static_cast<int>(witem->labelStyle())));
+    ui->sbLabelFontSize->setValue(witem->labelFontSize());
 }
 
 void WellItemsDialog::on_pbAdd_clicked()
@@ -160,6 +161,7 @@ void WellItemsDialog::on_pbApply_clicked()
     auto width=ui->sbWidth->value();
     auto opacity=ui->sbOpacity->value();
     auto labelStyle=static_cast<WellItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt());
+    int labelFontSize=ui->sbLabelFontSize->value();
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
@@ -169,6 +171,7 @@ void WellItemsDialog::on_pbApply_clicked()
         hitem->setWidth(width);
         hitem->setOpacity(opacity);
         hitem->setLabelStyle(labelStyle);
+        hitem->setLabelFontSize(labelFontSize);
     }
     mModel->setMute(false);
 }

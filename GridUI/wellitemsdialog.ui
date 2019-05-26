@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>653</width>
+    <width>915</width>
     <height>398</height>
    </rect>
   </property>
@@ -192,12 +192,22 @@
       <item>
        <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Label style:</string>
+         <string>Label :</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QComboBox" name="cbLabelStyle"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Label Size:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="sbLabelFontSize"/>
       </item>
       <item>
        <widget class="QPushButton" name="pbApply">
