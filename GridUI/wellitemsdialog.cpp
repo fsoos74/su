@@ -70,6 +70,7 @@ void WellItemsDialog::on_pbAdd_clicked()
         witem->setUwi(uwi);
         witem->setWellPath(wellPath);
         witem->setLabelStyle(static_cast<WellItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt()));
+        witem->setLabelFontSize(ui->sbLabelFontSize->value());
         mModel->add(witem);
         name=witem->name(); // name could have been updated to make it unique
         ui->lwDisplayed->addItem(name);
@@ -161,7 +162,7 @@ void WellItemsDialog::on_pbApply_clicked()
     auto width=ui->sbWidth->value();
     auto opacity=ui->sbOpacity->value();
     auto labelStyle=static_cast<WellItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt());
-    int labelFontSize=ui->sbLabelFontSize->value();
+    auto labelFontSize=ui->sbLabelFontSize->value();
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;

@@ -24,6 +24,11 @@ MarkerItemsDialog::MarkerItemsDialog(AVOProject* project, ViewItemModel* model, 
     ui->lwDisplayed->addItems(mModel->names());
 
     ui->lwWells->addItems(mProject->wellList());
+
+    ui->cbLabelStyle->addItem("No label", static_cast<int>(MarkerItem::LabelStyle::NO_LABEL));
+    ui->cbLabelStyle->addItem("Name", static_cast<int>(MarkerItem::LabelStyle::NAME_LABEL));
+    ui->cbLabelStyle->addItem("UWI", static_cast<int>(MarkerItem::LabelStyle::UWI_LABEL));
+    ui->cbLabelStyle->addItem("Name and UWI", static_cast<int>(MarkerItem::LabelStyle::NAME_AND_UWI_LABEL));
 }
 
 MarkerItemsDialog::~MarkerItemsDialog()
@@ -39,6 +44,8 @@ void MarkerItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
     ui->sbOpacity->setValue(mitem->opacity());
     ui->cbColor->setColor(mitem->color());
     ui->sbWidth->setValue(mitem->width());
+    ui->cbLabelStyle->setCurrentIndex(ui->cbLabelStyle->findData(static_cast<int>(mitem->labelStyle())));
+    ui->sbFontSize->setValue(mitem->labelFontSize());
 }
 
 void MarkerItemsDialog::on_pbAdd_clicked()
@@ -63,6 +70,8 @@ void MarkerItemsDialog::on_pbAdd_clicked()
             auto mname=QString("%1@%2").arg(wm.name(), wm.uwi());
             MarkerItem* mitem=new MarkerItem(this);
             mitem->setName(mname);
+            mitem->setMarkerName(name);
+            mitem->setUwi(uwi);
             mModel->add(mitem);
             mitem->setPosition(position);
             ui->lwDisplayed->addItem(mname);
@@ -70,6 +79,8 @@ void MarkerItemsDialog::on_pbAdd_clicked()
             mitem->setColor(ui->cbColor->color());
             mitem->setOpacity(ui->sbOpacity->value());
             mitem->setWidth(ui->sbWidth->value());
+            mitem->setLabelStyle(static_cast<MarkerItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt()));
+            mitem->setLabelFontSize(ui->sbFontSize->value());
         }
     }
     mModel->setMute(false);
@@ -157,6 +168,8 @@ void MarkerItemsDialog::on_pbApply_clicked()
     auto color=ui->cbColor->color();
     auto width=ui->sbWidth->value();
     auto opacity=ui->sbOpacity->value();
+    auto labelStyle=static_cast<MarkerItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt());
+    auto labelFontSize=ui->sbFontSize->value();
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
@@ -165,6 +178,8 @@ void MarkerItemsDialog::on_pbApply_clicked()
         hitem->setColor(color);
         hitem->setWidth(width);
         hitem->setOpacity(opacity);
+        hitem->setLabelStyle(labelStyle);
+        hitem->setLabelFontSize(labelFontSize);
     }
     mModel->setMute(false);
 }

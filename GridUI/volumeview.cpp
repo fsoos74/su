@@ -700,21 +700,39 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
         auto y=-mposition.z();                                                  // position-z-axis points upwards but view y-axis increases downwards
         y-=1000*dz(ilxl.x(),ilxl.y());                                          // apply flatening
 
+        QString label;
+        switch(mitem->labelStyle()){
+        case MarkerItem::LabelStyle::UWI_LABEL:
+            label=mitem->uwi();
+            break;
+        case MarkerItem::LabelStyle::NAME_LABEL:
+            label=mitem->markerName();
+            break;
+        case MarkerItem::LabelStyle::NAME_AND_UWI_LABEL:
+            label=tr("%1@%2").arg(mitem->markerName(),mitem->uwi());
+            break;
+        default:
+            break;
+        }
+
         QPen wmPen(mitem->color(), mitem->width());
         wmPen.setCosmetic(true);
-        QFont wmFont("Helvetica [Cronyx]", 8);
         QPen wmLabelPen(mitem->color(),0);
         QGraphicsLineItem* item=new QGraphicsLineItem( -10, 0, 10, 0);
         item->setPen(wmPen);
         item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
         item->setPos( x, y);
         scene->addItem(item);
-        auto litem=new QGraphicsSimpleTextItem(mitem->name());
-        litem->setPen(wmLabelPen);
-        litem->setFont(wmFont);
-        litem->setFlag(QGraphicsItem::ItemIgnoresTransformations);
-        litem->setPos(x, y );
-        scene->addItem(litem);
+
+        if(!label.isEmpty()){
+            QFont wmFont("Helvetica [Cronyx]", mitem->labelFontSize());
+            auto litem=new QGraphicsTextItem(label);
+            litem->setDefaultTextColor(mitem->color());
+            litem->setFont(wmFont);
+            litem->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+            litem->setPos(x, y );
+            scene->addItem(litem);
+        }
     }
 }
 
