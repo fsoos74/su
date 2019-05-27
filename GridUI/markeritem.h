@@ -48,6 +48,8 @@ public:
         return mLabelFontSize;
     }
 
+    QString label()const;
+
 public slots:
     void setPosition(QVector3D);
     void setMarkerName(QString);

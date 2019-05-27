@@ -540,14 +540,6 @@ void VolumeView::renderWellIline(QGraphicsScene * scene, const WellItem& witem, 
 
         auto wp=witem.wellPath();
         if( !wp) return;
-        QString label;
-        if(witem.labelStyle()==WellItem::LabelStyle::NAME_LABEL){
-            label=witem.name();
-        }
-        else if(witem.labelStyle()==WellItem::LabelStyle::UWI_LABEL){
-            label=witem.uwi();
-        }
-        QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
 
         QPainterPath path;
         bool isDown=false;
@@ -580,7 +572,9 @@ void VolumeView::renderWellIline(QGraphicsScene * scene, const WellItem& witem, 
             auto item=new QGraphicsPathItem(path);
             item->setPen(wellPen);
             scene->addItem(item);
+            auto label=witem.label();
             if(!label.isEmpty()){
+                QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
                 auto item=new QGraphicsTextItem(label);
                 item->setPos(path.currentPosition());
                 item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -595,14 +589,6 @@ void VolumeView::renderWellXline(QGraphicsScene * scene, const WellItem& witem, 
 
         auto wp=witem.wellPath();
         if( !wp) return;
-        QString label;
-        if(witem.labelStyle()==WellItem::LabelStyle::NAME_LABEL){
-            label=witem.name();
-        }
-        else if(witem.labelStyle()==WellItem::LabelStyle::UWI_LABEL){
-            label=witem.uwi();
-        }
-        QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
 
         QPainterPath path;
         bool isDown=false;
@@ -635,7 +621,9 @@ void VolumeView::renderWellXline(QGraphicsScene * scene, const WellItem& witem, 
             auto item=new QGraphicsPathItem(path);
             item->setPen(wellPen);
             scene->addItem(item);
+            auto label=witem.label();
             if(!label.isEmpty()){
+                QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
                 auto item=new QGraphicsTextItem(label);
                 item->setPos(path.currentPosition());
                 item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -655,15 +643,6 @@ void VolumeView::renderWellTime(QGraphicsScene * scene, const WellItem& witem, i
         tf=swappedIlineXlineTransform();
     }
 
-    QString label;
-    if(witem.labelStyle()==WellItem::LabelStyle::NAME_LABEL){
-        label=witem.name();
-    }
-    else if(witem.labelStyle()==WellItem::LabelStyle::UWI_LABEL){
-        label=witem.uwi();
-    }
-    QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
-
     auto p=m_xy_to_ilxl.map( wp->locationAtZ(-t) );
     auto s=witem.width();
     auto item=new QGraphicsEllipseItem( -s,-s, 2*s, 2*s);
@@ -673,7 +652,9 @@ void VolumeView::renderWellTime(QGraphicsScene * scene, const WellItem& witem, i
     item->setPos(p);
     item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     scene->addItem(item);
+    auto label=witem.label();
     if(!label.isEmpty()){
+        QFont labelFont("Helvetica [Cronyx]", witem.labelFontSize());
         auto item=new QGraphicsTextItem(label);
         item->setPos(p);
         item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
@@ -700,21 +681,6 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
         auto y=-mposition.z();                                                  // position-z-axis points upwards but view y-axis increases downwards
         y-=1000*dz(ilxl.x(),ilxl.y());                                          // apply flatening
 
-        QString label;
-        switch(mitem->labelStyle()){
-        case MarkerItem::LabelStyle::UWI_LABEL:
-            label=mitem->uwi();
-            break;
-        case MarkerItem::LabelStyle::NAME_LABEL:
-            label=mitem->markerName();
-            break;
-        case MarkerItem::LabelStyle::NAME_AND_UWI_LABEL:
-            label=tr("%1@%2").arg(mitem->markerName(),mitem->uwi());
-            break;
-        default:
-            break;
-        }
-
         QPen wmPen(mitem->color(), mitem->width());
         wmPen.setCosmetic(true);
         QPen wmLabelPen(mitem->color(),0);
@@ -724,6 +690,7 @@ void VolumeView::renderMarkers(QGraphicsScene* scene){
         item->setPos( x, y);
         scene->addItem(item);
 
+        QString label=mitem->label();
         if(!label.isEmpty()){
             QFont wmFont("Helvetica [Cronyx]", mitem->labelFontSize());
             auto litem=new QGraphicsTextItem(label);

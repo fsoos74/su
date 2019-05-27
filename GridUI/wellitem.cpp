@@ -4,7 +4,8 @@ namespace sliceviewer {
 
 
 WellItem::WellItem(QObject *parent) : ViewItem(parent),
-    mColor(Qt::lightGray), mWidth(2), mOpacity(100), mLabelStyle(LabelStyle::NO_LABEL), mLabelFontSize(8)
+    mColor(Qt::lightGray), mWidth(2), mOpacity(100),
+    mLabelStyle(LabelStyle::NO_LABEL), mLabelFontSize(8)
 {
 
 }
@@ -12,6 +13,12 @@ WellItem::WellItem(QObject *parent) : ViewItem(parent),
 void WellItem::setUwi(QString uwi){
     if(uwi==mUwi)return;
     mUwi=uwi;
+    emit changed();
+}
+
+void WellItem::setWellName(QString wellName){
+    if(wellName==mWellName) return;
+    mWellName=wellName;
     emit changed();
 }
 
@@ -49,6 +56,28 @@ void WellItem::setLabelFontSize(int lfs){
     if(lfs==mLabelFontSize) return;
     mLabelFontSize=lfs;
     emit changed();
+}
+
+QString WellItem::label()const{
+    QString label;
+    switch(mLabelStyle){
+    case LabelStyle::UWI_LABEL:
+        label=mUwi;
+        break;
+    case LabelStyle::NAME_LABEL:
+        label=mWellName;
+        break;
+    case LabelStyle::NAME_AND_UWI_LABEL:
+        label=tr("%1|%2").arg(mWellName,mUwi);
+        break;
+    case LabelStyle::UWI_AND_NAME_LABEL:
+        label=tr("%1|%2").arg(mUwi,mWellName);
+        break;
+    default:
+        break;
+    }
+
+    return label;
 }
 
 }

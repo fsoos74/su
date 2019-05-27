@@ -27,6 +27,8 @@ WellItemsDialog::WellItemsDialog(AVOProject* project, ViewItemModel* model, QWid
     ui->cbLabelStyle->addItem("No label", static_cast<int>(WellItem::LabelStyle::NO_LABEL));
     ui->cbLabelStyle->addItem("Name", static_cast<int>(WellItem::LabelStyle::NAME_LABEL));
     ui->cbLabelStyle->addItem("UWI", static_cast<int>(WellItem::LabelStyle::UWI_LABEL));
+    ui->cbLabelStyle->addItem("Name and UWI", static_cast<int>(WellItem::LabelStyle::NAME_AND_UWI_LABEL));
+    ui->cbLabelStyle->addItem("UWI and Name", static_cast<int>(WellItem::LabelStyle::UWI_AND_NAME_LABEL));
 }
 
 WellItemsDialog::~WellItemsDialog()
@@ -54,11 +56,12 @@ void WellItemsDialog::on_pbAdd_clicked()
         if(!lwitem) continue;
         auto name=lwitem->text();
         auto uwiAndName=name.split("|", QString::SkipEmptyParts);
-        if(uwiAndName.size()<1){
-            qDebug()<<"No uwi in "<<name<<"\n";
+        if(uwiAndName.size()<2){
+            qDebug()<<"No uwi and name in "<<name<<"\n";
             continue;
         }
         auto uwi=uwiAndName[0];
+        auto wname=uwiAndName[1];
         auto wellPath=mProject->loadWellPath(uwi);
         if( !wellPath){
             QMessageBox::critical(this, "Add Well", tr("Loading Well %1 failed!").arg(name));
@@ -67,6 +70,7 @@ void WellItemsDialog::on_pbAdd_clicked()
 
         WellItem* witem=new WellItem(this);
         witem->setName(name);
+        witem->setWellName(wname);
         witem->setUwi(uwi);
         witem->setWellPath(wellPath);
         witem->setLabelStyle(static_cast<WellItem::LabelStyle>(ui->cbLabelStyle->currentData().toInt()));

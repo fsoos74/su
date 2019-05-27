@@ -58,4 +58,23 @@ void MarkerItem::setLabelFontSize(int labelFontSize){
     emit changed();
 }
 
+QString MarkerItem::label()const{
+    QString label;
+    switch(mLabelStyle){
+    case LabelStyle::UWI_LABEL:
+        label=mUwi;
+        break;
+    case MarkerItem::LabelStyle::NAME_LABEL:
+        label=mMarkerName;
+        break;
+    case MarkerItem::LabelStyle::NAME_AND_UWI_LABEL:
+        label=tr("%1@%2").arg(mMarkerName,mUwi);
+        break;
+    default:
+        break;
+    }
+
+    return label;
+}
+
 }
