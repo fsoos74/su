@@ -201,7 +201,7 @@ void VolumeViewer2D::updateSliceConnections(){
          break;
 
     case VolumeView::SliceType::Z:
-        if(ui->volumeView->inlineOrientation()==Qt::Vertical){
+        if(ui->volumeView->displayOptions().inlineOrientation()==Qt::Vertical){
              connect( hsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setInlineSliceX(QPointF)) );
              connect( vsv, SIGNAL(pointSelected(QPointF)), this, SLOT(setCrosslineSliceY(QPointF)) );
         }
@@ -388,7 +388,7 @@ void VolumeViewer2D::onMouseOver(QPointF p){
         z=m_sbSlice->value();
         il=static_cast<int>(std::round(p.x()));
         xl=static_cast<int>(std::round(p.y()));
-        if(ui->volumeView->inlineOrientation()==Qt::Horizontal){
+        if(ui->volumeView->displayOptions().inlineOrientation()==Qt::Horizontal){
             std::swap(il,xl);
         }
         break;
@@ -684,14 +684,3 @@ void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
 
 }
 
-void sliceviewer::VolumeViewer2D::on_actionSet_Inline_Orientation_triggered()
-{
-    QStringList orientations;
-    orientations<<"Vertical"<<"Horizontal";
-    int current=(ui->volumeView->inlineOrientation()==Qt::Vertical)?0:1;
-    bool ok=false;
-    auto item=QInputDialog::getItem(this, "Set inline orientation", "Select orientation:", orientations, current, false, &ok  );
-    if(!ok) return;
-    Qt::Orientation orientation=(item=="Vertical") ? Qt::Vertical : Qt::Horizontal;
-    ui->volumeView->setInlineOrientation(orientation);
-}

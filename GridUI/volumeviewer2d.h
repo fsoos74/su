@@ -75,8 +75,6 @@ private slots:
     void updatePickModeActions();
     void updatePickModePicker();
 
-    void on_actionSet_Inline_Orientation_triggered();
-
 private:
 
     bool canDiscardPicks();

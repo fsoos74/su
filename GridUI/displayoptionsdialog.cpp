@@ -10,6 +10,9 @@ DisplayOptionsDialog::DisplayOptionsDialog(QWidget *parent) :
     ui(new Ui::DisplayOptionsDialog)
 {
     ui->setupUi(this);
+
+    ui->cbInlineOrientation->addItem("Vertical", static_cast<int>(Qt::Orientation::Vertical));
+    ui->cbInlineOrientation->addItem("Horizontal", static_cast<int>(Qt::Orientation::Horizontal));
 }
 
 DisplayOptionsDialog::~DisplayOptionsDialog()
@@ -31,6 +34,7 @@ DisplayOptions DisplayOptionsDialog::displayOptions(){
     opts.setSharpenFilterSize(ui->sbFilterSize->value());
     opts.setSharpenFilterStrength(ui->sbFilterStrength->value());
     opts.setAntiAliasing(ui->cbAntiAliasing->isChecked());
+    opts.setInlineOrientation(static_cast<Qt::Orientation>(ui->cbInlineOrientation->currentData().toInt()));
     return opts;
 }
 
@@ -47,6 +51,8 @@ void DisplayOptionsDialog::setDisplayOptions(const DisplayOptions & opts){
     ui->sbFilterSize->setValue(opts.sharpenFilterSize());
     ui->sbFilterStrength->setValue(opts.sharpenFilterStrength());
     ui->cbAntiAliasing->setChecked(opts.isAntiliasing());
+    ui->cbInlineOrientation->setCurrentIndex(
+                ui->cbInlineOrientation->findData(static_cast<int>(opts.inlineOrientation())));
 }
 
 void DisplayOptionsDialog::on_cbLastViewedColor_clicked()

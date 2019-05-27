@@ -59,6 +59,10 @@ public:
         return mAntiAliasing;
     }
 
+    Qt::Orientation inlineOrientation()const{
+        return mInlineOrientation;
+    }
+
     void setDisplayVolumes(bool);
     void setDisplayHorizons(bool);
     void setDisplayWells(bool);
@@ -71,6 +75,7 @@ public:
     void setSharpenFilterSize(int);
     void setSharpenFilterStrength(int);
     void setAntiAliasing(bool);
+    void setInlineOrientation(Qt::Orientation);
 
 private:
     bool mDisplayVolumes=true;
@@ -85,6 +90,7 @@ private:
     int mSharpenFilterSize=3;
     int mSharpenFilterStrength=50;
     bool mAntiAliasing=true;
+    Qt::Orientation mInlineOrientation=Qt::Vertical;
 };
 
 }

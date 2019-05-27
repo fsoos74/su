@@ -222,15 +222,12 @@ void VolumeView::setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy){
 }
 
 void VolumeView::setDisplayOptions(const DisplayOptions & opts){
+    bool axeschanged=opts.inlineOrientation()!=mDisplayOptions.inlineOrientation();
     mDisplayOptions=opts;
     setRenderHint(QPainter::RenderHint::Antialiasing, mDisplayOptions.isAntiliasing());
-    refreshScene();
-}
-
-void VolumeView::setInlineOrientation(Qt::Orientation o){
-    if(o==mInlineOrientation) return;
-    mInlineOrientation=o;
-    updateAxes();
+    if(axeschanged){
+        updateAxes();
+    }
     refreshScene();
 }
 
@@ -639,7 +636,7 @@ void VolumeView::renderWellTime(QGraphicsScene * scene, const WellItem& witem, i
     if( !wp) return;
 
     QTransform tf;
-    if(mInlineOrientation==Qt::Horizontal){
+    if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
         tf=swappedIlineXlineTransform();
     }
 
@@ -754,7 +751,7 @@ void VolumeView::renderTableTime(QGraphicsScene* scene, const TableItem& titem, 
     auto table=titem.table();
     if(!table) return;
     QTransform tf;
-    if(mInlineOrientation==Qt::Horizontal){
+    if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
         tf=swappedIlineXlineTransform();
     }
     auto s=titem.pointSize();
@@ -786,7 +783,7 @@ void VolumeView::drawForeground(QPainter *painter, const QRectF &rectInScene){
         break;
     case SliceType::Z:
         points=intersectTableTime(*m_picker->picks(), m_slice.value);
-        if(mInlineOrientation==Qt::Horizontal){
+        if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
               QTransform tf=swappedIlineXlineTransform();
               for(auto& p : points){
                   p=tf.map(p);
@@ -825,7 +822,7 @@ void VolumeView::renderLastViewed(QGraphicsScene * scene){
         QLineF l=intersectSlices(m_slice, prev);
         QGraphicsLineItem* item=new QGraphicsLineItem(l);
         item->setPen(prevPen);
-        if(m_slice.type==SliceType::Z && mInlineOrientation==Qt::Horizontal){
+        if(m_slice.type==SliceType::Z && mDisplayOptions.inlineOrientation()==Qt::Horizontal){
             item->setTransform(swappedIlineXlineTransform());
         }
         scene->addItem(item);
@@ -1074,7 +1071,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
         tf.translate(v->bounds().i1(), v->bounds().j1());
         tf.scale(qreal(vbounds.i2()-vbounds.i1())/vimg.width(),
                  qreal(vbounds.j2()-vbounds.j1())/vimg.height());
-        if(mInlineOrientation==Qt::Horizontal){
+        if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
             tf*=swappedIlineXlineTransform();
         }
         item->setTransform(tf);
@@ -1104,7 +1101,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
             tf.translate(i,0);
             tf.scale(sx,1);
             tf.translate(tx,0);
-            if(mInlineOrientation==Qt::Horizontal){
+            if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
                 tf*=swappedIlineXlineTransform();
             }
 
@@ -1148,7 +1145,7 @@ void VolumeView::updateAxes(){
         zAxis()->setName(tr("Time/Depth"));
         break;
     case SliceType::Z:
-        if(mInlineOrientation==Qt::Vertical){
+        if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
             xAxis()->setRange(bounds.i1(), bounds.i2());
             xAxis()->setName(tr("Inline"));
             zAxis()->setRange(bounds.j1(), bounds.j2());

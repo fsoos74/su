@@ -130,7 +130,6 @@
     <addaction name="actionSetup_Tables"/>
     <addaction name="separator"/>
     <addaction name="actionDisplay_Options"/>
-    <addaction name="actionSet_Inline_Orientation"/>
    </widget>
    <widget class="QMenu" name="menuPicking">
     <property name="title">

@@ -49,10 +49,6 @@ public:
         return m_bounds;
     }
 
-    Qt::Orientation inlineOrientation()const{
-        return mInlineOrientation;
-    }
-
     SliceDef slice()const{
         return m_slice;
     }
@@ -88,7 +84,6 @@ public slots:
 
     void setSlice(VolumeView::SliceDef);
     void setDisplayOptions(const DisplayOptions&);
-    void setInlineOrientation(Qt::Orientation);
 
     void back();
     void setFlattenHorizon( std::shared_ptr<Grid2D<float>>);
@@ -134,7 +129,6 @@ private:
     QLineF intersectSlices(const SliceDef& s1, const SliceDef& s2);
 
     QTransform m_xy_to_ilxl, m_ilxl_to_xy;
-    Qt::Orientation mInlineOrientation=Qt::Vertical;
     VolumePicker* m_picker;
 
     SliceDef m_slice;
