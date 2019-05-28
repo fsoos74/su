@@ -1164,9 +1164,8 @@ void VolumeView::updateAxes(){
 
 QTransform VolumeView::swappedIlineXlineTransform()const{
     QTransform tf;
-    tf.translate(0,sceneRect().y());
     tf.scale(1,-1);
-    tf.translate(0,-sceneRect().y());
+    tf.translate(0,-sceneRect().x());
     tf.rotate(-90);
     tf.translate(-sceneRect().x(),0);
     return tf;
