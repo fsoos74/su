@@ -227,6 +227,7 @@ void VolumeView::setDisplayOptions(const DisplayOptions & opts){
     setRenderHint(QPainter::RenderHint::Antialiasing, mDisplayOptions.isAntiliasing());
     if(axeschanged){
         updateAxes();
+        inlineOrientationChanged(opts.inlineOrientation());
     }
     refreshScene();
 }

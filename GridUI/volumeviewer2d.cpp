@@ -60,6 +60,7 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     connect( ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(onVolumesChanged()) );
     connect( ui->volumeView, SIGNAL(sliceChanged(VolumeView::SliceDef)), this, SLOT(onSliceChanged(VolumeView::SliceDef)));
     connect( ui->volumeView, SIGNAL(mouseOver(QPointF)), this, SLOT(onMouseOver(QPointF)));
+    connect( ui->volumeView, SIGNAL(inlineOrientationChanged(Qt::Orientation)), this, SLOT(updateSliceConnections()));
 
     connect(ui->volumeView->volumeItemModel(), SIGNAL(changed()), this, SLOT(updateColorBars()) );
     connect(ui->volumeView->volumeItemModel(), SIGNAL(itemChanged(ViewItem*)), this, SLOT(updateColorBars()) );

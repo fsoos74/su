@@ -91,7 +91,7 @@ public slots:
 
 signals:
     void inlineOrientationChanged(Qt::Orientation);
-    void  sliceChanged(VolumeView::SliceDef);
+    void sliceChanged(VolumeView::SliceDef);
     void volumesChanged();
 
 protected:
