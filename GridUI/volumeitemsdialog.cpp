@@ -152,11 +152,14 @@ void VolumeItemsDialog::on_pbScaling_clicked(){
         auto ct=vitem->colorTable();
         if( !ct ) continue;
 
-        HistogramCreator hcreator;
-        //connect( &hcreator, SIGNAL(percentDone(int)), pbar, SLOT(setValue(int)) );
-        auto volume=vitem->volume().get();
-        auto histogram=hcreator.createHistogram( QString("Volume %1").arg(vitem->name()), std::begin(*volume), std::end(*volume),
+        if(!mHistogramBuffer.contains(vitem->name())){
+            HistogramCreator hcreator;
+            auto volume=vitem->volume().get();
+            auto histogram=hcreator.createHistogram( QString("Volume %1").arg(vitem->name()), std::begin(*volume), std::end(*volume),
                                                  volume->NULL_VALUE, 100 );
+            mHistogramBuffer.insert(vitem->name(), histogram);
+        }
+        auto histogram=mHistogramBuffer.value(vitem->name());
 
         HistogramRangeSelectionDialog displayRangeDialog;
         displayRangeDialog.setWindowTitle(QString("Display Range - %1").arg(vitem->name()));

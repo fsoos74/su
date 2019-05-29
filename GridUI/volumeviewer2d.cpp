@@ -85,12 +85,6 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 VolumeViewer2D::~VolumeViewer2D()
 {
     delete ui;
-    // must delete these here because we are not parent
-    if(mVolumeItemsDialog) delete mVolumeItemsDialog;
-    if(mHorizonItemsDialog) delete mHorizonItemsDialog;
-    if(mWellItemsDialog) delete mWellItemsDialog;
-    if(mMarkerItemsDialog) delete mMarkerItemsDialog;
-    if(mTableItemsDialog) delete mTableItemsDialog;
 }
 
 void VolumeViewer2D::setProject(AVOProject * p){
@@ -453,7 +447,7 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
     Q_ASSERT(m_project);
 
     if(!mVolumeItemsDialog){
-        mVolumeItemsDialog=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel());
+        mVolumeItemsDialog=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel(), this );
         mVolumeItemsDialog->setWindowTitle("Setup volumes");
     }
     mVolumeItemsDialog->show();
@@ -466,7 +460,7 @@ void VolumeViewer2D::on_actionSetup_Horizons_triggered()
     Q_ASSERT(m_project);
 
     if(!mHorizonItemsDialog){
-        mHorizonItemsDialog=new HorizonItemsDialog(m_project, ui->volumeView->horizonItemModel());
+        mHorizonItemsDialog=new HorizonItemsDialog(m_project, ui->volumeView->horizonItemModel(), this);
         mHorizonItemsDialog->setWindowTitle("Setup horizons");
     }
     mHorizonItemsDialog->show();
@@ -477,7 +471,7 @@ void VolumeViewer2D::on_actionSetup_Wells_triggered()
     Q_ASSERT(m_project);
 
     if(!mWellItemsDialog){
-        mWellItemsDialog=new WellItemsDialog(m_project, ui->volumeView->wellItemModel());
+        mWellItemsDialog=new WellItemsDialog(m_project, ui->volumeView->wellItemModel(), this);
         mWellItemsDialog->setWindowTitle("Setup Wells");
     }
     mWellItemsDialog->show();
@@ -488,7 +482,7 @@ void VolumeViewer2D::on_actionSetup_Tops_triggered()
     Q_ASSERT(m_project);
 
     if(!mMarkerItemsDialog){
-        mMarkerItemsDialog=new MarkerItemsDialog(m_project, ui->volumeView->markerItemModel());
+        mMarkerItemsDialog=new MarkerItemsDialog(m_project, ui->volumeView->markerItemModel(), this);
         mMarkerItemsDialog->setWindowTitle("Setup Markers");
     }
     mMarkerItemsDialog->show();
@@ -499,7 +493,7 @@ void VolumeViewer2D::on_actionSetup_Tables_triggered()
     Q_ASSERT(m_project);
 
     if(!mTableItemsDialog){
-        mTableItemsDialog=new TableItemsDialog(m_project, ui->volumeView->tableItemModel());
+        mTableItemsDialog=new TableItemsDialog(m_project, ui->volumeView->tableItemModel(), this);
         mTableItemsDialog->setWindowTitle("Setup Tables");
     }
     mTableItemsDialog->show();

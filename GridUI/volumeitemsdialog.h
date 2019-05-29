@@ -5,7 +5,8 @@
 #include <volumeitem.h>
 #include <viewitemmodel.h>
 #include <avoproject.h>
-
+#include <histogram.h>
+#include <QMap>
 
 namespace sliceviewer {
 
@@ -36,6 +37,7 @@ private:
     Ui::VolumeItemsDialog *ui;
     AVOProject* mProject;
     ViewItemModel* mModel=nullptr;
+    QMap<QString,Histogram> mHistogramBuffer;
 };
 
 }
