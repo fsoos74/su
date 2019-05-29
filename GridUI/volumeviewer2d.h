@@ -15,11 +15,18 @@
 #include <dynamicmousemodeselector.h>
 #include <volumepicker.h>
 
+
 namespace sliceviewer {
 
 namespace Ui {
 class VolumeViewer2D;
 }
+
+class VolumeItemsDialog;
+class HorizonItemsDialog;
+class WellItemsDialog;
+class MarkerItemsDialog;
+class TableItemsDialog;
 
 class VolumeViewer2D : public QMainWindow
 {
@@ -104,6 +111,12 @@ private:
     QString m_picksName;
 
     bool m_noupdate=false;
+
+    VolumeItemsDialog* mVolumeItemsDialog=nullptr;
+    HorizonItemsDialog* mHorizonItemsDialog=nullptr;
+    WellItemsDialog* mWellItemsDialog=nullptr;
+    MarkerItemsDialog* mMarkerItemsDialog=nullptr;
+    TableItemsDialog* mTableItemsDialog=nullptr;
 };
 
 

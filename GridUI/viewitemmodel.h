@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QVector>
+#include <QList>
 
 namespace sliceviewer {
 
@@ -48,6 +49,7 @@ private:
     QVector<ViewItem*> mItems;
     bool mMute=false;
     int mChangedCounter=0;
+    QList<ViewItem*> mChangedItems;
 };
 
 }

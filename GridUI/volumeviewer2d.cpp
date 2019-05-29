@@ -85,6 +85,12 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
 VolumeViewer2D::~VolumeViewer2D()
 {
     delete ui;
+    // must delete these here because we are not parent
+    if(mVolumeItemsDialog) delete mVolumeItemsDialog;
+    if(mHorizonItemsDialog) delete mHorizonItemsDialog;
+    if(mWellItemsDialog) delete mWellItemsDialog;
+    if(mMarkerItemsDialog) delete mMarkerItemsDialog;
+    if(mTableItemsDialog) delete mTableItemsDialog;
 }
 
 void VolumeViewer2D::setProject(AVOProject * p){
@@ -96,6 +102,31 @@ void VolumeViewer2D::setProject(AVOProject * p){
     ui->volumeView->setTransforms(xy_to_ilxl, ilxl_to_xy);
 
     updateFlattenHorizons();
+
+    if(mVolumeItemsDialog){
+        delete mVolumeItemsDialog;
+        mVolumeItemsDialog=nullptr;
+    }
+
+    if(mHorizonItemsDialog){
+        delete mHorizonItemsDialog;
+        mHorizonItemsDialog=nullptr;
+    }
+
+    if(mWellItemsDialog){
+        delete mWellItemsDialog;
+        mWellItemsDialog=nullptr;
+    }
+
+    if(mMarkerItemsDialog){
+        delete mMarkerItemsDialog;
+        mMarkerItemsDialog=nullptr;
+    }
+
+    if(mTableItemsDialog){
+        delete mTableItemsDialog;
+        mTableItemsDialog=nullptr;
+    }
 }
 
 void VolumeViewer2D::addVolume(QString name){
@@ -421,10 +452,11 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
 {
     Q_ASSERT(m_project);
 
-    VolumeItemsDialog* dlg=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel());
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setWindowTitle("Setup volumes");
-    dlg->exec();
+    if(!mVolumeItemsDialog){
+        mVolumeItemsDialog=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel());
+        mVolumeItemsDialog->setWindowTitle("Setup volumes");
+    }
+    mVolumeItemsDialog->show();
 }
 
 
@@ -433,40 +465,44 @@ void VolumeViewer2D::on_actionSetup_Horizons_triggered()
 {
     Q_ASSERT(m_project);
 
-    HorizonItemsDialog* dlg=new HorizonItemsDialog(m_project, ui->volumeView->horizonItemModel());
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setWindowTitle("Setup horizons");
-    dlg->exec();
+    if(!mHorizonItemsDialog){
+        mHorizonItemsDialog=new HorizonItemsDialog(m_project, ui->volumeView->horizonItemModel());
+        mHorizonItemsDialog->setWindowTitle("Setup horizons");
+    }
+    mHorizonItemsDialog->show();
 }
 
 void VolumeViewer2D::on_actionSetup_Wells_triggered()
 {
     Q_ASSERT(m_project);
 
-    WellItemsDialog* dlg=new WellItemsDialog(m_project, ui->volumeView->wellItemModel());
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setWindowTitle("Setup Wells");
-    dlg->exec();
+    if(!mWellItemsDialog){
+        mWellItemsDialog=new WellItemsDialog(m_project, ui->volumeView->wellItemModel());
+        mWellItemsDialog->setWindowTitle("Setup Wells");
+    }
+    mWellItemsDialog->show();
 }
 
 void VolumeViewer2D::on_actionSetup_Tops_triggered()
 {
     Q_ASSERT(m_project);
 
-    MarkerItemsDialog* dlg=new MarkerItemsDialog(m_project, ui->volumeView->markerItemModel());
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setWindowTitle("Setup Markers");
-    dlg->exec();
+    if(!mMarkerItemsDialog){
+        mMarkerItemsDialog=new MarkerItemsDialog(m_project, ui->volumeView->markerItemModel());
+        mMarkerItemsDialog->setWindowTitle("Setup Markers");
+    }
+    mMarkerItemsDialog->show();
 }
 
 void VolumeViewer2D::on_actionSetup_Tables_triggered()
 {
     Q_ASSERT(m_project);
 
-    TableItemsDialog* dlg=new TableItemsDialog(m_project, ui->volumeView->tableItemModel());
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setWindowTitle("Setup Tables");
-    dlg->exec();
+    if(!mTableItemsDialog){
+        mTableItemsDialog=new TableItemsDialog(m_project, ui->volumeView->tableItemModel());
+        mTableItemsDialog->setWindowTitle("Setup Tables");
+    }
+    mTableItemsDialog->show();
 }
 
 

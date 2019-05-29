@@ -39,8 +39,13 @@ void ViewItemModel::setMute(bool mute){
         if(mChangedCounter>0){
             emit changed();
         }
+        // only notity about most recent change, maybe better use loop and propagete all changes?
+        if(mChangedItems.size()>0){
+            emit itemChanged(mChangedItems.last());
+        }
     }
     mChangedCounter=0;
+    mChangedItems.clear();
 }
 
 void ViewItemModel::fireChanged(){
@@ -52,12 +57,12 @@ void ViewItemModel::fireChanged(){
     }
 }
 
-void ViewItemModel::fireItemChanged(ViewItem * item){
+void ViewItemModel::fireItemChanged(ViewItem * item){ 
     if( !mMute){
         emit itemChanged(item);
     }
     else{
-        mChangedCounter++;
+        mChangedItems.append(item);
     }
 }
 
