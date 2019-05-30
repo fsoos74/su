@@ -37,7 +37,7 @@ private:
     Ui::VolumeItemsDialog *ui;
     AVOProject* mProject;
     ViewItemModel* mModel=nullptr;
-    QMap<QString,Histogram> mHistogramBuffer;
+    //QMap<QString,Histogram> mHistogramBuffer;  // no need anymore, this is in volumeitem now
 };
 
 }

@@ -57,12 +57,16 @@ void VolumeItemsDialog::on_pbAdd_clicked()
             QMessageBox::critical(this, "Add Volume", QString("Loading volume \"%1\" failed!").arg(name));
             return;
         }
+        HistogramCreator creator;
+        auto histogram=creator.createHistogram(std::begin(*volume), std::end(*volume),
+                                                          volume->NULL_VALUE,256);
 
         VolumeItem* vitem=new VolumeItem(this);
         vitem->setName(name);
         auto r=volume->valueRange();
         vitem->colorTable()->setRange(r);
         vitem->setVolume(volume);
+        vitem->setHistogram(std::make_shared<Histogram>(histogram));
 
         mModel->add(vitem);
         name=vitem->name(); // name could have been updated to make it unique
@@ -152,6 +156,7 @@ void VolumeItemsDialog::on_pbScaling_clicked(){
         auto ct=vitem->colorTable();
         if( !ct ) continue;
 
+        /*
         if(!mHistogramBuffer.contains(vitem->name())){
             HistogramCreator hcreator;
             auto volume=vitem->volume().get();
@@ -160,6 +165,9 @@ void VolumeItemsDialog::on_pbScaling_clicked(){
             mHistogramBuffer.insert(vitem->name(), histogram);
         }
         auto histogram=mHistogramBuffer.value(vitem->name());
+        */
+        Q_ASSERT(vitem->histogram());
+        auto histogram=*vitem->histogram();
 
         HistogramRangeSelectionDialog displayRangeDialog;
         displayRangeDialog.setWindowTitle(QString("Display Range - %1").arg(vitem->name()));

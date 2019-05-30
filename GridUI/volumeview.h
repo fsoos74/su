@@ -145,7 +145,7 @@ private:
     std::pair<double,double> m_flattenRange;
 
     // buffer statistics per volume to avoid unnecessary computations
-    QMap<QString, statistics::Statistics >mVolumeStatistics;
+    QMap<QString, statistics::Statistics >mVolumeStatistics;  // no need anymore, this is in vitem now
     // keep track of previous slices for go back functionality
     QList<SliceDef> m_sliceList;
 };

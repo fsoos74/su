@@ -1,6 +1,9 @@
 #include "volumeitem.h"
 
 #include<colortable.h>
+#include<volume.h>
+#include<histogram.h>
+
 
 namespace sliceviewer {
 
@@ -20,6 +23,12 @@ VolumeItem::VolumeItem(QObject* parent) : ViewItem(parent),
 void VolumeItem::setVolume(std::shared_ptr<Volume> volume){
     if(volume==mVolume) return;
     mVolume=volume;
+    emit changed();
+}
+
+void VolumeItem::setHistogram(std::shared_ptr<Histogram> histogram){
+    if(histogram==mHistogram) return;
+    mHistogram=histogram;
     emit changed();
 }
 

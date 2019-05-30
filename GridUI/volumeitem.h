@@ -2,9 +2,13 @@
 #define VOLUMEITEM_H
 
 #include <viewitem.h>
-#include "volume.h"
-#include <colortable.h>
+//#include "volume.h"
+//#include <colortable.h>
 #include<memory>
+
+class Volume;
+class Histogram;
+class ColorTable;
 
 namespace sliceviewer {
 
@@ -21,6 +25,9 @@ public:
     VolumeItem(QObject* parent=nullptr);
     std::shared_ptr<Volume> volume()const{
         return mVolume;
+    }
+    std::shared_ptr<Histogram> histogram()const{
+        return mHistogram;
     }
     int opacity()const{
         return mOpacity;
@@ -40,6 +47,7 @@ public:
 
 public slots:
     void setVolume(std::shared_ptr<Volume>);
+    void setHistogram(std::shared_ptr<Histogram>);
     void setOpacity(int);
     void setStyle(VolumeItem::Style);
     void setPolarity(VolumeItem::Polarity);
@@ -48,6 +56,7 @@ public slots:
 private:
 
     std::shared_ptr<Volume> mVolume;
+    std::shared_ptr<Histogram> mHistogram;
     int mOpacity;
     Style mStyle;
     Polarity mPolarity;

@@ -28,6 +28,8 @@
 #include <displayoptionsdialog.h>
 #include <topsdbmanager.h>
 #include <QActionGroup>
+#include <smartcolorbarwidget.h>
+
 
 namespace sliceviewer {
 
@@ -135,7 +137,10 @@ void VolumeViewer2D::addVolume(QString name){
     auto r=volume->valueRange();
     vitem->colorTable()->setRange(r);
     vitem->setVolume(volume);
-
+    HistogramCreator creator;
+    auto histogram=creator.createHistogram(std::begin(*vitem->volume()), std::end(*vitem->volume()),
+                                                     vitem->volume()->NULL_VALUE,256);
+    vitem->setHistogram(std::make_shared<Histogram>(histogram));
     ui->volumeView->volumeItemModel()->add(vitem);
 
     if( ui->volumeView->volumeItemModel()->size()==1){
@@ -323,19 +328,18 @@ void VolumeViewer2D::onVolumesChanged(){
         Q_ASSERT(idx>=0);
         auto vitem=dynamic_cast<VolumeItem*>(ui->volumeView->volumeItemModel()->at(idx));
         if(!vitem) continue;
+        if(!vitem->histogram()) continue;
 
-        auto colorbar = new ColorBarWidget(this);
+        auto colorbar = new SmartColorBarWidget(this);
         colorbar->setMinimumSize(150,300);
         colorbar->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(colorbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(colorBarContextMenuRequested(QPoint)));
-        //m_colorbarsLayout->addWidget(colorbar);
         auto mdiColorbar=ui->mdiArea->addSubWindow(colorbar, Qt::WindowMinMaxButtonsHint | Qt::WindowTitleHint );
         mdiColorbar->setWindowIcon( QIcon(QPixmap(1,1)) );  // no icon
         mdiColorbar->setWindowTitle(name);
         auto colortable=vitem->colorTable();
         colorbar->setColorTable(colortable);
-        colorbar->setLabel("");//name);
-        colorbar->setPrecision(3);
+        colorbar->setHistogram(*vitem->histogram());
         colorbar->show();
         m_mdiColorbars.insert(name, mdiColorbar);
     }
@@ -681,7 +685,7 @@ void VolumeViewer2D::on_mdiArea_customContextMenuRequested(const QPoint &pos)
 
 void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
 
-    ColorBarWidget* cbwidget=dynamic_cast<ColorBarWidget*>(sender());
+    auto cbwidget=dynamic_cast<SmartColorBarWidget*>(sender());
     if(!cbwidget) return;
     ColorTable* ct=cbwidget->colorTable();
     if(!ct) return;
@@ -690,7 +694,17 @@ void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
     menu.addAction("Scaling");
     menu.addAction("Colors");
     auto res=menu.exec(cbwidget->mapToGlobal(pos));
+    if(!res) return;
     if(res->text()=="Scaling"){
+        auto histogram=cbwidget->histogram();
+        HistogramRangeSelectionDialog displayRangeDialog;
+        displayRangeDialog.setWindowTitle(QString("Scaling"));
+        displayRangeDialog.setRange(ct->range());
+        displayRangeDialog.setColorTable(ct);       // all connections with ble are made by dialog
+        displayRangeDialog.setHistogram(histogram);
+        displayRangeDialog.exec();
+
+        /*
         auto dlg=new SimpleScalingDialog(this);
         dlg->setWindowTitle("Configure scaling");
         dlg->setMinimum(ct->range().first);
@@ -701,6 +715,7 @@ void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
             ct->setPower(dlg->power());
         }
         delete dlg;
+        */
     }
     else if(res->text()=="Colors"){
         auto dlg=new ColorTableDialog(ct->colors(), this);

@@ -51,7 +51,8 @@ SOURCES += gridui.cpp \
     tableitemsdialog.cpp \
     displayoptionsdialog.cpp \
     displayoptions.cpp \
-    imageprocessing.cpp
+    imageprocessing.cpp \
+    smartcolorbarwidget.cpp
 
 HEADERS += gridui.h\
         gridui_global.h \
@@ -86,7 +87,8 @@ HEADERS += gridui.h\
     displayoptionsdialog.h \
     displayoptions.h \
     imageprocessing.h \
-    statistics.h
+    statistics.h \
+    smartcolorbarwidget.h
 
 unix {
     target.path = /usr/lib
