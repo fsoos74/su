@@ -11,6 +11,29 @@ HScaleView::HScaleView(QWidget* parent, Qt::Alignment alignment):AxisView(parent
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
+void HScaleView::setColor(QColor color){
+    if(color==m_color) return;
+    m_color=color;
+    update();
+}
+
+void HScaleView::setLabelFont(QFont font){
+    if(font==m_labelFont) return;
+    m_labelFont=font;
+    update();
+}
+
+void HScaleView::setMainTickFont(QFont font){
+    if(font==m_mainTickFont) return;
+    m_mainTickFont=font;
+    update();
+}
+
+void HScaleView::setSubTickFont(QFont font){
+    if(font==m_subTickFont) return;
+    m_subTickFont=font;
+    update();
+}
 
 void HScaleView::mouseDoubleClickEvent(QMouseEvent *){
     AxisConfigDialog::configAxis( xAxis(), tr("Configure X-Axis") );
@@ -44,12 +67,13 @@ void HScaleView::drawBottom(QPainter *painter, const QRectF &rect){
     }
     if( !ltext.isEmpty()){
         painter->setFont(m_labelFont);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(ltext);
         painter->drawText( width()/2 - br.width()/2, height()-br.height(), ltext);
     }
 
-    QPen mainTickPen(Qt::black, 2 );
-    QPen subTickPen(Qt::black, 1);
+    QPen mainTickPen(m_color, 2 );
+    QPen subTickPen(m_color, 1);
     mainTickPen.setCosmetic(true);
     subTickPen.setCosmetic(true);
     int mainTickLen=5;
@@ -61,6 +85,7 @@ void HScaleView::drawBottom(QPainter *painter, const QRectF &rect){
 
     auto xticks=xAxis()->computeTicks( xAxis()->toAxis(rect.left()), xAxis()->toAxis(rect.right() ) );
     for( auto tick : xticks){
+
         painter->setPen( (tick.type == Axis::Tick::Type::Main ) ? mainTickPen : subTickPen);
         int len = (tick.type == Axis::Tick::Type::Main) ? mainTickLen : subTickLen;
         qreal x=xAxis()->toScene(tick.value);
@@ -74,8 +99,9 @@ void HScaleView::drawBottom(QPainter *painter, const QRectF &rect){
 
         QFont font = (tick.type == Axis::Tick::Type::Main ) ? m_mainTickFont : m_subTickFont;
         painter->setFont(font);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(tick.label);
-        int xv = pbv.x() - br.height()/2;
+        int xv = std::max(0,pbv.x() - br.height()/2);
         int yv = pbv.y()+mainTickLen;
         painter->translate(xv,yv);
         painter->rotate(90);
@@ -96,12 +122,13 @@ void HScaleView::drawTop(QPainter *painter, const QRectF &rect){
     }
     if( !ltext.isEmpty()){
         painter->setFont(m_labelFont);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(ltext);
         painter->drawText( width()/2 - br.width()/2, br.height(), ltext);
     }
 
-    QPen mainTickPen(Qt::black, 2 );
-    QPen subTickPen(Qt::black, 1);
+    QPen mainTickPen(m_color, 2 );
+    QPen subTickPen(m_color, 1);
     mainTickPen.setCosmetic(true);
     subTickPen.setCosmetic(true);
     int mainTickLen=5;
@@ -113,6 +140,7 @@ void HScaleView::drawTop(QPainter *painter, const QRectF &rect){
 
     auto xticks=xAxis()->computeTicks( xAxis()->toAxis(rect.left()), xAxis()->toAxis(rect.right() ) );
     for( auto tick : xticks){
+
         painter->setPen( (tick.type == Axis::Tick::Type::Main ) ? mainTickPen : subTickPen);
         int len = (tick.type == Axis::Tick::Type::Main) ? mainTickLen : subTickLen;
         qreal x=xAxis()->toScene(tick.value);
@@ -126,8 +154,9 @@ void HScaleView::drawTop(QPainter *painter, const QRectF &rect){
 
         QFont font = (tick.type == Axis::Tick::Type::Main ) ? m_mainTickFont : m_subTickFont;
         painter->setFont(font);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(tick.label);
-        int xv = pbv.x() - br.height()/2;
+        int xv = std::max(0,pbv.x() - br.height()/2);
         int yv = pbv.y()-mainTickLen-br.width();
         painter->translate(xv,yv);
         painter->rotate(90);

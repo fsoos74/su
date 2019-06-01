@@ -11,10 +11,27 @@ class VScaleView : public AxisView
 public:
     VScaleView(QWidget* parent=nullptr, Qt::Alignment align=Qt::AlignLeft);
 
-    //QSize sizeHint(){return QSize(50, 500);}
-    //Qt::Alignment alignment()const{
-    //    return m_alignment;
-    //}
+    QColor color()const{
+        return m_color;
+    }
+
+    QFont labelFont()const{
+        return m_labelFont;
+    }
+
+    QFont mainTickFont()const{
+        return m_mainTickFont;
+    }
+
+    QFont subTickFont()const{
+        return m_subTickFont;
+    }
+
+public slots:
+    void setColor(QColor);
+    void setLabelFont(QFont);
+    void setMainTickFont(QFont);
+    void setSubTickFont(QFont);
 
 protected:
     void mouseDoubleClickEvent(QMouseEvent*);
@@ -27,6 +44,7 @@ private:
     void  drawRight(QPainter *painter, const QRectF &rect);
 
     //Qt::Alignment m_alignment;
+    QColor m_color=Qt::darkGray;
     QFont m_labelFont = QFont("Helvetica [Cronyx]", 11, QFont::Bold);
     QFont m_mainTickFont = QFont("Helvetica [Cronyx]", 10, QFont::Bold);
     QFont m_subTickFont = QFont("Helvetica [Cronyx]", 10);

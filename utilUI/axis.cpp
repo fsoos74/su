@@ -209,14 +209,18 @@ std::vector<Axis::Tick> Axis::computeTicksLinear( qreal start, qreal stop )const
     for( long i=first; i<=last; i++ ){
         qreal t=i*w;
         QString lbl=QString::number(t, 'g', m_labelPrecision);
-        ticks.push_back(Tick{Tick::Type::Main, t, lbl} );
+        if(t>=start && t<=stop){
+            ticks.push_back(Tick{Tick::Type::Main, t, lbl} );
+        }
 
         // sub ticks
         for( int j=1; j<=m_nsub; j++){
             qreal s=t + j*wsub;
             QString lbl;
             if( m_labelSubTicks ) lbl=QString::number(s);
-            ticks.push_back(Tick{Tick::Type::Sub, s, lbl} );
+            if(s>=start && s<=stop){
+                ticks.push_back(Tick{Tick::Type::Sub, s, lbl} );
+            }
         }
     }
 
@@ -241,13 +245,17 @@ std::vector<Axis::Tick> Axis::computeTicksLogarithmic( qreal start, qreal stop )
     for( long i=i1; i<=i2; i++){
        double t=std::pow( 10., double(i) );
        QString lbl=QString::number(t, 'g', m_labelPrecision);
-       ticks.push_back(Axis::Tick{Axis::Tick::Type::Main, t, lbl});
+       if(t>=start && t<=stop){
+        ticks.push_back(Axis::Tick{Axis::Tick::Type::Main, t, lbl});
+       }
 
        for( int j=1; j<m_nsub; j++){
            double s=std::pow( 10., i+1) *(double(j+1)/(m_nsub+1));
            QString lbl;
            if( m_labelSubTicks) lbl=QString::number(s);
-           ticks.push_back(Axis::Tick{Axis::Tick::Type::Sub, s, lbl});
+           if(s>=start && s<=stop){
+                ticks.push_back(Axis::Tick{Axis::Tick::Type::Sub, s, lbl});
+           }
        }
 
    }

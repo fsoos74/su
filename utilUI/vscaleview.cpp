@@ -12,6 +12,29 @@ VScaleView::VScaleView(QWidget* parent, Qt::Alignment alignment):AxisView(parent
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
+void VScaleView::setColor(QColor color){
+    if(color==m_color) return;
+    m_color=color;
+    update();
+}
+
+void VScaleView::setLabelFont(QFont font){
+    if(font==m_labelFont) return;
+    m_labelFont=font;
+    update();
+}
+
+void VScaleView::setMainTickFont(QFont font){
+    if(font==m_mainTickFont) return;
+    m_mainTickFont=font;
+    update();
+}
+
+void VScaleView::setSubTickFont(QFont font){
+    if(font==m_subTickFont) return;
+    m_subTickFont=font;
+    update();
+}
 
 void VScaleView::mouseDoubleClickEvent(QMouseEvent *){
     AxisConfigDialog::configAxis( zAxis(), tr("Configure Z-Axis") );
@@ -44,14 +67,15 @@ void VScaleView::drawLeft(QPainter *painter, const QRectF &rect){
     }
     if( !ltext.isEmpty()){
         painter->setFont(m_labelFont);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(ltext);
         painter->rotate(90);
         painter->drawText( height()/2 - br.width()/2, -br.height(), ltext);
         painter->rotate(-90);
     }
 
-    QPen mainTickPen(Qt::black, 2 );
-    QPen subTickPen(Qt::black, 1);
+    QPen mainTickPen(m_color, 2 );
+    QPen subTickPen(m_color, 1);
     mainTickPen.setCosmetic(true);
     subTickPen.setCosmetic(true);
     int mainTickLen=5;
@@ -75,8 +99,10 @@ void VScaleView::drawLeft(QPainter *painter, const QRectF &rect){
 
         QFont font = (tick.type == Axis::Tick::Type::Main ) ? m_mainTickFont : m_subTickFont;
         painter->setFont(font);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(tick.label);
-        painter->drawText( prv.x() - 2*mainTickLen - br.width(), prv.y() + br.height()/2 , tick.label );
+        int y=std::min(prv.y() + br.height()/2, height());
+        painter->drawText( prv.x() - 2*mainTickLen - br.width(), y , tick.label );
     }
 
 }
@@ -91,14 +117,15 @@ void VScaleView::drawRight(QPainter *painter, const QRectF &rect){
     }
     if( !ltext.isEmpty()){
         painter->setFont(m_labelFont);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(ltext);
         painter->rotate(90);
         painter->drawText( height()/2 - br.width()/2, -width()+br.height(), ltext);
         painter->rotate(-90);
     }
 
-    QPen mainTickPen(Qt::black, 2 );
-    QPen subTickPen(Qt::black, 1);
+    QPen mainTickPen(m_color, 2 );
+    QPen subTickPen(m_color, 1);
     mainTickPen.setCosmetic(true);
     subTickPen.setCosmetic(true);
     int mainTickLen=5;
@@ -122,6 +149,7 @@ void VScaleView::drawRight(QPainter *painter, const QRectF &rect){
 
         QFont font = (tick.type == Axis::Tick::Type::Main ) ? m_mainTickFont : m_subTickFont;
         painter->setFont(font);
+        painter->setPen(QPen(m_color));
         auto br = painter->fontMetrics().boundingRect(tick.label);
         painter->drawText( prv.x() + 2*mainTickLen, prv.y() + br.height()/2 , tick.label );
     }
