@@ -28,6 +28,8 @@ RulerAxisView::RulerAxisView(QWidget* parent):AxisView(parent)
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
+    m_cornerWidget=new QWidget(this);
+
     updateLayout();
 }
 
@@ -50,6 +52,16 @@ void RulerAxisView::setHScaleAlignment(Qt::Alignment a){
 void RulerAxisView::setVScaleAlignment(Qt::Alignment a){
     if( a==m_vscaleView->alignment()) return;
     m_vscaleView->setAlignment(a);
+    updateLayout();
+}
+
+// this takes ownership of widget and deletes old corner widget!
+void RulerAxisView::setCornerWidget(QWidget* w){
+    if(w==m_cornerWidget) return;
+    auto old=m_cornerWidget;
+    m_cornerWidget=w;
+    if(old) delete old;
+    w->setParent(this);
     updateLayout();
 }
 
@@ -96,7 +108,7 @@ void RulerAxisView::updateLayout(){
     setViewportMargins( margins ); // RULER_WIDTH, 0, 0, RULER_HEIGHT);
     m_vscaleView->setGeometry( vx, viewport()->y(), RULER_WIDTH, viewport()->height() );
     m_hscaleView->setGeometry( viewport()->x(), hy, viewport()->width(), RULER_HEIGHT );
-
+    m_cornerWidget->setGeometry( 0, 0, RULER_WIDTH, RULER_HEIGHT);
     setUpdatesEnabled( true );
 
     //std::cout<<"vp w="<<viewport()->width()<<" h="<<viewport()->height()<<std::endl;

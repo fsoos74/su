@@ -22,9 +22,14 @@ public:
         return m_vscaleView;
     }
 
+    QWidget* cornerWidget()const{
+        return m_cornerWidget;
+    }
+
 public slots:
     void setHScaleAlignment(Qt::Alignment);
     void setVScaleAlignment(Qt::Alignment);
+    void setCornerWidget(QWidget*);
 
 protected:
     virtual void refreshScene()=0;
@@ -33,8 +38,9 @@ protected:
 private:
     void updateLayout();
 
-    HScaleView* m_hscaleView;
-    VScaleView* m_vscaleView;
+    HScaleView* m_hscaleView=nullptr;
+    VScaleView* m_vscaleView=nullptr;
+    QWidget* m_cornerWidget=nullptr;
 };
 
 

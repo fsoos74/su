@@ -42,7 +42,8 @@ void VScaleView::mouseDoubleClickEvent(QMouseEvent *){
 
 void VScaleView::drawBackground(QPainter *painter, const QRectF &rect){
 
-    painter->eraseRect(rect);
+    //painter->eraseRect(rect);
+    painter->fillRect(rect,this->palette().background());
 
     painter->save();
 
