@@ -33,7 +33,7 @@ void SmartColorBarWidget::paintEvent(QPaintEvent* event){
     QWidget::paintEvent(event);
     QPainter painter(this);
     // reserve spacw for top and bottom histogram range value label
-    auto gap=3*painter.fontMetrics().xHeight();
+    auto gap=2*painter.fontMetrics().boundingRect("1234.5678E9").height();
     auto histHeight=height()-2*gap;
 
     // draw histogram

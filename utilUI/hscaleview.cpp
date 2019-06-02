@@ -1,7 +1,7 @@
 #include "hscaleview.h"
 #include<axisconfigdialog.h>
 #include<cmath>
-
+#include<QGraphicsScene>
 
 
 HScaleView::HScaleView(QWidget* parent, Qt::Alignment alignment):AxisView(parent)//, m_alignment(alignment)
