@@ -25,6 +25,7 @@ class HorizonItem;
 class VolumeItem;
 class WellItem;
 class TableItem;
+class CompassWidget;
 
 class VolumeView : public RulerAxisView
 {
@@ -81,7 +82,6 @@ public:
     int adjustToVolume(SliceType t, int v);
 
 public slots:
-
     void setSlice(VolumeView::SliceDef);
     void setDisplayOptions(const DisplayOptions&);
 
@@ -101,6 +101,7 @@ protected:
 private slots:
     void updateBounds();
     void updateAxes();
+    void updateCompass();
     void refreshSceneCaller();
     void onVolumeItemModelChanged();
 
@@ -128,11 +129,8 @@ private:
     double dz(int i, int j)const;  // shift z-value based on flattening if defined, return nan if not defined
     QLineF intersectSlices(const SliceDef& s1, const SliceDef& s2);
 
-    QTransform m_xy_to_ilxl, m_ilxl_to_xy;
+    CompassWidget* mCompassWidget;
     VolumePicker* m_picker;
-
-    SliceDef m_slice;
-
     ViewItemModel* mHorizonItemModel;
     ViewItemModel* mVolumeItemModel;
     ViewItemModel* mWellItemModel;
@@ -140,6 +138,8 @@ private:
     ViewItemModel* mTableItemModel;
     DisplayOptions mDisplayOptions;
 
+    SliceDef m_slice;
+    QTransform m_xy_to_ilxl, m_ilxl_to_xy;
     Grid3DBounds m_bounds;
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;
     std::pair<double,double> m_flattenRange;

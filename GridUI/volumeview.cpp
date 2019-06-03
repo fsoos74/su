@@ -14,7 +14,7 @@
 #include"tableitem.h"
 #include"viewitemmodel.h"
 #include"imageprocessing.h"
-
+#include"compasswidget.h"
 
 namespace sliceviewer {
 
@@ -194,6 +194,7 @@ QVector<QPointF> intersectTableTime(const Table &table, int time, float EPS=0.01
 
 
 VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent),
+    mCompassWidget(new CompassWidget(this)),
     m_picker(new VolumePicker(this)),
     mHorizonItemModel(new ViewItemModel(this)),
     mVolumeItemModel(new ViewItemModel(this)),
@@ -202,6 +203,7 @@ VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent),
     mTableItemModel(new ViewItemModel(this)),
     m_flattenRange(0.,0.)
 {
+    setCornerWidget(mCompassWidget);
     setMouseMode(MouseMode::Explore);
     connect(mVolumeItemModel,SIGNAL(changed()), this, SLOT(onVolumeItemModelChanged()));
     connect(mVolumeItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
@@ -227,6 +229,7 @@ void VolumeView::setDisplayOptions(const DisplayOptions & opts){
     setRenderHint(QPainter::RenderHint::Antialiasing, mDisplayOptions.isAntiliasing());
     if(axeschanged){
         updateAxes();
+        updateCompass();
         inlineOrientationChanged(opts.inlineOrientation());
     }
     refreshScene();
@@ -295,6 +298,7 @@ void VolumeView::setSlice(SliceDef d){
 
     m_slice=d;
     updateAxes();
+    updateCompass();
     refreshScene();
 
     if( d.type==oldType){ // keep zoom if same slice type
@@ -1163,6 +1167,49 @@ void VolumeView::updateAxes(){
     zoomFitWindow();
 }
 
+void VolumeView::updateCompass(){
+    switch( m_slice.type){
+    case SliceType::Inline:
+        mCompassWidget->setMode(CompassWidget::Mode::HORIZONTAL_DIRECTION);
+        break;
+    case SliceType::Crossline:
+        mCompassWidget->setMode(CompassWidget::Mode::HORIZONTAL_DIRECTION);
+        break;
+    case SliceType::Z:
+        mCompassWidget->setMode(CompassWidget::Mode::NEEDLE);
+        if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
+            // compute angle between vector from bottom right il/xl to top left il/xl and north
+            auto il0=xAxis()->min();
+            auto il1=xAxis()->max();
+            if(xAxis()->isReversed()){
+                std::swap(il0,il1);
+            }
+            auto xl0=zAxis()->min();
+            auto xl1=zAxis()->max();
+            if(zAxis()->isReversed()){
+                std::swap(xl0,xl1);
+            }
+            QPointF ilxl0(il0,xl0);
+            QPointF ilxl1(il1,xl1);
+            QPointF xy0=m_ilxl_to_xy.map(ilxl0);
+            QPointF xy1=m_ilxl_to_xy.map(ilxl1);
+            auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
+            std::cout<<"il0="<<il0<<" xl0="<<xl0<<" il1="<<il1<<" xl1="<<xl1
+                    <<" alpha="<<180*alpha/M_PI<<std::endl<<std::flush;
+
+            // compute angle of screen vertor bottom right to top left and y-axis
+            auto dy=zAxis()->viewPixelLength();
+            auto dx=xAxis()->viewPixelLength();
+            auto beta=std::atan2(dy,dx);
+            std::cout<<"dx="<<dx<<" dy="<<dy<<" beta="<<180*beta/M_PI<<std::endl<<std::flush;
+
+            auto angle=alpha-beta;
+            mCompassWidget->setAngle(angle);
+        }
+        break;
+    }
+}
+
 QTransform VolumeView::swappedIlineXlineTransform()const{
     QTransform tf;
     tf.scale(1,-1);
@@ -1228,6 +1275,7 @@ void VolumeView::updateBounds(){
     m_bounds=bounds;
 
     updateAxes();
+    updateCompass();
 }
 
 

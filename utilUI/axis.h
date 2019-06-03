@@ -87,6 +87,10 @@ public:
         return m_labelPrecision;
     }
 
+    int viewPixelLength()const{
+        return m_viewPixelLength;
+    }
+
     qreal toScene(const qreal&)const;
     qreal toAxis(const qreal&)const;
 
@@ -146,7 +150,7 @@ private:
     qreal m_minSelection=0;                     // in axis coords
     qreal m_maxSelection=0;                     // in axis coords
     qreal m_cursorPosition=NO_CURSOR;           // in axis coords
-    int m_labelPrecision=6;                          // double conversion format for labels
+    int m_labelPrecision=6;                     // double conversion format for labels
     int m_viewPixelLength=100;
     Axis* m_buddy=nullptr;
 };
