@@ -1172,14 +1172,49 @@ void VolumeView::updateAxes(){
 }
 
 void VolumeView::updateCompass(){
+    const double RTOD=57.29577951;
     switch( m_slice.type){
-    case SliceType::Inline:
+    case SliceType::Inline:{
         mCompassWidget->setMode(CompassWidget::Mode::HORIZONTAL_DIRECTION);
+        auto il=m_bounds.i1();
+        auto xl0=m_bounds.j1();
+        auto xl1=m_bounds.j2();
+        if(xAxis()->isReversed()){
+            std::swap(xl0,xl1);
+        }
+        QPointF ilxl0(il,xl0);
+        QPointF ilxl1(il,xl1);
+        QPointF xy0=m_ilxl_to_xy.map(ilxl0);
+        QPointF xy1=m_ilxl_to_xy.map(ilxl1);
+        // counter clockwise angle between x-axis and inline
+        auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
+        alpha*=RTOD;   // convert to degrees
+        // convert to azimuth, ie clockwise angle between inline and y-axis(north)
+        auto az=90.-alpha;
+        mCompassWidget->setAngle(az);
         break;
-    case SliceType::Crossline:
+    }
+    case SliceType::Crossline:{
         mCompassWidget->setMode(CompassWidget::Mode::HORIZONTAL_DIRECTION);
+        auto xl=m_bounds.j1();
+        auto il0=m_bounds.i1();
+        auto il1=m_bounds.i2();
+        if(xAxis()->isReversed()){
+            std::swap(il0,il1);
+        }
+        QPointF ilxl0(il0,xl);
+        QPointF ilxl1(il1,xl);
+        QPointF xy0=m_ilxl_to_xy.map(ilxl0);
+        QPointF xy1=m_ilxl_to_xy.map(ilxl1);
+        // counter clockwise angle between x-axis and crossline
+        auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
+        alpha*=RTOD;   // convert to degrees
+        // convert to azimuth, ie clockwise angle between inline and y-axis(north)
+        auto az=90.-alpha;
+        mCompassWidget->setAngle(az);
         break;
-    case SliceType::Z:
+    }
+    case SliceType::Z:{
         mCompassWidget->setMode(CompassWidget::Mode::NEEDLE);
         if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
             // compute angle between inlines and geographic x-axis
@@ -1194,11 +1229,10 @@ void VolumeView::updateCompass(){
             QPointF xy0=m_ilxl_to_xy.map(ilxl0);
             QPointF xy1=m_ilxl_to_xy.map(ilxl1);
             auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
-            alpha=180*alpha/M_PI;   // convert to degrees
+            alpha*=RTOD;   // convert to degrees
             if( xAxis()->isReversed()){
                 alpha+=180;
             }
-            std::cout<<"il="<<il<<" xl0="<<xl0<<" xl1="<<xl1<<" alpha="<<180*alpha/M_PI<<std::endl<<std::flush;
             auto angle=alpha+90;    // make angle refere to y-axis
             mCompassWidget->setAngle(angle);
         }
@@ -1215,15 +1249,15 @@ void VolumeView::updateCompass(){
             QPointF xy0=m_ilxl_to_xy.map(ilxl0);
             QPointF xy1=m_ilxl_to_xy.map(ilxl1);
             auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
-            alpha=180*alpha/M_PI;   // convert to degrees
+            alpha*=RTOD;   // convert to degrees
             if( xAxis()->isReversed()){
                 alpha+=180;
             }
-            std::cout<<"il0="<<il0<<" il1="<<il1<<" xl="<<xl<<" alpha="<<180*alpha/M_PI<<std::endl<<std::flush;
             auto angle=alpha+90;    // make angle refere to y-axis
             mCompassWidget->setAngle(angle);
         }
         break;
+    }
     }
 }
 

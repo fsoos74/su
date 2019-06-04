@@ -43,6 +43,7 @@ public slots:
 protected:
     virtual void paintEvent(QPaintEvent*)override;
     virtual void drawNeedle(QPainter&);
+    virtual void drawHorizontalDirection(QPainter&);
 
 private:
     Mode mMode=Mode::NONE;
