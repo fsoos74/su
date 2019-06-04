@@ -2,6 +2,7 @@
 #define COMPASSWIDGET_H
 
 #include <QWidget>
+#include <QColor>
 
 namespace sliceviewer{
 
@@ -28,11 +29,16 @@ public:
         return mAngle;
     }
 
+    QColor color()const{
+        return mColor;
+    }
+
 signals:
 
 public slots:
     void setMode(CompassWidget::Mode);
     void setAngle(float);
+    void setColor(QColor);
 
 protected:
     virtual void paintEvent(QPaintEvent*)override;
@@ -41,6 +47,7 @@ protected:
 private:
     Mode mMode=Mode::NONE;
     float mAngle=0;
+    QColor mColor=Qt::red;
 };
 
 }

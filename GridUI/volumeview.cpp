@@ -213,6 +213,10 @@ VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent),
     connect(mWellItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
     connect(mMarkerItemModel,SIGNAL(changed()), this, SLOT(refreshSceneCaller()));
     connect(mMarkerItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
+    connect(xAxis(),SIGNAL(reversedChanged(bool)),this,SLOT(updateCompass()));
+    connect(xAxis(),SIGNAL(rangeChanged(double,double)), this, SLOT(updateCompass()));
+    connect(zAxis(),SIGNAL(reversedChanged(bool)),this,SLOT(updateCompass()));
+    connect(zAxis(),SIGNAL(rangeChanged(double,double)), this, SLOT(updateCompass()));
     updateBounds();
     refreshScene();
 }
@@ -1178,32 +1182,45 @@ void VolumeView::updateCompass(){
     case SliceType::Z:
         mCompassWidget->setMode(CompassWidget::Mode::NEEDLE);
         if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
-            // compute angle between vector from bottom right il/xl to top left il/xl and north
-            auto il0=xAxis()->min();
-            auto il1=xAxis()->max();
-            if(xAxis()->isReversed()){
-                std::swap(il0,il1);
-            }
+            // compute angle between inlines and geographic x-axis
+            auto il=xAxis()->min();
             auto xl0=zAxis()->min();
             auto xl1=zAxis()->max();
             if(zAxis()->isReversed()){
                 std::swap(xl0,xl1);
             }
-            QPointF ilxl0(il0,xl0);
-            QPointF ilxl1(il1,xl1);
+            QPointF ilxl0(il,xl0);
+            QPointF ilxl1(il,xl1);
             QPointF xy0=m_ilxl_to_xy.map(ilxl0);
             QPointF xy1=m_ilxl_to_xy.map(ilxl1);
             auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
-            std::cout<<"il0="<<il0<<" xl0="<<xl0<<" il1="<<il1<<" xl1="<<xl1
-                    <<" alpha="<<180*alpha/M_PI<<std::endl<<std::flush;
-
-            // compute angle of screen vertor bottom right to top left and y-axis
-            auto dy=zAxis()->viewPixelLength();
-            auto dx=xAxis()->viewPixelLength();
-            auto beta=std::atan2(dy,dx);
-            std::cout<<"dx="<<dx<<" dy="<<dy<<" beta="<<180*beta/M_PI<<std::endl<<std::flush;
-
-            auto angle=alpha-beta;
+            alpha=180*alpha/M_PI;   // convert to degrees
+            if( xAxis()->isReversed()){
+                alpha+=180;
+            }
+            std::cout<<"il="<<il<<" xl0="<<xl0<<" xl1="<<xl1<<" alpha="<<180*alpha/M_PI<<std::endl<<std::flush;
+            auto angle=alpha+90;    // make angle refere to y-axis
+            mCompassWidget->setAngle(angle);
+        }
+        else if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
+            // compute angle between crosslines and geographic x-axis
+            auto xl=xAxis()->min();
+            auto il0=zAxis()->min();
+            auto il1=zAxis()->max();
+            if(zAxis()->isReversed()){
+                std::swap(il0,il1);
+            }
+            QPointF ilxl0(il0,xl);
+            QPointF ilxl1(il1,xl);
+            QPointF xy0=m_ilxl_to_xy.map(ilxl0);
+            QPointF xy1=m_ilxl_to_xy.map(ilxl1);
+            auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
+            alpha=180*alpha/M_PI;   // convert to degrees
+            if( xAxis()->isReversed()){
+                alpha+=180;
+            }
+            std::cout<<"il0="<<il0<<" il1="<<il1<<" xl="<<xl<<" alpha="<<180*alpha/M_PI<<std::endl<<std::flush;
+            auto angle=alpha+90;    // make angle refere to y-axis
             mCompassWidget->setAngle(angle);
         }
         break;
