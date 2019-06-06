@@ -51,7 +51,7 @@ void VolumeItem::setPolarity(VolumeItem::Polarity polarity){
 }
 
 void VolumeItem::setGain(qreal gain){
-    if(gain==mGain) return;
+    if(gain==mGain) return;     // comparison is not unsafe in this case
     mGain=gain;
     emit changed();
 }

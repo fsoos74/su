@@ -1,15 +1,14 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2015-10-03T15:48:10
+# Project created by QtCreator 2019-06-06T10:46:34
 #
 #-------------------------------------------------
 
 QT       += widgets
-QT += sql
-
+QT       += sql
 //QT       -= gui
 
-TARGET = GridUI
+TARGET = LibSliceViewer
 TEMPLATE = lib
 
 include(../common.pri)
@@ -18,56 +17,71 @@ win32{
     CONFIG +=staticlib
 }
 
-DEFINES += GRIDUI_LIBRARY
+DEFINES += LIBSLICEVIEWER_LIBRARY
 
-SOURCES += gridui.cpp \
-    gridview.cpp \
-    displayrangedialog.cpp \
-    isolinedialog.cpp \
-    orientationdialog.cpp \
-    gridviewer.cpp \
-    griddisplayoptionsdialog.cpp \
-    aspectratiodialog.cpp \
-    scaledialog.cpp \
-    griduiutil.cpp \
-    gridselectdialog.cpp \
-    volumepropertydialog.cpp \
-    simplescalingdialog.cpp
 
-HEADERS += gridui.h\
-        gridui_global.h \
-    gridview.h \
-    displayrangedialog.h \
-    isolinedialog.h \
-    orientationdialog.h \
-    gridviewer.h \
-    griddisplayoptionsdialog.h \
-    aspectratiodialog.h \
-    scaledialog.h \
-    griduiutil.h \
-    gridselectdialog.h \
-    volumepropertydialog.h \
-    simplescalingdialog.h
+SOURCES += \
+    libsliceviewer.cpp \
+    compasswidget.cpp \
+    volumeview.cpp \
+    smartcolorbarwidget.cpp \
+    volumeitemsdialog.cpp \
+    volumeitem.cpp \
+    viewitemmodel.cpp \
+    displayoptionsdialog.cpp \
+    displayoptions.cpp \
+    markeritem.cpp \
+    wellitemsdialog.cpp \
+    wellitem.cpp \
+    markeritemsdialog.cpp \
+    volumepicker.cpp \
+    playerdialog.cpp \
+    horizonitemsdialog.cpp \
+    tableitemsdialog.cpp \
+    horizonitem.cpp \
+    tableitem.cpp \
+    viewitem.cpp \
+    sliceviewer.cpp
+
+HEADERS += \
+    libsliceviewer.h \
+    libsliceviewer_global.h \
+    compasswidget.h \
+    volumeview.h \
+    volumeitemsdialog.h \
+    volumeitem.h \
+    smartcolorbarwidget.h \
+    viewitemmodel.h \
+    displayoptions.h \
+    markeritem.h \
+    wellitem.h \
+    volumepicker.h \
+    markeritemsdialog.h \
+    playerdialog.h \
+    tableitemsdialog.h \
+    horizonitem.h \
+    tableitem.h \
+    horizonitemsdialog.h \
+    wellitemsdialog.h \
+    viewitem.h \
+    displayoptionsdialog.h \
+    statistics.h \
+    sliceviewer.h
 
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
 
-
-
 FORMS += \
-    displayrangedialog.ui \
-    isolinedialog.ui \
-    orientationdialog.ui \
-    gridviewer.ui \
-    griddisplayoptionsdialog.ui \
-    aspectratiodialog.ui \
-    scaledialog.ui \
-    gridselectdialog.ui \
-    volumepropertydialog.ui \
-    simplescalingdialog.ui
-
+    displayoptionsdialog.ui \
+    wellitemsdialog.ui \
+    markeritemsdialog.ui \
+    volumeitemsdialog.ui \
+    playerdialog.ui \
+    horizonitemsdialog.ui \
+    tableitemsdialog.ui \
+    sliceviewer.ui
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs

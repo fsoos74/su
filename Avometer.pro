@@ -24,6 +24,8 @@ SUBDIRS += \
     ScatterplotViewer \
     Viewer2D \
     Viewer3D \
+    LibSliceViewer \
     ProjectViewer \
     SEGYCrypt
+
 

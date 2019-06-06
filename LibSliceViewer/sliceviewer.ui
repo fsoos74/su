@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>sliceviewer::VolumeViewer2D</class>
- <widget class="QMainWindow" name="sliceviewer::VolumeViewer2D">
+ <class>sliceviewer::SliceViewer</class>
+ <widget class="QMainWindow" name="sliceviewer::SliceViewer">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -319,7 +319,7 @@
   <connection>
    <sender>actionE_xit</sender>
    <signal>triggered()</signal>
-   <receiver>sliceviewer::VolumeViewer2D</receiver>
+   <receiver>sliceviewer::SliceViewer</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

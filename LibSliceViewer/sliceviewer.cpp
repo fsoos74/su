@@ -1,5 +1,5 @@
-#include "volumeviewer2d.h"
-#include "ui_volumeviewer2d.h"
+#include "sliceviewer.h"
+#include "ui_sliceviewer.h"
 
 #include <QWidget>
 #include <QToolBar>
@@ -12,9 +12,6 @@
 #include <qprogressbar.h>
 
 #include <colortabledialog.h>
-#include <simplescalingdialog.h>
-#include <multiinputdialog.h>
-#include <multiitemselectiondialog.h>
 #include <histogramcreator.h>
 #include <playerdialog.h>
 #include <horizonitem.h>
@@ -36,9 +33,9 @@ namespace sliceviewer {
 
 const char* NO_HORIZON="NONE";
 
-VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
+SliceViewer::SliceViewer(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::VolumeViewer2D)
+    ui(new Ui::SliceViewer)
 {
     ui->setupUi(this);
 
@@ -84,12 +81,12 @@ VolumeViewer2D::VolumeViewer2D(QWidget *parent) :
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, 0});
 }
 
-VolumeViewer2D::~VolumeViewer2D()
+SliceViewer::~SliceViewer()
 {
     delete ui;
 }
 
-void VolumeViewer2D::setProject(AVOProject * p){
+void SliceViewer::setProject(AVOProject * p){
     m_project=p;
     if( !p) return;
 
@@ -125,7 +122,7 @@ void VolumeViewer2D::setProject(AVOProject * p){
     }
 }
 
-void VolumeViewer2D::addVolume(QString name){
+void SliceViewer::addVolume(QString name){
 
     if( !m_project ) return;
 
@@ -149,7 +146,7 @@ void VolumeViewer2D::addVolume(QString name){
 
  }
 
-void VolumeViewer2D::cbSlice_currentIndexChanged(QString)
+void SliceViewer::cbSlice_currentIndexChanged(QString)
 {
     if(m_noupdate) return;
     auto sliceType=static_cast<VolumeView::SliceType>(m_cbSlice->currentData().toInt());
@@ -158,7 +155,7 @@ void VolumeViewer2D::cbSlice_currentIndexChanged(QString)
     ui->volumeView->setSlice(VolumeView::SliceDef{sliceType,v});
 }
 
-void VolumeViewer2D::sbSlice_valueChanged(int arg1)
+void SliceViewer::sbSlice_valueChanged(int arg1)
 {
     if(m_noupdate) return;
 
@@ -166,37 +163,37 @@ void VolumeViewer2D::sbSlice_valueChanged(int arg1)
     ui->volumeView->setSlice(VolumeView::SliceDef{t, arg1});
 }
 
-void VolumeViewer2D::setInlineSliceX(QPointF p){
+void SliceViewer::setInlineSliceX(QPointF p){
 
     int il=static_cast<int>(std::round(p.x()));
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, il});
 }
 
-void VolumeViewer2D::setInlineSliceY(QPointF p){
+void SliceViewer::setInlineSliceY(QPointF p){
 
     int il=static_cast<int>(std::round(p.y()));
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Inline, il});
 }
 
-void VolumeViewer2D::setCrosslineSliceX(QPointF p){
+void SliceViewer::setCrosslineSliceX(QPointF p){
 
     int xl=static_cast<int>(std::round(p.x()));
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Crossline, xl});
 }
 
-void VolumeViewer2D::setCrosslineSliceY(QPointF p){
+void SliceViewer::setCrosslineSliceY(QPointF p){
 
     int xl=static_cast<int>(std::round(p.y()));
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Crossline, xl});
 }
 
-void VolumeViewer2D::setZSlice(QPointF p){
+void SliceViewer::setZSlice(QPointF p){
 
     int z=static_cast<int>(std::round(p.y()));
     ui->volumeView->setSlice(VolumeView::SliceDef{VolumeView::SliceType::Z, z});
 }
 
-void VolumeViewer2D::setFlattenHorizon(QString name){
+void SliceViewer::setFlattenHorizon(QString name){
 
     if( !m_project) return;
 
@@ -210,7 +207,7 @@ void VolumeViewer2D::setFlattenHorizon(QString name){
     ui->volumeView->setFlattenHorizon(hrz);
 }
 
-void VolumeViewer2D::updateSliceConnections(){
+void SliceViewer::updateSliceConnections(){
 
     auto vv=ui->volumeView;
     HScaleView* hsv=ui->volumeView->hscaleView();
@@ -245,7 +242,7 @@ void VolumeViewer2D::updateSliceConnections(){
 
 }
 
-void VolumeViewer2D::setupMouseModes(){
+void SliceViewer::setupMouseModes(){
 
     DynamicMouseModeSelector* mm=new DynamicMouseModeSelector(this);
     mm->addMode(MouseMode::Explore);
@@ -259,7 +256,7 @@ void VolumeViewer2D::setupMouseModes(){
 }
 
 
-void VolumeViewer2D::setupSliceToolBar(){
+void SliceViewer::setupSliceToolBar(){
     m_sliceToolBar=new QToolBar( "Slice", this);
     auto widget=new QWidget(this);
     m_cbSlice=new QComboBox;
@@ -281,7 +278,7 @@ void VolumeViewer2D::setupSliceToolBar(){
     connect(m_sbSlice, SIGNAL(valueChanged(int)), this, SLOT(sbSlice_valueChanged(int)) );
 }
 
-void VolumeViewer2D::setupFlattenToolBar(){
+void SliceViewer::setupFlattenToolBar(){
     m_flattenToolBar=new QToolBar( "Flatten", this);
     auto widget=new QWidget(this);
     m_cbHorizon=new QComboBox;
@@ -294,7 +291,7 @@ void VolumeViewer2D::setupFlattenToolBar(){
     connect(m_cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
 }
 
-void VolumeViewer2D::updateFlattenHorizons(){
+void SliceViewer::updateFlattenHorizons(){
 
     m_cbHorizon->clear();
     m_cbHorizon->addItem(NO_HORIZON);
@@ -306,7 +303,7 @@ void VolumeViewer2D::updateFlattenHorizons(){
     }
 }
 
-void VolumeViewer2D::onVolumesChanged(){
+void SliceViewer::onVolumesChanged(){
 
     auto volumes = ui->volumeView->volumeItemModel()->names();
 
@@ -355,7 +352,7 @@ void VolumeViewer2D::onVolumesChanged(){
      }
 }
 
-void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
+void SliceViewer::onSliceChanged(VolumeView::SliceDef d){
 
     if( m_noupdate) return;
 
@@ -398,7 +395,7 @@ void VolumeViewer2D::onSliceChanged(VolumeView::SliceDef d){
     updateSliceConnections();
 }
 
-void VolumeViewer2D::onMouseOver(QPointF p){
+void SliceViewer::onMouseOver(QPointF p){
 
     int il=0,xl=0;
     float z=0;
@@ -446,7 +443,7 @@ void VolumeViewer2D::onMouseOver(QPointF p){
 
 
 
-void VolumeViewer2D::on_actionSetup_Volumes_triggered()
+void SliceViewer::on_actionSetup_Volumes_triggered()
 {
     Q_ASSERT(m_project);
 
@@ -459,7 +456,7 @@ void VolumeViewer2D::on_actionSetup_Volumes_triggered()
 
 
 
-void VolumeViewer2D::on_actionSetup_Horizons_triggered()
+void SliceViewer::on_actionSetup_Horizons_triggered()
 {
     Q_ASSERT(m_project);
 
@@ -470,7 +467,7 @@ void VolumeViewer2D::on_actionSetup_Horizons_triggered()
     mHorizonItemsDialog->show();
 }
 
-void VolumeViewer2D::on_actionSetup_Wells_triggered()
+void SliceViewer::on_actionSetup_Wells_triggered()
 {
     Q_ASSERT(m_project);
 
@@ -481,7 +478,7 @@ void VolumeViewer2D::on_actionSetup_Wells_triggered()
     mWellItemsDialog->show();
 }
 
-void VolumeViewer2D::on_actionSetup_Tops_triggered()
+void SliceViewer::on_actionSetup_Tops_triggered()
 {
     Q_ASSERT(m_project);
 
@@ -492,7 +489,7 @@ void VolumeViewer2D::on_actionSetup_Tops_triggered()
     mMarkerItemsDialog->show();
 }
 
-void VolumeViewer2D::on_actionSetup_Tables_triggered()
+void SliceViewer::on_actionSetup_Tables_triggered()
 {
     Q_ASSERT(m_project);
 
@@ -504,7 +501,7 @@ void VolumeViewer2D::on_actionSetup_Tables_triggered()
 }
 
 
-void VolumeViewer2D::on_actionDisplay_Options_triggered()
+void SliceViewer::on_actionDisplay_Options_triggered()
 {
     DisplayOptionsDialog dlg;
     dlg.setWindowTitle("Configure display options");
@@ -514,7 +511,7 @@ void VolumeViewer2D::on_actionDisplay_Options_triggered()
     }
 }
 
-void VolumeViewer2D::on_action_Player_triggered()
+void SliceViewer::on_action_Player_triggered()
 {
     if( !m_player){
         m_player=new PlayerDialog(this);
@@ -527,7 +524,7 @@ void VolumeViewer2D::on_action_Player_triggered()
     m_player->show();
 }
 
-bool VolumeViewer2D::canDiscardPicks(){
+bool SliceViewer::canDiscardPicks(){
     if( !ui->volumeView->picker()->isDirty()) return true;
     auto reply = QMessageBox::warning(this, tr("Discard Picks"),
                                       tr("Picks have unsaved changes. Continuing will delete them. Continue?"),
@@ -535,7 +532,7 @@ bool VolumeViewer2D::canDiscardPicks(){
     return reply == QMessageBox::Yes;
 }
 
-void VolumeViewer2D::on_action_New_Picks_triggered()
+void SliceViewer::on_action_New_Picks_triggered()
 {
     if( !canDiscardPicks()) return;
     auto picker=ui->volumeView->picker();
@@ -544,7 +541,7 @@ void VolumeViewer2D::on_action_New_Picks_triggered()
     m_picksName.clear();
 }
 
-void VolumeViewer2D::on_action_Load_Picks_triggered()
+void SliceViewer::on_action_Load_Picks_triggered()
 {
     if( !canDiscardPicks()) return;
 
@@ -564,7 +561,7 @@ void VolumeViewer2D::on_action_Load_Picks_triggered()
     m_picksName=name;
 }
 
-void VolumeViewer2D::on_action_Save_Picks_triggered()
+void SliceViewer::on_action_Save_Picks_triggered()
 {
     if( m_picksName.isEmpty() || !m_project->existsTable(m_picksName)){
         ui->actionSave_As_Picks->trigger();
@@ -580,7 +577,7 @@ void VolumeViewer2D::on_action_Save_Picks_triggered()
     }
 }
 
-void VolumeViewer2D::on_actionSave_As_Picks_triggered()
+void SliceViewer::on_actionSave_As_Picks_triggered()
 {
     QString name=m_picksName;
     bool ok;
@@ -609,7 +606,7 @@ void VolumeViewer2D::on_actionSave_As_Picks_triggered()
 }
 
 
-void VolumeViewer2D::closeEvent(QCloseEvent *event)
+void SliceViewer::closeEvent(QCloseEvent *event)
 {
     if( !canDiscardPicks()){
         event->ignore();
@@ -623,7 +620,7 @@ void VolumeViewer2D::closeEvent(QCloseEvent *event)
    */
 }
 
-void VolumeViewer2D::keyPressEvent(QKeyEvent * event){
+void SliceViewer::keyPressEvent(QKeyEvent * event){
 
     std::cout<<"GatherViewer::keyPressEvent"<<std::endl<<std::flush;
 
@@ -640,7 +637,7 @@ void VolumeViewer2D::keyPressEvent(QKeyEvent * event){
     event->accept();
 }
 
-void VolumeViewer2D::updatePickModeActions(){
+void SliceViewer::updatePickModeActions(){
     if(!ui->volumeView->picker()) return;
     switch(ui->volumeView->picker()->pickMode()){
     case VolumePicker::PickMode::Points:
@@ -655,7 +652,7 @@ void VolumeViewer2D::updatePickModeActions(){
     }
 }
 
-void VolumeViewer2D::updatePickModePicker(){
+void SliceViewer::updatePickModePicker(){
     if(!ui->volumeView->picker()) return;
     if(ui->actionPickPoints->isChecked()){
         ui->volumeView->picker()->setPickMode(VolumePicker::PickMode::Points);
@@ -668,7 +665,7 @@ void VolumeViewer2D::updatePickModePicker(){
     }
 }
 
-void VolumeViewer2D::on_mdiArea_customContextMenuRequested(const QPoint &pos)
+void SliceViewer::on_mdiArea_customContextMenuRequested(const QPoint &pos)
 {
     QMenu popup;
     popup.addAction("tiles");
@@ -683,7 +680,7 @@ void VolumeViewer2D::on_mdiArea_customContextMenuRequested(const QPoint &pos)
     }
 }
 
-void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
+void SliceViewer::colorBarContextMenuRequested(const QPoint &pos){
 
     auto cbwidget=dynamic_cast<SmartColorBarWidget*>(sender());
     if(!cbwidget) return;
@@ -704,18 +701,6 @@ void VolumeViewer2D::colorBarContextMenuRequested(const QPoint &pos){
         displayRangeDialog.setHistogram(histogram);
         displayRangeDialog.exec();
 
-        /*
-        auto dlg=new SimpleScalingDialog(this);
-        dlg->setWindowTitle("Configure scaling");
-        dlg->setMinimum(ct->range().first);
-        dlg->setMaximum(ct->range().second);
-        dlg->setPower(ct->power());
-        if(dlg->exec()==QDialog::Accepted){
-            ct->setRange(dlg->minimum(), dlg->maximum());
-            ct->setPower(dlg->power());
-        }
-        delete dlg;
-        */
     }
     else if(res->text()=="Colors"){
         auto dlg=new ColorTableDialog(ct->colors(), this);

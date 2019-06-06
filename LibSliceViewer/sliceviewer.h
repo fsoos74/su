@@ -1,5 +1,5 @@
-#ifndef VOLUMEVIEWER2D_H
-#define VOLUMEVIEWER2D_H
+#ifndef SLICEEVIEWER_H
+#define SLICEVIEWER_H
 
 #include <QMainWindow>
 #include <avoproject.h>
@@ -19,7 +19,7 @@
 namespace sliceviewer {
 
 namespace Ui {
-class VolumeViewer2D;
+class SliceViewer;
 }
 
 class VolumeItemsDialog;
@@ -28,13 +28,13 @@ class WellItemsDialog;
 class MarkerItemsDialog;
 class TableItemsDialog;
 
-class VolumeViewer2D : public QMainWindow
+class SliceViewer : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit VolumeViewer2D(QWidget *parent = 0);
-    ~VolumeViewer2D();
+    explicit SliceViewer(QWidget *parent = 0);
+    ~SliceViewer();
 
     void setProject(AVOProject*);
 
@@ -91,7 +91,7 @@ private:
     void setupPickingToolBar();
     void updateFlattenHorizons();
 
-    Ui::VolumeViewer2D *ui;
+    Ui::SliceViewer *ui;
     DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
     QComboBox* m_cbSlice;
     ReverseSpinBox* m_sbSlice;

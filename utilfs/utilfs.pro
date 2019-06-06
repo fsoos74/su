@@ -21,7 +21,7 @@ DEFINES += UTILFS_LIBRARY
 SOURCES += utilfs.cpp \
     interp.cpp \
     fft.cpp \
-    spectrum.cpp  
+    spectrum.cpp
 
 HEADERS += utilfs.h\
         utilfs_global.h \
@@ -34,7 +34,7 @@ HEADERS += utilfs.h\
     interp.h \
     volumedimensions.h \
     tree2d.h \
-    matrix.h   
+    matrix.h
 
 unix {
     target.path = /usr/lib

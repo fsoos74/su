@@ -57,11 +57,11 @@ private:
 
     std::shared_ptr<Volume> mVolume;
     std::shared_ptr<Histogram> mHistogram;
+    ColorTable* mColorTable;
     int mOpacity;
     Style mStyle;
     Polarity mPolarity;
     qreal mGain;
-    ColorTable* mColorTable;
 };
 
 }

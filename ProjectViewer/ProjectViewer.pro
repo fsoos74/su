@@ -182,6 +182,14 @@ else:unix: LIBS += -L$$OUT_PWD/../GridUI/ -lGridUI
 INCLUDEPATH += $$PWD/../GridUI
 DEPENDPATH += $$PWD/../GridUI
 
+#sliceviewer
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../LibSliceViewer/release/ -lLibSliceViewer
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../LibSliceViewer/debug/ -lLibSliceViewer
+else:unix: LIBS += -L$$OUT_PWD/../LibSliceViewer/ -lLibSliceViewer
+
+INCLUDEPATH += $$PWD/../LibSliceViewer
+DEPENDPATH += $$PWD/../LibSliceViewer
+
 
 #crossplotviewer
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../CrossplotViewer/release/ -lCrossplotViewer

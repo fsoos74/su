@@ -48,6 +48,7 @@ QImage grid2image_column(const Grid1D<float>& g1d, const ColorTable& ct){
     return img;
 }
 
+/*
 // x==j, y==i
 QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
     auto b2d=g2d.bounds();
@@ -63,6 +64,7 @@ QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
     }
     return img;
 }
+*/
 
 // x==i, y==j
 QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct){
@@ -131,7 +133,7 @@ QPainterPath grid1d2va(const Grid1D<float>& g1d){
     }
     return path;
 }
-
+/*
 QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
 
     QPainterPath path;
@@ -159,7 +161,7 @@ QPainterPath grid1d2hpath(const Grid1D<float>& g1d){
 
     return path;
 }
-
+*/
 QVector<QPointF> intersectTableIline(const Table &table, int iline){
 
     auto points=table.atKey1(iline);

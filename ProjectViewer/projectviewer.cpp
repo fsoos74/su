@@ -12,7 +12,7 @@
 #include <multiitemselectiondialog.h>
 #include <multiinputdialog.h>
 #include <xyzimportdialog.h>
-#include <volumeviewer2d.h>
+#include <sliceviewer.h>
 #include <volumepropertydialog.h>
 #include <logpropertiesdialog.h>
 #include<QFileDialog>
@@ -2184,7 +2184,7 @@ void ProjectViewer::on_actionColor_Composite_Grids_triggered()
 
 void ProjectViewer::on_actionOpen_Slice_Viewer_triggered()
 {
-    auto viewer=new sliceviewer::VolumeViewer2D;
+    auto viewer=new sliceviewer::SliceViewer;
     viewer->setProject(m_project);
     viewer->setWindowTitle("2D Volume Viewer");
     viewer->show();
@@ -3236,7 +3236,7 @@ void ProjectViewer::displayVolumeRelativeSlice( const QString& name){
 
 void ProjectViewer::displayVolumes(const QStringList & names){
 
-    auto viewer=new sliceviewer::VolumeViewer2D;
+    auto viewer=new sliceviewer::SliceViewer;
     viewer->setProject(m_project);
     viewer->show();
     for( auto name:names){
