@@ -30,6 +30,7 @@ QMap<QString,QString> SmoothLogDialog::params(){
 
     p.insert( QString("method"), ui->cbMethod->currentText() );
     p.insert( "aperture", QString::number(ui->sbAperture->value()));
+    p.insert( "retain-values", QString::number(ui->cbRetainValues->isChecked()));
     p.insert( "input-log", ui->cbInput->currentText() );
     p.insert( "output-log", ui->leOutput->text() );
     p.insert( "unit", ui->leUnit->text());

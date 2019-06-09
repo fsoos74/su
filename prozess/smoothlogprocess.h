@@ -30,6 +30,7 @@ private:
     QString m_descr;
     QString m_inputName;
     int m_aperture;
+    bool m_retainValues;
 
     SmoothProcessor m_processor;
 };

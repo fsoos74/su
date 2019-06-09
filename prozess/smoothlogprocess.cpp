@@ -24,7 +24,7 @@ ProjectProcess::ResultCode SmoothLogProcess::init( const QMap<QString, QString>&
     try{
         func=getParam(parameters, "method");
         m_aperture=getParam( parameters, "aperture").toInt();
-
+        m_retainValues=static_cast<bool>( getParam( parameters, "retain-values").toInt());
         m_outputName=getParam(parameters, "output-log");
         m_unit=getParam( parameters, "unit");
         m_descr=getParam(parameters, "description");
@@ -76,21 +76,22 @@ ProjectProcess::ResultCode SmoothLogProcess::processWell(QString well){
     m_processor.setInputNullValue(inputLog->NULL_VALUE);
 
     for( int i=0; i<outputLog->nz(); i++){
+        double res=inputLog->at(i);
 
-        m_processor.clearInput();
-
-        int jmin=std::max( 0, i-hw);
-        int jmax=std::min( outputLog->nz()-1, i+hw);
-        for( int j=jmin; j<=jmax; j++){
-            auto value=(*inputLog)[j];
-            auto dist=std::abs(i-j);
-            m_processor.addInput(value, dist);
+        // compute new value only if required
+        if( !m_retainValues || res==inputLog->NULL_VALUE){
+            m_processor.clearInput();
+            int jmin=std::max( 0, i-hw);
+            int jmax=std::min( outputLog->nz()-1, i+hw);
+            for( int j=jmin; j<=jmax; j++){
+                auto value=(*inputLog)[j];
+                auto dist=std::abs(i-j);
+                m_processor.addInput(value, dist);
+            }
+            res=m_processor.compute();
         }
 
-        auto res=m_processor.compute();
-
-        if( res!=m_processor.NULL_VALUE) (*outputLog)[i]=res;
-
+        (*outputLog)[i]=res;
     }
 
     if( !project()->addLog( well, m_outputName, *outputLog ) ){
