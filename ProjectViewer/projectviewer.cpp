@@ -234,6 +234,7 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<fstream>
 #include<set>
 #include<las_reader.h>
+#include<multilogviewer.h>
 
 #ifdef USE_KEYLOCK_LICENSE
 #include<QApplication>
@@ -5319,3 +5320,10 @@ void ProjectViewer::on_actionIntercept_And_Gradient_Volume_old_triggered()
 
 
 
+
+void ProjectViewer::on_actionOpen_test_log_viewer_triggered()
+{
+    auto viewer=new logviewer::MultiLogViewer();
+    viewer->setAttribute(Qt::WA_DeleteOnClose);
+    viewer->show();
+}

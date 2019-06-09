@@ -200,6 +200,8 @@ private slots:
 
     void on_actionExport_Logs_triggered();
 
+    void on_actionOpen_test_log_viewer_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

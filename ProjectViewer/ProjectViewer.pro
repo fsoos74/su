@@ -190,6 +190,15 @@ else:unix: LIBS += -L$$OUT_PWD/../LibSliceViewer/ -lLibSliceViewer
 INCLUDEPATH += $$PWD/../LibSliceViewer
 DEPENDPATH += $$PWD/../LibSliceViewer
 
+#logviewer  (NEW)
+win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../LibLogViewer/release/ -lLibLogViewer
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../LibLogViewer/debug/ -lLibLogViewer
+else:unix: LIBS += -L$$OUT_PWD/../LibLogViewer/ -lLibLogViewer
+
+INCLUDEPATH += $$PWD/../LibLogViewer
+DEPENDPATH += $$PWD/../LibLogViewer
+
+
 
 #crossplotviewer
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../CrossplotViewer/release/ -lCrossplotViewer
