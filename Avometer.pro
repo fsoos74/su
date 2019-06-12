@@ -25,8 +25,9 @@ SUBDIRS += \
     Viewer2D \
     Viewer3D \
     LibSliceViewer \
+    LibLogViewer \
     ProjectViewer \
-    SEGYCrypt \
-    LibLogViewer
+    SEGYCrypt
+
 
 
