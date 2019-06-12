@@ -1,8 +1,4 @@
 
-extern "C" {
-#include<Python.h>
-}
-
 #include "runvolumescriptprocess.h"
 
 #include <avoproject.h>
@@ -14,8 +10,10 @@ extern "C" {
 #include<QPointF>
 #include<QObject>
 #include<QThread>
+#include<QScriptEngine>
+#include<QScriptValue>
+#include<QScriptValueList>
 
-#include<cstdio>
 
 RunVolumeScriptProcess::RunVolumeScriptProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Run Volume Script"), project, parent){
@@ -122,258 +120,65 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::init( const QMap<QString, QSt
         return ResultCode::Error;
     }
 
-
-
-    std::cout<<"Run Volume Process Params:"<<std::endl;
-    std::cout<<"result: "<<m_volumeName.toStdString()<<std::endl;
-    for(int i=0; i<m_inputVolumeName.size(); i++){
-        std::cout<<"input volume "<<i+1<<": "<<m_inputVolumeName[i].toStdString()<<std::endl;
-    }
-    for(int i=0; i<m_inputGridName.size(); i++){
-        std::cout<<"input grid "<<i+1<<": "<<m_inputGridName[i].toStdString()<<std::endl;
-    }
-
     return ResultCode::Ok;
 }
 
 ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
 
+    QScriptEngine engine;
+    QScriptValue fun=engine.evaluate(tr("(") +m_script+ tr(")"));
+    if(engine.hasUncaughtException()){
+        int line = engine.uncaughtExceptionLineNumber();
+        auto message=engine.uncaughtException().toString();
+        setErrorString(QString("Error in line %1: %2").arg(QString::number(line), message));
+        return ResultCode::Error;
+    }
 
-    // need this on windows
-#ifdef _WIN32
-    char PythonHome[]="Python27";
-    Py_SetPythonHome(PythonHome);
-#endif
-    // init
-    Py_Initialize();
+    Grid3DBounds bounds=m_volume->bounds();
 
-
-
-    PyObject* mainModule = PyImport_AddModule("__main__");
-   if( mainModule==NULL){
-       PyErr_Print();
-       setErrorString("Adding main module failed!");
-       return ResultCode::Error;
-   }
-
-   // redirect stdout/stderr
-   std::string stdOutErr =
-"import sys\n"
-"class CatchOutErr:\n"
-"  def __init__(self):\n"
-"    self.value = ''\n"
-"  def write(self, txt):\n"
-"    self.value += txt\n"
-"catchOutErr = CatchOutErr()\n"
-"sys.stdout = catchOutErr\n"
-"sys.stderr = catchOutErr\n"; //this is python code to redirect stdouts/stderr
-
-   int result=PyRun_SimpleString(stdOutErr.c_str());
-   if( result == -1 ){
-       PyErr_Print();
-       setErrorString("Error running output redirection script");
-       return ResultCode::Error;
-   }
-
-
-
-   try{
-
-   Grid3DBounds bounds=m_volume->bounds();
-
-   // add common variables for execution envronment
-   // define environment before running the script - vars can be accessed on startup
-   PyObject* iline1=PyInt_FromLong(bounds.i1());
-   if( iline1==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE1", iline1) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyObject* iline2=PyInt_FromLong(bounds.i2());
-   if( iline2==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE2", iline2) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyObject* xline1=PyInt_FromLong(bounds.j1());
-   if( xline1==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE1", xline1) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyObject* xline2=PyInt_FromLong(bounds.j2());
-   if( xline2==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE2", xline2) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyObject* ft=PyFloat_FromDouble(bounds.ft());
-   if( ft==NULL || -1==PyObject_SetAttrString(mainModule,"FT", ft) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyObject* dt=PyFloat_FromDouble(bounds.dt());
-   if( dt==NULL || -1==PyObject_SetAttrString(mainModule,"DT", dt) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyObject* nt=PyInt_FromLong(bounds.nt());
-   if( nt==NULL || -1==PyObject_SetAttrString(mainModule,"NT", nt) ){
-           throw std::runtime_error("Adding execution environment variable failed!");
-   }
-
-   PyRun_SimpleString(m_script.toStdString().c_str());
-
-   PyObject* transformFunc = PyObject_GetAttrString(mainModule, "transform");
-   if( !transformFunc ){
-     throw std::runtime_error("retrieving transform func failed!");
-   }
-
-    // iterate over all cdps and samples
 
     emit currentTask("Iterating cdps");
-    emit started(bounds.ni());
+    emit started(bounds.ni()*bounds.nj());
     qApp->processEvents();
 
 
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
 
-        // add inline as variable for script execution
-        PyObject* iline=PyInt_FromLong(i);
-        if( iline==NULL || -1==PyObject_SetAttrString(mainModule,"ILINE", iline) ){
-                throw std::runtime_error("Adding execution environment variable failed!");
-        }
-
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
-            // add crossline as variable for script execution
-            PyObject* xline=PyInt_FromLong(j);
-            if( xline==NULL || -1==PyObject_SetAttrString(mainModule,"XLINE", xline) ){
-                    throw std::runtime_error("Adding execution environment variable failed!");
-            }
-
-
 
             for( int k=0; k<bounds.nt(); k++){
 
-                // add sample time as variable for script execution
-                double t=bounds.sampleToTime(k);
-                PyObject* time=PyFloat_FromDouble(t);
-                if( time==NULL || -1==PyObject_SetAttrString(mainModule,"TIME", time) ){
-                        throw std::runtime_error("Adding execution environment variable failed!");
+                // input values
+                QScriptValueList args;
+
+                // add volume values
+                for( int vi=0; vi<m_inputVolume.size(); vi++){
+
+                    // null values are not translated explicitly because isfinite is called in scripts
+                    args<<(*m_inputVolume[vi])(i,j,k);
                 }
 
+                for( int gi=0; gi<m_inputGrid.size(); gi++){
 
-                // build argument tuple
-                PyObject* argsTuple=PyTuple_New( m_inputVolume.size()+ m_inputGrid.size());
-                if( !argsTuple ){
-                    throw std::runtime_error("creating function argument tuple failed!");
+                    // null values are not translated explicitly because isfinite is called in scripts
+                    args<<(*m_inputGrid[gi])(i,j);
                 }
 
-                //std::cout<<i<<" "<<j<<" "<<k<<std::endl<<std::flush;
-                int ii=0;
-
-                for( int vi=0; vi<m_inputVolume.size(); vi++, ii++){
-
-                    double in=(*m_inputVolume[vi])(i,j,k);
-                    // in python use infinty as NULL_VALUE
-                    if( in ==m_inputVolume[vi]->NULL_VALUE ){
-                        in=std::numeric_limits<double>::infinity();
-                    }
-                    PyObject* p_in=PyFloat_FromDouble(in);
-                    if( p_in==NULL){
-                        throw std::runtime_error("creating function argument double object failed!");
-                    }
-
-                    // Set_Item steals the reference, no decref required
-                    if( PyTuple_SetItem(argsTuple, ii, p_in )!=0 ){
-                        throw std::runtime_error("adding value to argument tuple failed!");
-                    }
-
+                // compute output sample
+                QScriptValue result = fun.call(QScriptValue(), args);
+                if(engine.hasUncaughtException()){
+                    setErrorString(tr("Error occured: ")+result.toString());
+                    return ResultCode::Error;
                 }
-
-                for( int gi=0; gi<m_inputGrid.size(); gi++, ii++){
-
-                    double in=(*m_inputGrid[gi])(i,j);
-                    // in python use infinty as NULL_VALUE
-                    if( in ==m_inputGrid[gi]->NULL_VALUE ){
-                        in=std::numeric_limits<double>::infinity();
-                    }
-                    PyObject* p_in=PyFloat_FromDouble(in);
-                    if( p_in==NULL){
-                        throw std::runtime_error("creating function argument double object failed!");
-                    }
-
-                    // Set_Item steals the reference, no decref required
-                    if( PyTuple_SetItem(argsTuple, ii, p_in )!=0 ){
-                        throw std::runtime_error("adding value to argument tuple failed!");
-                    }
-
-                }
-
-
-                // Invoke the function, passing the argument tuple.
-                PyObject* result = PyObject_Call(transformFunc, argsTuple, NULL);
-                if( !result ){
-                    throw std::runtime_error("invoking function failed!");
-                }
-
-               // Convert the result to a double
-               double resultDouble(PyFloat_AsDouble(result));
-
-               // Free all temporary Python objects.
-                Py_DECREF(time);
-                Py_DECREF(argsTuple);
-                Py_DECREF(result);
-
-                // correct different NULL_VALUE
-                if( resultDouble==std::numeric_limits<double>::infinity()){
-                    resultDouble=m_volume->NULL_VALUE;
-                }
-
-                // assign function resultto result grid
-                (*m_volume)(i,j,k)=resultDouble;
+                auto res=result.toNumber();
+                (*m_volume)(i,j,k)=std::isfinite(res) ? res : m_volume->NULL_VALUE;
             }
 
-            Py_DECREF( xline );
-
+            emit progress((i-bounds.i1())*bounds.nj()+j);
+            qApp->processEvents();
         }
 
-        Py_DECREF(iline);
-
-        emit progress(i-bounds.i1());
-        qApp->processEvents();
-
     }
-
-    // cleanup
-    Py_DECREF(transformFunc);
-
-    }
-    catch( std::exception& ex){
-
-        PyErr_Print();
-
-        PyObject *catcher = PyObject_GetAttrString(mainModule,"catchOutErr"); //get our catchOutErr created above
-
-        if( !catcher ){
-            setErrorString("Accessing catcher failed!");
-            return ResultCode::Error;
-        }
-
-        PyObject *output = PyObject_GetAttrString(catcher,"value"); //get the stdout and stderr from our catchOutErr object
-        if( !output ){
-            setErrorString("Accessing output failed!");
-            return ResultCode::Error;
-        }
-
-        setErrorString(PyString_AsString(output));
-        //std::cerr<<PyString_AsString(output)<<std::flush; //it's not in our C++ portion
-
-        Py_Finalize();
-
-
-        return ResultCode::Error;
-    }
-
-
-    Py_Finalize();
 
     emit currentTask("Saving result volume");
     emit started(1);

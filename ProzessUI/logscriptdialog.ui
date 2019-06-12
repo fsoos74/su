@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>644</width>
+    <width>921</width>
     <height>456</height>
    </rect>
   </property>
@@ -23,6 +23,24 @@
          <width>300</width>
          <height>0</height>
         </size>
+       </property>
+       <property name="plainText">
+        <string>/*
+  This function will be called for each output sample.
+  The input log's values are passed as function arguments in the order they are defined.
+  Null values in input can be detected with the isFinite function, null values as result are returned as NaN. 
+  Example function with three input logs: 
+  function(a,b,c){
+       if( !isFinite(a) || !isFinite(b) || !isFinite(c) ){
+          return NaN;
+       }
+      return a+b+c;
+}
+*/
+
+function(){
+  return NaN;
+}</string>
        </property>
       </widget>
      </item>

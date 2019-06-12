@@ -11,17 +11,9 @@
 #include<QPointF>
 #include<QObject>
 #include<QThread>
-
-#include<cstdio>
-
-extern "C" {
-#include<Python.h>
-}
-
-namespace Python{
-PyObject* mainModule;       // NEED UGLY GLOBAL, failed to create pyobject class member!!!
-PyObject* transformFunc;
-};
+#include<QScriptEngine>
+#include<QScriptValue>
+#include<QScriptValueList>
 
 LogScriptProcess::LogScriptProcess( AVOProject* project, QObject* parent) :
     ProjectProcess( QString("Log Script"), project, parent){
@@ -105,182 +97,30 @@ ProjectProcess::ResultCode LogScriptProcess::initWell(QString well){
     return ResultCode::Ok;
 }
 
-
-ProjectProcess::ResultCode LogScriptProcess::initPython(){
-
-    // need this on windows
-#ifdef _WIN32
-    char PythonHome[]="Python27";
-    Py_SetPythonHome(PythonHome);
-#endif
-    // init
-    Py_Initialize();
-
-
-    Python::mainModule = PyImport_AddModule("__main__");
-   if( Python::mainModule==NULL){
-       PyErr_Print();
-       setErrorString("Adding main module failed!");
-       return ResultCode::Error;
-   }
-
-   // redirect stdout/stderr
-   std::string stdOutErr =
-"import sys\n"
-"class CatchOutErr:\n"
-"  def __init__(self):\n"
-"    self.value = ''\n"
-"  def write(self, txt):\n"
-"    self.value += txt\n"
-"catchOutErr = CatchOutErr()\n"
-"sys.stdout = catchOutErr\n"
-"sys.stderr = catchOutErr\n"; //this is python code to redirect stdouts/stderr
-
-   int result=PyRun_SimpleString(stdOutErr.c_str());
-   if( result == -1 ){
-       PyErr_Print();
-       setErrorString("Error running output redirection script");
-       return ResultCode::Error;
-   }
-
-   PyRun_SimpleString(m_script.toStdString().c_str());
-
-   Python::transformFunc = PyObject_GetAttrString(Python::mainModule, "transform");
-   if( !Python::transformFunc ){
-        setErrorString("Retrieving transform func failed!");
-        return ResultCode::Error;
-   }
-
-   return ResultCode::Ok;
-}
-
-void LogScriptProcess::finishPython(){
-
-    // cleanup
-    Py_DECREF(Python::transformFunc);
-    Py_Finalize();
-}
-
 ProjectProcess::ResultCode LogScriptProcess::processWell(QString well){
 
+   QScriptEngine engine;
+   QScriptValue fun=engine.evaluate(tr("(") +m_script+ tr(")"));
+   if(engine.hasUncaughtException()){
+       int line = engine.uncaughtExceptionLineNumber();
+       auto message=engine.uncaughtException().toString();
+       setErrorString(QString("Error in line %1: %2").arg(QString::number(line), message));
+       return ResultCode::Error;
+   }
 
-   try{
-
-
-    // finally run script / iterate
-
-    // add common variables for execution envronment
-    // define environment before running the script - vars can be accessed on startup
-
-    auto mainModule=Python::mainModule;
-
-    PyObject* NULL_VALUE=PyFloat_FromDouble(m_log->NULL_VALUE);
-    if( NULL_VALUE==NULL || -1==PyObject_SetAttrString(mainModule,"NULL", NULL_VALUE) ){
-            throw std::runtime_error("Adding execution environment variable failed!");
-    }
-
-    PyObject* dz=PyFloat_FromDouble(m_log->dz());
-    if( dz==NULL || -1==PyObject_SetAttrString(mainModule,"DZ", dz) ){
-            throw std::runtime_error("Adding execution environment variable failed!");
-    }
-
-    PyObject* nz=PyInt_FromLong(m_log->nz());
-    if( nz==NULL || -1==PyObject_SetAttrString(mainModule,"NZ", nz) ){
-            throw std::runtime_error("Adding execution environment variable failed!");
-    }
-
-    auto path=project()->loadWellPath(well);
-
-    for( int i=0; i<m_log->nz(); i++){
-
-        // add  MD as variable for script execution
-        double md=m_log->index2z(i);
-        PyObject* pymd=PyFloat_FromDouble(md);
-        if( pymd==NULL || -1==PyObject_SetAttrString(mainModule,"MD", pymd) ){
-            throw std::runtime_error("Adding execution environment variable failed!");
-        }
-        // add  TVD as variable for script execution
-        double tvd=(path)?path->tvdAtMD(md):md;
-        PyObject* pytvd=PyFloat_FromDouble(tvd);
-        if( pytvd==NULL || -1==PyObject_SetAttrString(mainModule,"TVD", pytvd) ){
-            throw std::runtime_error("Adding execution environment variable failed!");
-        }
-
-        // build argument tuple
-        PyObject* argsTuple=PyTuple_New( m_inputLogs.size());
-        if( !argsTuple ){
-            throw std::runtime_error("creating function argument tuple failed!");
-        }
-
-        for( int k=0; k<m_inputLogs.size(); k++){
-
-
-            double in=(*m_inputLogs[k])[i];
-            // in python use infinty as NULL_VALUE
-            if( in ==m_inputLogs[k]->NULL_VALUE ){
-                in=std::numeric_limits<double>::infinity();
-            }
-            PyObject* p_in=PyFloat_FromDouble(in);
-            if( p_in==NULL){
-                throw std::runtime_error("creating function argument double object failed!");
-            }
-
-            // Set_Item steals the reference, no decref required
-            if( PyTuple_SetItem(argsTuple, k, p_in )!=0 ){
-                throw std::runtime_error("adding value to argument tuple failed!");
-            }
-
-        }
-
-
-        // Invoke the function, passing the argument tuple.
-        PyObject* result = PyObject_Call(Python::transformFunc, argsTuple, NULL);
-        if( !result ){
-            throw std::runtime_error("invoking function failed!");
-        }
-
-       // Convert the result to a double
-       double resultDouble(PyFloat_AsDouble(result));
-
-       // Free all temporary Python objects.
-        Py_DECREF(argsTuple);
-        Py_DECREF(result);
-
-        // correct different NULL_VALUE
-        if( resultDouble==std::numeric_limits<double>::infinity()){
-            resultDouble=m_log->NULL_VALUE;
-        }
-
-        // assign function resultto result grid
-        (*m_log)[i]=resultDouble;
-    }
-
-    }
-    catch( std::exception& ex){
-
-        PyErr_Print();
-
-        PyObject *catcher = PyObject_GetAttrString(Python::mainModule,"catchOutErr"); //get our catchOutErr created above
-
-        if( !catcher ){
-            setErrorString("Accessing catcher failed!");
-            return ResultCode::Error;
-        }
-
-        PyObject *output = PyObject_GetAttrString(catcher,"value"); //get the stdout and stderr from our catchOutErr object
-        if( !output ){
-            setErrorString("Accessing output failed!");
-            return ResultCode::Error;
-        }
-
-        setErrorString(PyString_AsString(output));
-        //std::cerr<<PyString_AsString(output)<<std::flush; //it's not in our C++ portion
-
-        Py_Finalize();
-
-
-        return ResultCode::Error;
-    }
+   for( int i=0; i<m_log->nz(); i++){
+      QScriptValueList args;
+      for( int k=0; k<m_inputLogs.size(); k++){
+           args<<(*m_inputLogs[k])[i];
+      }
+      QScriptValue result = fun.call(QScriptValue(), args);
+      if(engine.hasUncaughtException()){
+          setErrorString(tr("Error occured: ")+result.toString());
+          return ResultCode::Error;
+      }
+      auto res=result.toNumber();
+      (*m_log)[i]=std::isfinite(res) ? res : m_log->NULL_VALUE;
+   }
 
 
     if( !project()->addLog( well, m_log->name().c_str(), *m_log) ){
@@ -296,8 +136,7 @@ ProjectProcess::ResultCode LogScriptProcess::run(){
 
     try{
 
-    auto res=initPython();
-    if( res!=ResultCode::Ok) return res;
+    auto res=ResultCode::Ok;
 
     emit started(m_wells.size());
     int n=0;
@@ -320,7 +159,6 @@ ProjectProcess::ResultCode LogScriptProcess::run(){
     emit finished();
     qApp->processEvents();
 
-    finishPython();
 
     }
     catch(std::exception& ex){

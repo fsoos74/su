@@ -205,7 +205,7 @@ void LogScriptDialog::updateOkButton(){
 void LogScriptDialog::on_pbLoad_clicked()
 {
     QString fn=QFileDialog::getOpenFileName(this,
-        "Open Script", QDir::homePath(), "*.py");
+        "Open Script", QDir::homePath(), "*.js");
 
     if( fn.isNull()) return;
 
@@ -221,7 +221,7 @@ void LogScriptDialog::on_pbLoad_clicked()
 void LogScriptDialog::on_pbSave_clicked()
 {
     QString fileName=QFileDialog::getSaveFileName(this,
-        "Save Script", QDir::homePath(), "*.py");
+        "Save Script", QDir::homePath(), "*.js");
 
 
     if (!fileName.isEmpty()) {

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
-    <height>250</height>
+    <width>899</width>
+    <height>457</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,12 +15,36 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QPlainTextEdit" name="teScript"/>
-     <widget class="QWidget" name="layoutWidget">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QPlainTextEdit" name="teScript">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="plainText">
+        <string>/*
+  This function will be called for each output sample.
+  The input volume's and grid's values are passed as function arguments in the order they are defined.
+  Null values in input can be detected with the isFinite function, null values as result are returned as NaN. 
+  Example function with two input volumes and one input grid: 
+  function(v1,v2,g){
+       if( !isFinite(v1) || !isFinite(v2) || !isFinite(g) ){
+          return NaN;
+       }
+      return g*(v2-v1);
+}
+*/
+
+function(){
+  return NaN;
+}</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -134,8 +158,8 @@
         </spacer>
        </item>
       </layout>
-     </widget>
-    </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

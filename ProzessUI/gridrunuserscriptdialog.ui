@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>580</width>
-    <height>249</height>
+    <width>805</width>
+    <height>467</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,19 +15,37 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <widget class="QPlainTextEdit" name="teScript"/>
-     <widget class="QWidget" name="layoutWidget">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPlainTextEdit" name="teScript">
+       <property name="plainText">
+        <string>/*
+  This function will be called for each output sample.
+  The input grid's values are passed as function arguments in the order they are defined.
+  Null values in input can be detected with the isFinite function, null values as result are returned as NaN. 
+  Example function with three input grids: 
+  function(a,b,c){
+       if( !isFinite(a) || !isFinite(b) || !isFinite(c) ){
+          return NaN;
+       }
+      return a+b+c;
+}
+*/
+
+function(){
+  return NaN;
+}</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
         <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label_3">
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Grid Type:</string>
+            <string>Number of input Grids:</string>
            </property>
           </widget>
          </item>
@@ -41,16 +59,6 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="leResultGrid"/>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Number of input Grids:</string>
-           </property>
-          </widget>
-         </item>
          <item row="2" column="1">
           <widget class="QSpinBox" name="sbInputGrids">
            <property name="minimum">
@@ -58,6 +66,16 @@
            </property>
            <property name="maximum">
             <number>10</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="leResultGrid"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Grid Type:</string>
            </property>
           </widget>
          </item>
@@ -87,8 +105,8 @@
         </spacer>
        </item>
       </layout>
-     </widget>
-    </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

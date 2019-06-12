@@ -8,6 +8,7 @@
 #QT       -= gui
 QT+=widgets     #qApp
 QT+=sql
+QT+=script
 
 win32{
     CONFIG+=staticlib
@@ -15,11 +16,6 @@ win32{
 
 
 include(../common.pri)
-
-#this is in common.prj now
-#QMAKE_CXXFLAGS += -fopenmp
-#QMAKE_LFLAGS += -fopenmp
-
 
 TARGET = prozess
 TEMPLATE = lib
@@ -223,17 +219,6 @@ unix {
     target.path = /usr/lib
     INSTALLS += target
 }
-
-#embed python
-unix {
-    INCLUDEPATH +=/usr/include/python2.7
-    #LIBS += -lpython2.7 -lpthread -ldl -lutil -lm -Xlinker -export-dynamic
-    #QMAKE_CFLAGS += `/usr/bin/python2.7-config --cflags`;
-}
-win32{
-    INCLUDEPATH += C:\Python27\include
-}
-
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../utilfs/release/ -lutilfs
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../utilfs/debug/ -lutilfs
