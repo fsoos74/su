@@ -1517,8 +1517,7 @@ void ProjectViewer::on_actionVolume_Statistics_triggered()
 {
     VolumeStatisticsDialog dlg;
     dlg.setWindowTitle(tr("Volume Statistics"));
-    dlg.setInputVolumes( m_project->volumeList());
-    dlg.setReservedVolumes(m_project->volumeList());
+    dlg.setProject(m_project);
     if( dlg.exec()!=QDialog::Accepted) return;
     QMap<QString,QString> params=dlg.params();
 

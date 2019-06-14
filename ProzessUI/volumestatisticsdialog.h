@@ -4,11 +4,14 @@
 #include <QDialog>
 #include<QMap>
 
+
 #include "processparametersdialog.h"
 
 namespace Ui {
 class VolumeStatisticsDialog;
 }
+
+class AVOProject;
 
 class VolumeStatisticsDialog : public ProcessParametersDialog
 {
@@ -20,14 +23,17 @@ public:
 
     QMap<QString,QString> params();
 
-public slots:
-    void setInputVolumes( const QStringList&);
+    void setProject(AVOProject*);
 
 private slots:
+    void updateHorizons();
+    void updateInputVolumes();
     void updateOkButton();
+
 
 private:
     Ui::VolumeStatisticsDialog *ui;
+    AVOProject* m_project=nullptr;
 };
 
 #endif // VOLUMESTATISTICSDIALOG_H

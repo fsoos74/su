@@ -20,14 +20,42 @@ VolumeStatisticsDialog::~VolumeStatisticsDialog()
     delete ui;
 }
 
-void VolumeStatisticsDialog::setInputVolumes( const QStringList& h){
+void VolumeStatisticsDialog::setProject(AVOProject* project){
+
+    if( project==m_project) return;
+
+    m_project = project;
+
+    updateInputVolumes();
+    updateHorizons();
+}
+
+
+void VolumeStatisticsDialog::updateInputVolumes(){
     ui->cbInputVolume->clear();
-    ui->cbInputVolume->addItems(h);
     ui->cbIldip->clear();
-    ui->cbIldip->addItems(h);
     ui->cbXldip->clear();
+    if(!m_project) return;
+    auto h=m_project->volumeList();
+
+    ui->cbInputVolume->addItems(h);
+    ui->cbIldip->addItems(h);
     ui->cbXldip->addItems(h);
 }
+
+void VolumeStatisticsDialog::updateHorizons(){
+
+    QStringList items;
+    items<<"NONE";
+    if(m_project){
+        items<<m_project->gridList(GridType::Horizon);
+    }
+    ui->cbTopHorizon->clear();
+    ui->cbTopHorizon->addItems(items);
+    ui->cbBottomHorizon->clear();
+    ui->cbBottomHorizon->addItems(items);
+}
+
 
 QMap<QString,QString> VolumeStatisticsDialog::params(){
 
@@ -41,6 +69,9 @@ QMap<QString,QString> VolumeStatisticsDialog::params(){
     p.insert( QString("half-ilines"), QString::number(ui->sbInlines->value()/2) );
     p.insert( QString("half-xlines"), QString::number(ui->sbCrosslines->value()/2) );
     p.insert( QString("half-samples"), QString::number(ui->sbSamples->value()/2) );
+
+    p.insert( "top-horizon", ui->cbTopHorizon->currentText() );
+    p.insert( "bottom-horizon", ui->cbBottomHorizon->currentText() );
 
     p.insert( "track-dips", QString::number( static_cast<int>(ui->cbTrackDips->isChecked() ) ) );
     p.insert( "iline-dip", ui->cbIldip->currentText());

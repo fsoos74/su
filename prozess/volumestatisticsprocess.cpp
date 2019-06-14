@@ -109,6 +109,8 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::init( const QMap<QString, QS
     QString statistic;
     QString ildipname;
     QString xldipname;
+    QString topName;
+    QString bottomName;
     try{
         statistic=getParam(parameters,"statistic");
         m_halfIlines=getParam(parameters,"half-ilines").toUInt();
@@ -119,6 +121,8 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::init( const QMap<QString, QS
         m_track=static_cast<bool>(getParam( parameters, "track-dips").toInt() );
         ildipname=getParam( parameters, "iline-dip");
         xldipname=getParam( parameters, "xline-dip");
+        topName=getParam( parameters, "top-horizon");
+        bottomName=getParam( parameters, "bottom-horizon");
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
@@ -132,6 +136,21 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::init( const QMap<QString, QS
     }
     m_bounds=m_inputVolume->bounds();
 
+    if(topName!="NONE"){
+        m_topHorizon=project()->loadGrid(GridType::Horizon, topName);
+        if(!m_topHorizon){
+            setErrorString(QString("Loading horizon \"%1\" failed!").arg(topName));
+            return ResultCode::Error;
+        }
+    }
+
+    if(bottomName!="NONE"){
+        m_bottomHorizon=project()->loadGrid(GridType::Horizon, bottomName);
+        if(!m_bottomHorizon){
+            setErrorString(QString("Loading horizon \"%1\" failed!").arg(bottomName));
+            return ResultCode::Error;
+        }
+    }
 
     if( m_track ){
         auto ildip=project()->loadVolume(ildipname);
@@ -237,10 +256,28 @@ void VolumeStatisticsProcess::fillBuffer( std::vector<float>& buffer, int i, int
 
     for( int ii=i-m_halfIlines; ii<=i+m_halfIlines; ii++){
         for( int jj=j-m_halfXlines; jj<=j+m_halfXlines; jj++){
+
             if( !m_bounds.isInside(ii,jj)) continue;
-            for( int kk=std::max(0, k-m_halfSamples); kk<=std::min(m_bounds.nt()-1, k+m_halfSamples); kk++){
+            int k0=std::max(0,k-m_halfSamples);
+            if(m_topHorizon){
+                auto tmin=m_topHorizon->valueAt(ii,jj);
+                if(tmin==m_topHorizon->NULL_VALUE) continue;
+                k0=std::max( k0,
+                             static_cast<int>( std::round( ( 0.001*tmin -m_bounds.ft() ) / m_bounds.dt() ) ) );
+            }
+            int k1=std::min(m_bounds.nt()-1,k+m_halfSamples);
+            if(m_bottomHorizon){
+                auto tmax=m_bottomHorizon->valueAt(ii,jj);
+                if(tmax==m_bottomHorizon->NULL_VALUE) continue;
+                k1=std::min( k1,
+                             static_cast<int>( std::round( ( 0.001*tmax -m_bounds.ft() ) / m_bounds.dt() ) ) );
+            }
+            for( int kk=k0; kk<=k1; kk++){
                 auto sam = (*m_inputVolume)(ii,jj,kk);
                 if(sam!=m_inputVolume->NULL_VALUE) buffer.push_back(sam);
+            }
+            if(ii==701 && jj==1539){
+            std::cout<<"ii="<<ii<<" jj="<<jj<<" k="<<k<<" k0="<<k0<<" k1="<<k1<<" n="<<buffer.size()<<std::endl<<std::flush;
             }
         }
     }
@@ -281,9 +318,23 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::run(){
 
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
-
+            int k0=0;
+            if(m_topHorizon){
+                auto tmin=m_topHorizon->valueAt(i,j);
+                if(tmin==m_topHorizon->NULL_VALUE) continue;
+                k0=std::max( k0,
+                             static_cast<int>( std::round( ( 0.001*tmin -m_bounds.ft() ) / m_bounds.dt() ) ) );
+            }
+            int k1=m_bounds.nt();
+            if(m_bottomHorizon){
+                auto tmax=m_bottomHorizon->valueAt(i,j);
+                if(tmax==m_bottomHorizon->NULL_VALUE) continue;
+                k1=std::min( k1,
+                             static_cast<int>( std::round( ( 0.001*tmax -m_bounds.ft() ) / m_bounds.dt() ) ) );
+            }
+            std::cout<<"!!! k0="<<k0<<" k1="<<k1<<std::endl<<std::flush;
             //#pragma omp parallel for
-            for( int k=0; k<bounds.nt(); k++){
+            for( int k=k0; k<k1; k++){
 
                 std::vector<float> buffer;
 

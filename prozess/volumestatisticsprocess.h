@@ -44,6 +44,8 @@ private:
     std::shared_ptr<VolumeDipTracker> m_tracker;
     Grid3DBounds m_bounds;
     std::shared_ptr<Volume > m_volume;
+    std::shared_ptr<Grid2D<float>> m_topHorizon;
+    std::shared_ptr<Grid2D<float>> m_bottomHorizon;
 
     std::function<float(float*,size_t)> m_func;
 };
