@@ -136,17 +136,32 @@ ProjectProcess::ResultCode RunVolumeScriptProcess::run(){
 
     Grid3DBounds bounds=m_volume->bounds();
 
+    engine.globalObject().setProperty("ILINE1", bounds.i1());
+    engine.globalObject().setProperty("ILINE2", bounds.i2());
+    engine.globalObject().setProperty("NILINES", bounds.ni());
+    engine.globalObject().setProperty("XLINE1", bounds.j1());
+    engine.globalObject().setProperty("XLINE2", bounds.j2());
+    engine.globalObject().setProperty("NXLINES", bounds.nj());
+    engine.globalObject().setProperty("FT", bounds.ft());
+    engine.globalObject().setProperty("LT", bounds.lt());
+    engine.globalObject().setProperty("DT", bounds.dt());
+    engine.globalObject().setProperty("NT", bounds.nt());
 
     emit currentTask("Iterating cdps");
     emit started(bounds.ni()*bounds.nj());
     qApp->processEvents();
 
-
     for( int i=bounds.i1(); i<=bounds.i2(); i++){
+
+        engine.globalObject().setProperty("ILINE", i);
 
         for( int j=bounds.j1(); j<=bounds.j2(); j++){
 
+            engine.globalObject().setProperty("XLINE", j);
+
             for( int k=0; k<bounds.nt(); k++){
+
+                engine.globalObject().setProperty("IT", k);
 
                 // input values
                 QScriptValueList args;
