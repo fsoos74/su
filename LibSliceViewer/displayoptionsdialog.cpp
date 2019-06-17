@@ -34,6 +34,7 @@ DisplayOptions DisplayOptionsDialog::displayOptions(){
     opts.setSharpenFilterSize(ui->sbFilterSize->value());
     opts.setSharpenFilterStrength(ui->sbFilterStrength->value());
     opts.setAntiAliasing(ui->cbAntiAliasing->isChecked());
+    opts.setAutoOrientation(ui->cbAutoOrientation->isChecked());
     opts.setInlineOrientation(static_cast<Qt::Orientation>(ui->cbInlineOrientation->currentData().toInt()));
     return opts;
 }
@@ -51,6 +52,7 @@ void DisplayOptionsDialog::setDisplayOptions(const DisplayOptions & opts){
     ui->sbFilterSize->setValue(opts.sharpenFilterSize());
     ui->sbFilterStrength->setValue(opts.sharpenFilterStrength());
     ui->cbAntiAliasing->setChecked(opts.isAntiliasing());
+    ui->cbAutoOrientation->setChecked(opts.isAutoOrientation());
     ui->cbInlineOrientation->setCurrentIndex(
                 ui->cbInlineOrientation->findData(static_cast<int>(opts.inlineOrientation())));
 }

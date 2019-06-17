@@ -1138,8 +1138,92 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
     }
 }
 
-void VolumeView::updateAxes(){
+Qt::Orientation VolumeView::findInlineOrientation(){
     const double RTOD=57.29577951;
+
+    // compute azimuth, i.e. clockwise angle between north(geom y- axis) and inlines
+    auto il=m_bounds.i1();
+    auto xl0=m_bounds.j1();
+    auto xl1=m_bounds.j2();
+    QPointF ilxl0(il,xl0);
+    QPointF ilxl1(il,xl1);
+    QPointF xy0=m_ilxl_to_xy.map(QPointF(il,xl0));
+    QPointF xy1=m_ilxl_to_xy.map(QPointF(il,xl1));
+    // counter clockwise angle between x-axis and inline
+    auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
+    alpha*=RTOD;   // convert to degrees
+    // convert to azimuth, ie clockwise angle between inline and y-axis(north)
+    auto az=90-alpha;
+    while(az<0) az+=360;
+    while(az>=360) az-=360;
+
+    Qt::Orientation ilineOrientation=Qt::Vertical;
+    if(az>=315 || az<45 ){
+        ilineOrientation=Qt::Vertical;
+    }
+    else if(az>=45 && az<135){
+        ilineOrientation=Qt::Horizontal;
+    }
+    else if(az>=135 && az<225){
+        ilineOrientation=Qt::Vertical;
+    }
+    else if(az>=225 && az<315){
+        ilineOrientation=Qt::Horizontal;
+    }
+
+    return ilineOrientation;
+}
+
+void VolumeView::orientateAxes(){
+    auto bounds=m_bounds;
+    switch( m_slice.type){
+    case SliceType::Inline:{
+        auto p1=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j1() ) );
+        auto p2=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j2() ) );
+        if(std::fabs(p2.y()-p1.y())>std::fabs(p2.x()-p1.x())){
+            xAxis()->setReversed( (p1.y()<p2.y() ) );   // south right
+        }
+        else{
+            xAxis()->setReversed( (p2.x()<p1.x() ) );   // east right
+        }
+        zAxis()->setReversed(false);
+        }
+        break;
+    case SliceType::Crossline:{
+        auto p1=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j1() ) );
+        auto p2=m_ilxl_to_xy.map(QPointF(bounds.i2(), bounds.j1() ) );
+        if(std::fabs(p2.y()-p1.y())>std::fabs(p2.x()-p1.x())){
+            xAxis()->setReversed( (p1.y()<p2.y() ) );   // south right
+        }
+        else{
+            xAxis()->setReversed( (p2.x()<p1.x() ) );   // east right
+        }
+        zAxis()->setReversed(false);
+        }
+        break;
+    case SliceType::Z:{
+
+        if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
+            auto p1=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j1() ) );
+            auto p2=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j2() ) );
+            zAxis()->setReversed( (p2.y()>p1.y() ) );   // north up
+            auto p3=m_ilxl_to_xy.map(QPointF(bounds.i2(), bounds.j1() ) );
+            xAxis()->setReversed(p3.x()<p1.x());        // east right
+        }
+        else{
+             auto p1=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j1()));
+            auto p2=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j2()));
+            xAxis()->setReversed(p2.x()<p1.x());        // east right
+            auto p3=m_ilxl_to_xy.map(QPointF(bounds.i2(), bounds.j1()));
+            zAxis()->setReversed( (p3.y()>p1.y() ) );   // north up
+        }
+        }
+        break;
+    }
+}
+
+void VolumeView::updateAxes(){
+
     auto bounds=m_bounds;
 
     switch( m_slice.type){
@@ -1156,63 +1240,29 @@ void VolumeView::updateAxes(){
         zAxis()->setName(tr("Time/Depth"));
         break;
     case SliceType::Z:
-        // compute azimuth, i.e. clockwise angle between north(geom y- axis) and inlines
-        auto il=m_bounds.i1();
-        auto xl0=m_bounds.j1();
-        auto xl1=m_bounds.j2();
-        QPointF ilxl0(il,xl0);
-        QPointF ilxl1(il,xl1);
-        QPointF xy0=m_ilxl_to_xy.map(QPointF(il,xl0));
-        QPointF xy1=m_ilxl_to_xy.map(QPointF(il,xl1));
-        // counter clockwise angle between x-axis and inline
-        auto alpha=std::atan2(xy1.y()-xy0.y(), xy1.x()-xy0.x());
-        alpha*=RTOD;   // convert to degrees
-        // convert to azimuth, ie clockwise angle between inline and y-axis(north)
-        auto az=90-alpha;
-        while(az<0) az+=360;
-        while(az>=360) az-=360;
-        //std::cout<<"alpha="<<alpha<<" az="<<az<<std::endl<<std::flush;
 
-        // best fit of north up
-        Qt::Orientation ilineOrientation=Qt::Vertical;
-        if(az>=315 || az<45 ){
-            ilineOrientation=Qt::Vertical;
+        if(mDisplayOptions.isAutoOrientation()){
+            mDisplayOptions.setInlineOrientation(findInlineOrientation());
         }
-        else if(az>=45 && az<135){
-            ilineOrientation=Qt::Horizontal;
-        }
-        else if(az>=135 && az<225){
-            ilineOrientation=Qt::Vertical;
-        }
-        else if(az>=225 && az<315){
-            ilineOrientation=Qt::Horizontal;
-        }
-        mDisplayOptions.setInlineOrientation(ilineOrientation);
-        if(ilineOrientation==Qt::Vertical){
+        if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
             xAxis()->setRange(bounds.i1(), bounds.i2());
             xAxis()->setName(tr("Inline"));
             zAxis()->setRange(bounds.j1(), bounds.j2());
             zAxis()->setName(tr("Crossline"));
-            auto p1=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j1() ) );
-            auto p2=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j2() ) );
-            zAxis()->setReversed( (p2.y()>p1.y() ) );   // north up
-            auto p3=m_ilxl_to_xy.map(QPointF(bounds.i2(), bounds.j1() ) );
-            xAxis()->setReversed(p3.x()<p1.x());        // east right
         }
         else{
             xAxis()->setRange(bounds.j1(), bounds.j2());
             xAxis()->setName(tr("Crossline"));
             zAxis()->setRange(bounds.i1(), bounds.i2());
             zAxis()->setName(tr("Inline"));
-            auto p1=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j1()));
-            auto p2=m_ilxl_to_xy.map(QPointF(bounds.i1(), bounds.j2()));
-            xAxis()->setReversed(p2.x()<p1.x());        // east right
-            auto p3=m_ilxl_to_xy.map(QPointF(bounds.i2(), bounds.j1()));
-            zAxis()->setReversed( (p3.y()>p1.y() ) );   // north up
         }
-
         break;
     }
+
+    if( mDisplayOptions.isAutoOrientation()){
+        orientateAxes();
+    }
+
     zoomFitWindow();
 }
 

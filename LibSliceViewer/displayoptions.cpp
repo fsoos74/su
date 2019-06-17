@@ -56,6 +56,10 @@ void DisplayOptions::setAntiAliasing(bool on){
     mAntiAliasing=on;
 }
 
+void DisplayOptions::setAutoOrientation(bool on){
+    mAutoOrientatation=on;
+}
+
 void DisplayOptions::setInlineOrientation(Qt::Orientation orientation){
     mInlineOrientation=orientation;
 }

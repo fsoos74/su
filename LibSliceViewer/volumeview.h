@@ -107,6 +107,9 @@ private slots:
 
 private:
 
+    Qt::Orientation findInlineOrientation();
+    void orientateAxes();
+
     void renderVolumes(QGraphicsScene*);
     void renderVolumeIline(QGraphicsScene*, const VolumeItem&, int);
     void renderVolumeXline(QGraphicsScene*, const VolumeItem&, int);

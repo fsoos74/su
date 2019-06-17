@@ -59,6 +59,10 @@ public:
         return mAntiAliasing;
     }
 
+    bool isAutoOrientation()const{
+        return mAutoOrientatation;
+    }
+
     Qt::Orientation inlineOrientation()const{
         return mInlineOrientation;
     }
@@ -75,6 +79,7 @@ public:
     void setSharpenFilterSize(int);
     void setSharpenFilterStrength(int);
     void setAntiAliasing(bool);
+    void setAutoOrientation(bool);
     void setInlineOrientation(Qt::Orientation);
 
 private:
@@ -90,6 +95,7 @@ private:
     int mSharpenFilterSize=3;
     int mSharpenFilterStrength=50;
     bool mAntiAliasing=true;
+    bool mAutoOrientatation=true;
     Qt::Orientation mInlineOrientation=Qt::Vertical;
 };
 
