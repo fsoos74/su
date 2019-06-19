@@ -113,6 +113,8 @@ QMap<QString,QString> ExportVolumeDialog::params(){
 
     p.insert( "null-value", ui->leNULL->text());
 
+    p.insert("description", ui->teDescription->document()->toPlainText());
+
     if( ui->cbRestrictVolume->isChecked()){
         p.insert( QString("min-inline" ), ui->leMinInline->text() );
         p.insert( QString("max-inline" ), ui->leMaxInline->text() );

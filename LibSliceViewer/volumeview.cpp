@@ -102,7 +102,7 @@ QPainterPath grid1d2wiggles(const Grid1D<float>& g1d){
     return path;
 }
 
-QPainterPath grid1d2va(const Grid1D<float>& g1d){
+QPainterPath grid1d2va(const Grid1D<float>& g1d, float threshold=0){
     auto b1d=g1d.bounds();
     QPainterPath path;
     bool active=false;
@@ -112,18 +112,18 @@ QPainterPath grid1d2va(const Grid1D<float>& g1d){
         auto z=i;
         auto x=g1d(i);
         if( x==g1d.NULL_VALUE) continue;
-        if(x>=0){               // inside va
+        if(x>=threshold){               // inside va
             if(!active){        // no area yet, start new
-                auto zxl=(xprev!=g1d.NULL_VALUE) ? lininterp(xprev, zprev,x,z,0) : z;
-                path.moveTo(0,zxl);
+                auto zxl=(xprev!=g1d.NULL_VALUE) ? lininterp(xprev, zprev,x,z,threshold) : z;
+                path.moveTo(threshold,zxl);
                 //path.moveTo(x,z);
                 active=true;
             }
             path.lineTo(x,z);   // line to current point
         }
         else if(active){        // close area
-            auto zxl=lininterp(xprev, zprev, x, z, 0);
-            path.lineTo(0,zxl);
+            auto zxl=lininterp(xprev, zprev, x, z, threshold);
+            path.lineTo(threshold,zxl);
             //path.lineTo(x,z);
             active=false;
             path.closeSubpath();
@@ -1126,7 +1126,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
             scene->addItem(item);
 
             // variable area
-            path=grid1d2va(*g1d);
+            path=grid1d2va(*g1d, stats.mean);
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);

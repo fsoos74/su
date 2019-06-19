@@ -22,7 +22,8 @@ ProjectProcess::ResultCode ExportVolumeProcess::init( const QMap<QString, QStrin
         m_volumeName=getParam(parameters,"volume");
         m_outputFilename=getParam(parameters, "output-file");
         m_nullValue=getParam(parameters, "null-value").toFloat();
-
+        auto desc=getParam(parameters, "description");
+        m_description=desc.split("\n", QString::SkipEmptyParts);
         m_volume=project()->loadVolume(m_volumeName);
         if( !m_volume ){
             setErrorString("Loading volume failed!");
@@ -153,6 +154,10 @@ seismic::SEGYTextHeader ExportVolumeProcess::buildTextHeader()const{
     textHeaderStr.push_back(QString("Inlines:     %1 - %2").arg(m_minInline).arg(m_maxInline).toStdString());
     textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(m_minCrossline).arg(m_maxCrossline).toStdString());
     textHeaderStr.push_back(QString("Time [ms]:   %1 - %2").arg(1000*m_minTime).arg(1000*m_maxTime).toStdString());
+    textHeaderStr.push_back("");
+    for(auto str : m_description){
+        textHeaderStr.push_back(str.toStdString());
+    }
     textHeaderStr.push_back("");
     textHeaderStr.push_back("Trace Header Definition:");
     textHeaderStr.push_back("Time of first sample [ms]  bytes 109-110");
