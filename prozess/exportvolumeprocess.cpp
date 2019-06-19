@@ -150,17 +150,19 @@ seismic::SEGYTextHeader ExportVolumeProcess::buildTextHeader()const{
 
     seismic::SEGYTextHeaderStr textHeaderStr;
     textHeaderStr.push_back("SEGY created with AVO-Detect");
-    textHeaderStr.push_back(QString("Content:     Volume %1").arg(m_volumeName).toStdString());
-    textHeaderStr.push_back(QString("Inlines:     %1 - %2").arg(m_minInline).arg(m_maxInline).toStdString());
-    textHeaderStr.push_back(QString("Crosslines:  %1 - %2").arg(m_minCrossline).arg(m_maxCrossline).toStdString());
-    textHeaderStr.push_back(QString("Time [ms]:   %1 - %2").arg(1000*m_minTime).arg(1000*m_maxTime).toStdString());
+    textHeaderStr.push_back(QString("Volume:           %1").arg(m_volumeName).toStdString());
+    textHeaderStr.push_back(QString("Inline range:     %1 - %2").arg(m_minInline).arg(m_maxInline).toStdString());
+    textHeaderStr.push_back(QString("Crossline range:  %1 - %2").arg(m_minCrossline).arg(m_maxCrossline).toStdString());
+    textHeaderStr.push_back(QString("Time/Depth range: %1 - %2 (step %3)").arg(1000*m_minTime).
+                            arg(1000*m_maxTime).arg(1000*m_volume->dt()).toStdString());
+    textHeaderStr.push_back(QString("Domain:           %1").arg(toQString(m_volume->domain())).toStdString());
     textHeaderStr.push_back("");
     for(auto str : m_description){
         textHeaderStr.push_back(str.toStdString());
     }
     textHeaderStr.push_back("");
     textHeaderStr.push_back("Trace Header Definition:");
-    textHeaderStr.push_back("Time of first sample [ms]  bytes 109-110");
+    textHeaderStr.push_back("Time/depth of first sample bytes 109-110");
     textHeaderStr.push_back("Inline                     bytes 189-192");
     textHeaderStr.push_back("Crossline                  bytes 193-196");
     textHeaderStr.push_back("X-Coordinate               bytes 181-184");

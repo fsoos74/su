@@ -36,7 +36,7 @@ private:
     float m_minTime;
     float m_maxTime;
 
-    std::shared_ptr<Grid3D<float>> m_volume;
+    std::shared_ptr<Volume> m_volume;
 
     QTransform m_IlXlToXY;
     QTransform m_XYToIlXl;

@@ -104,6 +104,8 @@ std::shared_ptr<Volume> VolumeReader2::readData(const Grid3DBounds& bounds){
         return std::shared_ptr<Volume>();
     }
 
+    volume->setDomain(m_domain);
+    volume->setType(m_type);
     if( !readDataIl((char*) volume->data(), volume->bounds().i1(), volume->bounds().ni())) volume.reset();
 
     return volume;
