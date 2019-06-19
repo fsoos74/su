@@ -335,6 +335,7 @@ void SliceViewer::onVolumesChanged(){
         mdiColorbar->setWindowIcon( QIcon(QPixmap(1,1)) );  // no icon
         mdiColorbar->setWindowTitle(name);
         auto colortable=vitem->colorTable();
+        colorbar->setItemName(vitem->name());
         colorbar->setColorTable(colortable);
         colorbar->setHistogram(*vitem->histogram());
         colorbar->show();
@@ -690,6 +691,7 @@ void SliceViewer::colorBarContextMenuRequested(const QPoint &pos){
     QMenu menu;
     menu.addAction("Scaling");
     menu.addAction("Colors");
+    menu.addAction("Setup volumes");
     auto res=menu.exec(cbwidget->mapToGlobal(pos));
     if(!res) return;
     if(res->text()=="Scaling"){
@@ -709,6 +711,15 @@ void SliceViewer::colorBarContextMenuRequested(const QPoint &pos){
             ct->setColors(dlg->colors());
         }
         delete dlg;
+    }
+    else if(res->text()=="Setup volumes"){
+        auto name=cbwidget->itemName();
+        if(!mVolumeItemsDialog){
+            mVolumeItemsDialog=new VolumeItemsDialog(m_project, ui->volumeView->volumeItemModel(), this );
+            mVolumeItemsDialog->setWindowTitle("Setup volumes");
+        }
+        mVolumeItemsDialog->show();
+        mVolumeItemsDialog->setCurrentItem(name);
     }
 }
 

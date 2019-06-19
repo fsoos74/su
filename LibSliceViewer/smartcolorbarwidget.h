@@ -10,6 +10,9 @@ class SmartColorBarWidget : public QWidget
     Q_OBJECT
 public:
     explicit SmartColorBarWidget(QWidget *parent = nullptr);
+    QString itemName()const{
+        return mItemName;
+    }
     ColorTable* colorTable()const{
         return mColorTable;
     }
@@ -20,6 +23,7 @@ public:
 signals:
 
 public slots:
+    void setItemName(QString);
     void setColorTable(ColorTable*);
     void setHistogram(Histogram);
 
@@ -27,6 +31,7 @@ protected:
     void paintEvent(QPaintEvent *) override;
 
 private:
+    QString mItemName;
     ColorTable* mColorTable=nullptr;
     Histogram mHistogram;
 };

@@ -34,6 +34,13 @@ VolumeItemsDialog::~VolumeItemsDialog()
     delete ui;
 }
 
+void VolumeItemsDialog::setCurrentItem(QString name){
+    auto items=ui->lwDisplayed->findItems(name,Qt::MatchExactly);
+    if(items.isEmpty()) return;
+    auto item=items.front();
+    ui->lwDisplayed->setCurrentItem(item);
+}
+
 void VolumeItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
 {
     if(currentRow<0) return;

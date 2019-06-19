@@ -6,6 +6,11 @@ SmartColorBarWidget::SmartColorBarWidget(QWidget *parent) : QWidget(parent)
 
 }
 
+void SmartColorBarWidget::setItemName(QString name){
+    if(name==mItemName) return;
+    mItemName=name;
+    update();
+}
 
 void SmartColorBarWidget::setColorTable(ColorTable* colorTable){
     if(colorTable==mColorTable) return;

@@ -106,7 +106,7 @@ QPainterPath grid1d2va(const Grid1D<float>& g1d){
     auto b1d=g1d.bounds();
     QPainterPath path;
     bool active=false;
-    double xprev=0;
+    double xprev=g1d.NULL_VALUE;
     double zprev=0;
     for( auto i=b1d.i1(); i<=b1d.i2(); i++){
         auto z=i;
@@ -114,7 +114,7 @@ QPainterPath grid1d2va(const Grid1D<float>& g1d){
         if( x==g1d.NULL_VALUE) continue;
         if(x>=0){               // inside va
             if(!active){        // no area yet, start new
-                auto zxl=(i>b1d.i1()) ? lininterp(xprev, zprev,x,z,0) : z;
+                auto zxl=(xprev!=g1d.NULL_VALUE) ? lininterp(xprev, zprev,x,z,0) : z;
                 path.moveTo(0,zxl);
                 //path.moveTo(x,z);
                 active=true;

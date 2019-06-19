@@ -23,6 +23,9 @@ public:
     explicit VolumeItemsDialog(AVOProject* project, ViewItemModel* model, QWidget *parent = 0);
     ~VolumeItemsDialog();
 
+public slots:
+    void setCurrentItem(QString);
+
 private slots:
     void on_lwDisplayed_currentRowChanged(int currentRow);
     void on_pbAdd_clicked();
