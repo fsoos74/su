@@ -424,6 +424,17 @@ public:
         return g1d;
     }
 
+    template<typename TT>
+    std::unique_ptr<Grid1D<T>> atJT(int j, const Grid2D<TT>& t)const{
+        auto b1d=Grid1DBounds(m_bounds.i1(), m_bounds.i2());
+        auto g1d=std::make_unique<Grid1D<T>>(b1d);
+        for(int i=m_bounds.i1(); i<=m_bounds.i2(); i++){
+            (*g1d)(i)=value(i,j,t(i,j));
+        }
+        return g1d;
+    }
+
+
 private:
 
     bounds_type  m_bounds;

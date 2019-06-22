@@ -102,17 +102,24 @@ QPainterPath grid1d2wiggles(const Grid1D<float>& g1d){
     return path;
 }
 
-QPainterPath grid1d2va(const Grid1D<float>& g1d, float threshold=0){
+QPainterPath grid1d2va(const Grid1D<float>& g1d,  VolumeItem::Polarity polarity=VolumeItem::Polarity::NORMAL, float threshold=0){
     auto b1d=g1d.bounds();
     QPainterPath path;
     bool active=false;
     double xprev=g1d.NULL_VALUE;
     double zprev=0;
+    std::function<bool(float)> inside;
+    if(polarity==VolumeItem::Polarity::NORMAL){ // fill positive
+        inside=[&](float x)->bool{return x>=threshold;};
+    }
+    else{                                       // fill negative
+        inside=[&](float x)->bool{return x<=threshold;};
+    }
     for( auto i=b1d.i1(); i<=b1d.i2(); i++){
         auto z=i;
         auto x=g1d(i);
         if( x==g1d.NULL_VALUE) continue;
-        if(x>=threshold){               // inside va
+        if(inside(x)){               // inside va
             if(!active){        // no area yet, start new
                 auto zxl=(xprev!=g1d.NULL_VALUE) ? lininterp(xprev, zprev,x,z,threshold) : z;
                 path.moveTo(threshold,zxl);
@@ -217,6 +224,7 @@ VolumeView::VolumeView(QWidget* parent):RulerAxisView(parent),
     connect(mMarkerItemModel,SIGNAL(itemChanged(ViewItem*)), this, SLOT(refreshSceneCaller()));
     connect(xAxis(),SIGNAL(reversedChanged(bool)),this,SLOT(updateCompass()));
     connect(xAxis(),SIGNAL(rangeChanged(double,double)), this, SLOT(updateCompass()));
+    connect(xAxis(),SIGNAL(reversedChanged(bool)),this,SLOT(refreshSceneCaller()));     // adjust wiggles
     connect(zAxis(),SIGNAL(reversedChanged(bool)),this,SLOT(updateCompass()));
     connect(zAxis(),SIGNAL(rangeChanged(double,double)), this, SLOT(updateCompass()));
     updateBounds();
@@ -915,8 +923,8 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
         auto tx=-stats.rms;
         auto sx=1./(3*stats.sigma);  // 3 standard deviations
         sx*=vitem.gain();
-        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
-            sx*=-1;
+        if(xAxis()->isReversed()){
+            sx=-sx;         // allways plot positive right
         }
 
         for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
@@ -938,7 +946,7 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
             scene->addItem(item);
 
             // variable area
-            path=grid1d2va(*g1d);
+            path=grid1d2va(*g1d, vitem.polarity());
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);
@@ -1003,8 +1011,8 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
         auto tx=-stats.rms;
         auto sx=1./(3*stats.sigma);  // 3 standard deviations
         sx*=vitem.gain();
-        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
-            sx*=-1;
+        if(xAxis()->isReversed()){
+            sx=-sx;         // allways plot positive right
         }
 
         for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
@@ -1026,7 +1034,7 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
             scene->addItem(item);
 
             // variable area
-            path=grid1d2va(*g1d);
+            path=grid1d2va(*g1d, vitem.polarity());
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);
@@ -1059,6 +1067,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
         //auto g2d=vitem->volume()->atT(0.001*t);          // msec -> sec
         auto g2d=vitem.volume()->atT(*times);
         if(!g2d) return;
+        /*
         // apply gain, polarity
         double b=0;
         double m=vitem.gain();
@@ -1069,6 +1078,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
         for( auto &x : *g2d){
             x=b+m*x;
         }
+        */
         auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
         vimg=sharpen(vimg);
         QPixmap pixmap=QPixmap::fromImage(vimg);
@@ -1098,23 +1108,33 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
         auto tx=-stats.rms;
         auto sx=1./(3*stats.sigma);  // 3 standard deviations
         sx*=vitem.gain();
-        if(vitem.polarity()==VolumeItem::Polarity::REVERSED){
-            sx*=-1;
+        if(xAxis()->isReversed()){
+            sx=-sx;         // allways plot positive right
         }
 
 
-        for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
-            //auto g1d=vitem->volume()->atIT(i,0.001*t);
-            auto g1d=v->atIT(i,*times);
+        // always plot amplitude in x-direction
+        int k1=0;
+        int k2=0;
+        if(mDisplayOptions.inlineOrientation()==Qt::Vertical){
+            k1=vbounds.i1();
+            k2=vbounds.i2();
+        }
+        else{
+            k1=vbounds.j1();
+            k2=vbounds.j2();
+        }
+
+        for( auto i = k1; i<=k2; i++){
+
+            auto g1d=(mDisplayOptions.inlineOrientation()==Qt::Vertical) ? v->atIT(i,*times) : v->atJT(i, *times);
+
             if(!g1d) continue;
 
             QTransform tf;
             tf.translate(i,0);
             tf.scale(sx,1);
             tf.translate(tx,0);
-            if(mDisplayOptions.inlineOrientation()==Qt::Horizontal){
-                tf*=swappedIlineXlineTransform();
-            }
 
             // wiggles
             auto path=grid1d2wiggles(*g1d);
@@ -1126,7 +1146,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
             scene->addItem(item);
 
             // variable area
-            path=grid1d2va(*g1d, stats.mean);
+            path=grid1d2va(*g1d, vitem.polarity());
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);
