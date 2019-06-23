@@ -36,6 +36,8 @@ private slots:
     void on_pbScaling_clicked();
     void on_pbApply_clicked();
 
+    void on_cbSeismic_clicked();
+
 private:
     Ui::VolumeItemsDialog *ui;
     AVOProject* mProject;

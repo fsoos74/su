@@ -7,6 +7,7 @@
 #include<colortabledialog.h>
 #include<histogramcreator.h>
 #include<histogramrangeselectiondialog.h>
+#include<QColorDialog>
 
 namespace sliceviewer {
 
@@ -50,6 +51,7 @@ void VolumeItemsDialog::on_lwDisplayed_currentRowChanged(int currentRow)
     ui->cbStyle->setCurrentIndex(ui->cbStyle->findData(static_cast<int>(vitem->style())));
     ui->cbPolarity->setCurrentIndex(ui->cbPolarity->findData(static_cast<int>(vitem->polarity())));
     ui->leGain->setText(QString::number(vitem->gain()));
+    ui->cbSeismic->setColor(vitem->seismicColor());
 }
 
 void VolumeItemsDialog::on_pbAdd_clicked()
@@ -217,6 +219,7 @@ void VolumeItemsDialog::on_pbApply_clicked()
     auto polarity=static_cast<VolumeItem::Polarity>(ui->cbPolarity->currentData().toInt());
     auto gain=ui->leGain->text().toDouble();
     auto opacity=ui->sbOpacity->value();
+    auto seismicColor=ui->cbSeismic->color();
     for(auto mitem : ui->lwDisplayed->selectionModel()->selectedRows()){
         auto row=mitem.row();
         if(row<0) continue;
@@ -226,9 +229,17 @@ void VolumeItemsDialog::on_pbApply_clicked()
         vitem->setPolarity(polarity);
         vitem->setGain(gain);
         vitem->setOpacity(opacity);
+        vitem->setSeismicColor(seismicColor);
     }
     mModel->setMute(false);
 }
 
 
+}
+
+void sliceviewer::VolumeItemsDialog::on_cbSeismic_clicked()
+{
+    auto color=QColorDialog::getColor(ui->cbSeismic->color(),this,"Select Wiggle/VA color");
+    if(!color.isValid()) return;
+    ui->cbSeismic->setColor(color);
 }

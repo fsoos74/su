@@ -5,6 +5,7 @@
 //#include "volume.h"
 //#include <colortable.h>
 #include<memory>
+#include<QColor>
 
 class Volume;
 class Histogram;
@@ -44,6 +45,9 @@ public:
     qreal gain()const{
         return mGain;
     }
+    QColor seismicColor()const{
+        return mSeismicColor;
+    }
 
 public slots:
     void setVolume(std::shared_ptr<Volume>);
@@ -52,6 +56,7 @@ public slots:
     void setStyle(VolumeItem::Style);
     void setPolarity(VolumeItem::Polarity);
     void setGain(qreal);
+    void setSeismicColor(QColor);
 
 private:
 
@@ -62,6 +67,7 @@ private:
     Style mStyle;
     Polarity mPolarity;
     qreal mGain;
+    QColor mSeismicColor;
 };
 
 }

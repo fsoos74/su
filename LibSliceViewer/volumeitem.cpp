@@ -13,7 +13,8 @@ VolumeItem::VolumeItem(QObject* parent) : ViewItem(parent),
     mOpacity(100),
     mStyle(Style::ATTRIBUTE),
     mPolarity(Polarity::NORMAL),
-    mGain(1)
+    mGain(1),
+    mSeismicColor(Qt::black)
 {
     connect(mColorTable, SIGNAL(colorsChanged()), this, SIGNAL(changed()));
     connect(mColorTable, SIGNAL(rangeChanged(std::pair<double,double> )), this, SIGNAL(changed()));
@@ -56,5 +57,10 @@ void VolumeItem::setGain(qreal gain){
     emit changed();
 }
 
+void VolumeItem::setSeismicColor(QColor color){
+    if(color==mSeismicColor) return;
+    mSeismicColor=color;
+    emit changed();
+}
 
 }

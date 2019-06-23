@@ -940,7 +940,7 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
             auto path=grid1d2wiggles(*g1d);
             auto item=new QGraphicsPathItem();
             item->setPath(path);
-            item->setPen(QPen(Qt::black, 0));
+            item->setPen(QPen(vitem.seismicColor(), 0));
             item->setOpacity(0.01*vitem.opacity());  // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
@@ -950,7 +950,7 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);
-            item->setBrush(Qt::black);
+            item->setBrush(vitem.seismicColor());
             item->setOpacity(0.01*vitem.opacity());        // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
@@ -1028,7 +1028,7 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
             auto path=grid1d2wiggles(*g1d);
             auto item=new QGraphicsPathItem();
             item->setPath(path);
-            item->setPen(QPen(Qt::black, 0));
+            item->setPen(QPen(vitem.seismicColor(), 0));
             item->setOpacity(0.01*vitem.opacity());  // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
@@ -1038,7 +1038,7 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);
-            item->setBrush(Qt::black);
+            item->setBrush(vitem.seismicColor());
             item->setOpacity(0.01*vitem.opacity());        // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
@@ -1140,7 +1140,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
             auto path=grid1d2wiggles(*g1d);
             auto item=new QGraphicsPathItem();
             item->setPath(path);
-            item->setPen(QPen(Qt::black, 0));
+            item->setPen(QPen(vitem.seismicColor(), 0));
             item->setOpacity(0.01*vitem.opacity());  // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
@@ -1150,7 +1150,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
             item=new QGraphicsPathItem();
             item->setPath(path);
             item->setPen(Qt::NoPen);
-            item->setBrush(Qt::black);
+            item->setBrush(vitem.seismicColor());
             item->setOpacity(0.01*vitem.opacity());        // percent -> fraction
             item->setTransform(tf);
             scene->addItem(item);
