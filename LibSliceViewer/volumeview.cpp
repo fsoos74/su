@@ -1389,7 +1389,21 @@ void VolumeView::refreshSceneCaller(){
 
 void VolumeView::onVolumeItemModelChanged(){
     emit volumesChanged();
-    updateBounds();
+
+    // test if bounds need to grow
+    for( int i=0; i<mVolumeItemModel->size(); i++){
+        auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
+        if(!vitem) continue;
+        auto vbounds=vitem->volume()->bounds();
+        bool exceeded=false;
+        if( vbounds.i1()<m_bounds.i1() || vbounds.i2()>m_bounds.i2() ||
+             vbounds.j1()<m_bounds.j1() || vbounds.j2()>m_bounds.j2() ||
+             vbounds.ft()<m_bounds.ft() || vbounds.lt()>m_bounds.lt()){
+            updateBounds();
+            break;
+        }
+    }
+
     refreshScene();
 }
 
