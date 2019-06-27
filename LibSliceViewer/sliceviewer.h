@@ -53,6 +53,7 @@ private slots:
     void setCrosslineSliceY(QPointF);
     void setZSlice(QPointF);
     void setFlattenHorizon(QString);
+    void setMuteHorizon(QString);
 
     void onMouseOver(QPointF);
 
@@ -88,18 +89,21 @@ private:
     void setupMouseModes();
     void setupSliceToolBar();
     void setupFlattenToolBar();
+    void setupMuteToolBar();
     void setupPickingToolBar();
     void updateFlattenHorizons();
+    void updateMuteHorizons();
 
     Ui::SliceViewer *ui;
     DynamicMouseModeSelector* m_mousemodeSelector=nullptr;
     QComboBox* m_cbSlice;
     ReverseSpinBox* m_sbSlice;
 
-    QComboBox* m_cbHorizon;
-
+    QComboBox* m_cbFlattenHorizon;
+    QComboBox* m_cbMuteHorizon;
     QToolBar* m_sliceToolBar;
     QToolBar* m_flattenToolBar;
+    QToolBar* m_muteToolBar;
     HistogramRangeSelectionDialog* displayRangeDialog=nullptr;
     QMap<QString, Histogram> m_volumeHistograms;
     QMap<QString, QMdiSubWindow*> m_mdiColorbars;

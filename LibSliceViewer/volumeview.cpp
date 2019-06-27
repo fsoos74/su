@@ -358,6 +358,13 @@ void VolumeView::setFlattenHorizon(std::shared_ptr<Grid2D<float> > h){
     refreshScene();
 }
 
+void VolumeView::setMuteHorizon(std::shared_ptr<Grid2D<float> > h){
+
+    if( h==m_muteHorizon) return;
+    m_muteHorizon=h;
+    refreshScene();
+}
+
 
 double VolumeView::dz(int i, int j)const{
 
@@ -871,6 +878,14 @@ void VolumeView::renderVolumes(QGraphicsScene * scene){
     }
  }
 
+void muteTop(Grid1D<float>& g1d, int k){
+    int i1=g1d.bounds().i1();
+    int i2=std::min(g1d.bounds().i2(), k);
+    for(int i=i1;i<=i2;i++){
+        g1d(i)=g1d.NULL_VALUE;
+    }
+}
+
 void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vitem, int il){
 
     auto v=vitem.volume();
@@ -896,6 +911,12 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
             auto xl=vbounds.j1()+j;
             auto g1d=v->atIJ(il,xl);
             if(!g1d) continue;
+            if(m_muteHorizon){
+                auto z=m_muteHorizon->valueAt(il,xl);
+                if(z==m_muteHorizon->NULL_VALUE) continue;
+                auto k=vbounds.timeToSample(0.001*z);
+                muteTop(*g1d,k);
+            }
             auto imgj=grid2image_column(*g1d,*ct);
             auto d=dz(il,xl);
             auto y=(maxdz-d)/vbounds.dt();
@@ -930,6 +951,12 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
         for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
             auto g1d=v->atIJ(il,j);
             if(!g1d) continue;
+            if(m_muteHorizon){
+                auto z=m_muteHorizon->valueAt(il,j);
+                if(z==m_muteHorizon->NULL_VALUE) continue;
+                auto k=vbounds.timeToSample(0.001*z);
+                muteTop(*g1d,k);
+            }
 
             QTransform tf;
             tf.translate(j,1000*(vbounds.ft()-dz(il,j)));
@@ -983,6 +1010,13 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
             auto il=vbounds.i1()+j;
             auto g1d=v->atIJ(il,xl);
             if(!g1d) continue;
+            if(m_muteHorizon){
+                auto z=m_muteHorizon->valueAt(il,xl);
+                if(z==m_muteHorizon->NULL_VALUE) continue;
+                auto k=vbounds.timeToSample(0.001*z);
+                muteTop(*g1d,k);
+            }
+
             auto imgj=grid2image_column(*g1d,*ct);
             auto d=dz(il,xl);
             auto y=(maxdz-d)/vbounds.dt();
@@ -1018,6 +1052,12 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
         for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
             auto g1d=v->atIJ(i,xl);
             if(!g1d) continue;
+            if(m_muteHorizon){
+                auto z=m_muteHorizon->valueAt(i,xl);
+                if(z==m_muteHorizon->NULL_VALUE) continue;
+                auto k=vbounds.timeToSample(0.001*z);
+                muteTop(*g1d,k);
+            }
 
             QTransform tf;
             tf.translate(i,1000*(vbounds.ft()-dz(i,xl)));
@@ -1395,7 +1435,6 @@ void VolumeView::onVolumeItemModelChanged(){
         auto vitem=dynamic_cast<VolumeItem*>(mVolumeItemModel->at(i));
         if(!vitem) continue;
         auto vbounds=vitem->volume()->bounds();
-        bool exceeded=false;
         if( vbounds.i1()<m_bounds.i1() || vbounds.i2()>m_bounds.i2() ||
              vbounds.j1()<m_bounds.j1() || vbounds.j2()>m_bounds.j2() ||
              vbounds.ft()<m_bounds.ft() || vbounds.lt()>m_bounds.lt()){

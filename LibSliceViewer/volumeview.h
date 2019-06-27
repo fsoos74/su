@@ -87,6 +87,7 @@ public slots:
 
     void back();
     void setFlattenHorizon( std::shared_ptr<Grid2D<float>>);
+    void setMuteHorizon( std::shared_ptr<Grid2D<float>>);
     void setTransforms(QTransform xy_to_ilxl, QTransform ilxl_to_xy);
 
 signals:
@@ -146,6 +147,7 @@ private:
     Grid3DBounds m_bounds;
     std::shared_ptr<Grid2D<float>> m_flattenHorizon;
     std::pair<double,double> m_flattenRange;
+    std::shared_ptr<Grid2D<float>> m_muteHorizon;
 
     // buffer statistics per volume to avoid unnecessary computations
     QMap<QString, statistics::Statistics >mVolumeStatistics;  // no need anymore, this is in vitem now

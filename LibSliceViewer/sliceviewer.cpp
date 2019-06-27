@@ -45,7 +45,7 @@ SliceViewer::SliceViewer(QWidget *parent) :
     setupMouseModes();
     setupSliceToolBar();
     setupFlattenToolBar();
-
+    setupMuteToolBar();
     setAttribute( Qt::WA_DeleteOnClose);
 
     ui->volumeView->setZoomMode(AxisView::ZOOMMODE::BOTH);
@@ -95,6 +95,7 @@ void SliceViewer::setProject(AVOProject * p){
     ui->volumeView->setTransforms(xy_to_ilxl, ilxl_to_xy);
 
     updateFlattenHorizons();
+    updateMuteHorizons();
 
     if(mVolumeItemsDialog){
         delete mVolumeItemsDialog;
@@ -207,6 +208,20 @@ void SliceViewer::setFlattenHorizon(QString name){
     ui->volumeView->setFlattenHorizon(hrz);
 }
 
+void SliceViewer::setMuteHorizon(QString name){
+
+    if( !m_project) return;
+
+    std::shared_ptr<Grid2D<float>> hrz;
+    if( !name.isEmpty() && name!=NO_HORIZON ){
+        hrz=m_project->loadGrid(GridType::Horizon, name);
+        if( !hrz ){
+            QMessageBox::critical(this, tr("Load Horizon"), tr("Loading Horizon \"%1\" failed!").arg(name), QMessageBox::Ok);
+        }
+    }
+    ui->volumeView->setMuteHorizon(hrz);
+}
+
 void SliceViewer::updateSliceConnections(){
 
     auto vv=ui->volumeView;
@@ -281,25 +296,52 @@ void SliceViewer::setupSliceToolBar(){
 void SliceViewer::setupFlattenToolBar(){
     m_flattenToolBar=new QToolBar( "Flatten", this);
     auto widget=new QWidget(this);
-    m_cbHorizon=new QComboBox;
-    m_cbHorizon->setToolTip("Flatten on horizon");
+    m_cbFlattenHorizon=new QComboBox;
+    m_cbFlattenHorizon->setToolTip("Flatten on horizon");
     auto layout=new QHBoxLayout;
-    layout->addWidget(m_cbHorizon);
+    layout->addWidget(new QLabel("Flatten on"));
+    layout->addWidget(m_cbFlattenHorizon);
     widget->setLayout(layout);
     m_flattenToolBar->addWidget(widget);
     addToolBar(m_flattenToolBar);
-    connect(m_cbHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
+    connect(m_cbFlattenHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setFlattenHorizon(QString)));
+}
+
+void SliceViewer::setupMuteToolBar(){
+    m_muteToolBar=new QToolBar( "Mute", this);
+    auto widget=new QWidget(this);
+    m_cbMuteHorizon=new QComboBox;
+    m_cbMuteHorizon->setToolTip("Flatten on horizon");
+    auto layout=new QHBoxLayout;
+    layout->addWidget(new QLabel("Top mute"));
+    layout->addWidget(m_cbMuteHorizon);
+    widget->setLayout(layout);
+    m_muteToolBar->addWidget(widget);
+    addToolBar(m_muteToolBar);
+    connect(m_cbMuteHorizon, SIGNAL(currentIndexChanged(QString)), this, SLOT(setMuteHorizon(QString)));
 }
 
 void SliceViewer::updateFlattenHorizons(){
 
-    m_cbHorizon->clear();
-    m_cbHorizon->addItem(NO_HORIZON);
+    m_cbFlattenHorizon->clear();
+    m_cbFlattenHorizon->addItem(NO_HORIZON);
 
     if( !m_project) return;
 
     for( auto name:m_project->gridList(GridType::Horizon)){
-        m_cbHorizon->addItem(name);
+        m_cbFlattenHorizon->addItem(name);
+    }
+}
+
+void SliceViewer::updateMuteHorizons(){
+
+    m_cbMuteHorizon->clear();
+    m_cbMuteHorizon->addItem(NO_HORIZON);
+
+    if( !m_project) return;
+
+    for( auto name:m_project->gridList(GridType::Horizon)){
+        m_cbMuteHorizon->addItem(name);
     }
 }
 
