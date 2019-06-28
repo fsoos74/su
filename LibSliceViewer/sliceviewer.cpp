@@ -369,7 +369,7 @@ void SliceViewer::onVolumesChanged(){
         if(!vitem) continue;
         if(!vitem->histogram()) continue;
 
-        auto colorbar = new SmartColorBarWidget(this);
+        auto colorbar = new ColorBarWidget(this);//  SmartColorBarWidget(this);
         colorbar->setMinimumSize(150,300);
         colorbar->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(colorbar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(colorBarContextMenuRequested(QPoint)));
@@ -377,9 +377,10 @@ void SliceViewer::onVolumesChanged(){
         mdiColorbar->setWindowIcon( QIcon(QPixmap(1,1)) );  // no icon
         mdiColorbar->setWindowTitle(name);
         auto colortable=vitem->colorTable();
-        colorbar->setItemName(vitem->name());
+        //colorbar->setItemName(vitem->name());
+        colorbar->setLabel(vitem->name());  // XXX
         colorbar->setColorTable(colortable);
-        colorbar->setHistogram(*vitem->histogram());
+        //colorbar->setHistogram(*vitem->histogram());
         colorbar->show();
         m_mdiColorbars.insert(name, mdiColorbar);
     }
