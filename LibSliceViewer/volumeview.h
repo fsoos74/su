@@ -115,6 +115,9 @@ private:
     void renderVolumeIline(QGraphicsScene*, const VolumeItem&, int);
     void renderVolumeXline(QGraphicsScene*, const VolumeItem&, int);
     void renderVolumeTime(QGraphicsScene*, const VolumeItem&, int);
+    void renderMute(QGraphicsScene*);
+    void renderMuteIline(QGraphicsScene*, const Grid2D<float>&, int);
+    void renderMuteXline(QGraphicsScene*, const Grid2D<float>&, int);
     QImage sharpen(QImage);
     void renderHorizons(QGraphicsScene*);
     void renderHorizonIline(QGraphicsScene*, const HorizonItem&, int);

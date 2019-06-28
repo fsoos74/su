@@ -438,7 +438,11 @@ void VolumeView::refreshScene(){
 
     QGraphicsScene* scene=new QGraphicsScene(this);
 
+    scene->setBackgroundBrush(Qt::lightGray);
+
     if(mDisplayOptions.isDisplayVolumes()) renderVolumes(scene);
+
+    renderMute(scene);
 
     if( mDisplayOptions.isDisplayHorizons()) renderHorizons(scene);
 
@@ -886,6 +890,100 @@ void muteTop(Grid1D<float>& g1d, int k){
     }
 }
 
+void VolumeView::renderMute(QGraphicsScene * scene){
+
+    if( !scene ) return;
+    if( !m_muteHorizon) return;
+    switch(m_slice.type){
+    case SliceType::Inline: renderMuteIline(scene, *m_muteHorizon, m_slice.value); break;
+    case SliceType::Crossline: renderMuteXline(scene, *m_muteHorizon, m_slice.value); break;
+    case SliceType::Z:  break;
+    }
+ }
+
+void VolumeView::renderMuteIline(QGraphicsScene* scene, const Grid2D<float>& bottom, int il){
+    auto g1d=bottom.atI(il);
+    if(!g1d) return;
+
+    QPainterPath path;
+    auto b1d=g1d->bounds();
+    // find first non-null value
+    qreal z1=0;
+    for(int i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=g1d->valueAt(i);
+        if(z!=g1d->NULL_VALUE){
+            z1=z;
+            break;
+        }
+    }
+    // find last non-null value
+    qreal z2=0;
+    for(int i=b1d.i2(); i>=b1d.i1(); i--){
+        auto z=g1d->valueAt(i);
+        if(z!=g1d->NULL_VALUE){
+            z2=z;
+            break;
+        }
+    }
+    if(z1==z2) return;  // nothing
+    path.moveTo(m_bounds.j1(), m_bounds.ft());
+    path.lineTo(m_bounds.j1(),z1);
+    for( int i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=g1d->valueAt(i);
+        if(z==g1d->NULL_VALUE) continue;
+        path.lineTo(i,z);
+    }
+    path.lineTo(m_bounds.j2(), z2);
+    path.lineTo(m_bounds.j2(), m_bounds.ft());
+    path.closeSubpath();
+    auto item=new QGraphicsPathItem(path);
+    item->setBrush(scene->backgroundBrush());
+    item->setPen(Qt::NoPen);
+    scene->addItem(item);
+}
+
+void VolumeView::renderMuteXline(QGraphicsScene* scene, const Grid2D<float>& bottom, int xl){
+    auto g1d=bottom.atJ(xl);
+    if(!g1d) return;
+
+    QPainterPath path;
+    auto b1d=g1d->bounds();
+    // find first non-null value
+    qreal z1=0;
+    for(int i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=g1d->valueAt(i);
+        if(z!=g1d->NULL_VALUE){
+            z1=z;
+            break;
+        }
+    }
+    // find last non-null value
+    qreal z2=0;
+    for(int i=b1d.i2(); i>=b1d.i1(); i--){
+        auto z=g1d->valueAt(i);
+        if(z!=g1d->NULL_VALUE){
+            z2=z;
+            break;
+        }
+    }
+    if(z1==z2) return;  // nothing
+
+    path.moveTo(m_bounds.i1(), m_bounds.ft());
+    path.lineTo(m_bounds.i1(),z1);
+    for( int i=b1d.i1(); i<=b1d.i2(); i++){
+        auto z=g1d->valueAt(i);
+        if(z==g1d->NULL_VALUE) continue;
+        path.lineTo(i,z);
+    }
+    path.lineTo(m_bounds.i2(), z2);
+    path.lineTo(m_bounds.i2(), m_bounds.ft());
+    path.closeSubpath();
+    auto item=new QGraphicsPathItem(path);
+    item->setBrush(scene->backgroundBrush());
+    item->setPen(Qt::NoPen);
+    scene->addItem(item);
+}
+
 void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vitem, int il){
 
     auto v=vitem.volume();
@@ -911,12 +1009,6 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
             auto xl=vbounds.j1()+j;
             auto g1d=v->atIJ(il,xl);
             if(!g1d) continue;
-            if(m_muteHorizon){
-                auto z=m_muteHorizon->valueAt(il,xl);
-                if(z==m_muteHorizon->NULL_VALUE) continue;
-                auto k=vbounds.timeToSample(0.001*z);
-                muteTop(*g1d,k);
-            }
             auto imgj=grid2image_column(*g1d,*ct);
             auto d=dz(il,xl);
             auto y=(maxdz-d)/vbounds.dt();
@@ -951,13 +1043,6 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
         for( auto j = vbounds.j1(); j<=vbounds.j2(); j++){
             auto g1d=v->atIJ(il,j);
             if(!g1d) continue;
-            if(m_muteHorizon){
-                auto z=m_muteHorizon->valueAt(il,j);
-                if(z==m_muteHorizon->NULL_VALUE) continue;
-                auto k=vbounds.timeToSample(0.001*z);
-                muteTop(*g1d,k);
-            }
-
             QTransform tf;
             tf.translate(j,1000*(vbounds.ft()-dz(il,j)));
             tf.scale(sx,1000*vbounds.dt());
@@ -1010,13 +1095,6 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
             auto il=vbounds.i1()+j;
             auto g1d=v->atIJ(il,xl);
             if(!g1d) continue;
-            if(m_muteHorizon){
-                auto z=m_muteHorizon->valueAt(il,xl);
-                if(z==m_muteHorizon->NULL_VALUE) continue;
-                auto k=vbounds.timeToSample(0.001*z);
-                muteTop(*g1d,k);
-            }
-
             auto imgj=grid2image_column(*g1d,*ct);
             auto d=dz(il,xl);
             auto y=(maxdz-d)/vbounds.dt();
@@ -1052,13 +1130,6 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
         for( auto i = vbounds.i1(); i<=vbounds.i2(); i++){
             auto g1d=v->atIJ(i,xl);
             if(!g1d) continue;
-            if(m_muteHorizon){
-                auto z=m_muteHorizon->valueAt(i,xl);
-                if(z==m_muteHorizon->NULL_VALUE) continue;
-                auto k=vbounds.timeToSample(0.001*z);
-                muteTop(*g1d,k);
-            }
-
             QTransform tf;
             tf.translate(i,1000*(vbounds.ft()-dz(i,xl)));
             tf.scale(sx,1000*vbounds.dt());
