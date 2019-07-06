@@ -290,7 +290,44 @@ int VolumeView::adjustToVolume(SliceType t, int v){
 
     return v;
 }
+/*
+void VolumeView::setSlice(SliceDef d){
 
+    const int MAX_HISTORY=1000;
+
+    if( d==m_slice) return;
+
+    if( !validSlice(d)) return;
+
+    clearSelection();
+
+    m_sliceList.push_back(m_slice);
+    if( m_sliceList.size()>MAX_HISTORY) m_sliceList.pop_front();
+
+    auto oldXMinView=xAxis()->minView();
+    auto oldXMaxView=xAxis()->maxView();
+    auto oldZMinView=zAxis()->minView();
+    auto oldZMaxView=zAxis()->maxView();
+    auto oldType=m_slice.type;
+
+    m_slice=d;
+
+    if(d.type!=oldType){
+        updateAxes();
+        updateCompass();
+        setKeepAspectRatio(d.type==SliceType::Z);
+        zoomFitWindow();
+        if( (oldType==SliceType::Inline || oldType==SliceType::Crossline) &&
+                     (d.type==SliceType::Inline || d.type==SliceType::Crossline) ){
+                // keep vertical zoom if switching between inlines and crosslines
+             zAxis()->setViewRange(oldZMinView, oldZMaxView);
+         }
+    }
+    refreshScene();
+
+    emit sliceChanged(d);
+}
+*/
 void VolumeView::setSlice(SliceDef d){
 
     const int MAX_HISTORY=1000;
