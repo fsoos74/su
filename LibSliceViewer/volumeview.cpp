@@ -311,27 +311,20 @@ void VolumeView::setSlice(SliceDef d){
     auto oldType=m_slice.type;
 
     m_slice=d;
-    updateAxes();
-    updateCompass();
+
+    if(d.type!=oldType){
+        updateAxes();
+        updateCompass();
+        setKeepAspectRatio(d.type==SliceType::Z);
+        zoomFitWindow();
+        if( (oldType==SliceType::Inline || oldType==SliceType::Crossline) &&
+                     (d.type==SliceType::Inline || d.type==SliceType::Crossline) ){
+                // keep vertical zoom if switching between inlines and crosslines
+             zAxis()->setViewRange(oldZMinView, oldZMaxView);
+         }
+    }
     refreshScene();
 
-    if( d.type==oldType){ // keep zoom if same slice type
-        xAxis()->setViewRange(oldXMinView, oldXMaxView);
-        zAxis()->setViewRange(oldZMinView, oldZMaxView);
-    }
-    else if( d.type==SliceType::Z){ // new approach to keep fixed aspect ratio
-        setKeepAspectRatio(true);
-        zoomFitWindow();
-    }
-    else if( (oldType==SliceType::Inline || oldType==SliceType::Crossline) &&
-             (d.type==SliceType::Inline || d.type==SliceType::Crossline) ){
-        // keep vertical zoom if switching between inlines and crosslines
-         zAxis()->setViewRange(oldZMinView, oldZMaxView);
-     }
-    else{
-        setKeepAspectRatio(false);
-        zoomFitWindow();
-    }
     emit sliceChanged(d);
 }
 
@@ -354,7 +347,7 @@ void VolumeView::setFlattenHorizon(std::shared_ptr<Grid2D<float> > h){
     else{
         m_flattenRange=std::make_pair(0.,0.);
     }
-    updateBounds();
+    //updateBounds();
     refreshScene();
 }
 
