@@ -33,7 +33,7 @@ double lininterp(double x1, double y1, double x2, double y2, double x){
     return y1 + (x-x1)* ( y2 - y1 ) / ( x2 - x1 );
 }
 
-QImage grid2image_column(const Grid1D<float>& g1d, const ColorTable& ct){
+QImage grid2image_column(const Grid1D<float>& g1d, const ColorTable& ct, const float gain=1){
     auto b1d=g1d.bounds();
     QImage img(1, b1d.ni(), QImage::Format_ARGB32);
     img.fill(QColor(0,0,0,0));  // transparent
@@ -41,7 +41,7 @@ QImage grid2image_column(const Grid1D<float>& g1d, const ColorTable& ct){
         for(int j=0; j<img.width(); j++){
             auto value=g1d(i+b1d.i1());
             if(value==g1d.NULL_VALUE) continue;
-            auto color=ct.map(value);
+            auto color=ct.map(gain*value);
             img.setPixel(0,i,color);
         }
     }
@@ -67,7 +67,7 @@ QImage grid2image(const Grid2D<float>& g2d, const ColorTable& ct){
 */
 
 // x==i, y==j
-QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct){
+QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct, const float gain=1){
     auto b2d=g2d.bounds();
     QImage img(b2d.ni(), b2d.nj(), QImage::Format_ARGB32);
     img.fill(QColor(0,0,0,0));  // transparent
@@ -75,7 +75,7 @@ QImage grid2image_r(const Grid2D<float>& g2d, const ColorTable& ct){
         for(int j=0; j<img.height(); j++){
             auto value=g2d(i+b2d.i1(), j+b2d.j1());
             if(value==g2d.NULL_VALUE) continue;
-            auto color=ct.map(value);
+            auto color=ct.map(gain*value);
             img.setPixel(i,j,color);
         }
     }
@@ -1039,7 +1039,7 @@ void VolumeView::renderVolumeIline(QGraphicsScene * scene, const VolumeItem& vit
             auto xl=vbounds.j1()+j;
             auto g1d=v->atIJ(il,xl);
             if(!g1d) continue;
-            auto imgj=grid2image_column(*g1d,*ct);
+            auto imgj=grid2image_column(*g1d,*ct, vitem.gain());
             auto d=dz(il,xl);
             auto y=(maxdz-d)/vbounds.dt();
             painter.drawImage(j,y,imgj);
@@ -1125,7 +1125,7 @@ void VolumeView::renderVolumeXline(QGraphicsScene * scene, const VolumeItem& vit
             auto il=vbounds.i1()+j;
             auto g1d=v->atIJ(il,xl);
             if(!g1d) continue;
-            auto imgj=grid2image_column(*g1d,*ct);
+            auto imgj=grid2image_column(*g1d,*ct, vitem.gain());
             auto d=dz(il,xl);
             auto y=(maxdz-d)/vbounds.dt();
             painter.drawImage(j,y,imgj);
@@ -1220,7 +1220,7 @@ void VolumeView::renderVolumeTime(QGraphicsScene * scene, const VolumeItem& vite
             x=b+m*x;
         }
         */
-        auto vimg=grid2image_r(*g2d,*ct);               // i->x, j->y
+        auto vimg=grid2image_r(*g2d,*ct,vitem.gain());               // i->x, j->y
         vimg=sharpen(vimg);
         QPixmap pixmap=QPixmap::fromImage(vimg);
 
