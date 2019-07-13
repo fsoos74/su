@@ -142,10 +142,14 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
                 int k1=0;
                 int k2=m_bounds.nt();
                 if(m_useLayer){
-                    auto ttop=0.001*m_topHorizon->valueAt(i,j);         // msec -> sec
-                    auto tbottom=0.001*m_bottomHorizon->valueAt(i,j);   // msec -> sec
-                    k1=m_bounds.timeToSample(ttop);
-                    k2=m_bounds.timeToSample(tbottom);
+                    auto ttop=m_topHorizon->valueAt(i,j);
+                    if( ttop==m_topHorizon->NULL_VALUE) continue;
+                    auto tbottom=m_bottomHorizon->valueAt(i,j);
+                    if( tbottom==m_bottomHorizon->NULL_VALUE) continue;
+                    k1=m_bounds.timeToSample(0.001*ttop);       // msec -> sec
+                    k2=m_bounds.timeToSample(0.001*tbottom);    // msec -> sec
+
+
                 }
 
 
@@ -338,12 +342,13 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
                 int k1=0;
                 int k2=ibounds.nt();
                 if(m_useLayer){
-                    Q_ASSERT(m_topHorizon);
-                    Q_ASSERT(m_bottomHorizon);
-                    auto ttop=0.001*m_topHorizon->valueAt(i,j);         // msec -> sec
-                    auto tbottom=0.001*m_bottomHorizon->valueAt(i,j);   // msec -> sec
-                    k1=ibounds.timeToSample(ttop);
-                    k2=ibounds.timeToSample(tbottom);
+                    auto ttop=m_topHorizon->valueAt(i,j);
+                    if( ttop==m_topHorizon->NULL_VALUE) continue;
+                    auto tbottom=m_bottomHorizon->valueAt(i,j);
+                    if( tbottom==m_bottomHorizon->NULL_VALUE) continue;
+
+                    k1=ibounds.timeToSample(0.001*ttop);        // msec -> sec
+                    k2=ibounds.timeToSample(0.001*tbottom);     // msec -> sec
                 }
 
                 for( int k=k1; k<k2; k++){
