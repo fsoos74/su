@@ -20,6 +20,7 @@ ProjectProcess::ResultCode CreateGridProcess::init( const QMap<QString, QString>
     int maxIline;
     int minXline;
     int maxXline;
+    float value;
 
     try{
 
@@ -30,6 +31,7 @@ ProjectProcess::ResultCode CreateGridProcess::init( const QMap<QString, QString>
         maxIline=getParam( parameters, "max-iline").toInt();
         minXline=getParam( parameters, "min-xline").toInt();
         maxXline=getParam( parameters, "max-xline").toInt();
+        value=getParam( parameters, "value").toFloat();
     }
     catch(std::exception& ex){
         setErrorString(ex.what());
@@ -37,7 +39,7 @@ ProjectProcess::ResultCode CreateGridProcess::init( const QMap<QString, QString>
     }
 
     Grid2DBounds bounds( minIline, minXline, maxIline, maxXline);
-    m_grid=std::make_shared<Grid2D<float> >( bounds);
+    m_grid=std::make_shared<Grid2D<float> >( bounds, value);
 
     if( !m_grid){
         setErrorString("Allocating grid failed!");

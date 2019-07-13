@@ -73,29 +73,13 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
             setErrorString("Loading top horizon failed!");
             return ResultCode::Error;
         }
-        auto top=m_bounds.lt();     // sec
-        for( auto x : *m_topHorizon){   // x in msec
-            if(x!=m_topHorizon->NULL_VALUE && 0.001*x<top) top=0.001*x;
-        }
 
         m_bottomHorizon=project()->loadGrid(GridType::Horizon, m_bottomHorizonName);
         if(!m_bottomHorizon){
             setErrorString("Loading bottom horizon failed!");
             return ResultCode::Error;
         }
-        auto bottom=m_bounds.ft();  // sec
-        for( auto x : *m_bottomHorizon){    // x in msec
-            if(x!=m_bottomHorizon->NULL_VALUE && 0.001*x>bottom) bottom=0.001*x;
-        }
 
-        // adjust bounds sampling to layer/horizons
-        auto dt=m_bounds.dt();
-        auto ft=dt*std::floor(top/dt);
-        auto lt=dt*std::ceil(bottom/dt);
-        auto nt=static_cast<int>(std::ceil((lt-ft)/dt)+1);
-        m_bounds=Grid3DBounds(m_bounds.i1(), m_bounds.i2(), m_bounds.j1(), m_bounds.j2(), nt, ft, dt);
-        //std::cout<<"top="<<top<<" bottom="<<bottom<<std::endl;
-        //std::cout<<"ft="<<ft<<" lt="<<lt<<" dt="<<dt<<" nt="<<nt<<std::endl<<std::flush;
     }
 
     if( initFunction()!=ResultCode::Ok){
@@ -106,7 +90,7 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::run(){
         auto res= computeTrend();     // will put result in m_trendIntercept and m_trendAngle
         if( res!=ResultCode::Ok) return res;
     }
-std::cout<<"trend: intercept="<<m_trendIntercept<<" angle="<<m_trendAngle*57.29577951308232<<"°"<<std::endl<<std::flush;
+//std::cout<<"trend: intercept="<<m_trendIntercept<<" angle="<<m_trendAngle*57.29577951308232<<"°"<<std::endl<<std::flush;
     m_sinPhi=std::sin(m_trendAngle);
     m_cosPhi=std::cos(m_trendAngle);
     m_tanPhi=std::tan(m_trendAngle);
@@ -354,6 +338,8 @@ ProjectProcess::ResultCode TrendBasedAttributeVolumesProcess::computeTrend(){
                 int k1=0;
                 int k2=ibounds.nt();
                 if(m_useLayer){
+                    Q_ASSERT(m_topHorizon);
+                    Q_ASSERT(m_bottomHorizon);
                     auto ttop=0.001*m_topHorizon->valueAt(i,j);         // msec -> sec
                     auto tbottom=0.001*m_bottomHorizon->valueAt(i,j);   // msec -> sec
                     k1=ibounds.timeToSample(ttop);

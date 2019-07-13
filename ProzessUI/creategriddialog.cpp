@@ -2,6 +2,7 @@
 #include "ui_creategriddialog.h"
 
 #include<QIntValidator>
+#include<QDoubleValidator>
 #include<QPushButton>
 #include <gridtype.h>
 
@@ -17,6 +18,9 @@ CreateGridDialog::CreateGridDialog(QWidget *parent) :
     ui->leMaxIline->setValidator(ivalidator);
     ui->leMinXline->setValidator(ivalidator);
     ui->leMaxXline->setValidator(ivalidator);
+
+    QDoubleValidator* dv=new QDoubleValidator(this);
+    ui->leValue->setValidator(dv);
 
     connect(ui->leMinIline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
     connect(ui->leMaxIline, SIGNAL(textChanged(QString)), this, SLOT(updateOkButton()) );
@@ -64,7 +68,7 @@ QMap<QString, QString> CreateGridDialog::params(){
     p.insert( QString("max-iline"), ui->leMaxIline->text());
     p.insert( QString("min-xline"), ui->leMinXline->text());
     p.insert( QString("max-xline"), ui->leMaxXline->text());
-
+    p.insert( "value", ui->leValue->text());
     return p;
 }
 
@@ -88,7 +92,7 @@ void CreateGridDialog::updateOkButton(){
     // test inline range
     {
     QPalette palette;
-    if( ui->leMinIline->text().toInt() >= ui->leMaxIline->text().toInt() ){
+    if( ui->leMinIline->text().toInt() > ui->leMaxIline->text().toInt() ){
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }
@@ -99,7 +103,7 @@ void CreateGridDialog::updateOkButton(){
     // test crossline range
     {
     QPalette palette;
-    if( ui->leMinXline->text().toInt() >=ui->leMaxXline->text().toInt() ){
+    if( ui->leMinXline->text().toInt() >ui->leMaxXline->text().toInt() ){
         ok=false;
         palette.setColor(QPalette::Text, Qt::red);
     }
