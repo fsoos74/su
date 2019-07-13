@@ -48,7 +48,7 @@ Histogram HistogramCreator::createHistogram( ITERATOR begin, ITERATOR end, VALUE
 
             for( size_t i=0; i<n_to_process; i++){
                 auto value=*it++;
-                if( value!=NULL_VALUE) histogram.addValue( value);
+                if( std::isfinite(value) && value!=NULL_VALUE) histogram.addValue( value);
             }
 
             n_processed+=n_to_process;
@@ -81,7 +81,7 @@ Histogram HistogramCreator::createHistogram( ITERATOR begin, ITERATOR end, VALUE
 
         for( size_t i=0; i<n_to_process; i++){
             auto value=*it++;
-            if( value==NULL_VALUE) continue;
+            if( !std::isfinite(value) || value==NULL_VALUE) continue;
             if( value<min ) min=value;
             if( value>max ) max=value;
         }

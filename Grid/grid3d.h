@@ -8,6 +8,7 @@
 #include<grid2d.h>
 #include<memory>
 #include<functional>
+#include<cmath>
 
 class Grid3DBounds{
 public:
@@ -187,7 +188,7 @@ public:
         value_type min=std::numeric_limits<value_type>::max();
         value_type max=std::numeric_limits<value_type>::lowest();
         for( typename values_type::const_iterator it=m_values.cbegin(); it!=m_values.cend(); ++it ){
-            if( *it==NULL_VALUE) continue;
+            if( !std::isfinite(*it) || *it==NULL_VALUE) continue;
             if( *it < min ) min=*it;
             if( *it > max ) max=*it;
         }
