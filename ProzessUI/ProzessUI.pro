@@ -87,7 +87,8 @@ SOURCES += prozessui.cpp \
     velocityconversiondialog.cpp \
     rockpropertiesdialog.cpp \
     castagnadialog.cpp \
-    exportlasdialog.cpp
+    exportlasdialog.cpp \
+    exportvolumerefdialog.cpp
 
 HEADERS += prozessui.h\
         prozessui_global.h \
@@ -158,7 +159,8 @@ HEADERS += prozessui.h\
     velocityconversiondialog.h \
     rockpropertiesdialog.h \
     castagnadialog.h \
-    exportlasdialog.h
+    exportlasdialog.h \
+    exportvolumerefdialog.h
 
 unix {
     target.path = /usr/lib
@@ -232,7 +234,8 @@ FORMS += \
     velocityconversiondialog.ui \
     rockpropertiesdialog.ui \
     castagnadialog.ui \
-    exportlasdialog.ui
+    exportlasdialog.ui \
+    exportvolumerefdialog.ui
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../Project/release/ -lProject

@@ -224,7 +224,7 @@
      <x>0</x>
      <y>0</y>
      <width>922</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProcess">
@@ -295,6 +295,7 @@
     <addaction name="actionCreate_New_Volume"/>
     <addaction name="actionImportVolume"/>
     <addaction name="actionExportVolume"/>
+    <addaction name="actionExport_with_reference"/>
     <addaction name="separator"/>
     <addaction name="action_Crop_Volume"/>
     <addaction name="actionMerge_Volumes"/>
@@ -1113,6 +1114,14 @@
   <action name="actionOpen_test_log_viewer">
    <property name="text">
     <string>Open test log viewer</string>
+   </property>
+  </action>
+  <action name="actionExport_with_reference">
+   <property name="text">
+    <string>Export ( reference stack)</string>
+   </property>
+   <property name="toolTip">
+    <string>Export using reference stack</string>
    </property>
   </action>
  </widget>

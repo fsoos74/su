@@ -64,6 +64,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<exportgriddialog.h>
 #include<exportvolumeprocess.h>
 #include<exportvolumedialog.h>
+#include<exportvolumerefprocess.h>
+#include<exportvolumerefdialog.h>
 #include<exportseismicprocess.h>
 #include<exportseismicdialog.h>
 #include<exportlogprocess.h>
@@ -3116,6 +3118,18 @@ void ProjectViewer::selectAndExportVolume()
     runProcess<ExportVolumeProcess>( params );
 }
 
+void ProjectViewer::on_actionExport_with_reference_triggered()
+{
+    ExportVolumeRefDialog dlg(this);
+    dlg.setWindowTitle("Export Volume (reference)");
+    dlg.setProject(m_project);
+
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<ExportVolumeRefProcess>( params );
+}
 
 void ProjectViewer::displayVolume3D( const QString& name){
 
@@ -5326,3 +5340,5 @@ void ProjectViewer::on_actionOpen_test_log_viewer_triggered()
     viewer->setAttribute(Qt::WA_DeleteOnClose);
     viewer->show();
 }
+
+
