@@ -18,14 +18,13 @@ QPointF linearRegression( const QVector<QPointF>& points, double* quality){
 
        const double& x=point.x();
        const double& y=point.y();
-
+       if(!(std::isfinite(x)&&std::isfinite(y))) continue;
         sum_x+=x;
         sum_x_x+=x*x;
         sum_x_y+=x*y;
         sum_y+=y;
         sum_y_y+=y*y;
         n++;
-
     }
 
     if( n==0 || sum_x==0 ) return QPointF(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN() );

@@ -204,6 +204,8 @@ private slots:
 
     void on_actionExport_with_reference_triggered();
 
+    void on_actionOffset_Computation_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

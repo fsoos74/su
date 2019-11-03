@@ -138,6 +138,9 @@
    </item>
    <item>
     <widget class="QCheckBox" name="cbTrack">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Track Dips</string>
      </property>

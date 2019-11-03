@@ -224,7 +224,7 @@
      <x>0</x>
      <y>0</y>
      <width>922</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProcess">
@@ -280,7 +280,6 @@
     <addaction name="actionOpen_Slice_Viewer"/>
     <addaction name="actionOpen_3D_Viewer"/>
     <addaction name="actionOpen_Log_Viewer"/>
-    <addaction name="actionOpen_test_log_viewer"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -343,6 +342,7 @@
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
     <addaction name="separator"/>
     <addaction name="action_Offset_Stack"/>
+    <addaction name="actionOffset_Computation"/>
     <addaction name="actionStack_To_Gather"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Well">
@@ -850,6 +850,9 @@
    </property>
   </action>
   <action name="actionBuild_Volume">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Build Volume (From Logs)</string>
    </property>
@@ -868,6 +871,9 @@
    </property>
   </action>
   <action name="actionWellpaths_Bulk_Mode">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Im&amp;port Wellpaths (Bulk Mode)</string>
    </property>
@@ -987,6 +993,9 @@
    </property>
   </action>
   <action name="actionNN_Log_old">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;NN Log (old)</string>
    </property>
@@ -1042,11 +1051,17 @@
    </property>
   </action>
   <action name="actionNN_Volume_Trainer">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>NN Volume Trainer*</string>
    </property>
   </action>
   <action name="actionNN_Volume_Classification">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>NN Volume Classification</string>
    </property>
@@ -1122,6 +1137,11 @@
    </property>
    <property name="toolTip">
     <string>Export using reference stack</string>
+   </property>
+  </action>
+  <action name="actionOffset_Computation">
+   <property name="text">
+    <string>Offset Computation</string>
    </property>
   </action>
  </widget>

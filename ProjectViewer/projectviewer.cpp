@@ -74,6 +74,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<exportlasprocess.h>
 #include <offsetstackdialog.h>
 #include <offsetstackprocess.h>
+#include <offsetcomputationdialog.h>
+#include <offsetcomputationprocess.h>
 #include <stacktogatherdialog.h>
 #include <stacktogatherprocess.h>
 #include <replacebadtracesdialog.h>
@@ -1074,6 +1076,21 @@ void ProjectViewer::on_action_Offset_Stack_triggered()
 
     runProcess< OffsetStackProcess>( params );
 }
+
+void ProjectViewer::on_actionOffset_Computation_triggered()
+{
+    Q_ASSERT( m_project );
+
+    OffsetComputationDialog dlg;
+    dlg.setInputDatasets( m_project->seismicDatasetList(SeismicDatasetInfo::Mode::Prestack));
+    dlg.setReservedDatasets( m_project->seismicDatasetList() );
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess< OffsetComputationProcess>( params );
+}
+
 
 void ProjectViewer::on_actionStack_To_Gather_triggered()
 {
@@ -2332,7 +2349,7 @@ license::LicenseInfo ProjectViewer::checkLicense(){
     if( info.productVersion<1 ){
         validLicense=false;
     }
-/*  EXPIRATION CHECK DISABLED FOR MIKE'S BROKEN DONGLE 17-11-15
+//*  EXPIRATION CHECK DISABLED FOR MIKE'S BROKEN DONGLE 17-11-15
     if( validLicense ){
 
         myCKeylok->CheckExpiration();
@@ -2361,14 +2378,14 @@ license::LicenseInfo ProjectViewer::checkLicense(){
             break;
         }
     }
-*/
+
     if( !validLicense){
         seismic::SEGYReader::postReadFunc = crypt::decrypt;
     }
 
-    ui->menuProcess_Volume->setEnabled(validLicense);
+    //ui->menuProcess_Volume->setEnabled(validLicense);
     ui->menuProcess_Well->setEnabled(validLicense);
-    ui->volumesView->setEnabled(validLicense);
+    //ui->volumesView->setEnabled(validLicense);
     ui->wellsView->setEnabled(validLicense);
     ui->actionCrossplot_Logs->setEnabled(validLicense);
     ui->actionOpen_Log_Viewer->setEnabled(validLicense);
@@ -5197,7 +5214,7 @@ void ProjectViewer::updateMenu(){
     ui->actionImportLogs->setEnabled(isProject);
     ui->action_Logs_Bulk_Mode->setEnabled(isProject);
     ui->actionWellpath->setEnabled(isProject);
-    ui->actionWellpaths_Bulk_Mode->setEnabled(isProject);
+    //ui->actionWellpaths_Bulk_Mode->setEnabled(isProject);
     ui->actionWell_Markers->setEnabled(isProject);
     ui->actionImportTable->setEnabled(isProject);
     ui->actionExportHorizon->setEnabled(isProject);
@@ -5216,6 +5233,7 @@ void ProjectViewer::updateMenu(){
     ui->actionDisplay_Map->setEnabled(isProject);
 
     ui->action_Offset_Stack->setEnabled(isProject);
+    ui->actionOffset_Computation->setEnabled(isProject);
     ui->actionStack_To_Gather->setEnabled(isProject);
 
     ui->actionReplace_Bad_Traces->setEnabled(isProject);
@@ -5259,15 +5277,15 @@ void ProjectViewer::updateMenu(){
     ui->actionSecondary_Attribute_Volumes->setEnabled(isProject);
     ui->actionPunch_Out_Volume->setEnabled(isProject);
     ui->actionVolume_Circle_Detection->setEnabled(isProject);
-    ui->actionNN_Volume_Trainer->setEnabled(isProject);
-    ui->actionNN_Volume_Classification->setEnabled(isProject);
+   // ui->actionNN_Volume_Trainer->setEnabled(isProject);
+   // ui->actionNN_Volume_Classification->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->action_Smooth_Log->setEnabled(isProject);
     ui->actionLog_Math->setEnabled(isProject);
     ui->actionLog_Integration->setEnabled(isProject);
     ui->actionCopy_Log->setEnabled(isProject);
-    ui->actionNN_Log_old->setEnabled(isProject);
+   // ui->actionNN_Log_old->setEnabled(isProject);
     ui->actionTrain_NN_Log->setEnabled(isProject);
     ui->actionNN_Log_Interpolation->setEnabled(isProject);
     ui->actionVShale_Computation->setEnabled(isProject);
@@ -5275,7 +5293,7 @@ void ProjectViewer::updateMenu(){
     ui->actionRock_Properties_Computation->setEnabled(isProject);
     ui->actionTops_from_Horizon->setEnabled(isProject);
     ui->actionRun_Log_Script->setEnabled(isProject);
-    ui->actionBuild_Volume->setEnabled(isProject);
+   // ui->actionBuild_Volume->setEnabled(isProject);
     ui->actionEdit_Tops->setEnabled(isProject);
 
     ui->actionConvert_Picks_To_Horizon->setEnabled(isProject);
@@ -5340,5 +5358,6 @@ void ProjectViewer::on_actionOpen_test_log_viewer_triggered()
     viewer->setAttribute(Qt::WA_DeleteOnClose);
     viewer->show();
 }
+
 
 
