@@ -14,7 +14,7 @@
    <string>GatherViewer</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ProjectViewer/icons.qrc">
+   <iconset>
     <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -37,7 +37,7 @@
      <x>0</x>
      <y>0</y>
      <width>980</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -255,7 +255,7 @@
   </action>
   <action name="zoomInAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/Zoom-Plus-icon.png</normaloff>:/icons/Zoom-Plus-icon.png</iconset>
    </property>
    <property name="text">
@@ -267,7 +267,7 @@
   </action>
   <action name="zoomOutAct">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/Zoom-Minus-icon.png</normaloff>:/icons/Zoom-Minus-icon.png</iconset>
    </property>
    <property name="text">
@@ -306,7 +306,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/receive-icon-32x32.png</normaloff>:/icons/images/receive-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -321,7 +321,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/send-icon-32x32.png</normaloff>:/icons/images/send-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -340,7 +340,7 @@
   </action>
   <action name="actionVolume_Options">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/volume-display-options-icon-32x32.png</normaloff>:/icons/images/volume-display-options-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -352,7 +352,7 @@
   </action>
   <action name="action_Trace_Options">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/trace-display-options-icon-32x32.png</normaloff>:/icons/images/trace-display-options-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -364,7 +364,7 @@
   </action>
   <action name="actionTrace_Scaling">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/trace-scaling-icon-32x32.png</normaloff>:/icons/images/trace-scaling-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -376,7 +376,7 @@
   </action>
   <action name="action_Point_Display_Options">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/point-display-options-icon-32x32.png</normaloff>:/icons/images/point-display-options-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -394,7 +394,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/current-point-icon-32x32.png</normaloff>:/icons/images/current-point-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -406,7 +406,7 @@
   </action>
   <action name="actionDensity_Color_Table">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/colortable-icon-32x32.png</normaloff>:/icons/images/colortable-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -423,7 +423,7 @@
   </action>
   <action name="actionVolume_Color_Table">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/volume-colortable-icon-32x32.png</normaloff>:/icons/images/volume-colortable-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -475,7 +475,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/pick-minimum-32x32.png</normaloff>:/icons/images/pick-minimum-32x32.png</iconset>
    </property>
    <property name="text">
@@ -487,7 +487,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/pick-maximum-32x32.png</normaloff>:/icons/images/pick-maximum-32x32.png</iconset>
    </property>
    <property name="text">
@@ -501,7 +501,7 @@
   </action>
   <action name="actionGather_Histogram">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/histogram-gather-icon-32x32.png</normaloff>:/icons/images/histogram-gather-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -510,7 +510,7 @@
   </action>
   <action name="actionVolume_Histogram">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/histogram-volume-icon-32x32.png</normaloff>:/icons/images/histogram-volume-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -545,7 +545,7 @@
   </action>
   <action name="actionVolume_Display_Range">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/icons/images/select-range-icon-32x32.png</normaloff>:/icons/images/select-range-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -564,7 +564,7 @@
   </action>
   <action name="actionPick_Display_Options">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/images/pick-display-options-icon-32x32.png</normaloff>:/images/pick-display-options-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -573,7 +573,7 @@
   </action>
   <action name="actionSeismic_Dataset_Info">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/images/info-icon-32x32.png</normaloff>:/images/info-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -592,7 +592,7 @@
   </action>
   <action name="action_Horizon_Display_Options">
    <property name="icon">
-    <iconset resource="../ProjectViewer/icons.qrc">
+    <iconset>
      <normaloff>:/images/horizon-display-options-icon-32x32.png</normaloff>:/images/horizon-display-options-icon-32x32.png</iconset>
    </property>
    <property name="text">
@@ -609,9 +609,7 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../ProjectViewer/icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>exitAct</sender>

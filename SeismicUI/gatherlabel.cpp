@@ -618,6 +618,7 @@ void GatherLabel::updatePixmap(){
 
         painter.setOpacity(qreal(densityOpacity())/100);
 
+
         if(1){// unlimited zoom  width()<MAX_PIXMAP_WIDTH && height()<MAX_PIXMAP_HEIGHT){     // could be null if maximum size is exceeded
             // this is the original
             //QPixmap scaledImagePixmap=m_densityPlot.scaled( size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);

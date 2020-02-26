@@ -2353,6 +2353,10 @@ license::LicenseInfo ProjectViewer::checkLicense(){
     if( validLicense ){
 
         myCKeylok->CheckExpiration();
+        unsigned DateRead = myCKeylok->GetExpiration();
+        info.expirationMonth=myCKeylok->GetExpMonth(DateRead);
+        info.expirationDay=myCKeylok->GetExpDay(DateRead);
+        info.expirationYear=myCKeylok->GetExpYear(DateRead);
         switch (myCKeylok->ReturnValue2)
         {
         case LEASEEXPIRED:
@@ -2371,10 +2375,6 @@ license::LicenseInfo ProjectViewer::checkLicense(){
             validLicense=false;
             break;
         default:
-            unsigned DateRead = myCKeylok->GetExpiration();
-            info.expirationMonth=myCKeylok->GetExpMonth(DateRead);
-            info.expirationDay=myCKeylok->GetExpDay(DateRead);
-            info.expirationYear=myCKeylok->GetExpYear(DateRead);
             break;
         }
     }
