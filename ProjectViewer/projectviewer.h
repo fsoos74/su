@@ -206,6 +206,8 @@ private slots:
 
     void on_actionOffset_Computation_triggered();
 
+    void on_actionAdd_Well_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

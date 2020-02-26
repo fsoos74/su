@@ -29,6 +29,7 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+    addwelldialog.cpp \
         projectviewer.cpp \
     seismicdataselector.cpp \
     datasetpropertiesdialog.cpp \
@@ -52,6 +53,7 @@ SOURCES += main.cpp\
     tabledialog.cpp
 
 HEADERS  += projectviewer.h \
+    addwelldialog.h \
     seismicdataselector.h \
     datasetpropertiesdialog.h \
     selectgridtypeandnamedialog.h \
@@ -77,6 +79,7 @@ HEADERS  += projectviewer.h \
     tabledialog.h
 
 FORMS    += projectviewer.ui \
+    addwelldialog.ui \
     seismicdataselector.ui \
     datasetpropertiesdialog.ui \
     selectgridtypeandnamedialog.ui \

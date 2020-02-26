@@ -349,6 +349,7 @@
     <property name="title">
      <string>We&amp;ll</string>
     </property>
+    <addaction name="actionAdd_Well"/>
     <addaction name="actionImportLogs"/>
     <addaction name="action_Logs_Bulk_Mode"/>
     <addaction name="actionExportLog"/>
@@ -1142,6 +1143,11 @@
   <action name="actionOffset_Computation">
    <property name="text">
     <string>Offset Computation</string>
+   </property>
+  </action>
+  <action name="actionAdd_Well">
+   <property name="text">
+    <string>Add Well</string>
    </property>
   </action>
  </widget>

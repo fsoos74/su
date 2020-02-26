@@ -239,6 +239,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<set>
 #include<las_reader.h>
 #include<multilogviewer.h>
+#include<addwelldialog.h>
+
 
 #ifdef USE_KEYLOCK_LICENSE
 #include<QApplication>
@@ -2349,14 +2351,15 @@ license::LicenseInfo ProjectViewer::checkLicense(){
     if( info.productVersion<1 ){
         validLicense=false;
     }
-//*  EXPIRATION CHECK DISABLED FOR MIKE'S BROKEN DONGLE 17-11-15
+
     if( validLicense ){
 
-        myCKeylok->CheckExpiration();
         unsigned DateRead = myCKeylok->GetExpiration();
         info.expirationMonth=myCKeylok->GetExpMonth(DateRead);
         info.expirationDay=myCKeylok->GetExpDay(DateRead);
         info.expirationYear=myCKeylok->GetExpYear(DateRead);
+        /* DISABLED EXPIRATION CHECK FOR DEVELOPMENT, ACTIVATE FOR CLIENTS!!!!!
+        myCKeylok->CheckExpiration();
         switch (myCKeylok->ReturnValue2)
         {
         case LEASEEXPIRED:
@@ -2377,6 +2380,7 @@ license::LicenseInfo ProjectViewer::checkLicense(){
         default:
             break;
         }
+        */
     }
 
     if( !validLicense){
@@ -5281,6 +5285,7 @@ void ProjectViewer::updateMenu(){
    // ui->actionNN_Volume_Classification->setEnabled(isProject);
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
+    ui->actionAdd_Well->setEnabled(isProject);
     ui->action_Smooth_Log->setEnabled(isProject);
     ui->actionLog_Math->setEnabled(isProject);
     ui->actionLog_Integration->setEnabled(isProject);
@@ -5361,3 +5366,17 @@ void ProjectViewer::on_actionOpen_test_log_viewer_triggered()
 
 
 
+
+void ProjectViewer::on_actionAdd_Well_triggered()
+{
+    AddWellDialog dialog(this);
+    dialog.setWindowTitle("Add a well");
+    if(dialog.exec()==QDialog::Accepted){
+        auto info=dialog.wellInfo();
+        if(!m_project->addWell(info.name(), info)){
+            QMessageBox::critical(this, "Add well", tr("Adding well \"%1\" failed!").arg(info.name()));
+            return;
+        }
+        updateProjectViews();
+    }
+}
