@@ -190,6 +190,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <tabletohorizonprocess.h>
 #include <importmarkersdialog.h>
 #include <importmarkersprocess.h>
+#include <importwellsdialog.h>
+#include <importwellsprocess.h>
 #include <importtabledialog.h>
 #include <importtableprocess.h>
 #include <editmarkersdialog.h>
@@ -5286,6 +5288,7 @@ void ProjectViewer::updateMenu(){
     ui->actionRun_Volume_Script->setEnabled(isProject);
 
     ui->actionAdd_Well->setEnabled(isProject);
+    ui->actionAdd_Wells_Bulk_Mode->setEnabled(isProject);
     ui->action_Smooth_Log->setEnabled(isProject);
     ui->actionLog_Math->setEnabled(isProject);
     ui->actionLog_Integration->setEnabled(isProject);
@@ -5378,5 +5381,14 @@ void ProjectViewer::on_actionAdd_Well_triggered()
             return;
         }
         updateProjectViews();
+    }
+}
+
+void ProjectViewer::on_actionAdd_Wells_Bulk_Mode_triggered()
+{
+    ImportWellsDialog dialog(this);
+    if(dialog.exec()==QDialog::Accepted){
+        QMap<QString,QString> params=dialog.params();
+        runProcess<ImportWellsProcess>(params);
     }
 }

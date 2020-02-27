@@ -350,6 +350,8 @@
      <string>We&amp;ll</string>
     </property>
     <addaction name="actionAdd_Well"/>
+    <addaction name="actionAdd_Wells_Bulk_Mode"/>
+    <addaction name="separator"/>
     <addaction name="actionImportLogs"/>
     <addaction name="action_Logs_Bulk_Mode"/>
     <addaction name="actionExportLog"/>
@@ -1147,7 +1149,12 @@
   </action>
   <action name="actionAdd_Well">
    <property name="text">
-    <string>Add Well</string>
+    <string>Add Single Well</string>
+   </property>
+  </action>
+  <action name="actionAdd_Wells_Bulk_Mode">
+   <property name="text">
+    <string>Import Wells (Bulk Mode)</string>
    </property>
   </action>
  </widget>

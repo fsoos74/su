@@ -24,6 +24,7 @@ SOURCES += prozessui.cpp \
     horizonsemblancedialog.cpp \
     computeinterceptgradientdialog.cpp \
     horizonamplitudesdialog.cpp \
+    importwellsdialog.cpp \
     interceptgradientvolumedialog.cpp \
     fluidfactordialog.cpp \
     fluidfactorvolumedialog.cpp \
@@ -92,6 +93,7 @@ SOURCES += prozessui.cpp \
     offsetcomputationdialog.cpp
 
 HEADERS += prozessui.h\
+    importwellsdialog.h \
         prozessui_global.h \
     createtimeslicedialog.h \
     horizonsemblancedialog.h \
@@ -174,6 +176,7 @@ FORMS += \
     horizonsemblancedialog.ui \
     computeinterceptgradientdialog.ui \
     horizonamplitudesdialog.ui \
+    importwellsdialog.ui \
     interceptgradientvolumedialog.ui \
     fluidfactordialog.ui \
     fluidfactorvolumedialog.ui \

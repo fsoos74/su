@@ -23,6 +23,7 @@ TEMPLATE = lib
 DEFINES += PROZESS_LIBRARY
 
 SOURCES += prozess.cpp \
+    importwellsprocess.cpp \
     projectprocess.cpp \
     createtimesliceprocess.cpp \
     horizonsemblanceprocess.cpp \
@@ -119,6 +120,7 @@ SOURCES += prozess.cpp \
     offsetcomputationprocess.cpp
 
 HEADERS += prozess.h\
+    importwellsprocess.h \
         prozess_global.h \
     projectprocess.h \
     createtimesliceprocess.h \
