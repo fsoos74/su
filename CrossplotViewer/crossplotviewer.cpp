@@ -106,12 +106,12 @@ bool CrossplotViewer::isDetailedPointInformation(){
     return ui->actionDetailed_Point_Information->isChecked();
 }
 
+/*
 void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
 
     if( code!=PointCode::VIEWER_POINT_SELECTED) return; // only handle this for now
 
     if( pt.iline==SelectionPoint::NO_LINE || pt.xline==SelectionPoint::NO_LINE) return;  // only proceed on valid inline and crossline
-                                                                                         // this is for selecting lines on sidelabels
 
     for( QGraphicsItem* item : ui->crossplotView->scene()->items()){
 
@@ -121,9 +121,7 @@ void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
             const Crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
             int iline=d.iline;
             int xline=d.xline;
-
             if( iline==pt.iline && xline==pt.xline ){
-
                 item->setZValue(1);
                 item->setSelected(true);
             }
@@ -133,6 +131,36 @@ void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
                 item->setSelected(false);
             }
         }
+
+    }
+
+    // clear selection polygon
+    ui->crossplotView->setSelectionPolygon(QPolygonF());
+}
+*/
+void CrossplotViewer::receivePoint( SelectionPoint pt, int code ){
+    if( code!=PointCode::VIEWER_POINT_SELECTED) return; // only handle this for now
+
+    if( pt.iline==SelectionPoint::NO_LINE || pt.xline==SelectionPoint::NO_LINE) return;  // only proceed on valid inline and crossline
+                                                                                         // this is for selecting lines on sidelabels
+    for( QGraphicsItem* item : ui->crossplotView->scene()->items()){
+
+
+            int idx=item->data( ui->crossplotView->DATA_INDEX_KEY ).toInt();
+            const Crossplot::DataPoint& d=ui->crossplotView->data().at(idx);
+            int iline=d.iline;
+            int xline=d.xline;
+
+            if( iline==pt.iline && xline==pt.xline ){
+                item->setZValue(1);
+                item->setSelected(true);
+            }
+            else{
+
+                item->setZValue(0);
+                item->setSelected(false);
+            }
+
 
     }
 

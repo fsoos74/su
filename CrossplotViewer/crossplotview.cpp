@@ -5,6 +5,7 @@
 #include<QGraphicsEllipseItem>
 #include<QGraphicsRectItem>
 #include<QGraphicsLineItem>
+#include<crossplotpoint.h>
 #include<QGraphicsItemGroup>
 #include<QMap>
 #include<iostream>
@@ -217,38 +218,24 @@ void CrossplotView::refreshScene(){
         // NULL values are filtered before the data is set, thus they are not checked for
         QPointF pt(p.x, p.y);
 
-        QGraphicsItem* item=nullptr;
+        auto item=new CrossplotPoint();
 
         switch(m_pointSymbol){
 
-        case Symbol::Circle:{
-                             auto it=new QGraphicsEllipseItem(-PS/2,-PS/2,PS,PS);
-                             it->setBrush(QBrush(color));
-                             it->setPen(Qt::NoPen);
-                             item=it;
+        case Symbol::Circle:
+                             item->setStyle(CrossplotPoint::Style::Circle);
                              break;
-        }
-        case Symbol::Square:{
-                             auto it=new QGraphicsRectItem(-PS/2,-PS/2,PS,PS);
-                             it->setBrush(QBrush(color));
-                             it->setPen(Qt::NoPen);
-                             item=it;
+        case Symbol::Square:
+                             item->setStyle(CrossplotPoint::Style::Square);
                              break;
-        }
-        case Symbol::Cross:{
-                            auto it1=new QGraphicsLineItem(-PS/2,0,PS/2,0);
-                            auto it2=new QGraphicsLineItem(0,-PS/2,0,PS/2,it1);
-                            QPen pen(color,1);
-                            pen.setCosmetic(true);
-                            it1->setPen(pen);
-                            it2->setPen(pen);
-                            item=it1;
+        case Symbol::Cross:
+                            item->setStyle(CrossplotPoint::Style::Cross);
                             break;
-        }
 
         }// switch
 
-
+        item->setSize(m_pointSize);
+        item->setColor(color);
         item->setFlag(QGraphicsItem::ItemIgnoresTransformations,true);
         item->setFlag(QGraphicsItem::ItemIsSelectable, true);
 
@@ -290,6 +277,130 @@ void CrossplotView::refreshScene(){
             y1=y1 - ( m_trend.x() + x1 *m_trend.y() );
             y2=y2 - ( m_trend.x() + x2 *m_trend.y() );
         }
+        //m_scene->addLine(x1,y1,x2,y2,QPen(m_trendlineColor, 0));
+        QPen trendPen(m_trendlineColor, 2);
+        trendPen.setCosmetic(true);
+        scene->addLine(QLineF(toScene(QPointF(x1,y1)), toScene(QPointF(x2,y2))), trendPen);
+    }
+
+    connect( scene, SIGNAL(selectionChanged()), this, SIGNAL(selectionChanged()) ); // forward this to viewer
+}
+
+/* original 3.6.2020
+void CrossplotView::refreshScene(){
+
+    QGraphicsScene* scene=new QGraphicsScene(this);
+
+    if( m_data.size()<1){
+        return;
+    }
+
+    QProgressDialog progress(this);
+    progress.setWindowTitle("Crossplot");
+    progress.setRange(0,100);
+    progress.setLabelText("Populating Crossplot");
+    progress.show();
+    int perc=0;
+    auto const& PS=m_pointSize;
+
+    for( int i=0; i<m_data.size(); i++){
+
+        auto p = m_data[i];
+
+        // check if point is within the inline/crossline/time selection for display
+        int msec=static_cast<int>(1000*p.time);
+        if( !m_filter.isInside(p.iline,p.xline, msec, p.attribute, p.dataset)) continue;
+
+        QColor color;
+        switch (m_colorStyle) {
+        case ColorStyle::Fixed:
+            color=m_pointColor;
+            break;
+        case ColorStyle::Attribute:
+            color=m_colorTable->map(p.attribute);
+            break;
+        case ColorStyle::Dataset:
+            //color=dscolors[p.dataset%dscolors.size()];
+            color=datasetColor(p.dataset);
+            break;
+        }
+
+        // NULL values are filtered before the data is set, thus they are not checked for
+        QPointF pt(p.x, p.y);
+
+        QGraphicsItem* item=nullptr;
+
+        switch(m_pointSymbol){
+
+        case Symbol::Circle:{
+                             auto it=new QGraphicsEllipseItem(-PS/2,-PS/2,PS,PS);
+                             it->setBrush(QBrush(color));
+                             it->setPen(Qt::NoPen);
+                             item=it;
+                             break;
+        }
+        case Symbol::Square:{
+                             auto it=new QGraphicsRectItem(-PS/2,-PS/2,PS,PS);
+                             it->setBrush(QBrush(color));
+                             it->setPen(Qt::NoPen);
+                             item=it;
+                             break;
+        }
+        case Symbol::Cross:{
+                            auto it1=new QGraphicsLineItem(-PS/2,0,PS/2,0);
+                            auto it2=new QGraphicsLineItem(0,-PS/2,0,PS/2,it1);
+                            QPen pen(color,1);
+                            pen.setCosmetic(true);
+                            it1->setPen(pen);
+                            it2->setPen(pen);
+                            item=it1;
+                            break;
+        }
+
+        }// switch
+
+
+        item->setFlag(QGraphicsItem::ItemIgnoresTransformations,true);
+        item->setFlag(QGraphicsItem::ItemIsSelectable, true);
+
+        if( m_flattenTrend){
+            qreal dy=m_trend.x() + pt.x()*m_trend.y();
+            pt.setY(pt.y()-dy);
+        }
+
+        item->setPos( toScene(pt) );
+
+        // add user data inline and crossline
+        item->setData( DATA_INDEX_KEY, i);
+        scene->addItem(item);
+
+        int pp=100*i/m_data.size();
+        if(pp>perc){
+            perc=pp;
+            progress.setValue(perc);
+            qApp->processEvents();
+            if(progress.wasCanceled()){
+                delete scene;
+                return;
+            }
+        }
+    }
+
+    setScene(scene);
+
+
+    if( isDisplayTrendLine()){
+
+        double x1=xAxis()->toAxis(sceneRect().left());
+        double x2=xAxis()->toAxis(sceneRect().right());
+        double y1=m_trend.x() + x1*m_trend.y();
+        double y2=m_trend.x() + x2*m_trend.y();
+
+        if( m_flattenTrend){    // ADJUST THIS TO LOG
+
+            y1=y1 - ( m_trend.x() + x1 *m_trend.y() );
+            y2=y2 - ( m_trend.x() + x2 *m_trend.y() );
+        }
         std::cout<<"x1="<<x1<<" y1="<<y1<<" x2="<<x2<<" y2="<<y2<<std::endl<<std::flush;
         //m_scene->addLine(x1,y1,x2,y2,QPen(m_trendlineColor, 0));
         QPen trendPen(m_trendlineColor, 2);
@@ -299,6 +410,8 @@ void CrossplotView::refreshScene(){
 
     connect( scene, SIGNAL(selectionChanged()), this, SIGNAL(selectionChanged()) ); // forward this to viewer
 }
+*/
+
 
 /* original 10.3.18
 void CrossplotView::refreshScene(){

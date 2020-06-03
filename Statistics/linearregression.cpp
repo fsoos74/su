@@ -1,6 +1,7 @@
 #include "linearregression.h"
 
 #include<iostream>
+#include<cmath>
 
 // result is intercept/gradient
 QPointF linearRegression( const QVector<QPointF>& points, double* quality){

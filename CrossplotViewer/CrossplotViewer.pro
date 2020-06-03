@@ -10,6 +10,7 @@ win32{
 include(../common.pri)
 
 SOURCES += \
+    crossplotpoint.cpp \
     crossplotviewer.cpp \
     crossplot.cpp \
     crossplotgridsinputdialog.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
     legendwidget.cpp
 
 HEADERS += \
+    crossplotpoint.h \
     crossplotviewer.h \
     crossplot.h \
     crossplotgridsinputdialog.h \
