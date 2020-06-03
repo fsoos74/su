@@ -224,7 +224,7 @@
      <x>0</x>
      <y>0</y>
      <width>922</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProcess">
@@ -344,6 +344,7 @@
     <addaction name="action_Offset_Stack"/>
     <addaction name="actionOffset_Computation"/>
     <addaction name="actionStack_To_Gather"/>
+    <addaction name="actionTrace_Gain"/>
    </widget>
    <widget class="QMenu" name="menuProcess_Well">
     <property name="title">
@@ -1155,6 +1156,11 @@
   <action name="actionAdd_Wells_Bulk_Mode">
    <property name="text">
     <string>Import Wells (Bulk Mode)</string>
+   </property>
+  </action>
+  <action name="actionTrace_Gain">
+   <property name="text">
+    <string>Trace Gain</string>
    </property>
   </action>
  </widget>

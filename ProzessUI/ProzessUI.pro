@@ -51,6 +51,7 @@ SOURCES += prozessui.cpp \
     cropdatasetdialog.cpp \
     replacebadtracesdialog.cpp \
     flattenvolumedialog.cpp \
+    tracegaindialog.cpp \
     volumestatisticsdialog.cpp \
     buildwellvolumedialog.cpp \
     volumemathdialog.cpp \
@@ -125,6 +126,7 @@ HEADERS += prozessui.h\
     cropdatasetdialog.h \
     replacebadtracesdialog.h \
     flattenvolumedialog.h \
+    tracegaindialog.h \
     volumestatisticsdialog.h \
     buildwellvolumedialog.h \
     volumemathdialog.h \
@@ -202,6 +204,7 @@ FORMS += \
     cropdatasetdialog.ui \
     replacebadtracesdialog.ui \
     flattenvolumedialog.ui \
+    tracegaindialog.ui \
     volumestatisticsdialog.ui \
     buildwellvolumedialog.ui \
     volumemathdialog.ui \

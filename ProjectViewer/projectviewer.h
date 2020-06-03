@@ -210,6 +210,8 @@ private slots:
 
     void on_actionAdd_Wells_Bulk_Mode_triggered();
 
+    void on_actionTrace_Gain_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

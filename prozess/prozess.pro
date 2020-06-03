@@ -29,6 +29,7 @@ SOURCES += prozess.cpp \
     horizonsemblanceprocess.cpp \
     computeinterceptgradientprocess.cpp \
     horizonamplitudesprocess.cpp \
+    tracegainprocess.cpp \
     windowreductionfunction.cpp \
     utilities.cpp \
     rotatinggatherbuffer.cpp \
@@ -127,6 +128,7 @@ HEADERS += prozess.h\
     horizonsemblanceprocess.h \
     computeinterceptgradientprocess.h \
     horizonamplitudesprocess.h \
+    tracegainprocess.h \
     windowreductionfunction.h \
     utilities.h \
     rotatinggatherbuffer.h \

@@ -78,6 +78,8 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include <offsetcomputationprocess.h>
 #include <stacktogatherdialog.h>
 #include <stacktogatherprocess.h>
+#include <tracegaindialog.h>
+#include <tracegainprocess.h>
 #include <replacebadtracesdialog.h>
 #include <replacebadtracesprocess.h>
 #include <cropdatasetdialog.h>
@@ -1095,6 +1097,20 @@ void ProjectViewer::on_actionOffset_Computation_triggered()
     runProcess< OffsetComputationProcess>( params );
 }
 
+void ProjectViewer::on_actionTrace_Gain_triggered()
+{
+    Q_ASSERT( m_project);
+
+    TraceGainDialog dlg;
+    dlg.setWindowTitle("Scale Traces");
+    dlg.setInputDatasets(m_project->seismicDatasetList());
+    dlg.setReservedDatasets( m_project->seismicDatasetList() );
+    if( dlg.exec()!=QDialog::Accepted) return;
+
+    QMap<QString,QString> params=dlg.params();
+
+    runProcess<TraceGainProcess>( params );
+}
 
 void ProjectViewer::on_actionStack_To_Gather_triggered()
 {
@@ -5241,6 +5257,7 @@ void ProjectViewer::updateMenu(){
     ui->action_Offset_Stack->setEnabled(isProject);
     ui->actionOffset_Computation->setEnabled(isProject);
     ui->actionStack_To_Gather->setEnabled(isProject);
+    ui->actionTrace_Gain->setEnabled(isProject);
 
     ui->actionReplace_Bad_Traces->setEnabled(isProject);
     ui->actionCrop_Dataset->setEnabled(isProject);
@@ -5392,3 +5409,5 @@ void ProjectViewer::on_actionAdd_Wells_Bulk_Mode_triggered()
         runProcess<ImportWellsProcess>(params);
     }
 }
+
+
