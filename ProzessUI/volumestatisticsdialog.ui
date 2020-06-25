@@ -14,7 +14,7 @@
    <string>Volume Semblance</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../ProjectViewer/icons.qrc">
+   <iconset>
     <normaloff>:/icons/images/logo_fs_64x64.png</normaloff>:/icons/images/logo_fs_64x64.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -74,6 +74,11 @@
          </item>
          <item>
           <property name="text">
+           <string>Maximum Absolute</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Mean</string>
           </property>
          </item>
@@ -95,6 +100,11 @@
          <item>
           <property name="text">
            <string>Standard Deviation</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>RMS</string>
           </property>
          </item>
         </widget>
@@ -281,9 +291,7 @@
   <tabstop>cbIldip</tabstop>
   <tabstop>cbXldip</tabstop>
  </tabstops>
- <resources>
-  <include location="../ProjectViewer/icons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>

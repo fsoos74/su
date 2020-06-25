@@ -2376,7 +2376,7 @@ license::LicenseInfo ProjectViewer::checkLicense(){
         info.expirationMonth=myCKeylok->GetExpMonth(DateRead);
         info.expirationDay=myCKeylok->GetExpDay(DateRead);
         info.expirationYear=myCKeylok->GetExpYear(DateRead);
-        //* DISABLED EXPIRATION CHECK FOR DEVELOPMENT, ACTIVATE FOR CLIENTS!!!!!
+        /* DISABLED EXPIRATION CHECK FOR DEVELOPMENT, ACTIVATE FOR CLIENTS!!!!!
         myCKeylok->CheckExpiration();
         switch (myCKeylok->ReturnValue2)
         {
@@ -2398,7 +2398,7 @@ license::LicenseInfo ProjectViewer::checkLicense(){
         default:
             break;
         }
-        //*/
+        */
     }
 
     if( !validLicense){

@@ -3,7 +3,7 @@
 #include<grid2d.h>
 #include<memory>
 #include<iostream>
-
+#include<cmath>
 
 
 #include "utilities.h"
@@ -23,6 +23,16 @@ float max(float* p, size_t n){
 
     auto it = std::max_element( p, p+n-1 );
     return *it;
+}
+
+float maxABS(float* p, size_t n){
+
+    float max=0;
+    for(auto it=p; it!=p+n; it++){
+        if(std::abs(*it)>max)
+            max=std::abs(*it);
+    }
+    return max;
 }
 
 
@@ -92,6 +102,15 @@ float variance(float* p, size_t n){
 float standardDeviation(float* p, size_t n){
 
     return std::sqrt(std::fabs(variance(p,n)));
+}
+
+float rms(float* p, size_t n){
+
+    qreal sum2=0;
+    for(auto it=p; it!=p+n; it++){
+        sum2+=std::pow(static_cast<qreal>(*it),2);
+    }
+    return (n>0) ? static_cast<float>(std::sqrt(sum2/n)) : 0;
 }
 
 }
@@ -184,6 +203,9 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::init( const QMap<QString, QS
     else if( statistic=="Maximum"){
         m_func=stats::max;
     }
+    else if( statistic=="Maximum Absolute"){
+        m_func=stats::maxABS;
+    }
     else if( statistic=="Mean"){
         m_func=stats::mean;
     }
@@ -198,6 +220,9 @@ ProjectProcess::ResultCode VolumeStatisticsProcess::init( const QMap<QString, QS
     }
     else if( statistic=="Standard Deviation"){
         m_func=stats::standardDeviation;
+    }
+    else if( statistic=="RMS"){
+        m_func=stats::rms;
     }
     else{
         setErrorString( "Unsupported statistic type!");
