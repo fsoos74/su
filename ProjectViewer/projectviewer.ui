@@ -224,7 +224,7 @@
      <x>0</x>
      <y>0</y>
      <width>922</width>
-     <height>24</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuProcess">
@@ -256,9 +256,6 @@
     <addaction name="actionSmooth_Grid"/>
     <addaction name="actionGrid_Math"/>
     <addaction name="actionHorizon_Curvature"/>
-    <addaction name="separator"/>
-    <addaction name="actionTrend_Based_Attribute_Grids"/>
-    <addaction name="actionSecondary_Attribute_Grids"/>
     <addaction name="separator"/>
     <addaction name="separator"/>
     <addaction name="actionRun_Grid_User_Script"/>
@@ -338,7 +335,6 @@
     <addaction name="actionHorizon_Semblance"/>
     <addaction name="actionVolume_Amplitudes"/>
     <addaction name="separator"/>
-    <addaction name="actionCompute_Intercept_Gradient"/>
     <addaction name="actionCompute_Intercept_and_Gradient_Volumes"/>
     <addaction name="separator"/>
     <addaction name="action_Offset_Stack"/>
@@ -514,6 +510,9 @@
    </property>
   </action>
   <action name="actionCompute_Intercept_Gradient">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Intercept and &amp;Gradient Grids</string>
    </property>
@@ -664,6 +663,9 @@
    </property>
   </action>
   <action name="actionSecondary_Attribute_Grids">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Secon&amp;dary AVO Attribute Grids</string>
    </property>
@@ -679,6 +681,9 @@
    </property>
   </action>
   <action name="actionTrend_Based_Attribute_Grids">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Trend Based AVO Attribute Grids</string>
    </property>

@@ -22,6 +22,8 @@
 
 #include <QStringList>
 
+#include<QDebug>
+
 
 // necessary to speed up slow segy input
 const QStringList REQUIRED_HEADER_WORDS{ "iline", "xline", "cdp", "offset", "dt", "ns",
@@ -175,7 +177,6 @@ private:
         int lastCrossline=std::min(firstCrossline+m_job.buffer->xlineCount()-1, m_job.bounds.j2());
 
         for( int iline=m_job.firstInline; iline<=m_job.lastInline; iline+=m_job.inlineIncrement ){
-
             for( int xline=firstCrossline; xline<lastCrossline; xline++){
 
                 seismic::Gather gather=m_job.buffer->gather(iline, xline, m_job.supergatherInlineSize, m_job.supergatherCrosslineSize);
@@ -194,6 +195,9 @@ private:
                     double q;
                     QPointF interceptAndGradient=linearRegression(curve, &q);
 
+                    (*m_job.intercept)(iline, xline, sampleno)=sampleno;//gather[gather.size()-1].header().at("offset").floatValue();
+                    (*m_job.gradient)(iline, xline, sampleno)=gather[0].header().at("offset").floatValue();
+                    (*m_job.quality)(iline, xline, sampleno)=curve.size();
                     // linear regression returns nan if all input values are zero
                     if( !std::isfinite(interceptAndGradient.x()) || !std::isfinite(interceptAndGradient.y())){
                         (*m_job.intercept)(iline, xline,sampleno)=m_job.intercept->NULL_VALUE;
@@ -221,7 +225,8 @@ private:
 
 }
 
-
+/*  WRONG!!! THIS VERSION USES IO_VOLUMES
+ * This does not work right
 ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int firstIlineToProcess, int lastIlineToProcess ){
 
 #ifdef IO_VOLUMES
@@ -427,11 +432,13 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
     return ResultCode::Ok;
 
 }
+*/
 
 
 
 
-/* original
+// original
+// this version works right, compared results with previously accepted results
 ProjectProcess::ResultCode InterceptGradientVolumeProcess::processBuffer_n( GatherBuffer* buffer, int firstIlineToProcess, int lastIlineToProcess ){
 
 #ifdef IO_VOLUMES
@@ -636,5 +643,5 @@ ProjectProcess::ResultCode InterceptGradientVolumeProcess::run(){
 
 }
 
-*/
+
 

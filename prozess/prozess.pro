@@ -24,6 +24,7 @@ DEFINES += PROZESS_LIBRARY
 
 SOURCES += prozess.cpp \
     importwellsprocess.cpp \
+    interceptgradientvolumeprocess_copy.cpp \
     projectprocess.cpp \
     createtimesliceprocess.cpp \
     horizonsemblanceprocess.cpp \

@@ -215,11 +215,15 @@ private:
                 seismic::Gather gather=m_job.buffer->gather(iline, xline, m_job.supergatherInlineSize, m_job.supergatherCrosslineSize);
 
                 if( gather.empty() ){
+                    (*m_job.quality)(iline, xline)=101;
                     continue;
                 }
                 //if( !m_job.horizon->bounds().isInside(iline, xline)) continue; // valueAt does the job
                 double v=m_job.horizon->valueAt(iline, xline);
-                if( v == m_job.horizon->NULL_VALUE ) continue;
+                if( v == m_job.horizon->NULL_VALUE ){
+                    (*m_job.quality)(iline, xline)=102;
+                    continue;
+                }
                 double t=0.001 * v;    // horizon in millis
 
                 QVector<QPointF> curve=buildAmplitudeOffsetCurve(gather, t,
@@ -248,7 +252,11 @@ private:
                 (*m_job.intercept)(iline, xline)=interceptAndGradient.x();
                 (*m_job.gradient)(iline, xline)=interceptAndGradient.y();
                 (*m_job.quality)(iline, xline)=q;
-
+/*
+                (*m_job.intercept)(iline, xline)=1;
+                (*m_job.gradient)(iline, xline)=2;
+                (*m_job.quality)(iline, xline)=3;
+                */
             }
 
         }
@@ -355,7 +363,6 @@ ProjectProcess::ResultCode ComputeInterceptGradientProcess::run(){
         const seismic::Header& header=gather->front().header();
         int iline=header.at("iline").intValue();
         int xline=header.at("xline").intValue();
-
         gather=filter.filter(gather);
 
 
