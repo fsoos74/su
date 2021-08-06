@@ -246,6 +246,11 @@ using namespace std::placeholders; // for _1, _2 etc.
 #include<addwelldialog.h>
 
 
+#include<blmavodialog.h>
+#include<blmfrequenciesdialog.h>
+#include<limits>
+
+
 #ifdef USE_KEYLOCK_LICENSE
 #include<QApplication>
 #include<QTimer>
@@ -5411,3 +5416,472 @@ void ProjectViewer::on_actionAdd_Wells_Bulk_Mode_triggered()
 }
 
 
+
+void ProjectViewer::on_actionBLM_AVO_triggered()
+{
+    static QString _exportPath="";
+    static QString  _lineName="";
+    static int _maxTime=2000;
+
+    BLMAVODialog dialog(this);
+    dialog.setExportPath(_exportPath);
+    dialog.setLineName(_lineName);
+    dialog.setMaxTime(_maxTime);
+    dialog.setWindowTitle("BLM AVO");
+    if(dialog.exec()==QDialog::Accepted){
+        QMap<QString,QString> params=dialog.params();
+        auto path=params.value("path");
+        auto line=params.value("line");
+        auto maxTime=params.value("max-time").toInt();
+        _exportPath=path;
+        _lineName=line;
+        _maxTime=maxTime;
+
+        //QMessageBox::information(this, "PATH", path);
+
+        // intercept and gradient
+        QMap<QString,QString> igParams;
+        auto iname=QString("I_1x2_%1").arg(maxTime);
+        auto gname=QString("G_1x2_%1").arg(maxTime);
+        igParams.insert( QString("dataset"), "gathers");
+        igParams.insert( QString("intercept"), iname);
+        igParams.insert( QString("gradient"), gname );
+        igParams.insert( QString("quality"), "");
+        igParams.insert( QString("minimum-offset"), QString::number(std::numeric_limits<double>::lowest()));
+        igParams.insert( QString("maximum-offset"), "9999999999");
+        igParams.insert( "minimum-azimuth", QString::number(0.));
+        igParams.insert( "maximum-azimuth", QString::number(180.));
+        igParams.insert( "supergathers", QString::number(static_cast<int>(true)));
+        igParams.insert( QString("sg-inline-size"), QString::number(1) );
+        igParams.insert( QString("sg-crossline-size"), QString::number(2));
+        igParams.insert( "time-window", QString::number(static_cast<int>(true)));
+        igParams.insert("window-start", QString::number(0));
+        igParams.insert("window-end", QString::number(maxTime));
+        runProcess<InterceptGradientVolumeProcess>( igParams );
+
+        // fluid factor
+        QMap<QString, QString> fParams;
+        auto fname=QString("FF_1x2_%1").arg(maxTime);
+        fParams.insert("attribute", QString::number(0));    // 0=FF
+        fParams.insert("intercept", iname);
+        fParams.insert("gradient", gname);
+        fParams.insert("select-layer", QString::number( false ) );
+        fParams.insert("top-horizon", "");
+        fParams.insert("bottom-horizon", "");
+        fParams.insert("compute-trend", QString::number(true) );
+        fParams.insert("trend-angle", "" );
+        fParams.insert("trend-intercept", "" );
+        fParams.insert(QString("output"), fname );
+        runProcess<TrendBasedAttributeVolumesProcess>( fParams );
+
+        // porosity factor
+        QMap<QString, QString> pParams;
+        auto pname=QString("PF_1x2_%1").arg(maxTime);
+        pParams.insert("attribute", QString::number(2));    // 2=FF
+        pParams.insert("intercept", iname);
+        pParams.insert("gradient", gname);
+        pParams.insert("select-layer", QString::number( false ) );
+        pParams.insert("top-horizon", "");
+        pParams.insert("bottom-horizon", "");
+        pParams.insert("compute-trend", QString::number(true) );
+        pParams.insert("trend-angle", "" );
+        pParams.insert("trend-intercept", "" );
+        pParams.insert(QString("output"), pname );
+        runProcess<TrendBasedAttributeVolumesProcess>( pParams );
+
+        // lithology factor
+        QMap<QString, QString> lParams;
+        auto lname=QString("LF_1x2_%1").arg(maxTime);
+        lParams.insert("attribute", QString::number(1));    // 1=LF
+        lParams.insert("intercept", iname);
+        lParams.insert("gradient", gname);
+        lParams.insert("select-layer", QString::number( false ) );
+        lParams.insert("top-horizon", "");
+        lParams.insert("bottom-horizon", "");
+        lParams.insert("compute-trend", QString::number(true) );
+        lParams.insert("trend-angle", "" );
+        lParams.insert("trend-intercept", "" );
+        lParams.insert(QString("output"), lname );
+        runProcess<TrendBasedAttributeVolumesProcess>( lParams );
+
+        // fluid factor x porosity factor
+        QMap<QString, QString> ffpfParams;
+        auto ffpfname=QString("PFxFF_1x2_%1").arg(maxTime);
+        ffpfParams.insert( "function", MathProcessor::toFunctionString("Volume1 * Volume2", "Volume" ) );
+        ffpfParams.insert( "output-volume", ffpfname );
+        ffpfParams.insert( "input-volume1", fname );
+        ffpfParams.insert( "input-volume2", pname );
+        ffpfParams.insert("value1", "");
+        ffpfParams.insert("value2", "");
+        ffpfParams.insert( "top-horizon", "" );
+        ffpfParams.insert( "bottom-horizon", "" );
+        runProcess<VolumeMathProcess>( ffpfParams );
+
+
+        // export gradient
+        QStringList gEBCDIC{
+                    "C01 CLIENT: NPRA REPROCESSING PROJECT",
+                    QString("C02 AREA: NPRA ALASKA LINE %1").arg(line),
+                    "C03 VERSION: AVO GRADIENT",
+                    "C04 DATA LENGTH: 5.0SEC    SAMPLE RATE: 2MS    FORMAT: IEEE SEG-Y",
+                    "C05 DATUM: 300 FT          REPLACEMENT VELOCITY: 8000 FT/SEC",
+                    "C06 COORDINATE REFERENCE SYSTEM: UTM 4 - NAD 1927 FT",
+                    "C07 PROCESSED BY:  SEISMIC UTENSILS, DENVER, CO  303 725 3755",
+                    "C08 DATE PROCESSED: JANUARY 2021",
+                    "C09",
+                    "C10",
+                    "C11 TRACE HEADER MAPPING:",
+                    "C12 CMP          BYTES 21-24 (INTEGER)",
+                    "C13 OFFSET       BYTES 37-40 (INTEGER)",
+                    "C14 BIN X-COORD  BYTES 81-84 (INTEGER)",
+                    "C15 BIN Y-COORD  BYTES 85-88 (INTEGER)",
+                    "C16",
+                    "C17",
+                    "C18",
+                    "C19",
+                    "C20 PROCESSING SEQUENCE:",
+                    "C21 INPUT PSTM GATHERS",
+                    "C22 INTERCEPT AND GRADIENT COMPUTATION",
+                    "C23 SEG-Y EXPORT",
+                    "C24",
+                    "C25",
+                    "C26",
+                    "C27",
+                    "C28",
+                    "C29",
+                    "C30",
+                    "C31",
+                    "C32",
+                    "C33",
+                    "C34",
+                    "C35",
+                    "C36",
+                    "C37",
+                    "C38",
+                    "C39",
+                    "C40"
+               };
+
+        QMap<QString, QString> exgParams;
+        exgParams.insert( "volume", gname);
+        exgParams.insert( "output-file", QString("%1\\L%2_%3.segy").arg(path).arg(line).arg(gname) );
+        exgParams.insert( "ref-stack", "stack");
+        exgParams.insert( "null-value", "0.0");
+        exgParams.insert( "ebcdic", gEBCDIC.join("\n"));
+        runProcess<ExportVolumeRefProcess>( exgParams );
+
+        // export fluid factor
+        QStringList fEBCDIC{
+                    "C01 CLIENT: NPRA REPROCESSING PROJECT",
+                    QString("C02 AREA: NPRA ALASKA LINE %1").arg(line),
+                    "C03 VERSION: AVO FLUID FACTOR",
+                    "C04 DATA LENGTH: 5.0SEC    SAMPLE RATE: 2MS    FORMAT: IEEE SEG-Y",
+                    "C05 DATUM: 300 FT          REPLACEMENT VELOCITY: 8000 FT/SEC",
+                    "C06 COORDINATE REFERENCE SYSTEM: UTM 4 - NAD 1927 FT",
+                    "C07 PROCESSED BY:  SEISMIC UTENSILS, DENVER, CO  303 725 3755",
+                    "C08 DATE PROCESSED: JANUARY 2021",
+                    "C09",
+                    "C10",
+                    "C11 TRACE HEADER MAPPING:",
+                    "C12 CMP          BYTES 21-24 (INTEGER)",
+                    "C13 OFFSET       BYTES 37-40 (INTEGER)",
+                    "C14 BIN X-COORD  BYTES 81-84 (INTEGER)",
+                    "C15 BIN Y-COORD  BYTES 85-88 (INTEGER)",
+                    "C16",
+                    "C17",
+                    "C18",
+                    "C19",
+                    "C20 PROCESSING SEQUENCE:",
+                    "C21 INPUT PSTM GATHERS",
+                    "C22 INTERCEPT AND GRADIENT COMPUTATION",
+                    "C23 FLUID FACTOR",
+                    "C24 SEG-Y EXPORT",
+                    "C25",
+                    "C26",
+                    "C27",
+                    "C28",
+                    "C29",
+                    "C30",
+                    "C31",
+                    "C32",
+                    "C33",
+                    "C34",
+                    "C35",
+                    "C36",
+                    "C37",
+                    "C38",
+                    "C39",
+                    "C40"
+               };
+
+        QMap<QString, QString> exfParams;
+        exfParams.insert( "volume", fname);
+        exfParams.insert( "output-file", QString("%1\\L%2_%3.segy").arg(path).arg(line).arg(fname) );
+        exfParams.insert( "ref-stack", "stack");
+        exfParams.insert( "null-value", "0.0");
+        exfParams.insert( "ebcdic", fEBCDIC.join("\n"));
+        runProcess<ExportVolumeRefProcess>( exfParams );
+
+        // export porosity factor
+        QStringList pEBCDIC{
+                    "C01 CLIENT: NPRA REPROCESSING PROJECT",
+                    QString("C02 AREA: NPRA ALASKA LINE %1").arg(line),
+                    "C03 VERSION: AVO POROSITY FACTOR",
+                    "C04 DATA LENGTH: 5.0SEC    SAMPLE RATE: 2MS    FORMAT: IEEE SEG-Y",
+                    "C05 DATUM: 300 FT          REPLACEMENT VELOCITY: 8000 FT/SEC",
+                    "C06 COORDINATE REFERENCE SYSTEM: UTM 4 - NAD 1927 FT",
+                    "C07 PROCESSED BY:  SEISMIC UTENSILS, DENVER, CO  303 725 3755",
+                    "C08 DATE PROCESSED: JANUARY 2021",
+                    "C09",
+                    "C10",
+                    "C11 TRACE HEADER MAPPING:",
+                    "C12 CMP          BYTES 21-24 (INTEGER)",
+                    "C13 OFFSET       BYTES 37-40 (INTEGER)",
+                    "C14 BIN X-COORD  BYTES 81-84 (INTEGER)",
+                    "C15 BIN Y-COORD  BYTES 85-88 (INTEGER)",
+                    "C16",
+                    "C17",
+                    "C18",
+                    "C19",
+                    "C20 PROCESSING SEQUENCE:",
+                    "C21 INPUT PSTM GATHERS",
+                    "C22 INTERCEPT AND GRADIENT COMPUTATION",
+                    "C23 POROSITY FACTOR",
+                    "C24 SEG-Y EXPORT",
+                    "C25",
+                    "C26",
+                    "C27",
+                    "C28",
+                    "C29",
+                    "C30",
+                    "C31",
+                    "C32",
+                    "C33",
+                    "C34",
+                    "C35",
+                    "C36",
+                    "C37",
+                    "C38",
+                    "C39",
+                    "C40"
+               };
+
+        QMap<QString, QString> expParams;
+        expParams.insert( "volume", pname);
+        expParams.insert( "output-file", QString("%1\\L%2_%3.segy").arg(path).arg(line).arg(pname) );
+        expParams.insert( "ref-stack", "stack");
+        expParams.insert( "null-value", "0.0");
+        expParams.insert( "ebcdic", pEBCDIC.join("\n"));
+        runProcess<ExportVolumeRefProcess>( expParams );
+
+
+
+        // export lithology factor
+        QStringList lEBCDIC{
+                    "C01 CLIENT: NPRA REPROCESSING PROJECT",
+                    QString("C02 AREA: NPRA ALASKA LINE %1").arg(line),
+                    "C03 VERSION: AVO LITHOLOGY FACTOR",
+                    "C04 DATA LENGTH: 5.0SEC    SAMPLE RATE: 2MS    FORMAT: IEEE SEG-Y",
+                    "C05 DATUM: 300 FT          REPLACEMENT VELOCITY: 8000 FT/SEC",
+                    "C06 COORDINATE REFERENCE SYSTEM: UTM 4 - NAD 1927 FT",
+                    "C07 PROCESSED BY:  SEISMIC UTENSILS, DENVER, CO  303 725 3755",
+                    "C08 DATE PROCESSED: JANUARY 2021",
+                    "C09",
+                    "C10",
+                    "C11 TRACE HEADER MAPPING:",
+                    "C12 CMP          BYTES 21-24 (INTEGER)",
+                    "C13 OFFSET       BYTES 37-40 (INTEGER)",
+                    "C14 BIN X-COORD  BYTES 81-84 (INTEGER)",
+                    "C15 BIN Y-COORD  BYTES 85-88 (INTEGER)",
+                    "C16",
+                    "C17",
+                    "C18",
+                    "C19",
+                    "C20 PROCESSING SEQUENCE:",
+                    "C21 INPUT PSTM GATHERS",
+                    "C22 INTERCEPT AND GRADIENT COMPUTATION",
+                    "C23 LITHOLOGY FACTOR",
+                    "C24 SEG-Y EXPORT",
+                    "C25",
+                    "C26",
+                    "C27",
+                    "C28",
+                    "C29",
+                    "C30",
+                    "C31",
+                    "C32",
+                    "C33",
+                    "C34",
+                    "C35",
+                    "C36",
+                    "C37",
+                    "C38",
+                    "C39",
+                    "C40"
+               };
+
+        QMap<QString, QString> exlParams;
+        exlParams.insert( "volume", lname);
+        exlParams.insert( "output-file", QString("%1\\L%2_%3.segy").arg(path).arg(line).arg(lname) );
+        exlParams.insert( "ref-stack", "stack");
+        exlParams.insert( "null-value", "0.0");
+        exlParams.insert( "ebcdic", lEBCDIC.join("\n"));
+        runProcess<ExportVolumeRefProcess>( exlParams );
+
+
+        // export fluid factor x porosity factor
+        QStringList ffpfEBCDIC{
+                    "C01 CLIENT: NPRA REPROCESSING PROJECT",
+                    QString("C02 AREA: NPRA ALASKA LINE %1").arg(line),
+                    "C03 VERSION: AVO FLUID FACTOR x POROSITY FACTOR",
+                    "C04 DATA LENGTH: 5.0SEC    SAMPLE RATE: 2MS    FORMAT: IEEE SEG-Y",
+                    "C05 DATUM: 300 FT          REPLACEMENT VELOCITY: 8000 FT/SEC",
+                    "C06 COORDINATE REFERENCE SYSTEM: UTM 4 - NAD 1927 FT",
+                    "C07 PROCESSED BY:  SEISMIC UTENSILS, DENVER, CO  303 725 3755",
+                    "C08 DATE PROCESSED: JANUARY 2021",
+                    "C09",
+                    "C10",
+                    "C11 TRACE HEADER MAPPING:",
+                    "C12 CMP          BYTES 21-24 (INTEGER)",
+                    "C13 OFFSET       BYTES 37-40 (INTEGER)",
+                    "C14 BIN X-COORD  BYTES 81-84 (INTEGER)",
+                    "C15 BIN Y-COORD  BYTES 85-88 (INTEGER)",
+                    "C16",
+                    "C17",
+                    "C18",
+                    "C19",
+                    "C20 PROCESSING SEQUENCE:",
+                    "C21 INPUT PSTM GATHERS",
+                    "C22 INTERCEPT AND GRADIENT COMPUTATION",
+                    "C23 POROSITY FACTOR x FLUID FACTOR",
+                    "C24 SEG-Y EXPORT",
+                    "C25",
+                    "C26",
+                    "C27",
+                    "C28",
+                    "C29",
+                    "C30",
+                    "C31",
+                    "C32",
+                    "C33",
+                    "C34",
+                    "C35",
+                    "C36",
+                    "C37",
+                    "C38",
+                    "C39",
+                    "C40"
+               };
+
+        QMap<QString, QString> exffpfParams;
+        exffpfParams.insert( "volume", ffpfname);
+        exffpfParams.insert( "output-file", QString("%1\\L%2_%3.segy").arg(path).arg(line).arg(ffpfname) );
+        exffpfParams.insert( "ref-stack", "stack");
+        exffpfParams.insert( "null-value", "0.0");
+        exffpfParams.insert( "ebcdic", ffpfEBCDIC.join("\n"));
+        runProcess<ExportVolumeRefProcess>( exffpfParams );
+    }
+
+}
+
+void ProjectViewer::on_actionBLM_Frequencies_triggered()
+{
+    static QString _exportPath="";
+    static QString  _lineName="";
+
+    BLMFrequenciesDialog dialog(this);
+    dialog.setExportPath(_exportPath);
+    dialog.setLineName(_lineName);
+    dialog.setWindowTitle("BLM Frequencies");
+    if(dialog.exec()==QDialog::Accepted){
+        QMap<QString,QString> params=dialog.params();
+        auto path=params.value("path");
+        auto line=params.value("line");
+        _exportPath=path;
+        _lineName=line;
+
+
+        // create stack attribute volume
+        QMap<QString, QString> cnvParams;
+        cnvParams.insert( "volume", "stack" );
+        cnvParams.insert( "dataset","stack");
+        cnvParams.insert( "crop", QString::number(static_cast<int>(false)));
+        cnvParams.insert( "min-iline", QString::number(0));
+        cnvParams.insert( "max-iline", QString::number(999999));
+        cnvParams.insert( "min-xline", QString::number(0));
+        cnvParams.insert( "max-xline", QString::number(999999));
+        cnvParams.insert( "min-z", QString::number(0));
+        cnvParams.insert( "max-z", QString::number(9999));
+        runProcess<AmplitudeVolumeProcess>( cnvParams );
+
+
+        // create and export frequency volumes
+        for( auto ff : {qMakePair(0,20), qMakePair(20,40), qMakePair(40,60)}){
+            auto low=ff.first;
+            auto high=ff.second;
+            auto vname=tr("FREQ_%1-%2HZ").arg(low).arg(high);
+
+            // create volume
+            QMap<QString, QString> frqParams;
+            frqParams.insert( "output-volume", vname);
+            frqParams.insert( "input-volume", "stack");
+            frqParams.insert( "minimum-frequency", QString::number(low) );
+            frqParams.insert( "maximum-frequency", QString::number(high) );
+            frqParams.insert( "window-samples", QString::number(32) );
+            runProcess<FrequencyVolumeProcess>(frqParams);
+
+            // export volume
+            QStringList fEBCDIC{
+                    "C01 CLIENT: NPRA REPROCESSING PROJECT",
+                    QString("C02 AREA: NPRA ALASKA LINE %1").arg(line),
+                    QString("C03 VERSION: FREQUENCY DECOMPOSITION %1 - %2 HZ").arg(low).arg(high),
+                    "C04 DATA LENGTH: 5.0SEC    SAMPLE RATE: 2MS    FORMAT: IEEE SEG-Y",
+                    "C05 DATUM: 300 FT          REPLACEMENT VELOCITY: 8000 FT/SEC",
+                    "C06 COORDINATE REFERENCE SYSTEM: UTM 4 - NAD 1927 FT",
+                    "C07 PROCESSED BY:  SEISMIC UTENSILS, DENVER, CO  303 725 3755",
+                    "C08 DATE PROCESSED: JANUARY 2021",
+                    "C09",
+                    "C10",
+                    "C11 TRACE HEADER MAPPING:",
+                    "C12 CMP          BYTES 21-24 (INTEGER)",
+                    "C13 OFFSET       BYTES 37-40 (INTEGER)",
+                    "C14 BIN X-COORD  BYTES 81-84 (INTEGER)",
+                    "C15 BIN Y-COORD  BYTES 85-88 (INTEGER)",
+                    "C16",
+                    "C17",
+                    "C18",
+                    "C19",
+                    "C20 PROCESSING SEQUENCE:",
+                    "C21 INPUT PSTM STACK",
+                    "C22 FREQUENCY DECOMPOSITION",
+                    "C23 SEG-Y EXPORT",
+                    "C24",
+                    "C25",
+                    "C26",
+                    "C27",
+                    "C28",
+                    "C29",
+                    "C30",
+                    "C31",
+                    "C32",
+                    "C33",
+                    "C34",
+                    "C35",
+                    "C36",
+                    "C37",
+                    "C38",
+                    "C39",
+                    "C40"
+               };
+            QMap<QString, QString> exParams;
+            exParams.insert( "volume", vname);
+            exParams.insert( "output-file", QString("%1\\L%2_%3.segy").arg(path).arg(line).arg(vname) );
+            exParams.insert( "ref-stack", "stack");
+            exParams.insert( "null-value", "0.0");
+            exParams.insert( "ebcdic", fEBCDIC.join("\n"));
+            runProcess<ExportVolumeRefProcess>( exParams );
+        }
+
+
+    }
+}

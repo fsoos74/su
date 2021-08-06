@@ -212,6 +212,10 @@ private slots:
 
     void on_actionTrace_Gain_triggered();
 
+    void on_actionBLM_AVO_triggered();
+
+    void on_actionBLM_Frequencies_triggered();
+
 protected:
 
     bool eventFilter(QObject *watched, QEvent *event);

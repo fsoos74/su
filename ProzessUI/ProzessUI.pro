@@ -20,6 +20,8 @@ win32{
 DEFINES += PROZESSUI_LIBRARY
 
 SOURCES += prozessui.cpp \
+    blmavodialog.cpp \
+    blmfrequenciesdialog.cpp \
     createtimeslicedialog.cpp \
     horizonsemblancedialog.cpp \
     computeinterceptgradientdialog.cpp \
@@ -94,6 +96,8 @@ SOURCES += prozessui.cpp \
     offsetcomputationdialog.cpp
 
 HEADERS += prozessui.h\
+    blmavodialog.h \
+    blmfrequenciesdialog.h \
     importwellsdialog.h \
         prozessui_global.h \
     createtimeslicedialog.h \
@@ -174,6 +178,8 @@ unix {
 }
 
 FORMS += \
+    blmavodialog.ui \
+    blmfrequenciesdialog.ui \
     createtimeslicedialog.ui \
     horizonsemblancedialog.ui \
     computeinterceptgradientdialog.ui \

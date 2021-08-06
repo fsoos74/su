@@ -25,6 +25,18 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
@@ -35,6 +47,18 @@
         <string>Seismic</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="datasetsView">
           <property name="alternatingRowColors">
@@ -58,6 +82,18 @@
         <string>Horizons</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="horizonsView">
           <property name="alternatingRowColors">
@@ -78,6 +114,18 @@
         <string>Attribute Grids</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_6">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="attributesView">
           <property name="alternatingRowColors">
@@ -98,6 +146,18 @@
         <string>Other Grids</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="gridsView">
           <property name="alternatingRowColors">
@@ -118,6 +178,18 @@
         <string>Volumes</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="volumesView">
           <property name="alternatingRowColors">
@@ -138,6 +210,18 @@
         <string>Wells</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_7">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="wellsView">
           <property name="alternatingRowColors">
@@ -158,6 +242,18 @@
         <string>Tables</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_8">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QTableView" name="tablesView">
           <property name="alternatingRowColors">
@@ -405,6 +501,13 @@
     <addaction name="action_Geometry"/>
     <addaction name="actionDisplay_Map"/>
    </widget>
+   <widget class="QMenu" name="menuTesting">
+    <property name="title">
+     <string>BLM</string>
+    </property>
+    <addaction name="actionBLM_AVO"/>
+    <addaction name="actionBLM_Frequencies"/>
+   </widget>
    <addaction name="menuPro_ject"/>
    <addaction name="menuProcess_Seismic"/>
    <addaction name="menuProcess"/>
@@ -413,6 +516,7 @@
    <addaction name="menuProcess_Table"/>
    <addaction name="menu_Analyze"/>
    <addaction name="menu_Help"/>
+   <addaction name="menuTesting"/>
   </widget>
   <action name="actionImportHorizon">
    <property name="text">
@@ -1166,6 +1270,16 @@
   <action name="actionTrace_Gain">
    <property name="text">
     <string>Trace Gain</string>
+   </property>
+  </action>
+  <action name="actionBLM_AVO">
+   <property name="text">
+    <string>BLM AVO</string>
+   </property>
+  </action>
+  <action name="actionBLM_Frequencies">
+   <property name="text">
+    <string>BLM Frequencies</string>
    </property>
   </action>
  </widget>
